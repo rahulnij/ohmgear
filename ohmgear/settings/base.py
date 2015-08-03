@@ -53,6 +53,15 @@ MIDDLEWARE_CLASSES = (
     'django.middleware.security.SecurityMiddleware',
 )
 
+REST_FRAMEWORK = {
+
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework.authentication.SessionAuthentication',
+        #'rest_framework.authentication.TokenAuthentication',
+        'ohmgear.authentication.ExpiringTokenAuthentication',
+    ),
+}
+
 ROOT_URLCONF = 'ohmgear.urls'
 
 TEMPLATES = [
@@ -79,15 +88,12 @@ WSGI_APPLICATION = 'ohmgear.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.mysql',
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': 'ohmgear',
-        'USER': 'root',
-        'PASSWORD': 'tech',
+        'USER': 'ohmgear',
+        'PASSWORD': 'ohmgear@123',
         'HOST': 'localhost',
         'PORT': '',
-        'OPTIONS': {
-            'init_command': 'SET storage_engine=MyISAM',
-        }
     }
 }
 
