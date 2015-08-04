@@ -1,3 +1,8 @@
+#----------------------------------------------#
+# Developer Name: Sajid
+# Creation Date: 2015/08/04
+# Notes: Main setting file
+#----------------------------------------------#
 """
 Django settings for ohmgear project.
 
