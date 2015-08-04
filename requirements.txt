@@ -6,4 +6,4 @@ django-filter==0.10.0
 django-debug-toolbar==1.3.2
 # for following we need this installation :  sudo apt-get install libpq-dev python-dev also you have to give path like sudo /home/sazid/.virtualenvsohmgear/bin/pip install psycopg2
 # sudo apt-get install pgadmin3 for GUI and time of migration run first migrate auth python manage.py migrate auth then python manage.py syncdb 
-psycopg2==2.6.1 
+#psycopg2==2.6.1 
