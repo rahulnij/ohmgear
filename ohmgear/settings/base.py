@@ -57,7 +57,7 @@ MIDDLEWARE_CLASSES = (
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'django.middleware.security.SecurityMiddleware',
 )
-
+#------------------------- Custome setting ------------------------------------#
 REST_FRAMEWORK = {
 
     'DEFAULT_AUTHENTICATION_CLASSES': (
@@ -66,6 +66,10 @@ REST_FRAMEWORK = {
         'ohmgear.authentication.ExpiringTokenAuthentication',
     ),
 }
+AUTH_USER_MODEL = 'users.User'
+#CUSTOM_USER_MODEL = 'users.Users'
+
+#----------------------- End setting -------------------------------------------#
 
 ROOT_URLCONF = 'ohmgear.urls'
 

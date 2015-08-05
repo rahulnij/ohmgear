@@ -1,6 +1,6 @@
 from django.shortcuts import render
 from rest_framework import routers, serializers, viewsets
-from django.contrib.auth.models import User
+from apps.users.models import User
 from serializer import UserSerializer
 from ohmgear.authentication import ExpiringTokenAuthentication
 from rest_framework.permissions import IsAuthenticated
@@ -8,5 +8,5 @@ from rest_framework.permissions import IsAuthenticated
 class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
-    authentication_classes = (ExpiringTokenAuthentication,)
-    permission_classes = (IsAuthenticated,)
+#    authentication_classes = (ExpiringTokenAuthentication,)
+#    permission_classes = (IsAuthenticated,)
