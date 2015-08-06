@@ -24,6 +24,10 @@ class CustomUserManager(BaseUserManager):
     def create_superuser(self, email,first_name,user_type, password=None,**extra_fields):
         return self._create_user(email,first_name,user_type, password,**extra_fields)
 
+USER_TYPE =      (('1', 'admin'),
+                  ('2', 'user'),
+                  ('3', 'corporate user'),                  
+                 )
 
 class User(AbstractBaseUser):
     class Meta:
@@ -38,7 +42,7 @@ class User(AbstractBaseUser):
                     )
    
     emai_verification_code = models.CharField(max_length=45,null=True)
-    user_type = models.CharField(max_length=45)
+    user_type = models.CharField(max_length=45,choices=USER_TYPE)
     pin_number = models.IntegerField(default=0)
     status = models.IntegerField(default=0)    
     created_date=models.DateTimeField(auto_now_add=True)
