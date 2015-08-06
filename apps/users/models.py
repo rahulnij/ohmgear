@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import  BaseUserManager, AbstractBaseUser
 from django.utils import timezone
+from django.contrib.auth.hashers import make_password
 
 class CustomUserManager(BaseUserManager):
 
@@ -13,15 +14,15 @@ class CustomUserManager(BaseUserManager):
             raise ValueError('The given email must be set')
         email = self.normalize_email(email)
         user = self.model(email=email,first_name=first_name, user_type=user_type, **extra_fields)
-        user.set_password(password)
+        #user.set_password(make_password(password))
         user.save(using=self._db)
         return user
 
     def create_user(self, email,first_name,user_type, password=None,**extra_fields):
-        return self._create_user(email,first_name,user_type, password=None,**extra_fields)
+        return self._create_user(email,first_name,user_type, password,**extra_fields)
 
     def create_superuser(self, email,first_name,user_type, password=None,**extra_fields):
-        return self._create_user(email,first_name,user_type, password=None,**extra_fields)
+        return self._create_user(email,first_name,user_type, password,**extra_fields)
 
 
 class User(AbstractBaseUser):
@@ -56,7 +57,7 @@ class User(AbstractBaseUser):
         return self.email
 
     def __unicode__(self):
-        return self.email
+        return '{"id":"%s","email":"%s","user_type":"%s","status":"%s","password":"%s"}' %(self.id,self.email,self.user_type,self.status,self.password)
 
     def has_perm(self, perm, obj=None):
         "Does the user have a specific permission?"
@@ -73,6 +74,7 @@ class User(AbstractBaseUser):
         "Is the user a member of staff?"
         # Simplest possible answer: All admins are staff
         return self.is_admin
+    
     
     
     

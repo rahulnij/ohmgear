@@ -67,8 +67,12 @@ REST_FRAMEWORK = {
     ),
 }
 AUTH_USER_MODEL = 'users.User'
-#CUSTOM_USER_MODEL = 'users.Users'
-
+AUTHENTICATION_BACKENDS = (
+    'ohmgear.auth_backends.UsersModelBackend',
+)
+PASSWORD_HASHERS = (
+    'django.contrib.auth.hashers.SHA1PasswordHasher',
+)
 #----------------------- End setting -------------------------------------------#
 
 ROOT_URLCONF = 'ohmgear.urls'
