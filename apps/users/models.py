@@ -79,6 +79,40 @@ class User(AbstractBaseUser):
         # Simplest possible answer: All admins are staff
         return self.is_admin
     
+
+class Profile(AbstractBaseUser):
+    class Meta:
+        db_table = 'users_profile'
+    user = models.OneToOneField(User)
+    businesstype = models.OneToOneField(businesstype)
+    incomegroup = models.OneToOneField(incomegroup)    
+    DOB = models.DateField(help_text="Please use MM/DD/YYYY format.")
+    address = models.CharField(max_length=80)
+    mobilenumber =models.IntegerField(max_length=10,null =True)   
+    status = models.IntegerField(max_length=45,null=True)    
+    created_date=models.DateTimeField(auto_now_add=True)
+    updated_date=models.DateTimeField(auto_now_add=True)
+    
+
+
+    def __unicode__(self):
+        return '{"id":"%s","email":"%s","user_type":"%s","status":"%s","password":"%s"}' %(self.id,self.email,self.user_type,self.status,self.password)
+
+    def has_perm(self, perm, obj=None):
+        "Does the user have a specific permission?"
+        # Simplest possible answer: Yes, always
+        return True
+
+    def has_module_perms(self, app_label):
+        "Does the user have permissions to view the app `app_label`?"
+        # Simplest possible answer: Yes, always
+        return True
+
+    @property
+    def is_staff(self):
+        "Is the user a member of staff?"
+        # Simplest possible answer: All admins are staff
+        return self.is_admin
     
     
     
