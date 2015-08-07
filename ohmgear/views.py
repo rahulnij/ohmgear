@@ -23,7 +23,7 @@ class AuthTokenSerializer(serializers.Serializer):
             user = authenticate(username=username, password=password)
 
             if user:
-                if not user.status:
+                if  user.status != 1:
                     msg = _('User account is disabled.')
                     raise exceptions.ValidationError(msg)
             else:
