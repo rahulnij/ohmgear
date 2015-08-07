@@ -2,6 +2,7 @@ from django.db import models
 from django.contrib.auth.models import  BaseUserManager, AbstractBaseUser
 from django.utils import timezone
 from django.contrib.auth.hashers import make_password
+from django.utils.translation import ugettext_lazy as _
 
 class CustomUserManager(BaseUserManager):
 
@@ -12,9 +13,11 @@ class CustomUserManager(BaseUserManager):
         now = timezone.now()
         if not email:
             raise ValueError('The given email must be set')
+        if not user_type:
+            raise ValueError('The given user_type must be set')        
         email = self.normalize_email(email)
         user = self.model(email=email,first_name=first_name, user_type=user_type, **extra_fields)
-        #user.set_password(make_password(password))
+        user.set_password(password)
         user.save(using=self._db)
         return user
 
@@ -25,28 +28,28 @@ class CustomUserManager(BaseUserManager):
         return self._create_user(email,first_name,user_type, password,**extra_fields)
 
 USER_TYPE =      (('1', 'admin'),
-                  ('2', 'user'),
+                  ('2', 'individual'),
                   ('3', 'corporate user'),                  
                  )
 
 class User(AbstractBaseUser):
     class Meta:
         db_table = 'users_user'
-    account_number = models.CharField(max_length=45,null=True)
-    first_name = models.CharField(max_length=45)
-    last_name = models.CharField(max_length=45,null=True)    
+    account_number = models.CharField(_("Account Number"),max_length=45,null=True)
+    first_name = models.CharField(_("First Name"),max_length=45)
+    last_name = models.CharField(_("Last Name"),max_length=45,null=True)    
     email = models.EmailField(
                         verbose_name='email address',
                         max_length=255,
                         unique=True,
                     )
    
-    emai_verification_code = models.CharField(max_length=45,null=True)
-    user_type = models.CharField(max_length=45,choices=USER_TYPE)
-    pin_number = models.IntegerField(default=0)
-    status = models.IntegerField(default=0)    
-    created_date=models.DateTimeField(auto_now_add=True)
-    updated_date=models.DateTimeField(auto_now_add=True)
+    emai_verification_code = models.CharField(_("Email Verification"),max_length=45,null=True)
+    user_type = models.CharField(_("User Type"),max_length=45,choices=USER_TYPE)
+    pin_number = models.IntegerField(_("Pin Number"),default=0)
+    status = models.IntegerField(_("Status"),default=0)    
+    created_date=models.DateTimeField(_("Created Date"),auto_now_add=True)
+    updated_date=models.DateTimeField(_("Updated Date"),auto_now_add=True)
     objects = CustomUserManager()
 
     USERNAME_FIELD = 'email'
@@ -77,7 +80,7 @@ class User(AbstractBaseUser):
     def is_staff(self):
         "Is the user a member of staff?"
         # Simplest possible answer: All admins are staff
-        return self.is_admin
+        return True
     
     
     
