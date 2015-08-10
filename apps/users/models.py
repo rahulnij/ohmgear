@@ -3,7 +3,7 @@ from django.contrib.auth.models import  BaseUserManager, AbstractBaseUser
 from django.utils import timezone
 from django.contrib.auth.hashers import make_password
 from django.utils.translation import ugettext_lazy as _
-from jsonfield import JSONField
+from django_pgjson.fields import JsonField
 
 class CustomUserManager(BaseUserManager):
 
@@ -99,13 +99,12 @@ class Profile(AbstractBaseUser):
     dob = models.DateField(_("DOB"))
     address = models.CharField(_("Address"),max_length=80)
     mobile_number = models.IntegerField(_("Mobile Number"),max_length=10,null =True)   
-    custom_field = JSONField(load_kwargs={'Custom Field': collections.OrderedDict})
-    #custom_data  = models.JSONField(_("Custom Data"))
-    custom_field = models.JSONField()
+    custom_data = JsonField()  
+    #custom_data = models.JSONField(type=dict, default={})
     status = models.IntegerField(_("Status"),default=0)   
     created_date=models.DateTimeField(_("Created Date"),auto_now_add=True)
     updated_date=models.DateTimeField(_("Updated Date"),auto_now_add=True)    
-    user_id = models.OneToOneField(User)
+    user = models.OneToOneField(User)
     income_group = models.CharField(_("Income Group"),max_length=45,choices=INCOME_GROUP)
     business_type = models.CharField(_("Business Type"),max_length=45,choices=BUSINESS_TYPE)
 
