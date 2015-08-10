@@ -3,6 +3,7 @@ from django.contrib.auth.models import  BaseUserManager, AbstractBaseUser
 from django.utils import timezone
 from django.contrib.auth.hashers import make_password
 from django.utils.translation import ugettext_lazy as _
+from jsonfield import JSONField
 
 class CustomUserManager(BaseUserManager):
 
@@ -34,7 +35,7 @@ USER_TYPE =      (('1', 'admin'),
 
 class User(AbstractBaseUser):
     class Meta:
-        db_table = 'users_user'
+        db_table = 'ohmgear_users'
     account_number = models.CharField(_("Account Number"),max_length=45,null=True)
     first_name = models.CharField(_("First Name"),max_length=45)
     last_name = models.CharField(_("Last Name"),max_length=45,null=True)    
@@ -81,41 +82,36 @@ class User(AbstractBaseUser):
         "Is the user a member of staff?"
         # Simplest possible answer: All admins are staff
         return True
-    
+
+BUSINESS_TYPE = (('1', 'option1'),
+                  ('2', 'option2'),
+                  ('3', 'option3'),                  
+                 )
+                 
+INCOME_GROUP = (('1', '1000'),
+                  ('2','2000'),
+                  ('3','5000'),
+               )               
 
 class Profile(AbstractBaseUser):
     class Meta:
-        db_table = 'users_profile'
-    user = models.OneToOneField(User)
-    businesstype = models.OneToOneField(businesstype)
-    incomegroup = models.OneToOneField(incomegroup)    
-    DOB = models.DateField(help_text="Please use MM/DD/YYYY format.")
-    address = models.CharField(max_length=80)
-    mobilenumber =models.IntegerField(max_length=10,null =True)   
-    status = models.IntegerField(max_length=45,null=True)    
-    created_date=models.DateTimeField(auto_now_add=True)
-    updated_date=models.DateTimeField(auto_now_add=True)
-    
-
+        db_table = 'ohmgear_profile'
+    dob = models.DateField(_("DOB"))
+    address = models.CharField(_("Address"),max_length=80)
+    mobile_number = models.IntegerField(_("Mobile Number"),max_length=10,null =True)   
+    custom_field = JSONField(load_kwargs={'Custom Field': collections.OrderedDict})
+    #custom_data  = models.JSONField(_("Custom Data"))
+    custom_field = models.JSONField()
+    status = models.IntegerField(_("Status"),default=0)   
+    created_date=models.DateTimeField(_("Created Date"),auto_now_add=True)
+    updated_date=models.DateTimeField(_("Updated Date"),auto_now_add=True)    
+    user_id = models.OneToOneField(User)
+    income_group = models.CharField(_("Income Group"),max_length=45,choices=INCOME_GROUP)
+    business_type = models.CharField(_("Business Type"),max_length=45,choices=BUSINESS_TYPE)
 
     def __unicode__(self):
-        return '{"id":"%s","email":"%s","user_type":"%s","status":"%s","password":"%s"}' %(self.id,self.email,self.user_type,self.status,self.password)
+        return '{"id":"%s","business_type":"%s","income_group":"%s","status":"%s"}' %(self.id,self.business_type,self.income_group,self.status)
 
-    def has_perm(self, perm, obj=None):
-        "Does the user have a specific permission?"
-        # Simplest possible answer: Yes, always
-        return True
-
-    def has_module_perms(self, app_label):
-        "Does the user have permissions to view the app `app_label`?"
-        # Simplest possible answer: Yes, always
-        return True
-
-    @property
-    def is_staff(self):
-        "Is the user a member of staff?"
-        # Simplest possible answer: All admins are staff
-        return self.is_admin
     
     
     
