@@ -103,8 +103,8 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': 'ohmgear',
-        'USER': 'ohmgear',
-        'PASSWORD': 'ohmgear@123',
+        'USER': 'clavax',
+        'PASSWORD': 'tech',
         'HOST': 'localhost',
         'PORT': '',
     }
@@ -124,8 +124,10 @@ USE_L10N = True
 
 USE_TZ = True
 
-
+SITE_ROOT="/var/www/websites/ohmgear/"
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.8/howto/static-files/
 
 STATIC_URL = '/static/'
+
+STATIC_ROOT = "/var/www/websites/ohmgear/ohmgear/static/"
