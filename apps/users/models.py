@@ -98,7 +98,7 @@ class Profile(AbstractBaseUser):
         db_table = 'ohmgear_profile'
     dob = models.DateField(_("DOB"))
     address = models.CharField(_("Address"),max_length=80)
-    mobile_number = models.IntegerField(_("Mobile Number"),max_length=10,null =True)   
+    mobile_number = models.CharField(_("Mobile Number"),max_length=10,null =True)   
     custom_data = JsonField()  
     status = models.IntegerField(_("Status"),default=0)   
     created_date=models.DateTimeField(_("Created Date"),auto_now_add=True)
