@@ -100,7 +100,6 @@ class Profile(AbstractBaseUser):
     address = models.CharField(_("Address"),max_length=80)
     mobile_number = models.IntegerField(_("Mobile Number"),max_length=10,null =True)   
     custom_data = JsonField()  
-    #custom_data = models.JSONField(type=dict, default={})
     status = models.IntegerField(_("Status"),default=0)   
     created_date=models.DateTimeField(_("Created Date"),auto_now_add=True)
     updated_date=models.DateTimeField(_("Updated Date"),auto_now_add=True)    

@@ -1,8 +1,7 @@
 from django.shortcuts import render
 from rest_framework import routers, serializers, viewsets
-from apps.users.models import User
-from apps.users.models import Profile
-from serializer import UserSerializer
+from models import User,Profile
+from serializer import UserSerializer,ProfileSerializer
 from ohmgear.authentication import ExpiringTokenAuthentication
 from rest_framework.permissions import IsAuthenticated
 # Create your views here.
