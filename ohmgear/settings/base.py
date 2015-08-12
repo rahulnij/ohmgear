@@ -30,7 +30,7 @@ SECRET_KEY = '3-6ostd%53*04ccinr@c0^y!)^op6ue@ekd-cka86^90+z=jln'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['127.0.0.1']
+ALLOWED_HOSTS = []
 
 
 # Application definition
@@ -103,8 +103,8 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': 'ohmgear',
-        'USER': 'clavax',
-        'PASSWORD': 'tech',
+        'USER': 'ohmgear',
+        'PASSWORD': 'ohmgear@123',
         'HOST': 'localhost',
         'PORT': '',
     }
@@ -124,10 +124,8 @@ USE_L10N = True
 
 USE_TZ = True
 
-SITE_ROOT="/var/www/websites/ohmgear/"
+
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.8/howto/static-files/
 
 STATIC_URL = '/static/'
-
-STATIC_ROOT = "/var/www/websites/ohmgear/ohmgear/static/"
