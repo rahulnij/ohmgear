@@ -5,8 +5,8 @@
 #----------------------------------------------#
 from django.shortcuts import render
 from rest_framework import routers, serializers, viewsets
-from models import User,Profile
-from serializer import UserSerializer,ProfileSerializer
+from models import User,Profile,SocialLogin
+from serializer import UserSerializer,ProfileSerializer,SocialLoginSerializer
 from ohmgear.authentication import ExpiringTokenAuthentication
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -63,3 +63,8 @@ class UserViewSet(viewsets.ModelViewSet):
 class ProfileViewSet(viewsets.ModelViewSet):
     queryset = Profile.objects.all()
     serializer_class = ProfileSerializer
+
+    
+class SocialLoginViewSet(viewsets.ModelViewSet):
+    queryset = SocialLogin.objects.all()
+    serializer_class = SocialLoginSerializer

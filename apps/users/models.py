@@ -109,6 +109,23 @@ class Profile(models.Model):
     def __unicode__(self):
         return '{"id":"%s","user":"%s","dob":"%s","address":"%s","mobile_number":"%s","income_group":"%s","business_type":"%s"}' %(self.id,self.user,self.address,self.mobile_number,self.income_group,self.business_type)
 
+
+
+class SocialLogin(AbstractBaseUser):
+    class Meta:
+        db_table = 'ohmgear_socialprofile'
+    social_media_login_id = models.IntegerField(_("Social Media Login Id"),null=True)
+    social_type = models.CharField(_("Social Type"),max_length=45,null = True)
+    created_date = models.DateTimeField(_("Created Date"),auto_now_add=True)
+    user = models.OneToOneField(User)
+    
+    def __unicode__(self):
+        return'{"id:"%s","social_media_login_id":"%s","social_type":"%s"}'%(self.id,self.social_media_login_id,self.social_type)
+    
+    
+        
+    
+
     
     
     
