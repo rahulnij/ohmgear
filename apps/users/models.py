@@ -93,22 +93,21 @@ INCOME_GROUP = (('1', '1000'),
                   ('3','5000'),
                )               
 
-class Profile(AbstractBaseUser):
+class Profile(models.Model):
     class Meta:
         db_table = 'ohmgear_profile'
-    dob = models.DateField(_("DOB"))
-    address = models.CharField(_("Address"),max_length=80)
-    mobile_number = models.CharField(_("Mobile Number"),max_length=10,null =True)   
-    custom_data = JsonField()  
-    status = models.IntegerField(_("Status"),default=0)   
+    dob = models.DateField(_("DOB"),null=True)
+    address = models.CharField(_("Address"),max_length=80,null=True)
+    mobile_number = models.CharField(_("Mobile Number"),max_length=10,null=True)   
+    custom_data = JsonField(null=True)
     created_date=models.DateTimeField(_("Created Date"),auto_now_add=True)
     updated_date=models.DateTimeField(_("Updated Date"),auto_now_add=True)    
     user = models.OneToOneField(User)
-    income_group = models.CharField(_("Income Group"),max_length=45,choices=INCOME_GROUP)
-    business_type = models.CharField(_("Business Type"),max_length=45,choices=BUSINESS_TYPE)
+    income_group = models.CharField(_("Income Group"),max_length=45,choices=INCOME_GROUP,default=1)
+    business_type = models.CharField(_("Business Type"),max_length=45,choices=BUSINESS_TYPE,default=1)
 
     def __unicode__(self):
-        return '{"id":"%s","business_type":"%s","income_group":"%s","status":"%s"}' %(self.id,self.business_type,self.income_group,self.status)
+        return '{"id":"%s","user":"%s","dob":"%s","address":"%s","mobile_number":"%s","income_group":"%s","business_type":"%s"}' %(self.id,self.user,self.address,self.mobile_number,self.income_group,self.business_type)
 
     
     
