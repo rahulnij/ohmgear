@@ -1,5 +1,5 @@
 from django.conf.urls import url, include
-from apps.users.models import User
+from apps.users.models import User,Profile
 from rest_framework import routers, serializers, viewsets
 from django.contrib.auth import get_user_model
 # Serializers define the API representation.
@@ -18,3 +18,7 @@ class UserSerializer(serializers.HyperlinkedModelSerializer):
         user.set_password(validated_data['password'])
         user.save()
         return user
+        
+class ProfileSerializer(serializers.HyperlinkedModelSerializer):
+    class Meta:
+        model = Profile

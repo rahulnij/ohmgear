@@ -5,8 +5,8 @@
 #----------------------------------------------#
 from django.shortcuts import render
 from rest_framework import routers, serializers, viewsets
-from apps.users.models import User
-from serializer import UserSerializer
+from models import User,Profile
+from serializer import UserSerializer,ProfileSerializer
 from ohmgear.authentication import ExpiringTokenAuthentication
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -17,8 +17,8 @@ from django.shortcuts import get_list_or_404, get_object_or_404
 class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
-    authentication_classes = (ExpiringTokenAuthentication,)
-    permission_classes = (IsAuthenticated,)
+#    authentication_classes = (ExpiringTokenAuthentication,)
+#    permission_classes = (IsAuthenticated,)
 
     def list(self, request):
         queryset = self.queryset
@@ -58,3 +58,8 @@ class UserViewSet(viewsets.ModelViewSet):
 
     def destroy(self, request, pk=None):
         pass    
+
+
+class ProfileViewSet(viewsets.ModelViewSet):
+    queryset = Profile.objects.all()
+    serializer_class = ProfileSerializer
