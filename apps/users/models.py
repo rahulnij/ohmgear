@@ -114,7 +114,7 @@ class Profile(models.Model):
 class SocialLogin(AbstractBaseUser):
     class Meta:
         db_table = 'ohmgear_socialprofile'
-    social_media_login_id = models.IntegerField(_("Social Media Login Id"),null=True)
+    social_media_login = models.IntegerField(_("Social Media Login Id"),null=True)
     social_type = models.CharField(_("Social Type"),max_length=45,null = True)
     created_date = models.DateTimeField(_("Created Date"),auto_now_add=True)
     user = models.OneToOneField(User)
