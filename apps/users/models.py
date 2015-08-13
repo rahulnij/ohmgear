@@ -93,6 +93,11 @@ INCOME_GROUP = (('1', '1000'),
                   ('3','5000'),
                )               
 
+SOCIAL_TYPE = (('1','FB'),
+                ('2','QQ'),
+                )  
+    
+               
 class Profile(models.Model):
     class Meta:
         db_table = 'ohmgear_profile'
@@ -111,11 +116,12 @@ class Profile(models.Model):
 
 
 
-class SocialLogin(AbstractBaseUser):
+
+class SocialLogin(models.Model):
     class Meta:
         db_table = 'ohmgear_socialprofile'
-    social_media_login = models.IntegerField(_("Social Media Login Id"),null=True)
-    social_type = models.CharField(_("Social Type"),max_length=45,null = True)
+    social_media_login_id = models.IntegerField(_("Social Media Login Id"),null=True)
+    social_type = models.CharField(_("Social Type"),max_length=45,choices=SOCIAL_TYPE,default=1)
     created_date = models.DateTimeField(_("Created Date"),auto_now_add=True)
     user = models.OneToOneField(User)
     
