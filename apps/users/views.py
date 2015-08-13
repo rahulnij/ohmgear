@@ -7,7 +7,7 @@ from django.shortcuts import render
 from rest_framework import routers, serializers, viewsets
 from models import User,Profile,SocialLogin
 from serializer import UserSerializer,ProfileSerializer,SocialLoginSerializer
-from ohmgear.authentication import ExpiringTokenAuthentication
+from ohmgear.token_authentication import ExpiringTokenAuthentication
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from ohmgear.functions import custome_response
@@ -18,8 +18,8 @@ from django.contrib.auth import get_user_model
 class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
-#    authentication_classes = (ExpiringTokenAuthentication,)
-#    permission_classes = (IsAuthenticated,)
+    authentication_classes = (ExpiringTokenAuthentication,)
+    permission_classes = (IsAuthenticated,)
 
     def set_password(self,request,user_id):
       try:
