@@ -82,6 +82,20 @@ class User(AbstractBaseUser):
         "Is the user a member of staff?"
         # Simplest possible answer: All admins are staff
         return True
+    
+    
+class LinkedInUser(User):
+    linkedin_id = models.CharField(max_length=30, unique=True)
+ 
+    class Meta:
+        verbose_name = 'LinkedIn User'
+ 
+class FacebookUser(User):
+    facebook_id = models.CharField(max_length=30, unique=True)
+ 
+    class Meta:
+        verbose_name = 'Facebook User'    
+    
 
 BUSINESS_TYPE = (('1', 'option1'),
                   ('2', 'option2'),

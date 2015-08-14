@@ -63,7 +63,7 @@ REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework.authentication.SessionAuthentication',
         #'rest_framework.authentication.TokenAuthentication',
-        'ohmgear.authentication.ExpiringTokenAuthentication',
+        'ohmgear.token_authentication.ExpiringTokenAuthentication',
     ),
 }
 AUTH_USER_MODEL = 'users.User'
