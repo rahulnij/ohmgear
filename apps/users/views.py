@@ -90,7 +90,7 @@ class ProfileViewSet(viewsets.ModelViewSet):
 class SocialLoginViewSet(viewsets.ModelViewSet):
     queryset = SocialLogin.objects.all()
     serializer_class = SocialLoginSerializer
-    
+   
     def create(self, request):
             serializer =  UserSerializer(data=request.DATA,context={'request': request})
             user = get_user_model()
@@ -100,8 +100,6 @@ class SocialLoginViewSet(viewsets.ModelViewSet):
                 return Response(custome_response(serializer.data,error=0))
             else:
                 return Response(custome_response(serializer.errors,error=1))
-            
-            
             
 #----------User Login | Forgot Password | Reset Password -----------------#      
 @api_view(['GET','POST'])       
