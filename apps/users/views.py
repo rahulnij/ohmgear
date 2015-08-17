@@ -88,15 +88,15 @@ class ProfileViewSet(viewsets.ModelViewSet):
 class SocialLoginViewSet(viewsets.ModelViewSet):
     queryset = SocialLogin.objects.all()
     serializer_class = SocialLoginSerializer
-    
-def create(self, request):
-        serializer =  UserSerializer(data=request.DATA,context={'request': request})
-        user = get_user_model()
-        if user.email != request.DATA['email']:
-            serializer.is_valid()
-            serializer.save() 
-            return Response(custome_response(serializer.data,error=0))
-        else:
-            return Response(custome_response(serializer.errors,error=1))
+    def create(self, request):
+            serializer =  UserSerializer(data=request.DATA,context={'request': request})
+            print serializer
+            if get_user_model().objects.get(email=request.DATA['email']): 
+                if serializer.is_valid():
+                    user_id = serializer.save()
+                    serializer_class.save()
+                return Response(custome_response(serializer.data,error=0))
+            else:
+                return Response(custome_response(serializer.errors,error=1))
             
             
