@@ -13,7 +13,7 @@ from ohmgear.token_authentication import ExpiringTokenAuthentication
 from ohmgear.functions import custome_response
 from django.shortcuts import get_list_or_404, get_object_or_404
 from django.contrib.auth import get_user_model
-from models import SocialLogin
+from models import SocialLogin,Profile
 
 # Create your views here.
 # User View Prototype which will same format for other view
@@ -93,26 +93,25 @@ class SocialLoginViewSet(viewsets.ModelViewSet):
     serializer_class = SocialLoginSerializer
     
     def create(self, request):    
-       
-        
-               
                 serializer =  UserSerializer(data=request.DATA,context={'request': request})
-                #print get_user_model().objects.filter(email=request.DATA['email'])
                 if get_user_model().objects.filter(email=request.DATA['email']): 
-                    return Response(custome_response(serializer.data,error=0))  
+                    return Response(custome_response({'msg':'Email already exist.'},error=1))  
                 else:
                     if serializer.is_valid():
-                        user_id = serializer.save()
-                        social_id = request.POST.get('social_id','')
-                        sociallogin = SocialLogin(user_id=user_id.id,social_media_login_id = social_id)
-                        sociallogin.save()
-                        #serializer_class = SocialLoginSerializer(data= user_id)
-                        return Response(custome_response(sociallogin.data,error=0))
-                        #return Response(custome_response(serializer.errors,error=1))
+                        try:
+                            user_id = serializer.save()
+                            social_id = request.POST.get('social_id','')
+                            sociallogin = SocialLogin(user_id=user_id.id,social_media_login_id = social_id)
+                            profile = Profile(user_id=user_id.id)
+                            sociallogin.save()
+                            profile.save()
+                            return Response(custome_response(serializer.data,error=0))
+                            #return Response(custome_response(serializer.errors,error=1))
+                        except:
+                            return Response(custome_response(serializer.errors,error=1))
                     else:
                        return Response(custome_response(serializer.errors,error=1)) 
-        #except:
-            #return Response(custome_response(serializer.errors,error=1))
+
 
             
 #----------User Login | Forgot Password | Reset Password -----------------#      
