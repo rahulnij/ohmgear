@@ -3,16 +3,17 @@
 # Creation Date: 2015/08/04
 # Notes: View File
 #----------------------------------------------#
-from django.shortcuts import render
-from rest_framework import routers, serializers, viewsets
+from rest_framework import viewsets
 from models import User,Profile,SocialLogin
 from serializer import UserSerializer,ProfileSerializer,SocialLoginSerializer
-from ohmgear.token_authentication import ExpiringTokenAuthentication
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+from rest_framework.decorators import api_view
+from ohmgear.token_authentication import ExpiringTokenAuthentication
 from ohmgear.functions import custome_response
 from django.shortcuts import get_list_or_404, get_object_or_404
 from django.contrib.auth import get_user_model
+
 # Create your views here.
 # User View Prototype which will same format for other view
 class UserViewSet(viewsets.ModelViewSet):
@@ -32,6 +33,7 @@ class UserViewSet(viewsets.ModelViewSet):
         
                             
     def list(self, request):
+       
         queryset = self.queryset
         serializer = self.serializer_class(queryset, many=True,context={'request': request})
         return Response(custome_response(serializer.data,error=0))
@@ -85,14 +87,12 @@ class ProfileViewSet(viewsets.ModelViewSet):
     serializer_class = ProfileSerializer
 
     
-class SocialLoginViewSet(viewsets.ModelViewSet):
-    
-    
+class SocialLoginViewSet(viewsets.ModelViewSet):     
     def create(self, request):
-        
-        #serializer_class = SocialLoginSerializer
+        queryset = SocialLogin.objects.all()
+        serializer_class = SocialLoginSerializer
         try:
-                queryset = SocialLogin.objects.all()
+               
                 serializer =  UserSerializer(data=request.DATA,context={'request': request})
                 if get_user_model().objects.get(email=request.DATA['email']): 
                     return Response(custome_response(serializer.data,error=0))  
@@ -100,9 +100,25 @@ class SocialLoginViewSet(viewsets.ModelViewSet):
                     if serializer.is_valid():
                         user_id = serializer.save()
                         serializer_class = SocialLoginSerializer(data= user_id)
-                    return Response(custome_response(serializer_class.data,error=0))
+                        return Response(custome_response(serializer_class.data,error=0))
                         #return Response(custome_response(serializer.errors,error=1))
         except:
-           return Response(custome_response(errors,error=1))
+            return Response(custome_response(serializer.errors,error=1))
+
             
+#----------User Login | Forgot Password | Reset Password -----------------#      
+@api_view(['GET','POST'])       
+def useractivity_list(request):
+    msg = {}
+    if request.method == 'GET':
+     pass        
+    if request.method == 'POST':
+        op = request.POST.get('op','')
+        # ----------- Login ------------------#
+        if op == 'login':
             
+             pass
+             
+             return Response(user[0])
+        else:
+             return Response('Not Found',status=status.HTTP_404_NOT_FOUND)            
