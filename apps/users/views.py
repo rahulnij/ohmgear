@@ -13,6 +13,7 @@ from ohmgear.token_authentication import ExpiringTokenAuthentication
 from ohmgear.functions import custome_response
 from django.shortcuts import get_list_or_404, get_object_or_404
 from django.contrib.auth import get_user_model
+from models import SocialLogin
 
 # Create your views here.
 # User View Prototype which will same format for other view
@@ -88,9 +89,11 @@ class ProfileViewSet(viewsets.ModelViewSet):
 
     
 class SocialLoginViewSet(viewsets.ModelViewSet):     
-    def create(self, request):
-        queryset = SocialLogin.objects.all()
-        serializer_class = SocialLoginSerializer
+    queryset = SocialLogin.objects.all()
+    serializer_class = SocialLoginSerializer
+    
+    def create(self, request):    
+       
         try:
                
                 serializer =  UserSerializer(data=request.DATA,context={'request': request})
@@ -99,7 +102,9 @@ class SocialLoginViewSet(viewsets.ModelViewSet):
                 else:
                     if serializer.is_valid():
                         user_id = serializer.save()
-                        serializer_class = SocialLoginSerializer(data= user_id)
+                        sociallogin = SocialLogin(user_id=user_id)
+                        sociallogin.save()
+                        #serializer_class = SocialLoginSerializer(data= user_id)
                         return Response(custome_response(serializer_class.data,error=0))
                         #return Response(custome_response(serializer.errors,error=1))
         except:
