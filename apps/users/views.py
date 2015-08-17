@@ -94,21 +94,25 @@ class SocialLoginViewSet(viewsets.ModelViewSet):
     
     def create(self, request):    
        
-        try:
+        
                
                 serializer =  UserSerializer(data=request.DATA,context={'request': request})
-                if get_user_model().objects.get(email=request.DATA['email']): 
+                #print get_user_model().objects.filter(email=request.DATA['email'])
+                if get_user_model().objects.filter(email=request.DATA['email']): 
                     return Response(custome_response(serializer.data,error=0))  
                 else:
                     if serializer.is_valid():
                         user_id = serializer.save()
-                        sociallogin = SocialLogin(user_id=user_id)
+                        social_id = request.POST.get('social_id','')
+                        sociallogin = SocialLogin(user_id=user_id.id,social_media_login_id = social_id)
                         sociallogin.save()
                         #serializer_class = SocialLoginSerializer(data= user_id)
-                        return Response(custome_response(serializer_class.data,error=0))
+                        return Response(custome_response(sociallogin.data,error=0))
                         #return Response(custome_response(serializer.errors,error=1))
-        except:
-            return Response(custome_response(serializer.errors,error=1))
+                    else:
+                       return Response(custome_response(serializer.errors,error=1)) 
+        #except:
+            #return Response(custome_response(serializer.errors,error=1))
 
             
 #----------User Login | Forgot Password | Reset Password -----------------#      
