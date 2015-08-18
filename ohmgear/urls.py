@@ -8,5 +8,5 @@ urlpatterns = [
     #url(r'^blog/', include('blog.urls')),
     url(r'^api/', include('apps.users.urls')),
     url(r'^admin/', include(admin.site.urls)),
-    #url(r'^token/', views.obtain_expiring_auth_token)
+    url(r'^token/', views.obtain_expiring_auth_token)
 ]
