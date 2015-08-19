@@ -7,26 +7,26 @@ from django_pgjson.fields import JsonField
 
 class CustomUserManager(BaseUserManager):
 
-    def _create_user(self, email,first_name,user_type, password=None,**extra_fields):
+    def _create_user(self, email,first_name, password=None,**extra_fields):
         """
         Creates and saves a User with the given email and password.
         """
         now = timezone.now()
         if not email:
             raise ValueError('The given email must be set')
-        if not user_type:
-            raise ValueError('The given user_type must be set')        
+        if not first_name:
+            raise ValueError('first_name required')        
         email = self.normalize_email(email)
-        user = self.model(email=email,first_name=first_name, user_type=user_type, **extra_fields)
+        user = self.model(email=email,first_name=first_name, user_type=1, **extra_fields)
         user.set_password(password)
         user.save(using=self._db)
         return user
 
-    def create_user(self, email,first_name,user_type, password=None,**extra_fields):
-        return self._create_user(email,first_name,user_type, password,**extra_fields)
+    def create_user(self, email,first_name, password=None,**extra_fields):
+        return self._create_user(email,first_name, password,**extra_fields)
 
-    def create_superuser(self, email,first_name,user_type, password=None,**extra_fields):
-        return self._create_user(email,first_name,user_type, password,**extra_fields)
+    def create_superuser(self, email,first_name, password=None,**extra_fields):
+        return self._create_user(email,first_name, password,**extra_fields)
 
 USER_TYPE =      (('1', 'admin'),
                   ('2', 'individual'),
@@ -46,7 +46,7 @@ class User(AbstractBaseUser):
                     )
    
     emai_verification_code = models.CharField(_("Email Verification"),max_length=45,null=True)
-    user_type = models.CharField(_("User Type"),max_length=45,choices=USER_TYPE)
+    user_type = models.IntegerField(_("User Type"),max_length=45,choices=USER_TYPE,default=2)
     pin_number = models.IntegerField(_("Pin Number"),default=0)
     status = models.IntegerField(_("Status"),default=0)    
     created_date=models.DateTimeField(_("Created Date"),auto_now_add=True)
@@ -54,7 +54,7 @@ class User(AbstractBaseUser):
     objects = CustomUserManager()
 
     USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = ['first_name','user_type']
+    REQUIRED_FIELDS = ['first_name']
 
     def get_full_name(self):
         # The user is identified by their email address
