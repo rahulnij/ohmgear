@@ -14,6 +14,7 @@ from django.contrib.auth import authenticate
 from django.utils.translation import ugettext_lazy as _
 import datetime
 from django.utils.timezone import utc
+from ohmgear.functions import custome_response
 
 
 EXPIRE_HOURS = getattr(settings, 'REST_FRAMEWORK_TOKEN_EXPIRE_HOURS', 2)
@@ -29,8 +30,7 @@ class ExpiringTokenAuthentication(TokenAuthentication):
             raise exceptions.AuthenticationFailed('User inactive or deleted')
 
         if token.created < timezone.now() - timedelta(hours=EXPIRE_HOURS):
-            raise exceptions.AuthenticationFailed('Token has expired')
-
+            raise exceptions.AuthenticationFailed('Token has expired')        
         return (token.user, token)
     
     
@@ -73,6 +73,6 @@ class ObtainExpiringAuthToken(ObtainAuthToken):
                 token.created = datetime.datetime.utcnow().replace(tzinfo=utc)
                 token.save()
 
-            return Response({'token': token.key})
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            return Response(custome_response({'token': token.key},0))
+        return Response(custome_response(serializer.errors,1))
 obtain_expiring_auth_token = ObtainExpiringAuthToken.as_view()        

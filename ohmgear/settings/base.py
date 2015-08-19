@@ -67,6 +67,7 @@ REST_FRAMEWORK = {
         #'rest_framework.authentication.TokenAuthentication',
         'ohmgear.token_authentication.ExpiringTokenAuthentication',
     ),
+    'EXCEPTION_HANDLER': 'ohmgear.custom_exception_handler.custom_exception_handler'
 }
 AUTH_USER_MODEL = 'users.User'
 AUTHENTICATION_BACKENDS = (
