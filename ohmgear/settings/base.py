@@ -43,6 +43,8 @@ INSTALLED_APPS = (
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'apps.users',
+    'apps.managebusinesscards',
+    'apps.identifiers',
     'rest_framework',
     'rest_framework.authtoken',
 )
