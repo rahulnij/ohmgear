@@ -118,7 +118,7 @@ class SocialLoginViewSet(viewsets.ModelViewSet):
             
 #----------User Login | Forgot Password | Reset Password -----------------#      
 @api_view(['GET','POST'])       
-def useractivity_list(request):
+def useractivity(request):
     msg = {}
     if request.method == 'GET':
      pass        
@@ -126,9 +126,23 @@ def useractivity_list(request):
         op = request.POST.get('op','')
         # ----------- Login ------------------#
         if op == 'login':
-            
-             pass
-             
-             return Response(user[0])
+                username = request.POST.get('username','')
+                password = request.POST.get('password','')
+
+                if username and password:
+                    user = authenticate_frontend(username=username, password=password)
+                    if user:
+                        if  user.status != 1:
+                            msg = _('User account is disabled.')
+                            return Response(custome_response({'msg':msg},error=1))
+                    else:
+                        msg = _('Unable to log in with provided credentials.')
+                        raise exceptions.ValidationError(msg)
+                else:
+                    msg = _('Must include "username" and "password".')
+                    return Response(custome_response({'msg':msg},error=1))
+
+                attrs['user'] = user
+                return attrs
         else:
-             return Response('Not Found',status=status.HTTP_404_NOT_FOUND)            
+             return Response(custome_response({'msg':'Please provide operation parameter op'},error=1))            
