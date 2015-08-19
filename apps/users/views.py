@@ -130,7 +130,7 @@ def useractivity(request):
                 password = request.POST.get('password','')
 
                 if username and password:
-                    user = authenticate(username=username, password=password)
+                    user = authenticate_frontend(username=username, password=password)
                     if user:
                         if  user.status != 1:
                             msg = _('User account is disabled.')
