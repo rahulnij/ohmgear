@@ -51,7 +51,7 @@ class UserViewSet(viewsets.ModelViewSet):
          if serializer.is_valid():
             user_id=serializer.save() 
             #---------------- Set the password -----------#
-            if request.DATA['password'] and request.DATA['password'] is not None:
+            if 'password' in request.DATA and request.DATA['password'] is not None:
                self.set_password(request,user_id.id)
             #---------------- End ------------------------#
             
@@ -95,11 +95,11 @@ class SocialLoginViewSet(viewsets.ModelViewSet):
     def create(self, request):    
                 serializer =  UserSerializer(data=request.DATA,context={'request': request})
                 try:
-                    email = get_user_model().objects.filter(email=request.DATA['email'])
+                    email = list(get_user_model().objects.filter(email=request.DATA['email']).values('id','first_name','last_name','email'))
                 except:
                     email = ''
                 if email: 
-                    return Response(custome_response({'msg':'Email already exist.'},error=1))  
+                    return Response(custome_response({'msg':'exist','data':email[0]},error=1))  
                 else:
                     if serializer.is_valid():
                         try:

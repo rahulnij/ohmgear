@@ -27,7 +27,8 @@ def custome_response(data,error = 0):
     if error:
        dataArry['status'] = False  
        if 'msg' in data:
-           dataArry['data'] = data['msg']
+           dataArry['msg'] =  data['msg']
+           dataArry['data'] = data['data']
        else:           
         for val in data.items():
             errorStr = errorStr +'$'+ str(val[0])+':'+str(val[1][0])
