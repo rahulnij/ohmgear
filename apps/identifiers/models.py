@@ -1,9 +1,5 @@
 from django.db import models
-from django.contrib.auth.models import  BaseUserManager, AbstractBaseUser
-from django.utils import timezone
-from django.contrib.auth.hashers import make_password
 from django.utils.translation import ugettext_lazy as _
-from django_pgjson.fields import JsonField
 #from django.db.models.User import User
 from django.conf import settings
 User = settings.AUTH_USER_MODEL

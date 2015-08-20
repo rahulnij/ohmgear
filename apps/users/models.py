@@ -46,7 +46,7 @@ class User(AbstractBaseUser):
                     )
    
     emai_verification_code = models.CharField(_("Email Verification"),max_length=45,null=True)
-    user_type = models.IntegerField(_("User Type"),max_length=45,choices=USER_TYPE,default=2)
+    user_type = models.IntegerField(_("User Type"),choices=USER_TYPE,default=2)
     pin_number = models.IntegerField(_("Pin Number"),default=0)
     status = models.IntegerField(_("Status"),default=0)    
     created_date=models.DateTimeField(_("Created Date"),auto_now_add=True)
@@ -126,7 +126,7 @@ class SocialLogin(models.Model):
     user = models.OneToOneField(User)
     
     def __unicode__(self):
-        return'{"id:"%s","social_media_login_id":"%s","social_type":"%s"}'%(self.id,self.social_media_login_id,self.social_type)
+        return'{"id:"%s","social_media_login_id":"%s","social_type":"%s","status":""}'%(self.id,self.social_media_login_id,self.social_type)
     
     
         
