@@ -48,7 +48,7 @@ class User(AbstractBaseUser):
     emai_verification_code = models.CharField(_("Email Verification"),max_length=45,null=True)
     user_type = models.IntegerField(_("User Type"),choices=USER_TYPE,default=2)
     pin_number = models.IntegerField(_("Pin Number"),default=0)
-    status = models.IntegerField(_("Status"),default=0)    
+    status = models.IntegerField(_("Status"),default=1)    
     created_date=models.DateTimeField(_("Created Date"),auto_now_add=True)
     updated_date=models.DateTimeField(_("Updated Date"),auto_now_add=True)
     objects = CustomUserManager()
