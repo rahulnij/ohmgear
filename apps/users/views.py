@@ -99,7 +99,7 @@ class SocialLoginViewSet(viewsets.ModelViewSet):
                 except:
                     email = ''
                 if email: 
-                    return Response(custome_response({'msg':'exist','data':email[0]},error=1))  
+                    return Response(custome_response({'msg':'user already exist','data':email[0]},error=1,))  
                 else:
                     if serializer.is_valid():
                         try:
@@ -107,7 +107,7 @@ class SocialLoginViewSet(viewsets.ModelViewSet):
                             social_id = request.POST.get('social_id','')
                             sociallogin = SocialLogin(user_id=user_id.id,social_media_login_id = social_id)                            
                             sociallogin.save()                            
-                            return Response(custome_response(serializer.data,error=0))
+                            return Response(custome_response({'msg':'new user','data':serializer.data},error=0))
                             #return Response(custome_response(serializer.errors,error=1))
                         except:
                             return Response(custome_response(serializer.errors,error=1))
