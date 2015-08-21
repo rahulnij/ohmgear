@@ -106,7 +106,7 @@ class SocialLoginViewSet(viewsets.ModelViewSet):
                 except:
                     email = ''
                 if email: 
-                    return Response(custome_response({'msg':'exist','data':email[0]},error=1))  
+                   return Response(custome_response({'msg':'exist','data':email[0]},error=1))   
                 else:
                     if serializer.is_valid():
                         try:
