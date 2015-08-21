@@ -102,6 +102,7 @@ class Profile(models.Model):
     class Meta:
         db_table = 'ohmgear_profile'
     dob = models.DateField(_("DOB"),null=True)
+    gender = models.CharField(_("Gender"),null =True,max_length= 10) 
     address = models.CharField(_("Address"),max_length=80,null=True)
     mobile_number = models.CharField(_("Mobile Number"),max_length=10,null=True)   
     custom_data = JsonField(null=True)
