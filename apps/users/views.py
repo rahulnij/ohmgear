@@ -3,18 +3,25 @@
 # Creation Date: 2015/08/04
 # Notes: View File
 #----------------------------------------------#
-from rest_framework import viewsets
 from models import User,Profile,SocialLogin
 from serializer import UserSerializer,ProfileSerializer,SocialLoginSerializer
+
+from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
+from rest_framework.authtoken.models import Token
+
 from ohmgear.token_authentication import ExpiringTokenAuthentication
 from ohmgear.functions import custome_response
+from ohmgear.auth_frontend import authenticate_frontend
+
 from django.shortcuts import get_list_or_404, get_object_or_404
 from django.contrib.auth import get_user_model
-from models import SocialLogin,Profile
-
+from django.forms.models import model_to_dict
+import datetime
+from datetime import timedelta
+from django.utils.timezone import utc
 # Create your views here.
 # User View Prototype which will same format for other view
 class UserViewSet(viewsets.ModelViewSet):
@@ -131,18 +138,33 @@ def useractivity(request):
 
                 if username and password:
                     user = authenticate_frontend(username=username, password=password)
-                    if user:
+                    if user and not None:
                         if  user.status != 1:
-                            msg = _('User account is disabled.')
+                            msg = 'User account is disabled.'
                             return Response(custome_response({'msg':msg},error=1))
                     else:
-                        msg = _('Unable to log in with provided credentials.')
-                        raise exceptions.ValidationError(msg)
+                        msg = 'Unable to log in with provided credentials.'
+                        return Response(custome_response({'msg':msg},error=1))
+                        #raise exceptions.ValidationError(msg)
                 else:
-                    msg = _('Must include "username" and "password".')
+                    msg = 'Must include "username" and "password".'
                     return Response(custome_response({'msg':msg},error=1))
-
-                attrs['user'] = user
-                return attrs
+                
+                ###----------------- Create Token ---------------------------#
+                #----------- everytime user login user will get new token ----#
+                #----------- first check previus token if exist then delete -----------#
+                try:
+                    token = Token.objects.get(user_id = user.id)
+                    token.delete()
+                except:
+                    pass                
+                token =  Token()
+                token.user_id =  user.id
+                token.created = datetime.datetime.utcnow().replace(tzinfo=utc)
+                token.save()
+                user = model_to_dict(user)
+                user['token'] = token.key
+                ###------------------ End -----------------------------------#
+                return Response(custome_response(user,error=0))
         else:
              return Response(custome_response({'msg':'Please provide operation parameter op'},error=1))            

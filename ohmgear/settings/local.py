@@ -1,6 +1,6 @@
 from base import *
-DEBUG = True
-
+DEBUG = False
+ALLOWED_HOSTS =['localhost']
 if DEBUG:
     MIDDLEWARE_CLASSES += (
         'debug_toolbar.middleware.DebugToolbarMiddleware',
