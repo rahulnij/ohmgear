@@ -27,8 +27,8 @@ from django.utils.timezone import utc
 class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
-    authentication_classes = (ExpiringTokenAuthentication,)
-    permission_classes = (IsAuthenticated,)
+    #authentication_classes = (ExpiringTokenAuthentication,)
+    #permission_classes = (IsAuthenticated,)
 
     def set_password(self,request,user_id):
       try:
