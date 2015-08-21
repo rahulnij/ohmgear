@@ -8,5 +8,6 @@ urlpatterns = [
     #url(r'^blog/', include('blog.urls')),
     url(r'^api/', include('apps.users.urls')),
     url(r'^admin/', include(admin.site.urls)),
-    url(r'^api/token/', views.obtain_expiring_auth_token)
 ]
+handler404 = 'ohmgear.custom_exception_handler.custom404'
+handler500 = 'ohmgear.custom_exception_handler.custom404'

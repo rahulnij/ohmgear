@@ -1,4 +1,5 @@
 from rest_framework.views import exception_handler
+from django.http import JsonResponse
 
 def custom_exception_handler(exc, context):
     # Call REST framework's default exception handler first,
@@ -12,4 +13,11 @@ def custom_exception_handler(exc, context):
          response.data['data'] = response.data['detail']
         #response.data['data'] = ''
         response.data['detail'] = ''
+        
     return response
+
+def custom404(request):
+    return JsonResponse({
+        'status': False,
+        'data': 'The resource was not found'
+    })

@@ -5,10 +5,9 @@ router = routers.DefaultRouter()
 router.register(r'users', UserViewSet)
 router.register(r'profile', ProfileViewSet)
 router.register(r'sociallogin',SocialLoginViewSet)
-#router.register(r'useractivity',useractivity.asViews)
 urlpatterns = [
     url(r'^', include(router.urls)),
-    #url(r'^api-auth/', include('rest_framework.urls', namespace='rest_framework'))
+    url(r'^useractivity/$','apps.users.views.useractivity',name='useractivity'),
 ]
 
 from signals import *

@@ -28,7 +28,7 @@ def custome_response(data,error = 0):
        dataArry['status'] = False  
        if 'msg' in data:
            dataArry['data'] =  data['msg']
-       if 'data' in data:
+       elif 'data' in data:
             dataArry['data'] = data['data']
        else:           
         for val in data.items():
