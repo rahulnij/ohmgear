@@ -108,7 +108,7 @@ class Profile(models.Model):
     custom_data = JsonField(null=True)
     created_date=models.DateTimeField(_("Created Date"),auto_now_add=True)
     updated_date=models.DateTimeField(_("Updated Date"),auto_now_add=True)    
-    user = models.OneToOneField(User)
+    user = models.OneToOneField(User,null=True)
     income_group = models.CharField(_("Income Group"),max_length=45,choices=INCOME_GROUP,default=1)
     business_type = models.CharField(_("Business Type"),max_length=45,choices=BUSINESS_TYPE,default=1)
 
