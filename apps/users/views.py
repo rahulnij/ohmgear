@@ -22,13 +22,35 @@ from django.forms.models import model_to_dict
 import datetime
 from datetime import timedelta
 from django.utils.timezone import utc
+
+from rest_framework import permissions 
+from rest_framework.decorators import api_view, permission_classes, authentication_classes
+from rest_framework.authtoken.models import Token
+
+class UserPermissionsObj(permissions.BasePermission):
+    """
+    Object-level permission to only allow owners of an object to edit it.
+    Assumes the model instance has an `owner` attribute.    """
+    def has_permission(self, request, view):
+        if request.method == 'POST':
+            return True
+        else:            
+            pass
+
+#    def check_object_permission(self, user, obj):
+#        return (user and user.is_authenticated() and
+#          (user.is_staff or obj == user))
+#
+#    def has_object_permission(self, request, view, obj):
+#        return self.check_object_permission(request.user, obj)
+
 # Create your views here.
 # User View Prototype which will same format for other view
 class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
-    #authentication_classes = (ExpiringTokenAuthentication,)
-    #permission_classes = (IsAuthenticated,)
+    authentication_classes = (ExpiringTokenAuthentication,)
+    permission_classes = (IsAuthenticated,UserPermissionsObj,)
 
     def set_password(self,request,user_id):
       try:
@@ -38,8 +60,7 @@ class UserViewSet(viewsets.ModelViewSet):
         return True
       except:
         return False  
-        
-                            
+                       
     def list(self, request):
        
         queryset = self.queryset

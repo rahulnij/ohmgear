@@ -9,5 +9,5 @@ urlpatterns = [
     url(r'^api/', include('apps.users.urls')),
     url(r'^admin/', include(admin.site.urls)),
 ]
-handler404 = 'ohmgear.custom_exception_handler.custom404'
-handler500 = 'ohmgear.custom_exception_handler.custom404'
+#handler404 = 'ohmgear.custom_exception_handler.custom404'
+#handler500 = 'ohmgear.custom_exception_handler.custom404'
