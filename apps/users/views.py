@@ -30,27 +30,28 @@ from rest_framework.authtoken.models import Token
 class UserPermissionsObj(permissions.BasePermission):
     """
     Object-level permission to only allow owners of an object to edit it.
-    Assumes the model instance has an `owner` attribute.    """
+    Assumes the model instance has an `owner` attribute.    #"""
     def has_permission(self, request, view):
         if request.method == 'POST':
             return True
         else:            
-            pass
-
-#    def check_object_permission(self, user, obj):
-#        return (user and user.is_authenticated() and
-#          (user.is_staff or obj == user))
-#
-#    def has_object_permission(self, request, view, obj):
-#        return self.check_object_permission(request.user, obj)
-
-# Create your views here.
+            return True
 # User View Prototype which will same format for other view
 class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
     authentication_classes = (ExpiringTokenAuthentication,)
-    permission_classes = (IsAuthenticated,UserPermissionsObj,)
+    permission_classes = (IsAuthenticated,)
+    
+    def get_permissions(self):
+        # Your logic should be all here
+        if self.request.method == 'POST':
+            self.authentication_classes = []
+            self.permission_classes = []
+        else:            
+            self.authentication_classes = [ExpiringTokenAuthentication,]
+            self.permission_classes = [IsAuthenticated, ]
+        return super(viewsets.ModelViewSet, self).get_permissions()    
 
     def set_password(self,request,user_id):
       try:
@@ -60,19 +61,19 @@ class UserViewSet(viewsets.ModelViewSet):
         return True
       except:
         return False  
-                       
+    
+    #--------------Method: GET-----------------------------#       
     def list(self, request):
-       
-        queryset = self.queryset
-        serializer = self.serializer_class(queryset, many=True,context={'request': request})
-        return Response(custome_response(serializer.data,error=0))
-
-    def retrieve(self, request):
+         return Response(custome_response({'msg':'GET method not allowed'},error=1))   
+    
+    #--------------Method: GET retrieve single record-----------------------------#
+    def retrieve(self, request,pk=None):
         queryset = self.queryset
         user = get_object_or_404(queryset, pk=pk)
         serializer = self.serializer_class(user,context={'request': request})
         return Response(custome_response(serializer.data,error=0))
-
+    
+    #--------------Method: POST create new user -----------------------------#
     def create(self, request):
          
          serializer =  UserSerializer(data=request.DATA,context={'request': request})
@@ -86,7 +87,8 @@ class UserViewSet(viewsets.ModelViewSet):
             return Response(custome_response(serializer.data,error=0))
          else:
             return Response(custome_response(serializer.errors,error=1))
-
+        
+    #--------------Method: PUT update the record-----------------------------#
     def update(self, request, pk=None):
          try:
            messages = User.objects.get(id=pk)
@@ -97,18 +99,19 @@ class UserViewSet(viewsets.ModelViewSet):
          if serializer.is_valid():
             serializer.save()
             #---------------- Set the password -----------#
-            if request.DATA['password'] and request.DATA['password'] is not None:
+            if 'password' in request.DATA and request.DATA['password'] is not None:
                self.set_password(request,pk)
             #---------------- End ------------------------#            
             return Response(custome_response(serializer.data,error=0))
          else:
             return Response(custome_response(serializer.errors,error=1))
 
+    
     def partial_update(self, request, pk=None):
         pass
 
     def destroy(self, request, pk=None):
-        pass    
+        return Response(custome_response({'msg':'DELETE method not allowed'},error=1))    
 
 
 class ProfileViewSet(viewsets.ModelViewSet):
