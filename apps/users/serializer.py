@@ -12,7 +12,7 @@ class UserSerializer(serializers.ModelSerializer):
 
     def validate_user_type(self, attrs):
         value = attrs
-        if value and value != 2:
+        if value and value != '2':
            raise serializers.ValidationError("user_type must be individual")
         return attrs 
        
