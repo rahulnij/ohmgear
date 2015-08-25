@@ -10,7 +10,7 @@ class contact(models.Model):
     class Meta:
         db_table = 'ohmgear_contacts'
     user = models.OneToOneField(User)
-    businesscard = models.OneToOneField(BusinessCard)
+    businesscard = models.OneToOneField(BusinessCard,null=True)
     nickname   =  models.CharField(_("nickname"),null= True,max_length=45)
     company_name = models.CharField(_("Company Name"),max_length = 45)
     title       = models.CharField(_("title"),max_length = 45)

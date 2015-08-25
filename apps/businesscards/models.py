@@ -1,6 +1,6 @@
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
-#from django.db.models.User import User
+from apps.identifiers.models import Identifier
 from django.conf import settings
 User = settings.AUTH_USER_MODEL
 # Create your models here.
@@ -23,3 +23,26 @@ class BusinessCard(models.Model):
     
     def __unicode__(self):
         return'{"id:"%s","name":"%s","template_id":"%s"}'%(self.id,self.template_id)
+    
+    
+    
+
+class BusinessCardIdentifier(models.Model):
+    
+    class Meta:
+        db_table = 'ohmgear_businesscardidentifier'
+    businesscard = models.OneToOneField('BusinessCard')
+    identifier = models.OneToOneField(Identifier)
+    created_date    =  models.DateTimeField(_('Created Date'),auto_now_add = True)
+    updated_date    =   models.DateTimeField(_('Update Date'),auto_now_add = True)
+    
+    
+    
+    class BusinessCardTemplate(models.Model):
+        db_table = 'ohmgear_businesscardtemplate'
+        templateName = models.CharField(_("Template Name"),null=True,max_length=50)
+        templateContent = models.CharField(_("Template Content"),max_length= 100)
+        status  = models.IntegerField(_("Status"),default=0)
+        created_date = models.DateTimeField(_('Created Date'))
+        updated_date = modelsDateTimeField(_('Updated Date'))
+    
