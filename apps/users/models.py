@@ -113,8 +113,7 @@ class Profile(models.Model):
     business_type = models.CharField(_("Business Type"),max_length=45,choices=BUSINESS_TYPE,default=1)
 
     def __unicode__(self):
-        return '{"id":"%s","user":"%s","dob":"%s","address":"%s","mobile_number":"%s","income_group":"%s","business_type":"%s"}' %(self.id,self.user,self.address,self.mobile_number,self.income_group,self.business_type)
-
+        return '{"id":"%s","dob":"%s","gender":"%s","address":"%s","mobile_number":"%s","user":"%s","income_group":"%s","business_type":"%s"}' %(self.id,self.dob,self.gender,self.address,self.mobile_number,self.user,self.income_group,self.business_type)
 
 
 

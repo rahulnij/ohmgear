@@ -62,16 +62,16 @@ class UserViewSet(viewsets.ModelViewSet):
       except:
         return False  
     
-    #--------------Method: GET-----------------------------#       
+    #---    -----------Method: GET-----------------------------#       
     def list(self, request):
          return Response(custome_response({'msg':'GET method not allowed'},error=1))   
     
     #--------------Method: GET retrieve single record-----------------------------#
-    def retrieve(self, request,pk=None):
+    def retrive(self,request,pk=None):
         queryset = self.queryset
-        user = get_object_or_404(queryset, pk=pk)
-        serializer = self.serializer_class(user,context={'request': request})
-        return Response(custome_response(serializer.data,error=0))
+        user = get_object_or_404(queryset,pk=pk)
+        serializer = self.serializer_class(user,context={'request':request})
+        return Response(custome_response(serilizer_data,error=0))
     
     #--------------Method: POST create new user -----------------------------#
     def create(self, request):
@@ -117,6 +117,39 @@ class UserViewSet(viewsets.ModelViewSet):
 class ProfileViewSet(viewsets.ModelViewSet):
     queryset = Profile.objects.all()
     serializer_class = ProfileSerializer
+
+    #--------------Method: GET-----------------------------#       
+    def list(self,request):
+         return Response(customer_response({'msg':'GET method not allowed'},error=1))
+     
+    
+    #--------------Method: GET retrieve single record-----------------------------#
+    def retrieve(self, request,pk=None):
+        queryset = self.queryset
+        profile = get_object_or_404(queryset, pk=pk)
+        serializer = self.serializer_class(profile,context={'request': request})
+        return Response(custome_response(serializer.data,error=0))
+    
+     #--------------Method: PUT update the record-----------------------------#
+    def update(self, request, pk=None):
+         try:
+           messages = Profile.objects.get(id=pk)
+         except:
+           return Response(status=status.HTTP_404_NOT_FOUND)
+       
+         serializer =  ProfileSerializer(messages,data=request.DATA,partial=True,context={'request': request})
+         if serializer.is_valid():
+            serializer.save()
+            return Response(custome_response(serializer.data,error=0))
+         else:
+            return Response(custome_response(serializer.errors,error=1))
+
+    
+    def partial_update(self, request, pk=None):
+        pass
+
+    def destroy(self, request, pk=None):
+        return Response(custome_response({'msg':'DELETE method not allowed'},error=1))
 
     
 class SocialLoginViewSet(viewsets.ModelViewSet):     
