@@ -120,7 +120,7 @@ class ProfileViewSet(viewsets.ModelViewSet):
 
     #--------------Method: GET-----------------------------#       
     def list(self,request):
-         return Response(customer_response({'msg':'GET method not allowed'},error=1))
+         return Response(custome_response({'msg':'GET method not allowed'},error=1))
      
     
     #--------------Method: GET retrieve single record-----------------------------#
@@ -135,7 +135,7 @@ class ProfileViewSet(viewsets.ModelViewSet):
          try:
            messages = Profile.objects.get(id=pk)
          except:
-           return Response(status=status.HTTP_404_NOT_FOUND)
+           return Response(custome_response.HTTP_404_NOT_FOUND)
        
          serializer =  ProfileSerializer(messages,data=request.DATA,partial=True,context={'request': request})
          if serializer.is_valid():
