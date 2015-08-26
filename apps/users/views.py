@@ -8,15 +8,15 @@ from serializer import UserSerializer,ProfileSerializer,SocialLoginSerializer
 
 from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated
-from rest_framework.response import Response
 from rest_framework.decorators import api_view
 from rest_framework.authtoken.models import Token
+import rest_framework.status as status
 
 from ohmgear.token_authentication import ExpiringTokenAuthentication
-from ohmgear.functions import custome_response
+from ohmgear.functions import CustomeResponse
 from ohmgear.auth_frontend import authenticate_frontend
 
-from django.shortcuts import get_list_or_404, get_object_or_404
+from django.shortcuts import get_object_or_404
 from django.contrib.auth import get_user_model
 from django.forms.models import model_to_dict
 import datetime
@@ -27,15 +27,15 @@ from rest_framework import permissions
 from rest_framework.decorators import api_view, permission_classes, authentication_classes
 from rest_framework.authtoken.models import Token
 
-class UserPermissionsObj(permissions.BasePermission):
-    """
-    Object-level permission to only allow owners of an object to edit it.
-    Assumes the model instance has an `owner` attribute.    #"""
-    def has_permission(self, request, view):
-        if request.method == 'POST':
-            return True
-        else:            
-            return True
+#class UserPermissionsObj(permissions.BasePermission):
+#    """
+#    Object-level permission to only allow owners of an object to edit it.
+#    Assumes the model instance has an `owner` attribute.    ##"""
+#    def has_permission(self, request, view):
+#        if request.method == 'POST':
+#            return True
+#        else:            
+#            return True
 # User View Prototype which will same format for other view
 class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
@@ -64,14 +64,14 @@ class UserViewSet(viewsets.ModelViewSet):
     
     #---    -----------Method: GET-----------------------------#       
     def list(self, request):
-         return Response(custome_response({'msg':'GET method not allowed'},error=1))   
+         return CustomeResponse({'msg':'GET method not allowed'},status=status.HTTP_405_METHOD_NOT_ALLOWED,validate_errors=1)   
     
     #--------------Method: GET retrieve single record-----------------------------#
     def retrive(self,request,pk=None):
         queryset = self.queryset
         user = get_object_or_404(queryset,pk=pk)
         serializer = self.serializer_class(user,context={'request':request})
-        return Response(custome_response(serilizer_data,error=0))
+        return CustomeResponse(serializer.data,status=status.HTTP_200_OK)
     
     #--------------Method: POST create new user -----------------------------#
     def create(self, request):
@@ -83,17 +83,16 @@ class UserViewSet(viewsets.ModelViewSet):
             if 'password' in request.DATA and request.DATA['password'] is not None:
                self.set_password(request,user_id.id)
             #---------------- End ------------------------#
-            
-            return Response(custome_response(serializer.data,error=0))
+            return CustomeResponse(serializer.data,status=status.HTTP_201_CREATED)
          else:
-            return Response(custome_response(serializer.errors,error=1))
+            return CustomeResponse(serializer.errors,status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
         
     #--------------Method: PUT update the record-----------------------------#
     def update(self, request, pk=None):
          try:
            messages = User.objects.get(id=pk)
          except:
-           return Response(status=status.HTTP_404_NOT_FOUND)
+           return CustomeResponse({'msg':'record not found'},status=status.HTTP_404_NOT_FOUND,validate_errors=1)
        
          serializer =  UserSerializer(messages,data=request.DATA,partial=True,context={'request': request})
          if serializer.is_valid():
@@ -102,16 +101,16 @@ class UserViewSet(viewsets.ModelViewSet):
             if 'password' in request.DATA and request.DATA['password'] is not None:
                self.set_password(request,pk)
             #---------------- End ------------------------#            
-            return Response(custome_response(serializer.data,error=0))
+            return CustomeResponse(serializer.data,status=status.HTTP_201_CREATED)
          else:
-            return Response(custome_response(serializer.errors,error=1))
+            return CustomeResponse(serializer.errors,status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
 
     
     def partial_update(self, request, pk=None):
         pass
 
     def destroy(self, request, pk=None):
-        return Response(custome_response({'msg':'DELETE method not allowed'},error=1))    
+        return CustomeResponse({'msg':'DELETE method not allowed'},status=status.HTTP_405_METHOD_NOT_ALLOWED,flag=1)
 
 
 class ProfileViewSet(viewsets.ModelViewSet):
@@ -120,7 +119,7 @@ class ProfileViewSet(viewsets.ModelViewSet):
 
     #--------------Method: GET-----------------------------#       
     def list(self,request):
-         return Response(customer_response({'msg':'GET method not allowed'},error=1))
+         return CustomeResponse({'msg':'GET method not allowed'},status=status.HTTP_405_METHOD_NOT_ALLOWED,validate_errors=1)
      
     
     #--------------Method: GET retrieve single record-----------------------------#
@@ -128,28 +127,28 @@ class ProfileViewSet(viewsets.ModelViewSet):
         queryset = self.queryset
         profile = get_object_or_404(queryset, pk=pk)
         serializer = self.serializer_class(profile,context={'request': request})
-        return Response(custome_response(serializer.data,error=0))
+        return CustomeResponse(serializer.data,status=status.HTTP_200_OK)
     
      #--------------Method: PUT update the record-----------------------------#
     def update(self, request, pk=None):
          try:
            messages = Profile.objects.get(id=pk)
          except:
-           return Response(status=status.HTTP_404_NOT_FOUND)
+           return CustomeResponse({'msg':'record not found'},status=status.HTTP_404_NOT_FOUND,validate_errors=1)
        
          serializer =  ProfileSerializer(messages,data=request.DATA,partial=True,context={'request': request})
          if serializer.is_valid():
             serializer.save()
-            return Response(custome_response(serializer.data,error=0))
+            return CustomeResponse(serializer.data,status=status.HTTP_200_OK)
          else:
-            return Response(custome_response(serializer.errors,error=1))
+            return CustomeResponse(serializer.errors,status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
 
     
     def partial_update(self, request, pk=None):
         pass
 
     def destroy(self, request, pk=None):
-        return Response(custome_response({'msg':'DELETE method not allowed'},error=1))
+        return CustomeResponse({'msg':'GET method not allowed'},status=status.HTTP_405_METHOD_NOT_ALLOWED,flag=1)
 
     
 class SocialLoginViewSet(viewsets.ModelViewSet):     
@@ -162,8 +161,8 @@ class SocialLoginViewSet(viewsets.ModelViewSet):
                     email = list(get_user_model().objects.filter(email=request.DATA['email']).values('id','first_name','last_name','email'))
                 except:
                     email = ''
-                if email: 
-                   return Response(custome_response({'msg':'exist','data':email[0]},error=1))   
+                if email:
+                   return CustomeResponse({'msg':'exist'},status=status.HTTP_302_FOUND,already_exist=1,validate_errors=1)
                 else:
                     if serializer.is_valid():
                         try:
@@ -171,12 +170,12 @@ class SocialLoginViewSet(viewsets.ModelViewSet):
                             social_id = request.POST.get('social_id','')
                             sociallogin = SocialLogin(user_id=user_id.id,social_media_login_id = social_id)                            
                             sociallogin.save()                            
-                            return Response(custome_response(serializer.data,error=0))
+                            return CustomeResponse(serializer.data,status=status.HTTP_201_CREATED)
                             #return Response(custome_response(serializer.errors,error=1))
                         except:
-                            return Response(custome_response(serializer.errors,error=1))
+                            return CustomeResponse({'msg':'provide required parameters'},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
                     else:
-                       return Response(custome_response(serializer.errors,error=1)) 
+                       return CustomeResponse(serializer.errors,status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
 
 
             
@@ -198,14 +197,14 @@ def useractivity(request):
                     if user and not None:
                         if  user.status != 1:
                             msg = 'User account is disabled.'
-                            return Response(custome_response({'msg':msg},error=1))
+                            return CustomeResponse({'msg':msg},status=status.HTTP_401_UNAUTHORIZED,validate_errors=1)
                     else:
                         msg = 'Unable to log in with provided credentials.'
-                        return Response(custome_response({'msg':msg},error=1))
+                        return CustomeResponse({'msg':msg},status=status.HTTP_401_UNAUTHORIZED,validate_errors=1)
                         #raise exceptions.ValidationError(msg)
                 else:
                     msg = 'Must include "username" and "password".'
-                    return Response(custome_response({'msg':msg},error=1))
+                    return CustomeResponse({'msg':msg},status=status.HTTP_401_UNAUTHORIZED,validate_errors=1)
                 
                 ###----------------- Create Token ---------------------------#
                 #----------- everytime user login user will get new token ----#
@@ -222,6 +221,6 @@ def useractivity(request):
                 user = model_to_dict(user)
                 user['token'] = token.key
                 ###------------------ End -----------------------------------#
-                return Response(custome_response(user,error=0))
+                return CustomeResponse(user,status=status.HTTP_200_OK)
         else:
-             return Response(custome_response({'msg':'Please provide operation parameter op'},error=1))            
+             return CustomeResponse({'msg':'Please provide operation parameter op'},status=status.HTTP_401_UNAUTHORIZED,validate_errors=1)            
