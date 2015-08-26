@@ -157,13 +157,13 @@ class SocialLoginViewSet(viewsets.ModelViewSet):
     serializer_class = SocialLoginSerializer
     
     def create(self, request):    
-                serializer =  UserSerializer(data=request.DATA,context={'request': request})
+                serializer =  UserSerializer(data=request.DATA,context={'request': request,'msg':'not exist'})
                 try:
                     email = list(get_user_model().objects.filter(email=request.DATA['email']).values('id','first_name','last_name','email'))
                 except:
                     email = ''
                 if email: 
-                   return Response(custome_response({'msg':'exist','data':email[0]},error=1))   
+                   return Response(custome_response({'msg':'data already exist','data':email[0]},error=1))   
                 else:
                     if serializer.is_valid():
                         try:
@@ -172,7 +172,7 @@ class SocialLoginViewSet(viewsets.ModelViewSet):
                             sociallogin = SocialLogin(user_id=user_id.id,social_media_login_id = social_id)                            
                             sociallogin.save()                            
                             #return Response(custome_response(serializer.data,error=0))
-                            return Response(custome_response({'msg':'data not exist','data':serializer.data},error=0))
+                            return Response(custome_response({'msg':'data successfully created','user':serializer.data},error=0))
                             #return Response(custome_response(serializer.errors,error=1))
                         except:
                             return Response(custome_response(serializer.errors,error=1))
