@@ -171,7 +171,8 @@ class SocialLoginViewSet(viewsets.ModelViewSet):
                             social_id = request.POST.get('social_id','')
                             sociallogin = SocialLogin(user_id=user_id.id,social_media_login_id = social_id)                            
                             sociallogin.save()                            
-                            return Response(custome_response(serializer.data,error=0))
+                            #return Response(custome_response(serializer.data,error=0))
+                            return Response(custome_response({'msg':'data not exist','data':serializer.data},error=0))
                             #return Response(custome_response(serializer.errors,error=1))
                         except:
                             return Response(custome_response(serializer.errors,error=1))
