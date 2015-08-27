@@ -85,7 +85,7 @@ class UserViewSet(viewsets.ModelViewSet):
             #---------------- End ------------------------#
             return CustomeResponse(serializer.data,status=status.HTTP_201_CREATED)
          else:
-            return CustomeResponse(serializer.errors,status=status.HTTP_200_OK,validate_errors=1)
+            return CustomeResponse(serializer.errors,status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
         
     #--------------Method: PUT update the record-----------------------------#
     def update(self, request, pk=None):
