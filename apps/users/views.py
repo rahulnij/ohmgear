@@ -157,7 +157,7 @@ class SocialLoginViewSet(viewsets.ModelViewSet):
     def create(self, request):    
                 serializer =  UserSerializer(data=request.DATA,context={'request': request,'msg':'not exist'})
                 try:
-                    email = list(get_user_model().objects.filter(email=request.DATA['email']).values('id','first_name','last_name','email'))
+                    email = list(get_user_model().objects.filter(email=request.DATA['email']).values('id','first_name','last_name','email','created_date'))
                 except:
                     email = ''
                 if email:
