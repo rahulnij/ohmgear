@@ -58,7 +58,10 @@ class CustomeResponse(Response):
                    errorStr = errorStr +'$'+ str(val[0])+':'+str(val[1][0])
                 errorStr = errorStr[1:]
                 tempData['msg'] = errorStr
-            tempData['status'] = False
+            if already_exist:   
+               tempData['status'] = True
+            else:
+               tempData['status'] = False 
         else:
            tempData['data'] = data
            tempData['status'] = True
