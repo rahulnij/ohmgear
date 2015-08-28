@@ -9,7 +9,7 @@ from serializer import UserSerializer,ProfileSerializer,SocialLoginSerializer
 from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import api_view
-from rest_framework.authtoken.models import Token
+
 import rest_framework.status as status
 
 from ohmgear.token_authentication import ExpiringTokenAuthentication
@@ -26,6 +26,8 @@ from django.utils.timezone import utc
 from rest_framework import permissions 
 from rest_framework.decorators import api_view, permission_classes, authentication_classes
 from rest_framework.authtoken.models import Token
+from functions import getToken,checkEmail
+import json
 
 #class UserPermissionsObj(permissions.BasePermission):
 #    """
@@ -74,7 +76,7 @@ class UserViewSet(viewsets.ModelViewSet):
         return CustomeResponse(serializer.data,status=status.HTTP_200_OK)
     
     #--------------Method: POST create new user -----------------------------#
-    def create(self, request):
+    def create(self, request,fromsocial=None):
          
          serializer =  UserSerializer(data=request.DATA,context={'request': request})
          if serializer.is_valid():
@@ -83,7 +85,10 @@ class UserViewSet(viewsets.ModelViewSet):
             if 'password' in request.DATA and request.DATA['password'] is not None:
                self.set_password(request,user_id.id)
             #---------------- End ------------------------#
-            return CustomeResponse(serializer.data,status=status.HTTP_201_CREATED)
+            if not fromsocial:
+             return CustomeResponse(serializer.data,status=status.HTTP_201_CREATED)
+            else:
+             return serializer.data   
          else:
             return CustomeResponse(serializer.errors,status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
         
@@ -156,21 +161,37 @@ class SocialLoginViewSet(viewsets.ModelViewSet):
     
     def create(self, request):    
                 serializer =  UserSerializer(data=request.DATA,context={'request': request,'msg':'not exist'})
-                try:
-                    email = list(get_user_model().objects.filter(email=request.DATA['email']).values('id','first_name','last_name','email'))
+                try:               
+                 user = checkEmail(request.DATA['email'])
                 except:
-                    email = ''
-                if email:
-                   return CustomeResponse({'msg':'exist'},status=status.HTTP_302_FOUND,already_exist=1,validate_errors=1)
+                    user = ''
+                if user:
+                   #--------------- Create the token ------------------------#
+                   try:
+                    token = getToken(user[0]['id'])
+                    user[0]['token'] = token
+                   except:
+                     pass
+                   #---------------- End ------------------------------------# 
+                   return CustomeResponse(user,status=status.HTTP_302_FOUND,already_exist=0,validate_errors=0)
                 else:
                     if serializer.is_valid():
                         try:
-                            user_id = serializer.save()
+                            #---------- Call the userviewset for create the user ------------#
+                            user_view_obj = UserViewSet()
+                            data = user_view_obj.create(request,1)
+                            #----------- End ------------------------------------------------#
                             social_id = request.POST.get('social_id','')
-                            sociallogin = SocialLogin(user_id=user_id.id,social_media_login_id = social_id)                            
-                            sociallogin.save()                            
-                            return CustomeResponse(serializer.data,status=status.HTTP_201_CREATED)
-                            #return Response(custome_response(serializer.errors,error=1))
+                            sociallogin = SocialLogin(user_id=data['id'],social_media_login_id = social_id)                            
+                            sociallogin.save()
+                            #--------------- Create the token ------------------------#
+                            try:                                
+                                token = getToken(data['id'])
+                                data['token'] =  token                           
+                            except:
+                                data['token'] = ''
+                            #---------------- End ------------------------------------#
+                            return CustomeResponse(data,status=status.HTTP_201_CREATED)
                         except:
                             return CustomeResponse({'msg':'provide required parameters'},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
                     else:
@@ -208,16 +229,8 @@ def useractivity(request):
                 ###----------------- Create Token ---------------------------#
                 #----------- everytime user login user will get new token ----#
                 #----------- first check previus token if exist then delete -----------#
-                try:
-                    token = Token.objects.get(user_id = user.id)
-                    token.delete()
-                except:
-                    pass                
-                token =  Token()
-                token.user_id =  user.id
-                token.created = datetime.datetime.utcnow().replace(tzinfo=utc)
-                token.save()
                 user = model_to_dict(user)
+                token = getToken(user.id)
                 user['token'] = token.key
                 ###------------------ End -----------------------------------#
                 return CustomeResponse(user,status=status.HTTP_200_OK)
