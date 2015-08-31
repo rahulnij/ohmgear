@@ -230,8 +230,8 @@ def useractivity(request):
                 #----------- everytime user login user will get new token ----#
                 #----------- first check previus token if exist then delete -----------#
                 user = model_to_dict(user)
-                token = getToken(user.id)
-                user['token'] = token.key
+                token = getToken(user["id"])
+                user['token'] = token
                 ###------------------ End -----------------------------------#
                 return CustomeResponse(user,status=status.HTTP_200_OK)
         else:
