@@ -69,7 +69,7 @@ class UserViewSet(viewsets.ModelViewSet):
          return CustomeResponse({'msg':'GET method not allowed'},status=status.HTTP_405_METHOD_NOT_ALLOWED,validate_errors=1)   
     
     #--------------Method: GET retrieve single record-----------------------------#
-    def retrive(self,request,pk=None):
+    def retrieve(self,request,pk=None):
         queryset = self.queryset
         user = get_object_or_404(queryset,pk=pk)
         serializer = self.serializer_class(user,context={'request':request})
@@ -201,10 +201,22 @@ class SocialLoginViewSet(viewsets.ModelViewSet):
             
 #----------User Login | Forgot Password | Reset Password -----------------#      
 @api_view(['GET','POST'])       
-def useractivity(request):
+def useractivity(request,**kwargs):
     msg = {}
     if request.method == 'GET':
-     pass        
+       activation_key = kwargs.get("activation_key")
+       print activation_key
+       if activation_key:
+          try: 
+            user_profile = get_object_or_404(Profile, activation_key=activation_key)
+            user = user_profile.user
+            user.status = 1
+            user.save()
+            return CustomeResponse('Account has been activated',status=status.HTTP_200_OK)
+          except:
+            return CustomeResponse({'msg':'Incorrect activation key'},status=status.HTTP_401_UNAUTHORIZED,validate_errors=1)                
+       return CustomeResponse({'msg':'Please provide correct parameters'},status=status.HTTP_401_UNAUTHORIZED,validate_errors=1)              
+    
     if request.method == 'POST':
         op = request.POST.get('op','')
         # ----------- Login ------------------#

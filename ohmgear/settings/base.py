@@ -46,6 +46,7 @@ INSTALLED_APPS = (
     'apps.businesscards',
     'apps.contacts',
     'apps.identifiers',
+    'apps.email',
     'rest_framework',
     'rest_framework.authtoken',
     
@@ -78,6 +79,13 @@ AUTHENTICATION_BACKENDS = (
 PASSWORD_HASHERS = (
     'django.contrib.auth.hashers.SHA1PasswordHasher',
 )
+DEFAULT_FROM_EMAIL = 'OhmGear <bhoopendra.ohmgear@gmail.com>'
+#q@123456
+EMAIL_USE_TLS = True
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_HOST_USER = 'bhoopendra.ohmgear@gmail.com'
+EMAIL_HOST_PASSWORD = 'q@123456'
 #----------------------- End setting -------------------------------------------#
 
 ROOT_URLCONF = 'ohmgear.urls'

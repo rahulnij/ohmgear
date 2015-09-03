@@ -1,4 +1,5 @@
 from base import *
+DOMAIN_NAME = 'http://localhost:8000'
 DEBUG = True
 ALLOWED_HOSTS =['localhost']
 if DEBUG:

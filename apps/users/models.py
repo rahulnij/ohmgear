@@ -4,6 +4,9 @@ from django.utils import timezone
 from django.contrib.auth.hashers import make_password
 from django.utils.translation import ugettext_lazy as _
 from django_pgjson.fields import JsonField
+import datetime
+from datetime import timedelta
+
 
 class CustomUserManager(BaseUserManager):
 
@@ -48,7 +51,7 @@ class User(AbstractBaseUser):
     emai_verification_code = models.CharField(_("Email Verification"),max_length=45,null=True)
     user_type = models.IntegerField(_("User Type"),choices=USER_TYPE,default=2)
     pin_number = models.IntegerField(_("Pin Number"),default=0)
-    status = models.IntegerField(_("Status"),default=1)    
+    status = models.IntegerField(_("Status"),default=0)    
     created_date=models.DateTimeField(_("Created Date"),auto_now_add=True)
     updated_date=models.DateTimeField(_("Updated Date"),auto_now_add=True)
     objects = CustomUserManager()
@@ -111,6 +114,8 @@ class Profile(models.Model):
     user = models.OneToOneField(User,null=True)
     income_group = models.CharField(_("Income Group"),max_length=45,choices=INCOME_GROUP,default=1)
     business_type = models.CharField(_("Business Type"),max_length=45,choices=BUSINESS_TYPE,default=1)
+    activation_key = models.CharField(max_length=40, blank=True)
+    key_expires = models.DateTimeField(default=timezone.now)
 
     def __unicode__(self):
         return '{"id":"%s","dob":"%s","gender":"%s","address":"%s","mobile_number":"%s","user":"%s","income_group":"%s","business_type":"%s"}' %(self.id,self.dob,self.gender,self.address,self.mobile_number,self.user,self.income_group,self.business_type)
