@@ -16,7 +16,7 @@ IDENTIFIER_TYPE = (('1','System Generated'),
 class Identifier(models.Model):
     
     class Meta:
-     db_table = 'ohmgear_identifier'
+     db_table = 'ohmgear_identifiers_identifier'
     user = models.OneToOneField(User)
     identifier = models.CharField(_("identifier"),null=True,max_length=50)
     identifier_type = models.IntegerField(_("Identifier Type"),choices=IDENTIFIER_TYPE,default=1)

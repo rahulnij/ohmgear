@@ -26,14 +26,14 @@ def register_profile(sender, **kwargs):
                 activation_key = hashlib.sha1(salt+user.email).hexdigest()            
                 key_expires = datetime.datetime.today() + datetime.timedelta(2)
                 
-                email=EmailTemplate.objects.get(type__slug='account_confirmation')
+                email=EmailTemplate.objects.get(slug='account_confirmation')
                 if email:
                     email_body = email.content.replace('%user_name%',user.first_name)
                     url = reverse('registration_confirm', args=[activation_key])
                     email_body = email_body.replace('%url%',"<a href='"+settings.DOMAIN_NAME+url+"'>Link</a>")
-                    email.fromEmail = email.fromEmail if email.fromEmail else setting.DEFAULT_FROM_EMAIL
+                    email.from_email = email.from_email if email.from_email else settings.DEFAULT_FROM_EMAIL
                     
-                    send_mail(email.subject, email_body, email.fromEmail,
+                    send_mail(email.subject, email_body, email.from_email,
                                     [user.email], fail_silently=False,html_message=email_body)                   
                 else:
                    pass 

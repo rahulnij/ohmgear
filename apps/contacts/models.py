@@ -8,7 +8,7 @@ User = settings.AUTH_USER_MODEL
 
 class contact(models.Model):
     class Meta:
-        db_table = 'ohmgear_contacts'
+        db_table = 'ohmgear_contacts_contact'
     user = models.OneToOneField(User)
     businesscard = models.OneToOneField(BusinessCard,null=True)
     nickname   =  models.CharField(_("nickname"),null= True,max_length=45)

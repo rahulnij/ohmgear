@@ -8,7 +8,7 @@ User = settings.AUTH_USER_MODEL
 class BusinessCardTemplate(models.Model):
     
         class Meta:
-            db_table = 'ohmgear_businesscardtemplate'
+            db_table = 'ohmgear_businesscards_businesscardtemplate'
         template_name = models.CharField(_("Template Name"),max_length=50)
         template_content = models.CharField(_("Template Content"),max_length= 100)
         status  = models.IntegerField(_("Status"),default=0)
@@ -23,7 +23,7 @@ class BusinessCardTemplate(models.Model):
 class BusinessCard(models.Model):
     
     class Meta:
-     db_table = 'ohmgear_businesscard'
+     db_table = 'ohmgear_businesscards_businesscard'
     name = models.CharField(_("name"),null=True,max_length=50)
     template = models.OneToOneField('BusinessCardTemplate')
     status = models.IntegerField(_("Status"),default=0)
@@ -41,7 +41,7 @@ class BusinessCard(models.Model):
 class BusinessCardIdentifier(models.Model):
     
     class Meta:
-        db_table = 'ohmgear_businesscardidentifier'
+        db_table = 'ohmgear_businesscards_identifier'
     businesscard = models.OneToOneField('BusinessCard')
     identifier = models.OneToOneField(Identifier)
     created_date    =  models.DateTimeField(_('Created Date'),auto_now_add = True)

@@ -38,7 +38,7 @@ USER_TYPE =      (('1', 'admin'),
 
 class User(AbstractBaseUser):
     class Meta:
-        db_table = 'ohmgear_users'
+        db_table = 'ohmgear_users_user'
     account_number = models.CharField(_("Account Number"),max_length=45,null=True)
     first_name = models.CharField(_("First Name"),max_length=45)
     last_name = models.CharField(_("Last Name"),max_length=45,null=True)    
@@ -103,7 +103,7 @@ SOCIAL_TYPE = (('1','FB'),
                
 class Profile(models.Model):
     class Meta:
-        db_table = 'ohmgear_profile'
+        db_table = 'ohmgear_users_profile'
     dob = models.DateField(_("DOB"),null=True)
     gender = models.CharField(_("Gender"),null =True,max_length= 10) 
     address = models.CharField(_("Address"),max_length=80,null=True)
@@ -124,7 +124,7 @@ class Profile(models.Model):
 
 class SocialLogin(models.Model):
     class Meta:
-        db_table = 'ohmgear_socialprofile'
+        db_table = 'ohmgear_users_socialprofile'
     social_media_login_id = models.CharField(_("Social Media Login Id"),null=True,max_length=50)
     social_type = models.CharField(_("Social Type"),max_length=45,choices=SOCIAL_TYPE,default=1)
     created_date = models.DateTimeField(_("Created Date"),auto_now_add=True)
