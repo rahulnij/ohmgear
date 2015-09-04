@@ -7,7 +7,7 @@ class UserSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True,required=False,allow_blank=True)
     class Meta:
         model = get_user_model()
-        fields = ('id','account_number','first_name','last_name','email','emai_verification_code','user_type','pin_number','status','password')
+        fields = ('id','account_number','first_name','last_name','email','email_verification_code','user_type','pin_number','status','password')
 #        read_only_fields = ('id',)
 
     def validate_user_type(self, attrs):
