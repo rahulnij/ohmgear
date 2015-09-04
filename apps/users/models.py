@@ -36,6 +36,34 @@ USER_TYPE =      (('1', 'admin'),
                   ('3', 'corporate user'),                  
                  )
 
+
+
+#------------------ Look up Table -------------------#          
+
+class BusinessType(models.Model):
+    class Meta:
+        db_table = 'ohmgear_users_businesstype'
+    business_type_id = models.AutoField(primary_key=True)
+    business_type   = models.CharField(_('Business Type'),max_length=50,null=True)
+    
+    
+    
+class IncomeGroup(models.Model):
+    class Meta:
+        db_table = 'ohmgear_users_incomegroup'
+    income_group_id = models.AutoField(primary_key=True)
+    income_group    = models.CharField(_('Income Group'),max_length=50,null =True)
+    
+    
+class SocialType(models.Model):
+    class Meta:
+         db_table = 'ohmgear_users_socialtype'
+    social_type_id = models.AutoField(primary_key =True)
+    social_type    = models.CharField(_('Social Type'), max_length=50)
+    
+    
+    
+
 class User(AbstractBaseUser):
     class Meta:
         db_table = 'ohmgear_users_user'
@@ -48,7 +76,7 @@ class User(AbstractBaseUser):
                         unique=True,
                     )
    
-    emai_verification_code = models.CharField(_("Email Verification"),max_length=45,null=True)
+    email_verification_code = models.CharField(_("Email Verification"),max_length=45,null=True)
     user_type = models.IntegerField(_("User Type"),choices=USER_TYPE,default=2)
     pin_number = models.IntegerField(_("Pin Number"),default=0)
     status = models.IntegerField(_("Status"),default=0)    
@@ -131,34 +159,13 @@ class SocialLogin(models.Model):
     social_media_login_id = models.CharField(_("Social Media Login Id"),null=True,max_length=50)
     social_type = models.OneToOneField(SocialType)
     created_date = models.DateTimeField(_("Created Date"),auto_now_add=True)
-    user = models.OneToOneField(User)
+    user = models.OneToOneField(User,null=True)
     
     def __unicode__(self):
         return'{"id:"%s","social_media_login_id":"%s","social_type":"%s","status":""}'%(self.id,self.social_media_login_id,self.social_type)
     
     
-#------------------ Look up Table -------------------#          
 
-class BusinessType(models.Model):
-    class Meta:
-        db_table = 'ohmgear_users_businesstype'
-    business_type_id = models.AutoField(primary_key=True)
-    business_type   = models.CharField(_('Business Type'),max_length=50,null=True)
-    
-    
-    
-class IncomeGroup(models.Model):
-    class Meta:
-        db_table = 'ohmgear_users_incomegroup'
-    income_group_id = models.AutoField(primary_key=True)
-    income_group    = models.CharField(_('Income Group'),max_length=50,null =True)
-    
-    
-class SocialType(models.Model):
-    class Meta:
-         db_table = 'ohmgear_users_socialtype'
-    social_type_id = models.AutoField(primary_key =True)
-    social_type    = models.CharField(_('Social Type'), max_length=50)
     
 
     
