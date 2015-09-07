@@ -46,6 +46,9 @@ class BusinessType(models.Model):
     business_type_id = models.AutoField(primary_key=True)
     business_type   = models.CharField(_('Business Type'),max_length=50,null=True)
     
+    def __unicode__(self):
+        return'{"business_type_id":"%s","business_type":"%s"}'%(self.business_type_id,self.business_type)
+    
     
     
 class IncomeGroup(models.Model):
@@ -54,14 +57,27 @@ class IncomeGroup(models.Model):
     income_group_id = models.AutoField(primary_key=True)
     income_group    = models.CharField(_('Income Group'),max_length=50,null =True)
     
+    def __unicode__(self):
+        return'{"income_group_id":"%s","income_group":"%s"}'%(self.income_group_id,self.income_group)
+    
     
 class SocialType(models.Model):
     class Meta:
          db_table = 'ohmgear_users_socialtype'
     social_type_id = models.AutoField(primary_key =True)
-    social_type    = models.CharField(_('Social Type'), max_length=50)
+    social_type    = models.CharField(_('Social Type'), max_length=50,null=True)
+    
+    def __unicode__(self):
+        return'{"social_type_id":"%s","social_type":"%s"}'%(self.social_type_id,self.social_type)
     
     
+class UserType(models.Model):
+    class Meta:
+        db_table = 'ohmgear_users_usertype'
+    user_type = models.CharField(_('User Type'),max_length =50)
+    
+    def __unicode__(self):
+        return '{"id":"%s","user_type":"%s"}'%(self.id,self.user_type)
     
 
 class User(AbstractBaseUser):
@@ -77,7 +93,7 @@ class User(AbstractBaseUser):
                     )
    
     email_verification_code = models.CharField(_("Email Verification"),max_length=45,null=True)
-    user_type = models.IntegerField(_("User Type"),choices=USER_TYPE,default=2)
+    user_type = models.OneToOneField(UserType,null= True)
     pin_number = models.IntegerField(_("Pin Number"),default=0)
     status = models.IntegerField(_("Status"),default=0)    
     created_date=models.DateTimeField(_("Created Date"),auto_now_add=True)
@@ -114,19 +130,7 @@ class User(AbstractBaseUser):
         # Simplest possible answer: All admins are staff
         return True
 
-BUSINESS_TYPE = (('1', 'option1'),
-                  ('2', 'option2'),
-                  ('3', 'option3'),                  
-                 )
-                 
-INCOME_GROUP = (('1', '1000'),
-                  ('2','2000'),
-                  ('3','5000'),
-               )               
 
-SOCIAL_TYPE = (('1','FB'),
-                ('2','QQ'),
-                )  
     
                
 class Profile(models.Model):
@@ -141,9 +145,10 @@ class Profile(models.Model):
     updated_date=models.DateTimeField(_("Updated Date"),auto_now_add=True)    
     user = models.OneToOneField(User,null=True)
     #income_group = models.CharField(_("Income Group"),max_length=45,choices=INCOME_GROUP,default=1)
-    income_group = models.OneToOneField(IncomeGroup,null=True)
+    #income_group = models.OneToOneField(IncomeGroup,null =True)
+    income_group = models.ForeignKey(IncomeGroup, null=True, blank=True)
     #business_type = models.CharField(_("Business Type"),max_length=45,choices=BUSINESS_TYPE,default=1)
-    business_type = models.OneToOneField(BusinessType)
+    business_type = models.OneToOneField(BusinessType,null= True)
     
     activation_key = models.CharField(max_length=40, blank=True)
     key_expires = models.DateTimeField(default=timezone.now)
@@ -157,7 +162,7 @@ class SocialLogin(models.Model):
     class Meta:
         db_table = 'ohmgear_users_socialprofile'
     social_media_login_id = models.CharField(_("Social Media Login Id"),null=True,max_length=50)
-    social_type = models.OneToOneField(SocialType)
+    social_type = models.OneToOneField(SocialType,null=True)
     created_date = models.DateTimeField(_("Created Date"),auto_now_add=True)
     user = models.OneToOneField(User,null=True)
     

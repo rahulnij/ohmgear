@@ -10,11 +10,11 @@ class UserSerializer(serializers.ModelSerializer):
         fields = ('id','account_number','first_name','last_name','email','email_verification_code','user_type','pin_number','status','password')
 #        read_only_fields = ('id',)
 
-    def validate_user_type(self, attrs):
-        value = attrs
-        if value and value != '2':
-           raise serializers.ValidationError("user_type must be individual")
-        return attrs 
+    #def validate_user_type(self, attrs):
+     #   value = attrs
+      #  if value and value != '2':
+       #    raise serializers.ValidationError("user_type must be individual")
+        #return attrs 
        
 class ProfileSerializer(serializers.ModelSerializer):
     class Meta:
