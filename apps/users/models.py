@@ -20,7 +20,8 @@ class CustomUserManager(BaseUserManager):
         if not first_name:
             raise ValueError('first_name required')        
         email = self.normalize_email(email)
-        user = self.model(email=email,first_name=first_name, user_type=1, **extra_fields)
+        user = self.model(email=email,first_name=first_name, **extra_fields)
+        user.user_type = UserType.objects.get(id=1)
         user.set_password(password)
         user.save(using=self._db)
         return user
@@ -30,13 +31,6 @@ class CustomUserManager(BaseUserManager):
 
     def create_superuser(self, email,first_name, password=None,**extra_fields):
         return self._create_user(email,first_name, password,**extra_fields)
-
-USER_TYPE =      (('1', 'admin'),
-                  ('2', 'individual'),
-                  ('3', 'corporate user'),                  
-                 )
-
-
 
 #------------------ Look up Table -------------------#          
 
@@ -70,7 +64,6 @@ class SocialType(models.Model):
     def __unicode__(self):
         return'{"social_type_id":"%s","social_type":"%s"}'%(self.social_type_id,self.social_type)
     
-    
 class UserType(models.Model):
     class Meta:
         db_table = 'ohmgear_users_usertype'
@@ -78,7 +71,8 @@ class UserType(models.Model):
     
     def __unicode__(self):
         return '{"id":"%s","user_type":"%s"}'%(self.id,self.user_type)
-    
+
+#----------------------- End -----------------------------------------------------------------#    
 
 class User(AbstractBaseUser):
 
@@ -149,10 +143,7 @@ class Profile(models.Model):
     created_date=models.DateTimeField(_("Created Date"),auto_now_add=True)
     updated_date=models.DateTimeField(_("Updated Date"),auto_now_add=True)    
     user = models.OneToOneField(User,null=True)
-    #income_group = models.CharField(_("Income Group"),max_length=45,choices=INCOME_GROUP,default=1)
-    #income_group = models.OneToOneField(IncomeGroup,null =True)
     income_group = models.ForeignKey(IncomeGroup, null=True, blank=True)
-    #business_type = models.CharField(_("Business Type"),max_length=45,choices=BUSINESS_TYPE,default=1)
     business_type = models.OneToOneField(BusinessType,null= True)
     
     activation_key = models.CharField(max_length=40, blank=True)
