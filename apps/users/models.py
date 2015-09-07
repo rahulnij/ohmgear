@@ -36,6 +36,34 @@ USER_TYPE =      (('1', 'admin'),
                   ('3', 'corporate user'),                  
                  )
 
+
+
+#------------------ Look up Table -------------------#          
+
+class BusinessType(models.Model):
+    class Meta:
+        db_table = 'ohmgear_users_businesstype'
+    business_type_id = models.AutoField(primary_key=True)
+    business_type   = models.CharField(_('Business Type'),max_length=50,null=True)
+    
+    
+    
+class IncomeGroup(models.Model):
+    class Meta:
+        db_table = 'ohmgear_users_incomegroup'
+    income_group_id = models.AutoField(primary_key=True)
+    income_group    = models.CharField(_('Income Group'),max_length=50,null =True)
+    
+    
+class SocialType(models.Model):
+    class Meta:
+         db_table = 'ohmgear_users_socialtype'
+    social_type_id = models.AutoField(primary_key =True)
+    social_type    = models.CharField(_('Social Type'), max_length=50)
+    
+    
+    
+
 class User(AbstractBaseUser):
 
     class Meta:
@@ -117,8 +145,11 @@ class Profile(models.Model):
     created_date=models.DateTimeField(_("Created Date"),auto_now_add=True)
     updated_date=models.DateTimeField(_("Updated Date"),auto_now_add=True)    
     user = models.OneToOneField(User,null=True)
-    income_group = models.CharField(_("Income Group"),max_length=45,choices=INCOME_GROUP,default=1)
-    business_type = models.CharField(_("Business Type"),max_length=45,choices=BUSINESS_TYPE,default=1)
+    #income_group = models.CharField(_("Income Group"),max_length=45,choices=INCOME_GROUP,default=1)
+    income_group = models.OneToOneField(IncomeGroup,null=True)
+    #business_type = models.CharField(_("Business Type"),max_length=45,choices=BUSINESS_TYPE,default=1)
+    business_type = models.OneToOneField(BusinessType)
+    
     activation_key = models.CharField(max_length=40, blank=True)
     key_expires = models.DateTimeField(default=timezone.now)
 
@@ -131,15 +162,15 @@ class SocialLogin(models.Model):
     class Meta:
         db_table = 'ohmgear_users_socialprofile'
     social_media_login_id = models.CharField(_("Social Media Login Id"),null=True,max_length=50)
-    social_type = models.CharField(_("Social Type"),max_length=45,choices=SOCIAL_TYPE,default=1)
+    social_type = models.OneToOneField(SocialType)
     created_date = models.DateTimeField(_("Created Date"),auto_now_add=True)
-    user = models.OneToOneField(User)
+    user = models.OneToOneField(User,null=True)
     
     def __unicode__(self):
         return'{"id:"%s","social_media_login_id":"%s","social_type":"%s","status":""}'%(self.id,self.social_media_login_id,self.social_type)
     
     
-        
+
     
 
     
