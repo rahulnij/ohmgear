@@ -81,6 +81,7 @@ class UserType(models.Model):
     
 
 class User(AbstractBaseUser):
+
     class Meta:
         db_table = 'ohmgear_users_user'
     account_number = models.CharField(_("Account Number"),max_length=45,null=True)
@@ -129,6 +130,10 @@ class User(AbstractBaseUser):
         "Is the user a member of staff?"
         # Simplest possible answer: All admins are staff
         return True
+    
+    @property
+    def _disable_signals(self):
+        return self.status    
 
 
     
