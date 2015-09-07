@@ -78,6 +78,7 @@ class User(AbstractBaseUser):
 
     class Meta:
         db_table = 'ohmgear_users_user'
+        unique_together = ('email', 'user_type',)
     account_number = models.CharField(_("Account Number"),max_length=45,null=True)
     first_name = models.CharField(_("First Name"),max_length=45)
     last_name = models.CharField(_("Last Name"),max_length=45,null=True)    
@@ -88,7 +89,7 @@ class User(AbstractBaseUser):
                     )
    
     email_verification_code = models.CharField(_("Email Verification"),max_length=45,null=True)
-    user_type = models.OneToOneField(UserType,null= True)
+    user_type = models.ForeignKey(UserType,null= True,default=2)
     pin_number = models.IntegerField(_("Pin Number"),default=0)
     status = models.IntegerField(_("Status"),default=0)    
     created_date=models.DateTimeField(_("Created Date"),auto_now_add=True)
@@ -144,7 +145,7 @@ class Profile(models.Model):
     updated_date=models.DateTimeField(_("Updated Date"),auto_now_add=True)    
     user = models.OneToOneField(User,null=True)
     income_group = models.ForeignKey(IncomeGroup, null=True, blank=True)
-    business_type = models.OneToOneField(BusinessType,null= True)
+    business_type = models.ForeignKey(BusinessType,null= True)
     
     activation_key = models.CharField(max_length=40, blank=True)
     key_expires = models.DateTimeField(default=timezone.now)
@@ -158,7 +159,7 @@ class SocialLogin(models.Model):
     class Meta:
         db_table = 'ohmgear_users_socialprofile'
     social_media_login_id = models.CharField(_("Social Media Login Id"),null=True,max_length=50)
-    social_type = models.OneToOneField(SocialType,null=True)
+    social_type = models.ForeignKey(SocialType,null=True)
     created_date = models.DateTimeField(_("Created Date"),auto_now_add=True)
     user = models.OneToOneField(User,null=True)
     

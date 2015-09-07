@@ -2,6 +2,11 @@ from django.core.urlresolvers import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase
 
+## Test api : user registration
+#           : user login
+#           : social login
+#           : forgot passoword
+#           : 
 class AccountTests(APITestCase):
     def test_create_account(self):
         """
