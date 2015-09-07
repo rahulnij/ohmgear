@@ -37,6 +37,7 @@ USER_TYPE =      (('1', 'admin'),
                  )
 
 class User(AbstractBaseUser):
+
     class Meta:
         db_table = 'ohmgear_users_user'
     account_number = models.CharField(_("Account Number"),max_length=45,null=True)
@@ -48,7 +49,7 @@ class User(AbstractBaseUser):
                         unique=True,
                     )
    
-    emai_verification_code = models.CharField(_("Email Verification"),max_length=45,null=True)
+    email_verification_code = models.CharField(_("Email Verification"),max_length=45,null=True)
     user_type = models.IntegerField(_("User Type"),choices=USER_TYPE,default=2)
     pin_number = models.IntegerField(_("Pin Number"),default=0)
     status = models.IntegerField(_("Status"),default=0)    
@@ -85,6 +86,10 @@ class User(AbstractBaseUser):
         "Is the user a member of staff?"
         # Simplest possible answer: All admins are staff
         return True
+    
+    @property
+    def _disable_signals(self):
+        return self.status    
 
 BUSINESS_TYPE = (('1', 'option1'),
                   ('2', 'option2'),

@@ -80,6 +80,11 @@ class UserViewSet(viewsets.ModelViewSet):
          
          serializer =  UserSerializer(data=request.DATA,context={'request': request})
          if serializer.is_valid():
+             
+            #------------ enable/desable signal -----------------#
+            if fromsocial:
+                self._disable_signals = True
+            #------------ End -----------------------------------#
             user_id=serializer.save() 
             #---------------- Set the password -----------#
             if 'password' in request.DATA and request.DATA['password'] is not None:
@@ -159,7 +164,12 @@ class SocialLoginViewSet(viewsets.ModelViewSet):
     queryset = SocialLogin.objects.all()
     serializer_class = SocialLoginSerializer
     
-    def create(self, request):    
+    def create(self, request):
+                try:
+                  if request.DATA['status'] is 0:
+                     return CustomeResponse({'msg':'provide status active'},status=status.HTTP_400_BAD_REQUEST,validate_errors=1) 
+                except:
+                  return CustomeResponse({'msg':'provide status active'},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)   
                 serializer =  UserSerializer(data=request.DATA,context={'request': request,'msg':'not exist'})
                 try:               
                  user = checkEmail(request.DATA['email'])
@@ -172,11 +182,12 @@ class SocialLoginViewSet(viewsets.ModelViewSet):
                     user[0]['token'] = token
                    except:
                      pass
-                   #---------------- End ------------------------------------# 
-                   return CustomeResponse(user,status=status.HTTP_302_FOUND,already_exist=0,validate_errors=0)
+                   #---------------- End ------------------------------------#
+                   #print user
+                   return CustomeResponse(user[0],status=status.HTTP_302_FOUND,already_exist=0,validate_errors=0)
                 else:
                     if serializer.is_valid():
-                        try:
+                        #try:
                             #---------- Call the userviewset for create the user ------------#
                             user_view_obj = UserViewSet()
                             data = user_view_obj.create(request,1)
@@ -191,8 +202,9 @@ class SocialLoginViewSet(viewsets.ModelViewSet):
                             except:
                                 data['token'] = ''
                             #---------------- End ------------------------------------#
+                            print data
                             return CustomeResponse(data,status=status.HTTP_201_CREATED)
-                        except:
+                        #except:
                             return CustomeResponse({'msg':'provide required parameters'},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
                     else:
                        return CustomeResponse(serializer.errors,status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
