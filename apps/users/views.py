@@ -202,7 +202,6 @@ class SocialLoginViewSet(viewsets.ModelViewSet):
                             except:
                                 data['token'] = ''
                             #---------------- End ------------------------------------#
-                            print data
                             return CustomeResponse(data,status=status.HTTP_201_CREATED)
                         #except:
                             return CustomeResponse({'msg':'provide required parameters'},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)

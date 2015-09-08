@@ -67,6 +67,7 @@ class SocialType(models.Model):
 class UserType(models.Model):
     class Meta:
         db_table = 'ohmgear_users_usertype'
+        app_label = 'users'
     user_type = models.CharField(_('User Type'),max_length =50)
     
     def __unicode__(self):
@@ -89,7 +90,7 @@ class User(AbstractBaseUser):
                     )
    
     email_verification_code = models.CharField(_("Email Verification"),max_length=45,null=True)
-    user_type = models.ForeignKey(UserType,null= True,default=2)
+    user_type = models.ForeignKey(UserType,null= True)
     pin_number = models.IntegerField(_("Pin Number"),default=0)
     status = models.IntegerField(_("Status"),default=0)    
     created_date=models.DateTimeField(_("Created Date"),auto_now_add=True)
@@ -148,7 +149,7 @@ class Profile(models.Model):
     business_type = models.ForeignKey(BusinessType,null= True)
     
     activation_key = models.CharField(max_length=40, blank=True)
-    key_expires = models.DateTimeField(default=timezone.now)
+    key_expires = models.DateTimeField(auto_now_add=True)
 
     def __unicode__(self):
         return '{"id":"%s","dob":"%s","gender":"%s","address":"%s","mobile_number":"%s","user":"%s","income_group":"%s","business_type":"%s"}' %(self.id,self.dob,self.gender,self.address,self.mobile_number,self.user,self.income_group,self.business_type)
