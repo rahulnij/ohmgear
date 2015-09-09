@@ -139,9 +139,9 @@ class ProfileViewSet(viewsets.ModelViewSet):
         return CustomeResponse(serializer.data,status=status.HTTP_200_OK)
     
      #--------------Method: PUT update the record-----------------------------#
-    def update(self, request, pk=None):
+    def create(self, request, pk=None):
          try:
-           messages = Profile.objects.get(id=pk)
+           messages = Profile.objects.get(user_id=request.DATA['user_id'])
          except:
            return CustomeResponse({'msg':'record not found'},status=status.HTTP_404_NOT_FOUND,validate_errors=1)
        

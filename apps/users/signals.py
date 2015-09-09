@@ -29,8 +29,8 @@ def register_profile(sender, **kwargs):
                     email=EmailTemplate.objects.get(slug='account_confirmation')
                     if email:
                         email_body = email.content.replace('%user_name%',user.first_name)
-                        #url = reverse('registration_confirm', args=[activation_key])
-                        url = 'signUpEmailVerification://?activationKey='+str(activation_key)
+                        url = reverse('registration_confirm', args=[activation_key])
+                        #url = 'signUpEmailVerification://?activationKey='+str(activation_key)
                         email_body = email_body.replace('%url%',"<a href='"+url+"'>Link</a>")
                         email.from_email = email.from_email if email.from_email else settings.DEFAULT_FROM_EMAIL
 
