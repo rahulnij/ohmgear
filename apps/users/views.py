@@ -28,6 +28,7 @@ from rest_framework.decorators import api_view, permission_classes, authenticati
 from rest_framework.authtoken.models import Token
 from functions import getToken,checkEmail
 import json
+from django.shortcuts import redirect
 
 #class UserPermissionsObj(permissions.BasePermission):
 #    """
@@ -214,6 +215,7 @@ class SocialLoginViewSet(viewsets.ModelViewSet):
 @api_view(['GET','POST'])       
 def useractivity(request,**kwargs):
     msg = {}
+    print request.is_mobile
     if request.method == 'GET':
        activation_key = kwargs.get("activation_key")
        print activation_key
@@ -223,7 +225,10 @@ def useractivity(request,**kwargs):
             user = user_profile.user
             user.status = 1
             user.save()
-            return CustomeResponse('Account has been activated',status=status.HTTP_200_OK)
+            if request.is_mobile:
+               return CustomeResponse('Account has been activated',status=status.HTTP_200_OK)
+            else:
+               return redirect('ohmgear://?activationKey='+activation_key) 
           except:
             return CustomeResponse({'msg':'Incorrect activation key'},status=status.HTTP_401_UNAUTHORIZED,validate_errors=1)                
        return CustomeResponse({'msg':'Please provide correct parameters'},status=status.HTTP_401_UNAUTHORIZED,validate_errors=1)              
