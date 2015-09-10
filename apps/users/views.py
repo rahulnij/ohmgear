@@ -127,7 +127,8 @@ class UserViewSet(viewsets.ModelViewSet):
 class ProfileViewSet(viewsets.ModelViewSet):
     queryset = Profile.objects.all()
     serializer_class = ProfileSerializer
-
+    authentication_classes = (ExpiringTokenAuthentication,)
+    permission_classes = (IsAuthenticated,)
     #--------------Method: GET-----------------------------#       
     def list(self,request):
          return CustomeResponse({'msg':'GET method not allowed'},status=status.HTTP_405_METHOD_NOT_ALLOWED,validate_errors=1)
@@ -215,20 +216,21 @@ class SocialLoginViewSet(viewsets.ModelViewSet):
 @api_view(['GET','POST'])       
 def useractivity(request,**kwargs):
     msg = {}
-    print request.is_mobile
     if request.method == 'GET':
        activation_key = kwargs.get("activation_key")
-       print activation_key
        if activation_key:
           try: 
             user_profile = get_object_or_404(Profile, activation_key=activation_key)
             user = user_profile.user
             user.status = 1
             user.save()
-            if request.is_mobile:
-               return CustomeResponse('Account has been activated',status=status.HTTP_200_OK)
+            if request.device:
+                from django.http import HttpResponse
+                response = HttpResponse("ohmgear://?activationKey="+activation_key, status=302)
+                response['Location'] = "ohmgear://?activationKey="+activation_key
+                return response 
             else:
-               return redirect('ohmgear://?activationKey='+activation_key) 
+               return CustomeResponse('Account has been activated',status=status.HTTP_200_OK) 
           except:
             return CustomeResponse({'msg':'Incorrect activation key'},status=status.HTTP_401_UNAUTHORIZED,validate_errors=1)                
        return CustomeResponse({'msg':'Please provide correct parameters'},status=status.HTTP_401_UNAUTHORIZED,validate_errors=1)              
