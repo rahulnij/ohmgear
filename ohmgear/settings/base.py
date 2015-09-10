@@ -82,7 +82,7 @@ PASSWORD_HASHERS = (
 )
 DEFAULT_FROM_EMAIL = 'OhmGear <bhoopendra.ohmgear@gmail.com>'
 #q@123456
-EMAIL_USE_TLS = False
+EMAIL_USE_TLS = True
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_HOST_USER = 'bhoopendra.ohmgear@gmail.com'
@@ -143,10 +143,3 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/1.8/howto/static-files/
 
 STATIC_URL = '/static/'
-#
-##------------------------------------- JSON DATA STORE IN DB : STRUCTURE --------------------------------#
-#USER_PROFILE = {
-#  "email": ['email1','email2','email3'],
-#  "phoneNumber": ['phone1','phone2','phone3','phone4']
-#}
-##--------------------------------------------------------------------------------------------------------#
