@@ -61,7 +61,7 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'django.middleware.security.SecurityMiddleware',
-    #'apps.users.mobile_detect_middleware.MobileDetectionMiddleware'
+    'apps.users.mobile_detect_middleware.MobileDetectionMiddleware'
 )
 #------------------------- Custome setting ------------------------------------#
 REST_FRAMEWORK = {
@@ -84,7 +84,7 @@ DEFAULT_FROM_EMAIL = 'OhmGear <bhoopendra.ohmgear@gmail.com>'
 #q@123456
 EMAIL_USE_TLS = True
 EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_PORT = 465
+EMAIL_PORT = 587
 EMAIL_HOST_USER = 'bhoopendra.ohmgear@gmail.com'
 EMAIL_HOST_PASSWORD = 'q@123456'
 #----------------------- End setting -------------------------------------------#
