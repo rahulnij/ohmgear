@@ -82,7 +82,7 @@ PASSWORD_HASHERS = (
 )
 DEFAULT_FROM_EMAIL = 'OhmGear <bhoopendra.ohmgear@gmail.com>'
 #q@123456
-EMAIL_USE_TLS = True
+EMAIL_USE_TLS = False
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_HOST_USER = 'bhoopendra.ohmgear@gmail.com'
