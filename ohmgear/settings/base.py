@@ -143,3 +143,11 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/1.8/howto/static-files/
 
 STATIC_URL = '/static/'
+
+#------------------------------------- JSON DATA STORE IN DB : STRUCTURE --------------------------------#
+USER_PROFILE = {
+  "email": ['email1','email2','email3'],
+  "phoneNumber": ['phone1','phone2','phone3','phone4']
+}
+#--------------------------------------------------------------------------------------------------------#
+
