@@ -1,7 +1,7 @@
 from base import *
 DOMAIN_NAME = 'http://localhost:8000'
 DEBUG = True
-ALLOWED_HOSTS =['*']
+ALLOWED_HOSTS =['localhost','*','192.168.2.146:8100']
 if DEBUG:
     MIDDLEWARE_CLASSES += (
         'debug_toolbar.middleware.DebugToolbarMiddleware',

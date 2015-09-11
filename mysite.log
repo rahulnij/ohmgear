@@ -1,48 +1,94 @@
-[11/Sep/2015 08:40:32] DEBUG [django.db.backends:89] (0.002) 
+
+[11/Sep/2015 08:59:53] DEBUG [django.db.backends:89] (0.002) 
             SELECT c.relname, c.relkind
             FROM pg_catalog.pg_class c
             LEFT JOIN pg_catalog.pg_namespace n ON n.oid = c.relnamespace
             WHERE c.relkind IN ('r', 'v')
                 AND n.nspname NOT IN ('pg_catalog', 'pg_toast')
                 AND pg_catalog.pg_table_is_visible(c.oid); args=None
-[11/Sep/2015 08:40:32] DEBUG [django.db.backends:89] (0.001) SELECT "django_migrations"."app", "django_migrations"."name" FROM "django_migrations"; args=()
-[11/Sep/2015 08:40:54] DEBUG [django.db.backends:89] (0.028) SELECT "ohmgear_users_usertype"."id", "ohmgear_users_usertype"."user_type" FROM "ohmgear_users_usertype"; args=()
-[11/Sep/2015 08:40:57] ERROR [django.request:256] Internal Server Error: /api/users/
+[11/Sep/2015 08:59:53] DEBUG [django.db.backends:89] (0.000) SELECT "django_migrations"."app", "django_migrations"."name" FROM "django_migrations"; args=()
+[11/Sep/2015 09:00:34] ERROR [django.request:256] Internal Server Error: /api/sociallogin/
 Traceback (most recent call last):
-  File "/home/sazid/.virtualenvs/vohmgear/local/lib/python2.7/site-packages/django/core/handlers/base.py", line 132, in get_response
-    response = wrapped_callback(request, *callback_args, **callback_kwargs)
-  File "/home/sazid/.virtualenvs/vohmgear/local/lib/python2.7/site-packages/django/views/decorators/csrf.py", line 58, in wrapped_view
-    return view_func(*args, **kwargs)
-  File "/home/sazid/.virtualenvs/vohmgear/local/lib/python2.7/site-packages/rest_framework/viewsets.py", line 85, in view
-    return self.dispatch(request, *args, **kwargs)
-  File "/home/sazid/.virtualenvs/vohmgear/local/lib/python2.7/site-packages/rest_framework/views.py", line 452, in dispatch
-    response = self.handle_exception(exc)
-  File "/home/sazid/.virtualenvs/vohmgear/local/lib/python2.7/site-packages/rest_framework/views.py", line 449, in dispatch
-    response = handler(request, *args, **kwargs)
-  File "/var/www/html/ohmgear/apps/users/views.py", line 83, in create
-    if serializer.is_valid():
-  File "/home/sazid/.virtualenvs/vohmgear/local/lib/python2.7/site-packages/rest_framework/serializers.py", line 187, in is_valid
-    self._validated_data = self.run_validation(self.initial_data)
-  File "/home/sazid/.virtualenvs/vohmgear/local/lib/python2.7/site-packages/rest_framework/serializers.py", line 367, in run_validation
-    value = self.to_internal_value(data)
-  File "/home/sazid/.virtualenvs/vohmgear/local/lib/python2.7/site-packages/rest_framework/serializers.py", line 402, in to_internal_value
-    validated_value = validate_method(validated_value)
-  File "/var/www/html/ohmgear/apps/users/serializer.py", line 15, in validate_user_type
-    if value.id == 1:
-AttributeError: 'NoneType' object has no attribute 'id'
-[11/Sep/2015 08:42:22] DEBUG [django.db.backends:89] (0.004) 
+  File "/home/ankur/Envs/ohmgear/local/lib/python2.7/site-packages/django/core/handlers/base.py", line 108, in get_response
+    response = middleware_method(request)
+  File "/var/www/html/ohmgear/apps/users/mobile_detect_middleware.py", line 32, in process_request
+    device = mobile(request)
+  File "/var/www/html/ohmgear/apps/users/mobile_detect_middleware.py", line 11, in mobile
+    device['iphone'] = "iphone" + re.search("iphone os (\d)", ua).groups(0)[0]
+AttributeError: 'NoneType' object has no attribute 'groups'
+[11/Sep/2015 09:01:37] DEBUG [django.db.backends:89] (0.002) 
             SELECT c.relname, c.relkind
             FROM pg_catalog.pg_class c
             LEFT JOIN pg_catalog.pg_namespace n ON n.oid = c.relnamespace
             WHERE c.relkind IN ('r', 'v')
                 AND n.nspname NOT IN ('pg_catalog', 'pg_toast')
                 AND pg_catalog.pg_table_is_visible(c.oid); args=None
-[11/Sep/2015 08:42:22] DEBUG [django.db.backends:89] (0.001) SELECT "django_migrations"."app", "django_migrations"."name" FROM "django_migrations"; args=()
-[11/Sep/2015 08:43:26] DEBUG [django.db.backends:89] (0.002) 
+[11/Sep/2015 09:01:37] DEBUG [django.db.backends:89] (0.000) SELECT "django_migrations"."app", "django_migrations"."name" FROM "django_migrations"; args=()
+[11/Sep/2015 09:02:05] DEBUG [django.db.backends:89] (0.002) 
             SELECT c.relname, c.relkind
             FROM pg_catalog.pg_class c
             LEFT JOIN pg_catalog.pg_namespace n ON n.oid = c.relnamespace
             WHERE c.relkind IN ('r', 'v')
                 AND n.nspname NOT IN ('pg_catalog', 'pg_toast')
                 AND pg_catalog.pg_table_is_visible(c.oid); args=None
-[11/Sep/2015 08:43:26] DEBUG [django.db.backends:89] (0.000) SELECT "django_migrations"."app", "django_migrations"."name" FROM "django_migrations"; args=()
+[11/Sep/2015 09:02:05] DEBUG [django.db.backends:89] (0.001) SELECT "django_migrations"."app", "django_migrations"."name" FROM "django_migrations"; args=()
+[11/Sep/2015 09:03:14] DEBUG [django.db.backends:89] (0.002) 
+            SELECT c.relname, c.relkind
+            FROM pg_catalog.pg_class c
+            LEFT JOIN pg_catalog.pg_namespace n ON n.oid = c.relnamespace
+            WHERE c.relkind IN ('r', 'v')
+                AND n.nspname NOT IN ('pg_catalog', 'pg_toast')
+                AND pg_catalog.pg_table_is_visible(c.oid); args=None
+[11/Sep/2015 09:03:14] DEBUG [django.db.backends:89] (0.003) SELECT "django_migrations"."app", "django_migrations"."name" FROM "django_migrations"; args=()
+[11/Sep/2015 09:03:43] ERROR [django.request:256] Internal Server Error: /api/sociallogin/
+Traceback (most recent call last):
+  File "/home/ankur/Envs/ohmgear/local/lib/python2.7/site-packages/django/core/handlers/base.py", line 108, in get_response
+    response = middleware_method(request)
+  File "/var/www/html/ohmgear/apps/users/mobile_detect_middleware.py", line 32, in process_request
+    device = mobile(request)
+  File "/var/www/html/ohmgear/apps/users/mobile_detect_middleware.py", line 11, in mobile
+    device['iphone'] = "iphone" + re.search("iphone os (\d)", ua).groups(0)[0]
+AttributeError: 'NoneType' object has no attribute 'groups'
+[11/Sep/2015 09:05:28] DEBUG [django.db.backends:89] (0.002) 
+            SELECT c.relname, c.relkind
+            FROM pg_catalog.pg_class c
+            LEFT JOIN pg_catalog.pg_namespace n ON n.oid = c.relnamespace
+            WHERE c.relkind IN ('r', 'v')
+                AND n.nspname NOT IN ('pg_catalog', 'pg_toast')
+                AND pg_catalog.pg_table_is_visible(c.oid); args=None
+[11/Sep/2015 09:05:28] DEBUG [django.db.backends:89] (0.001) SELECT "django_migrations"."app", "django_migrations"."name" FROM "django_migrations"; args=()
+[11/Sep/2015 09:07:33] DEBUG [django.db.backends:89] (0.003) 
+            SELECT c.relname, c.relkind
+            FROM pg_catalog.pg_class c
+            LEFT JOIN pg_catalog.pg_namespace n ON n.oid = c.relnamespace
+            WHERE c.relkind IN ('r', 'v')
+                AND n.nspname NOT IN ('pg_catalog', 'pg_toast')
+                AND pg_catalog.pg_table_is_visible(c.oid); args=None
+[11/Sep/2015 09:07:33] DEBUG [django.db.backends:89] (0.002) SELECT "django_migrations"."app", "django_migrations"."name" FROM "django_migrations"; args=()
+[11/Sep/2015 09:08:46] DEBUG [django.db.backends:89] (0.002) 
+            SELECT c.relname, c.relkind
+            FROM pg_catalog.pg_class c
+            LEFT JOIN pg_catalog.pg_namespace n ON n.oid = c.relnamespace
+            WHERE c.relkind IN ('r', 'v')
+                AND n.nspname NOT IN ('pg_catalog', 'pg_toast')
+                AND pg_catalog.pg_table_is_visible(c.oid); args=None
+[11/Sep/2015 09:08:46] DEBUG [django.db.backends:89] (0.003) SELECT "django_migrations"."app", "django_migrations"."name" FROM "django_migrations"; args=()
+[11/Sep/2015 09:09:06] DEBUG [django.db.backends:89] (0.335) SELECT "ohmgear_users_user"."id", "ohmgear_users_user"."password", "ohmgear_users_user"."last_login", "ohmgear_users_user"."account_number", "ohmgear_users_user"."first_name", "ohmgear_users_user"."last_name", "ohmgear_users_user"."email", "ohmgear_users_user"."email_verification_code", "ohmgear_users_user"."user_type_id", "ohmgear_users_user"."pin_number", "ohmgear_users_user"."status", "ohmgear_users_user"."created_date", "ohmgear_users_user"."updated_date" FROM "ohmgear_users_user" WHERE ("ohmgear_users_user"."user_type_id" IN (2, 3) AND "ohmgear_users_user"."email" = 'bisht1988vijay@gmail.com') LIMIT 1; args=(2, 3, u'bisht1988vijay@gmail.com')
+[11/Sep/2015 09:09:06] DEBUG [django.db.backends:89] (0.014) SELECT (1) AS "a" FROM "ohmgear_users_user" WHERE "ohmgear_users_user"."email" = 'bisht1988vijay@gmail.com' LIMIT 1; args=(u'bisht1988vijay@gmail.com',)
+[11/Sep/2015 09:09:06] DEBUG [django.db.backends:89] (0.000) SELECT "ohmgear_users_usertype"."id", "ohmgear_users_usertype"."user_type" FROM "ohmgear_users_usertype" WHERE "ohmgear_users_usertype"."id" = 2; args=(2,)
+[11/Sep/2015 09:09:06] DEBUG [django.db.backends:89] (0.000) SELECT (1) AS "a" FROM "ohmgear_users_user" WHERE ("ohmgear_users_user"."email" = 'bisht1988vijay@gmail.com' AND "ohmgear_users_user"."user_type_id" = 2) LIMIT 1; args=(u'bisht1988vijay@gmail.com', 2)
+[11/Sep/2015 09:09:06] DEBUG [django.db.backends:89] (0.000) SELECT (1) AS "a" FROM "ohmgear_users_user" WHERE "ohmgear_users_user"."email" = 'bisht1988vijay@gmail.com' LIMIT 1; args=(u'bisht1988vijay@gmail.com',)
+[11/Sep/2015 09:09:06] DEBUG [django.db.backends:89] (0.000) SELECT "ohmgear_users_usertype"."id", "ohmgear_users_usertype"."user_type" FROM "ohmgear_users_usertype" WHERE "ohmgear_users_usertype"."id" = 2; args=(2,)
+[11/Sep/2015 09:09:06] DEBUG [django.db.backends:89] (0.000) SELECT (1) AS "a" FROM "ohmgear_users_user" WHERE ("ohmgear_users_user"."email" = 'bisht1988vijay@gmail.com' AND "ohmgear_users_user"."user_type_id" = 2) LIMIT 1; args=(u'bisht1988vijay@gmail.com', 2)
+[11/Sep/2015 09:09:06] DEBUG [django.db.backends:89] (0.164) INSERT INTO "ohmgear_users_user" ("password", "last_login", "account_number", "first_name", "last_name", "email", "email_verification_code", "user_type_id", "pin_number", "status", "created_date", "updated_date") VALUES ('', NULL, NULL, 'Vijay', 'Bisht', 'bisht1988vijay@gmail.com', NULL, 2, 0, 1, '2015-09-11T09:09:06.150927+00:00'::timestamptz, '2015-09-11T09:09:06.150945+00:00'::timestamptz) RETURNING "ohmgear_users_user"."id"; args=(u'', None, None, u'Vijay', u'Bisht', u'bisht1988vijay@gmail.com', None, 2, 0, 1, datetime.datetime(2015, 9, 11, 9, 9, 6, 150927, tzinfo=<UTC>), datetime.datetime(2015, 9, 11, 9, 9, 6, 150945, tzinfo=<UTC>))
+[11/Sep/2015 09:09:06] DEBUG [django.db.backends:89] (0.060) INSERT INTO "ohmgear_users_profile" ("dob", "gender", "address", "mobile_number", "custom_data", "created_date", "updated_date", "user_id", "income_group_id", "business_type_id", "activation_key", "key_expires") VALUES (NULL, NULL, NULL, NULL, NULL, '2015-09-11T09:09:06.476563+00:00'::timestamptz, '2015-09-11T09:09:06.476598+00:00'::timestamptz, 13, NULL, NULL, '', '2015-09-11T09:09:06.476657+00:00'::timestamptz) RETURNING "ohmgear_users_profile"."id"; args=(None, None, None, None, None, datetime.datetime(2015, 9, 11, 9, 9, 6, 476563, tzinfo=<UTC>), datetime.datetime(2015, 9, 11, 9, 9, 6, 476598, tzinfo=<UTC>), 13, None, None, u'', datetime.datetime(2015, 9, 11, 9, 9, 6, 476657, tzinfo=<UTC>))
+[11/Sep/2015 09:09:06] DEBUG [django.db.backends:89] (0.014) INSERT INTO "ohmgear_users_socialprofile" ("social_media_login_id", "social_type_id", "created_date", "user_id") VALUES ('986928821365337', NULL, '2015-09-11T09:09:06.572235+00:00'::timestamptz, 13) RETURNING "ohmgear_users_socialprofile"."id"; args=(u'986928821365337', None, datetime.datetime(2015, 9, 11, 9, 9, 6, 572235, tzinfo=<UTC>), 13)
+[11/Sep/2015 09:09:06] DEBUG [django.db.backends:89] (0.038) SELECT "authtoken_token"."key", "authtoken_token"."user_id", "authtoken_token"."created" FROM "authtoken_token" WHERE "authtoken_token"."user_id" = 13; args=(13,)
+[11/Sep/2015 09:09:06] DEBUG [django.db.backends:89] (0.001) UPDATE "authtoken_token" SET "user_id" = 13, "created" = '2015-09-11T09:09:06.654092+00:00'::timestamptz WHERE "authtoken_token"."key" = 'dc51e0463437bd2c082b0f3952952bfc3052d06f'; args=(13, datetime.datetime(2015, 9, 11, 9, 9, 6, 654092, tzinfo=<UTC>), u'dc51e0463437bd2c082b0f3952952bfc3052d06f')
+[11/Sep/2015 09:09:06] DEBUG [django.db.backends:89] (0.001) INSERT INTO "authtoken_token" ("key", "user_id", "created") VALUES ('dc51e0463437bd2c082b0f3952952bfc3052d06f', 13, '2015-09-11T09:09:06.656068+00:00'::timestamptz); args=(u'dc51e0463437bd2c082b0f3952952bfc3052d06f', 13, datetime.datetime(2015, 9, 11, 9, 9, 6, 656068, tzinfo=<UTC>))
+[11/Sep/2015 09:12:48] DEBUG [django.db.backends:89] (0.002) SELECT "ohmgear_users_user"."id", "ohmgear_users_user"."password", "ohmgear_users_user"."last_login", "ohmgear_users_user"."account_number", "ohmgear_users_user"."first_name", "ohmgear_users_user"."last_name", "ohmgear_users_user"."email", "ohmgear_users_user"."email_verification_code", "ohmgear_users_user"."user_type_id", "ohmgear_users_user"."pin_number", "ohmgear_users_user"."status", "ohmgear_users_user"."created_date", "ohmgear_users_user"."updated_date" FROM "ohmgear_users_user" WHERE ("ohmgear_users_user"."user_type_id" IN (2, 3) AND "ohmgear_users_user"."email" = 'bisht1988vijay@gmail.com') LIMIT 1; args=(2, 3, u'bisht1988vijay@gmail.com')
+[11/Sep/2015 09:12:48] DEBUG [django.db.backends:89] (0.001) SELECT "ohmgear_users_user"."id", "ohmgear_users_user"."password", "ohmgear_users_user"."last_login", "ohmgear_users_user"."account_number", "ohmgear_users_user"."first_name", "ohmgear_users_user"."last_name", "ohmgear_users_user"."email", "ohmgear_users_user"."email_verification_code", "ohmgear_users_user"."user_type_id", "ohmgear_users_user"."pin_number", "ohmgear_users_user"."status", "ohmgear_users_user"."created_date", "ohmgear_users_user"."updated_date" FROM "ohmgear_users_user" WHERE ("ohmgear_users_user"."user_type_id" IN (2, 3) AND "ohmgear_users_user"."email" = 'bisht1988vijay@gmail.com'); args=(2, 3, u'bisht1988vijay@gmail.com')
+[11/Sep/2015 09:12:48] DEBUG [django.db.backends:89] (0.001) SELECT "authtoken_token"."key", "authtoken_token"."user_id", "authtoken_token"."created" FROM "authtoken_token" WHERE "authtoken_token"."user_id" = 13; args=(13,)
+[11/Sep/2015 09:12:48] DEBUG [django.db.backends:89] (0.000) DELETE FROM "authtoken_token" WHERE "authtoken_token"."key" IN ('dc51e0463437bd2c082b0f3952952bfc3052d06f'); args=(u'dc51e0463437bd2c082b0f3952952bfc3052d06f',)
+[11/Sep/2015 09:12:48] DEBUG [django.db.backends:89] (0.001) UPDATE "authtoken_token" SET "user_id" = 13, "created" = '2015-09-11T09:12:48.841427+00:00'::timestamptz WHERE "authtoken_token"."key" = '03991b78ac3d08eddcad25cede7520c572856076'; args=(13, datetime.datetime(2015, 9, 11, 9, 12, 48, 841427, tzinfo=<UTC>), u'03991b78ac3d08eddcad25cede7520c572856076')
+[11/Sep/2015 09:12:48] DEBUG [django.db.backends:89] (0.000) INSERT INTO "authtoken_token" ("key", "user_id", "created") VALUES ('03991b78ac3d08eddcad25cede7520c572856076', 13, '2015-09-11T09:12:48.843683+00:00'::timestamptz); args=(u'03991b78ac3d08eddcad25cede7520c572856076', 13, datetime.datetime(2015, 9, 11, 9, 12, 48, 843683, tzinfo=<UTC>))
