@@ -3,7 +3,8 @@ from base import *
 DOMAIN_NAME = 'http://ohmgear.clavax.us'
 SITE_ROOT="/var/www/websites/ohmgear/"
 STATIC_ROOT = "/var/www/websites/ohmgear/ohmgear/static/"
-#ALLOWED_HOSTS = ['192.168.2.129']
+DEBUG = False
+ALLOWED_HOSTS = ['local','ohmgear.clavax.us']
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
