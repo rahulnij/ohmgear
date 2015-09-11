@@ -3,7 +3,7 @@ from base import *
 DOMAIN_NAME = 'http://ohmgear.clavax.us'
 SITE_ROOT="/var/www/websites/ohmgear/"
 STATIC_ROOT = "/var/www/websites/ohmgear/ohmgear/static/"
-DEBUG = False
+DEBUG = True
 ALLOWED_HOSTS = ['*']
 DATABASES = {
     'default': {
