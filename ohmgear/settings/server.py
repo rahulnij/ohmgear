@@ -4,7 +4,7 @@ DOMAIN_NAME = 'http://ohmgear.clavax.us'
 SITE_ROOT="/var/www/websites/ohmgear/"
 STATIC_ROOT = "/var/www/websites/ohmgear/ohmgear/static/"
 DEBUG = False
-ALLOWED_HOSTS = ['local','ohmgear.clavax.us']
+ALLOWED_HOSTS = ['*']
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
