@@ -5,14 +5,9 @@
 #----------------------------------------------#
 from django.contrib.contenttypes.models import ContentType
 from django.db.models.signals import post_save
-
 from models import User,Profile
-from apps.email.models import EmailTemplate
+from apps.email.views import base_send_mail
 import hashlib, datetime, random
-from rest_framework.reverse import reverse
-from django.conf import settings
-from django.core.mail import send_mail
-
 #---------------------------- Create profile at the time of registration --------------------------#
 def register_profile(sender, **kwargs):  
     if kwargs.get('created'):
@@ -26,18 +21,8 @@ def register_profile(sender, **kwargs):
                     activation_key = hashlib.sha1(salt+user.email).hexdigest()            
                     key_expires = datetime.datetime.today() + datetime.timedelta(2)
 
-                    email=EmailTemplate.objects.get(slug='account_confirmation')
-                    if email:
-                        email_body = email.content.replace('%user_name%',user.first_name)
-                        url = reverse('registration_confirm', args=[activation_key])
-                        #url = 'signUpEmailVerification://?activationKey='+str(activation_key)
-                        email_body = email_body.replace('%url%',"<a href='"+settings.DOMAIN_NAME+url+"'>Link</a>")
-                        email.from_email = email.from_email if email.from_email else settings.DEFAULT_FROM_EMAIL
+                    base_send_mail(user,type='account_confirmation',activation_key = activation_key)
 
-                        send_mail(email.subject, email_body, email.from_email,
-                                        [user.email], fail_silently=False,html_message=email_body)                   
-                    else:
-                       pass 
                     profile.activation_key = activation_key
                     profile.key_expires = key_expires
                 #--------------------- End -------------------------------------------------------------#

@@ -92,3 +92,416 @@ AttributeError: 'NoneType' object has no attribute 'groups'
 [11/Sep/2015 09:12:48] DEBUG [django.db.backends:89] (0.000) DELETE FROM "authtoken_token" WHERE "authtoken_token"."key" IN ('dc51e0463437bd2c082b0f3952952bfc3052d06f'); args=(u'dc51e0463437bd2c082b0f3952952bfc3052d06f',)
 [11/Sep/2015 09:12:48] DEBUG [django.db.backends:89] (0.001) UPDATE "authtoken_token" SET "user_id" = 13, "created" = '2015-09-11T09:12:48.841427+00:00'::timestamptz WHERE "authtoken_token"."key" = '03991b78ac3d08eddcad25cede7520c572856076'; args=(13, datetime.datetime(2015, 9, 11, 9, 12, 48, 841427, tzinfo=<UTC>), u'03991b78ac3d08eddcad25cede7520c572856076')
 [11/Sep/2015 09:12:48] DEBUG [django.db.backends:89] (0.000) INSERT INTO "authtoken_token" ("key", "user_id", "created") VALUES ('03991b78ac3d08eddcad25cede7520c572856076', 13, '2015-09-11T09:12:48.843683+00:00'::timestamptz); args=(u'03991b78ac3d08eddcad25cede7520c572856076', 13, datetime.datetime(2015, 9, 11, 9, 12, 48, 843683, tzinfo=<UTC>))
+[11/Sep/2015 09:19:43] DEBUG [django.db.backends:89] (0.002) 
+            SELECT c.relname, c.relkind
+            FROM pg_catalog.pg_class c
+            LEFT JOIN pg_catalog.pg_namespace n ON n.oid = c.relnamespace
+            WHERE c.relkind IN ('r', 'v')
+                AND n.nspname NOT IN ('pg_catalog', 'pg_toast')
+                AND pg_catalog.pg_table_is_visible(c.oid); args=None
+[11/Sep/2015 09:19:43] DEBUG [django.db.backends:89] (0.000) SELECT "django_migrations"."app", "django_migrations"."name" FROM "django_migrations"; args=()
+[11/Sep/2015 09:54:48] DEBUG [django.db.backends:89] (0.545) SELECT "django_session"."session_key", "django_session"."session_data", "django_session"."expire_date" FROM "django_session" WHERE ("django_session"."session_key" = 'r911zxvtt55w8of18v5mlwnph99gahqc' AND "django_session"."expire_date" > '2015-09-11T09:54:47.634118+00:00'::timestamptz); args=('r911zxvtt55w8of18v5mlwnph99gahqc', datetime.datetime(2015, 9, 11, 9, 54, 47, 634118, tzinfo=<UTC>))
+[11/Sep/2015 09:54:57] DEBUG [django.db.backends:89] (0.001) SELECT "django_session"."session_key", "django_session"."session_data", "django_session"."expire_date" FROM "django_session" WHERE ("django_session"."session_key" = 'r911zxvtt55w8of18v5mlwnph99gahqc' AND "django_session"."expire_date" > '2015-09-11T09:54:57.441299+00:00'::timestamptz); args=('r911zxvtt55w8of18v5mlwnph99gahqc', datetime.datetime(2015, 9, 11, 9, 54, 57, 441299, tzinfo=<UTC>))
+[11/Sep/2015 09:55:12] DEBUG [django.db.backends:89] (0.001) SELECT "django_session"."session_key", "django_session"."session_data", "django_session"."expire_date" FROM "django_session" WHERE ("django_session"."session_key" = 'r911zxvtt55w8of18v5mlwnph99gahqc' AND "django_session"."expire_date" > '2015-09-11T09:55:12.202992+00:00'::timestamptz); args=('r911zxvtt55w8of18v5mlwnph99gahqc', datetime.datetime(2015, 9, 11, 9, 55, 12, 202992, tzinfo=<UTC>))
+[11/Sep/2015 09:55:26] DEBUG [django.db.backends:89] (0.001) SELECT "django_session"."session_key", "django_session"."session_data", "django_session"."expire_date" FROM "django_session" WHERE ("django_session"."session_key" = 'r911zxvtt55w8of18v5mlwnph99gahqc' AND "django_session"."expire_date" > '2015-09-11T09:55:26.206858+00:00'::timestamptz); args=('r911zxvtt55w8of18v5mlwnph99gahqc', datetime.datetime(2015, 9, 11, 9, 55, 26, 206858, tzinfo=<UTC>))
+[11/Sep/2015 09:55:26] DEBUG [django.db.backends:89] (0.493) SELECT "ohmgear_users_user"."id", "ohmgear_users_user"."password", "ohmgear_users_user"."last_login", "ohmgear_users_user"."account_number", "ohmgear_users_user"."first_name", "ohmgear_users_user"."last_name", "ohmgear_users_user"."email", "ohmgear_users_user"."email_verification_code", "ohmgear_users_user"."user_type_id", "ohmgear_users_user"."pin_number", "ohmgear_users_user"."status", "ohmgear_users_user"."created_date", "ohmgear_users_user"."updated_date" FROM "ohmgear_users_user" WHERE ("ohmgear_users_user"."user_type_id" IN (2, 3) AND "ohmgear_users_user"."email" = 'sazid.se222@gmail.com') LIMIT 1; args=(2, 3, u'sazid.se222@gmail.com')
+[11/Sep/2015 09:55:26] DEBUG [django.db.backends:89] (0.021) SELECT (1) AS "a" FROM "ohmgear_users_user" WHERE "ohmgear_users_user"."email" = 'sazid.se222@gmail.com' LIMIT 1; args=(u'sazid.se222@gmail.com',)
+[11/Sep/2015 09:55:26] DEBUG [django.db.backends:89] (0.008) SELECT "ohmgear_users_usertype"."id", "ohmgear_users_usertype"."user_type" FROM "ohmgear_users_usertype" WHERE "ohmgear_users_usertype"."id" = 2; args=(2,)
+[11/Sep/2015 09:55:26] DEBUG [django.db.backends:89] (0.001) SELECT (1) AS "a" FROM "ohmgear_users_user" WHERE ("ohmgear_users_user"."email" = 'sazid.se222@gmail.com' AND "ohmgear_users_user"."user_type_id" = 2) LIMIT 1; args=(u'sazid.se222@gmail.com', 2)
+[11/Sep/2015 09:55:26] DEBUG [django.db.backends:89] (0.000) SELECT (1) AS "a" FROM "ohmgear_users_user" WHERE "ohmgear_users_user"."email" = 'sazid.se222@gmail.com' LIMIT 1; args=(u'sazid.se222@gmail.com',)
+[11/Sep/2015 09:55:26] DEBUG [django.db.backends:89] (0.000) SELECT "ohmgear_users_usertype"."id", "ohmgear_users_usertype"."user_type" FROM "ohmgear_users_usertype" WHERE "ohmgear_users_usertype"."id" = 2; args=(2,)
+[11/Sep/2015 09:55:26] DEBUG [django.db.backends:89] (0.001) SELECT (1) AS "a" FROM "ohmgear_users_user" WHERE ("ohmgear_users_user"."email" = 'sazid.se222@gmail.com' AND "ohmgear_users_user"."user_type_id" = 2) LIMIT 1; args=(u'sazid.se222@gmail.com', 2)
+[11/Sep/2015 09:55:27] DEBUG [django.db.backends:89] (0.266) INSERT INTO "ohmgear_users_user" ("password", "last_login", "account_number", "first_name", "last_name", "email", "email_verification_code", "user_type_id", "pin_number", "status", "created_date", "updated_date") VALUES ('1111', NULL, NULL, 'asdfsdf', NULL, 'sazid.se222@gmail.com', NULL, 2, 0, 1111, '2015-09-11T09:55:26.845936+00:00'::timestamptz, '2015-09-11T09:55:26.845953+00:00'::timestamptz) RETURNING "ohmgear_users_user"."id"; args=(u'1111', None, None, u'asdfsdf', None, u'sazid.se222@gmail.com', None, 2, 0, 1111, datetime.datetime(2015, 9, 11, 9, 55, 26, 845936, tzinfo=<UTC>), datetime.datetime(2015, 9, 11, 9, 55, 26, 845953, tzinfo=<UTC>))
+[11/Sep/2015 09:55:27] DEBUG [django.db.backends:89] (0.060) SELECT "ohmgear_email_emailtemplate"."id", "ohmgear_email_emailtemplate"."subject", "ohmgear_email_emailtemplate"."content", "ohmgear_email_emailtemplate"."slug", "ohmgear_email_emailtemplate"."status", "ohmgear_email_emailtemplate"."from_email", "ohmgear_email_emailtemplate"."created_date", "ohmgear_email_emailtemplate"."updated_date" FROM "ohmgear_email_emailtemplate" WHERE "ohmgear_email_emailtemplate"."slug" = 'account_confirmation'; args=('account_confirmation',)
+[11/Sep/2015 09:55:31] DEBUG [django.db.backends:89] (0.068) INSERT INTO "ohmgear_users_profile" ("dob", "gender", "address", "mobile_number", "custom_data", "created_date", "updated_date", "user_id", "income_group_id", "business_type_id", "activation_key", "key_expires") VALUES (NULL, NULL, NULL, NULL, NULL, '2015-09-11T09:55:31.736760+00:00'::timestamptz, '2015-09-11T09:55:31.736798+00:00'::timestamptz, 13, NULL, NULL, '7b99e3f3187eed8f952161e53a32666676c8408f', '2015-09-11T09:55:31.736876+00:00'::timestamptz) RETURNING "ohmgear_users_profile"."id"; args=(None, None, None, None, None, datetime.datetime(2015, 9, 11, 9, 55, 31, 736760, tzinfo=<UTC>), datetime.datetime(2015, 9, 11, 9, 55, 31, 736798, tzinfo=<UTC>), 13, None, None, '7b99e3f3187eed8f952161e53a32666676c8408f', datetime.datetime(2015, 9, 11, 9, 55, 31, 736876, tzinfo=<UTC>))
+[11/Sep/2015 09:55:31] DEBUG [django.db.backends:89] (0.001) SELECT "ohmgear_users_user"."id", "ohmgear_users_user"."password", "ohmgear_users_user"."last_login", "ohmgear_users_user"."account_number", "ohmgear_users_user"."first_name", "ohmgear_users_user"."last_name", "ohmgear_users_user"."email", "ohmgear_users_user"."email_verification_code", "ohmgear_users_user"."user_type_id", "ohmgear_users_user"."pin_number", "ohmgear_users_user"."status", "ohmgear_users_user"."created_date", "ohmgear_users_user"."updated_date" FROM "ohmgear_users_user" WHERE "ohmgear_users_user"."id" = 13; args=(13,)
+[11/Sep/2015 09:55:31] DEBUG [django.db.backends:89] (0.001) UPDATE "ohmgear_users_user" SET "password" = 'sha1$KloqWePHH1nI$ad327aa6aa048adb6cac94e6294d169df850aacb', "last_login" = NULL, "account_number" = NULL, "first_name" = 'asdfsdf', "last_name" = NULL, "email" = 'sazid.se222@gmail.com', "email_verification_code" = NULL, "user_type_id" = 2, "pin_number" = 0, "status" = 1111, "created_date" = '2015-09-11T09:55:26.845936+00:00'::timestamptz, "updated_date" = '2015-09-11T09:55:26.845953+00:00'::timestamptz WHERE "ohmgear_users_user"."id" = 13; args=(u'sha1$KloqWePHH1nI$ad327aa6aa048adb6cac94e6294d169df850aacb', u'asdfsdf', u'sazid.se222@gmail.com', 2, 0, 1111, datetime.datetime(2015, 9, 11, 9, 55, 26, 845936, tzinfo=<UTC>), datetime.datetime(2015, 9, 11, 9, 55, 26, 845953, tzinfo=<UTC>), 13)
+[11/Sep/2015 09:55:31] DEBUG [django.db.backends:89] (0.066) INSERT INTO "ohmgear_users_socialprofile" ("social_media_login_id", "social_type_id", "created_date", "user_id") VALUES ('', NULL, '2015-09-11T09:55:31.841814+00:00'::timestamptz, 13) RETURNING "ohmgear_users_socialprofile"."id"; args=('', None, datetime.datetime(2015, 9, 11, 9, 55, 31, 841814, tzinfo=<UTC>), 13)
+[11/Sep/2015 09:55:31] DEBUG [django.db.backends:89] (0.071) SELECT "authtoken_token"."key", "authtoken_token"."user_id", "authtoken_token"."created" FROM "authtoken_token" WHERE "authtoken_token"."user_id" = 13; args=(13,)
+[11/Sep/2015 09:55:32] DEBUG [django.db.backends:89] (0.010) UPDATE "authtoken_token" SET "user_id" = 13, "created" = '2015-09-11T09:55:32.002058+00:00'::timestamptz WHERE "authtoken_token"."key" = '93d5cc87c9212437efeeb3fb56249d0a77515bed'; args=(13, datetime.datetime(2015, 9, 11, 9, 55, 32, 2058, tzinfo=<UTC>), u'93d5cc87c9212437efeeb3fb56249d0a77515bed')
+[11/Sep/2015 09:55:32] DEBUG [django.db.backends:89] (0.031) INSERT INTO "authtoken_token" ("key", "user_id", "created") VALUES ('93d5cc87c9212437efeeb3fb56249d0a77515bed', 13, '2015-09-11T09:55:32.048267+00:00'::timestamptz); args=(u'93d5cc87c9212437efeeb3fb56249d0a77515bed', 13, datetime.datetime(2015, 9, 11, 9, 55, 32, 48267, tzinfo=<UTC>))
+[11/Sep/2015 09:56:29] DEBUG [django.db.backends:89] (0.001) SELECT "django_session"."session_key", "django_session"."session_data", "django_session"."expire_date" FROM "django_session" WHERE ("django_session"."session_key" = 'r911zxvtt55w8of18v5mlwnph99gahqc' AND "django_session"."expire_date" > '2015-09-11T09:56:29.819701+00:00'::timestamptz); args=('r911zxvtt55w8of18v5mlwnph99gahqc', datetime.datetime(2015, 9, 11, 9, 56, 29, 819701, tzinfo=<UTC>))
+[11/Sep/2015 09:57:25] DEBUG [django.db.backends:89] (0.001) SELECT "authtoken_token"."key", "authtoken_token"."user_id", "authtoken_token"."created" FROM "authtoken_token" WHERE "authtoken_token"."key" = '93d5cc87c9212437efeeb3fb56249d0a77515bed'; args=('93d5cc87c9212437efeeb3fb56249d0a77515bed',)
+[11/Sep/2015 09:57:25] DEBUG [django.db.backends:89] (0.001) SELECT "ohmgear_users_user"."id", "ohmgear_users_user"."password", "ohmgear_users_user"."last_login", "ohmgear_users_user"."account_number", "ohmgear_users_user"."first_name", "ohmgear_users_user"."last_name", "ohmgear_users_user"."email", "ohmgear_users_user"."email_verification_code", "ohmgear_users_user"."user_type_id", "ohmgear_users_user"."pin_number", "ohmgear_users_user"."status", "ohmgear_users_user"."created_date", "ohmgear_users_user"."updated_date" FROM "ohmgear_users_user" WHERE "ohmgear_users_user"."id" = 13; args=(13,)
+[11/Sep/2015 09:57:25] DEBUG [django.db.backends:89] (0.001) SELECT "django_session"."session_key", "django_session"."session_data", "django_session"."expire_date" FROM "django_session" WHERE ("django_session"."session_key" = 'r911zxvtt55w8of18v5mlwnph99gahqc' AND "django_session"."expire_date" > '2015-09-11T09:57:25.899766+00:00'::timestamptz); args=('r911zxvtt55w8of18v5mlwnph99gahqc', datetime.datetime(2015, 9, 11, 9, 57, 25, 899766, tzinfo=<UTC>))
+[11/Sep/2015 09:58:09] DEBUG [django.db.backends:89] (0.003) 
+            SELECT c.relname, c.relkind
+            FROM pg_catalog.pg_class c
+            LEFT JOIN pg_catalog.pg_namespace n ON n.oid = c.relnamespace
+            WHERE c.relkind IN ('r', 'v')
+                AND n.nspname NOT IN ('pg_catalog', 'pg_toast')
+                AND pg_catalog.pg_table_is_visible(c.oid); args=None
+[11/Sep/2015 09:58:09] DEBUG [django.db.backends:89] (0.001) SELECT "django_migrations"."app", "django_migrations"."name" FROM "django_migrations"; args=()
+[11/Sep/2015 10:00:52] DEBUG [django.db.backends:89] (0.002) 
+            SELECT c.relname, c.relkind
+            FROM pg_catalog.pg_class c
+            LEFT JOIN pg_catalog.pg_namespace n ON n.oid = c.relnamespace
+            WHERE c.relkind IN ('r', 'v')
+                AND n.nspname NOT IN ('pg_catalog', 'pg_toast')
+                AND pg_catalog.pg_table_is_visible(c.oid); args=None
+[11/Sep/2015 10:00:52] DEBUG [django.db.backends:89] (0.001) SELECT "django_migrations"."app", "django_migrations"."name" FROM "django_migrations"; args=()
+[11/Sep/2015 10:00:55] DEBUG [django.db.backends:89] (0.002) SELECT "authtoken_token"."key", "authtoken_token"."user_id", "authtoken_token"."created" FROM "authtoken_token" WHERE "authtoken_token"."key" = '93d5cc87c9212437efeeb3fb56249d0a77515bed'; args=('93d5cc87c9212437efeeb3fb56249d0a77515bed',)
+[11/Sep/2015 10:00:55] DEBUG [django.db.backends:89] (0.001) SELECT "ohmgear_users_user"."id", "ohmgear_users_user"."password", "ohmgear_users_user"."last_login", "ohmgear_users_user"."account_number", "ohmgear_users_user"."first_name", "ohmgear_users_user"."last_name", "ohmgear_users_user"."email", "ohmgear_users_user"."email_verification_code", "ohmgear_users_user"."user_type_id", "ohmgear_users_user"."pin_number", "ohmgear_users_user"."status", "ohmgear_users_user"."created_date", "ohmgear_users_user"."updated_date" FROM "ohmgear_users_user" WHERE "ohmgear_users_user"."id" = 13; args=(13,)
+[11/Sep/2015 10:00:55] ERROR [django.request:256] Internal Server Error: /api/profile/
+Traceback (most recent call last):
+  File "/home/sazid/.virtualenvs/vohmgear/local/lib/python2.7/site-packages/django/core/handlers/base.py", line 132, in get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/home/sazid/.virtualenvs/vohmgear/local/lib/python2.7/site-packages/django/views/decorators/csrf.py", line 58, in wrapped_view
+    return view_func(*args, **kwargs)
+  File "/home/sazid/.virtualenvs/vohmgear/local/lib/python2.7/site-packages/rest_framework/viewsets.py", line 85, in view
+    return self.dispatch(request, *args, **kwargs)
+  File "/home/sazid/.virtualenvs/vohmgear/local/lib/python2.7/site-packages/rest_framework/views.py", line 452, in dispatch
+    response = self.handle_exception(exc)
+  File "/home/sazid/.virtualenvs/vohmgear/local/lib/python2.7/site-packages/rest_framework/views.py", line 449, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "/var/www/html/ohmgear/apps/users/views.py", line 146, in create
+    messages = Profile.objects.get(user_id=request.DATA['user_id'])
+  File "/home/sazid/.virtualenvs/vohmgear/local/lib/python2.7/site-packages/django/utils/datastructures.py", line 322, in __getitem__
+    raise MultiValueDictKeyError(repr(key))
+MultiValueDictKeyError: "'user_id'"
+[11/Sep/2015 10:00:55] DEBUG [django.db.backends:89] (0.001) SELECT "django_session"."session_key", "django_session"."session_data", "django_session"."expire_date" FROM "django_session" WHERE ("django_session"."session_key" = 'r911zxvtt55w8of18v5mlwnph99gahqc' AND "django_session"."expire_date" > '2015-09-11T10:00:55.621176+00:00'::timestamptz); args=('r911zxvtt55w8of18v5mlwnph99gahqc', datetime.datetime(2015, 9, 11, 10, 0, 55, 621176, tzinfo=<UTC>))
+[11/Sep/2015 10:01:52] DEBUG [django.db.backends:89] (0.002) 
+            SELECT c.relname, c.relkind
+            FROM pg_catalog.pg_class c
+            LEFT JOIN pg_catalog.pg_namespace n ON n.oid = c.relnamespace
+            WHERE c.relkind IN ('r', 'v')
+                AND n.nspname NOT IN ('pg_catalog', 'pg_toast')
+                AND pg_catalog.pg_table_is_visible(c.oid); args=None
+[11/Sep/2015 10:01:52] DEBUG [django.db.backends:89] (0.000) SELECT "django_migrations"."app", "django_migrations"."name" FROM "django_migrations"; args=()
+[11/Sep/2015 10:01:54] DEBUG [django.db.backends:89] (0.002) SELECT "authtoken_token"."key", "authtoken_token"."user_id", "authtoken_token"."created" FROM "authtoken_token" WHERE "authtoken_token"."key" = '93d5cc87c9212437efeeb3fb56249d0a77515bed'; args=('93d5cc87c9212437efeeb3fb56249d0a77515bed',)
+[11/Sep/2015 10:01:54] DEBUG [django.db.backends:89] (0.001) SELECT "ohmgear_users_user"."id", "ohmgear_users_user"."password", "ohmgear_users_user"."last_login", "ohmgear_users_user"."account_number", "ohmgear_users_user"."first_name", "ohmgear_users_user"."last_name", "ohmgear_users_user"."email", "ohmgear_users_user"."email_verification_code", "ohmgear_users_user"."user_type_id", "ohmgear_users_user"."pin_number", "ohmgear_users_user"."status", "ohmgear_users_user"."created_date", "ohmgear_users_user"."updated_date" FROM "ohmgear_users_user" WHERE "ohmgear_users_user"."id" = 13; args=(13,)
+[11/Sep/2015 10:01:54] ERROR [django.request:256] Internal Server Error: /api/profile/
+Traceback (most recent call last):
+  File "/home/sazid/.virtualenvs/vohmgear/local/lib/python2.7/site-packages/django/core/handlers/base.py", line 132, in get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/home/sazid/.virtualenvs/vohmgear/local/lib/python2.7/site-packages/django/views/decorators/csrf.py", line 58, in wrapped_view
+    return view_func(*args, **kwargs)
+  File "/home/sazid/.virtualenvs/vohmgear/local/lib/python2.7/site-packages/rest_framework/viewsets.py", line 85, in view
+    return self.dispatch(request, *args, **kwargs)
+  File "/home/sazid/.virtualenvs/vohmgear/local/lib/python2.7/site-packages/rest_framework/views.py", line 452, in dispatch
+    response = self.handle_exception(exc)
+  File "/home/sazid/.virtualenvs/vohmgear/local/lib/python2.7/site-packages/rest_framework/views.py", line 449, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "/var/www/html/ohmgear/apps/users/views.py", line 146, in create
+    print request.DATA['user_id']
+  File "/home/sazid/.virtualenvs/vohmgear/local/lib/python2.7/site-packages/django/utils/datastructures.py", line 322, in __getitem__
+    raise MultiValueDictKeyError(repr(key))
+MultiValueDictKeyError: "'user_id'"
+[11/Sep/2015 10:01:54] DEBUG [django.db.backends:89] (0.001) SELECT "django_session"."session_key", "django_session"."session_data", "django_session"."expire_date" FROM "django_session" WHERE ("django_session"."session_key" = 'r911zxvtt55w8of18v5mlwnph99gahqc' AND "django_session"."expire_date" > '2015-09-11T10:01:54.504660+00:00'::timestamptz); args=('r911zxvtt55w8of18v5mlwnph99gahqc', datetime.datetime(2015, 9, 11, 10, 1, 54, 504660, tzinfo=<UTC>))
+[11/Sep/2015 10:02:27] DEBUG [django.db.backends:89] (0.003) 
+            SELECT c.relname, c.relkind
+            FROM pg_catalog.pg_class c
+            LEFT JOIN pg_catalog.pg_namespace n ON n.oid = c.relnamespace
+            WHERE c.relkind IN ('r', 'v')
+                AND n.nspname NOT IN ('pg_catalog', 'pg_toast')
+                AND pg_catalog.pg_table_is_visible(c.oid); args=None
+[11/Sep/2015 10:02:27] DEBUG [django.db.backends:89] (0.001) SELECT "django_migrations"."app", "django_migrations"."name" FROM "django_migrations"; args=()
+[11/Sep/2015 10:02:30] DEBUG [django.db.backends:89] (0.001) SELECT "authtoken_token"."key", "authtoken_token"."user_id", "authtoken_token"."created" FROM "authtoken_token" WHERE "authtoken_token"."key" = '93d5cc87c9212437efeeb3fb56249d0a77515bed'; args=('93d5cc87c9212437efeeb3fb56249d0a77515bed',)
+[11/Sep/2015 10:02:30] DEBUG [django.db.backends:89] (0.001) SELECT "ohmgear_users_user"."id", "ohmgear_users_user"."password", "ohmgear_users_user"."last_login", "ohmgear_users_user"."account_number", "ohmgear_users_user"."first_name", "ohmgear_users_user"."last_name", "ohmgear_users_user"."email", "ohmgear_users_user"."email_verification_code", "ohmgear_users_user"."user_type_id", "ohmgear_users_user"."pin_number", "ohmgear_users_user"."status", "ohmgear_users_user"."created_date", "ohmgear_users_user"."updated_date" FROM "ohmgear_users_user" WHERE "ohmgear_users_user"."id" = 13; args=(13,)
+[11/Sep/2015 10:02:30] ERROR [django.request:256] Internal Server Error: /api/profile/
+Traceback (most recent call last):
+  File "/home/sazid/.virtualenvs/vohmgear/local/lib/python2.7/site-packages/django/core/handlers/base.py", line 132, in get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/home/sazid/.virtualenvs/vohmgear/local/lib/python2.7/site-packages/django/views/decorators/csrf.py", line 58, in wrapped_view
+    return view_func(*args, **kwargs)
+  File "/home/sazid/.virtualenvs/vohmgear/local/lib/python2.7/site-packages/rest_framework/viewsets.py", line 85, in view
+    return self.dispatch(request, *args, **kwargs)
+  File "/home/sazid/.virtualenvs/vohmgear/local/lib/python2.7/site-packages/rest_framework/views.py", line 452, in dispatch
+    response = self.handle_exception(exc)
+  File "/home/sazid/.virtualenvs/vohmgear/local/lib/python2.7/site-packages/rest_framework/views.py", line 449, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "/var/www/html/ohmgear/apps/users/views.py", line 147, in create
+    messages = Profile.objects.get(user_id=request.DATA['user_id'])
+  File "/home/sazid/.virtualenvs/vohmgear/local/lib/python2.7/site-packages/django/utils/datastructures.py", line 322, in __getitem__
+    raise MultiValueDictKeyError(repr(key))
+MultiValueDictKeyError: "'user_id'"
+[11/Sep/2015 10:02:30] DEBUG [django.db.backends:89] (0.001) SELECT "django_session"."session_key", "django_session"."session_data", "django_session"."expire_date" FROM "django_session" WHERE ("django_session"."session_key" = 'r911zxvtt55w8of18v5mlwnph99gahqc' AND "django_session"."expire_date" > '2015-09-11T10:02:30.422496+00:00'::timestamptz); args=('r911zxvtt55w8of18v5mlwnph99gahqc', datetime.datetime(2015, 9, 11, 10, 2, 30, 422496, tzinfo=<UTC>))
+[11/Sep/2015 10:02:59] DEBUG [django.db.backends:89] (0.003) 
+            SELECT c.relname, c.relkind
+            FROM pg_catalog.pg_class c
+            LEFT JOIN pg_catalog.pg_namespace n ON n.oid = c.relnamespace
+            WHERE c.relkind IN ('r', 'v')
+                AND n.nspname NOT IN ('pg_catalog', 'pg_toast')
+                AND pg_catalog.pg_table_is_visible(c.oid); args=None
+[11/Sep/2015 10:02:59] DEBUG [django.db.backends:89] (0.001) SELECT "django_migrations"."app", "django_migrations"."name" FROM "django_migrations"; args=()
+[11/Sep/2015 10:03:00] DEBUG [django.db.backends:89] (0.001) SELECT "authtoken_token"."key", "authtoken_token"."user_id", "authtoken_token"."created" FROM "authtoken_token" WHERE "authtoken_token"."key" = '93d5cc87c9212437efeeb3fb56249d0a77515bed'; args=('93d5cc87c9212437efeeb3fb56249d0a77515bed',)
+[11/Sep/2015 10:03:00] DEBUG [django.db.backends:89] (0.001) SELECT "ohmgear_users_user"."id", "ohmgear_users_user"."password", "ohmgear_users_user"."last_login", "ohmgear_users_user"."account_number", "ohmgear_users_user"."first_name", "ohmgear_users_user"."last_name", "ohmgear_users_user"."email", "ohmgear_users_user"."email_verification_code", "ohmgear_users_user"."user_type_id", "ohmgear_users_user"."pin_number", "ohmgear_users_user"."status", "ohmgear_users_user"."created_date", "ohmgear_users_user"."updated_date" FROM "ohmgear_users_user" WHERE "ohmgear_users_user"."id" = 13; args=(13,)
+[11/Sep/2015 10:03:00] ERROR [django.request:256] Internal Server Error: /api/profile/
+Traceback (most recent call last):
+  File "/home/sazid/.virtualenvs/vohmgear/local/lib/python2.7/site-packages/django/core/handlers/base.py", line 132, in get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/home/sazid/.virtualenvs/vohmgear/local/lib/python2.7/site-packages/django/views/decorators/csrf.py", line 58, in wrapped_view
+    return view_func(*args, **kwargs)
+  File "/home/sazid/.virtualenvs/vohmgear/local/lib/python2.7/site-packages/rest_framework/viewsets.py", line 85, in view
+    return self.dispatch(request, *args, **kwargs)
+  File "/home/sazid/.virtualenvs/vohmgear/local/lib/python2.7/site-packages/rest_framework/views.py", line 452, in dispatch
+    response = self.handle_exception(exc)
+  File "/home/sazid/.virtualenvs/vohmgear/local/lib/python2.7/site-packages/rest_framework/views.py", line 449, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "/var/www/html/ohmgear/apps/users/views.py", line 147, in create
+    messages = Profile.objects.get(user_id=request.DATA['user_id'])
+  File "/home/sazid/.virtualenvs/vohmgear/local/lib/python2.7/site-packages/django/utils/datastructures.py", line 322, in __getitem__
+    raise MultiValueDictKeyError(repr(key))
+MultiValueDictKeyError: "'user_id'"
+[11/Sep/2015 10:03:00] DEBUG [django.db.backends:89] (0.001) SELECT "django_session"."session_key", "django_session"."session_data", "django_session"."expire_date" FROM "django_session" WHERE ("django_session"."session_key" = 'r911zxvtt55w8of18v5mlwnph99gahqc' AND "django_session"."expire_date" > '2015-09-11T10:03:00.996773+00:00'::timestamptz); args=('r911zxvtt55w8of18v5mlwnph99gahqc', datetime.datetime(2015, 9, 11, 10, 3, 0, 996773, tzinfo=<UTC>))
+[11/Sep/2015 10:04:08] DEBUG [django.db.backends:89] (0.003) 
+            SELECT c.relname, c.relkind
+            FROM pg_catalog.pg_class c
+            LEFT JOIN pg_catalog.pg_namespace n ON n.oid = c.relnamespace
+            WHERE c.relkind IN ('r', 'v')
+                AND n.nspname NOT IN ('pg_catalog', 'pg_toast')
+                AND pg_catalog.pg_table_is_visible(c.oid); args=None
+[11/Sep/2015 10:04:08] DEBUG [django.db.backends:89] (0.001) SELECT "django_migrations"."app", "django_migrations"."name" FROM "django_migrations"; args=()
+[11/Sep/2015 10:04:18] DEBUG [django.db.backends:89] (0.001) SELECT "authtoken_token"."key", "authtoken_token"."user_id", "authtoken_token"."created" FROM "authtoken_token" WHERE "authtoken_token"."key" = '93d5cc87c9212437efeeb3fb56249d0a77515bed'; args=('93d5cc87c9212437efeeb3fb56249d0a77515bed',)
+[11/Sep/2015 10:04:18] DEBUG [django.db.backends:89] (0.001) SELECT "ohmgear_users_user"."id", "ohmgear_users_user"."password", "ohmgear_users_user"."last_login", "ohmgear_users_user"."account_number", "ohmgear_users_user"."first_name", "ohmgear_users_user"."last_name", "ohmgear_users_user"."email", "ohmgear_users_user"."email_verification_code", "ohmgear_users_user"."user_type_id", "ohmgear_users_user"."pin_number", "ohmgear_users_user"."status", "ohmgear_users_user"."created_date", "ohmgear_users_user"."updated_date" FROM "ohmgear_users_user" WHERE "ohmgear_users_user"."id" = 13; args=(13,)
+[11/Sep/2015 10:04:18] DEBUG [django.db.backends:89] (0.001) SELECT "django_session"."session_key", "django_session"."session_data", "django_session"."expire_date" FROM "django_session" WHERE ("django_session"."session_key" = 'r911zxvtt55w8of18v5mlwnph99gahqc' AND "django_session"."expire_date" > '2015-09-11T10:04:18.455554+00:00'::timestamptz); args=('r911zxvtt55w8of18v5mlwnph99gahqc', datetime.datetime(2015, 9, 11, 10, 4, 18, 455554, tzinfo=<UTC>))
+[11/Sep/2015 10:04:26] DEBUG [django.db.backends:89] (0.002) SELECT "authtoken_token"."key", "authtoken_token"."user_id", "authtoken_token"."created" FROM "authtoken_token" WHERE "authtoken_token"."key" = '93d5cc87c9212437efeeb3fb56249d0a77515bed'; args=('93d5cc87c9212437efeeb3fb56249d0a77515bed',)
+[11/Sep/2015 10:04:26] DEBUG [django.db.backends:89] (0.001) SELECT "ohmgear_users_user"."id", "ohmgear_users_user"."password", "ohmgear_users_user"."last_login", "ohmgear_users_user"."account_number", "ohmgear_users_user"."first_name", "ohmgear_users_user"."last_name", "ohmgear_users_user"."email", "ohmgear_users_user"."email_verification_code", "ohmgear_users_user"."user_type_id", "ohmgear_users_user"."pin_number", "ohmgear_users_user"."status", "ohmgear_users_user"."created_date", "ohmgear_users_user"."updated_date" FROM "ohmgear_users_user" WHERE "ohmgear_users_user"."id" = 13; args=(13,)
+[11/Sep/2015 10:04:26] DEBUG [django.db.backends:89] (0.001) SELECT "django_session"."session_key", "django_session"."session_data", "django_session"."expire_date" FROM "django_session" WHERE ("django_session"."session_key" = 'r911zxvtt55w8of18v5mlwnph99gahqc' AND "django_session"."expire_date" > '2015-09-11T10:04:26.164333+00:00'::timestamptz); args=('r911zxvtt55w8of18v5mlwnph99gahqc', datetime.datetime(2015, 9, 11, 10, 4, 26, 164333, tzinfo=<UTC>))
+[11/Sep/2015 10:04:37] DEBUG [django.db.backends:89] (0.001) SELECT "authtoken_token"."key", "authtoken_token"."user_id", "authtoken_token"."created" FROM "authtoken_token" WHERE "authtoken_token"."key" = '93d5cc87c9212437efeeb3fb56249d0a77515bed'; args=('93d5cc87c9212437efeeb3fb56249d0a77515bed',)
+[11/Sep/2015 10:04:37] DEBUG [django.db.backends:89] (0.001) SELECT "ohmgear_users_user"."id", "ohmgear_users_user"."password", "ohmgear_users_user"."last_login", "ohmgear_users_user"."account_number", "ohmgear_users_user"."first_name", "ohmgear_users_user"."last_name", "ohmgear_users_user"."email", "ohmgear_users_user"."email_verification_code", "ohmgear_users_user"."user_type_id", "ohmgear_users_user"."pin_number", "ohmgear_users_user"."status", "ohmgear_users_user"."created_date", "ohmgear_users_user"."updated_date" FROM "ohmgear_users_user" WHERE "ohmgear_users_user"."id" = 13; args=(13,)
+[11/Sep/2015 10:04:37] DEBUG [django.db.backends:89] (0.001) SELECT "ohmgear_users_profile"."id", "ohmgear_users_profile"."dob", "ohmgear_users_profile"."gender", "ohmgear_users_profile"."address", "ohmgear_users_profile"."mobile_number", "ohmgear_users_profile"."custom_data", "ohmgear_users_profile"."created_date", "ohmgear_users_profile"."updated_date", "ohmgear_users_profile"."user_id", "ohmgear_users_profile"."income_group_id", "ohmgear_users_profile"."business_type_id", "ohmgear_users_profile"."activation_key", "ohmgear_users_profile"."key_expires" FROM "ohmgear_users_profile" WHERE "ohmgear_users_profile"."user_id" = 13; args=(13,)
+[11/Sep/2015 10:04:37] DEBUG [django.db.backends:89] (0.001) UPDATE "ohmgear_users_profile" SET "dob" = NULL, "gender" = NULL, "address" = NULL, "mobile_number" = NULL, "custom_data" = NULL, "created_date" = '2015-09-11T09:55:31.736760+00:00'::timestamptz, "updated_date" = '2015-09-11T09:55:31.736798+00:00'::timestamptz, "user_id" = 13, "income_group_id" = NULL, "business_type_id" = NULL, "activation_key" = '7b99e3f3187eed8f952161e53a32666676c8408f', "key_expires" = '2015-09-11T09:55:31.736876+00:00'::timestamptz WHERE "ohmgear_users_profile"."id" = 9; args=(datetime.datetime(2015, 9, 11, 9, 55, 31, 736760, tzinfo=<UTC>), datetime.datetime(2015, 9, 11, 9, 55, 31, 736798, tzinfo=<UTC>), 13, u'7b99e3f3187eed8f952161e53a32666676c8408f', datetime.datetime(2015, 9, 11, 9, 55, 31, 736876, tzinfo=<UTC>), 9)
+[11/Sep/2015 10:04:37] DEBUG [django.db.backends:89] (0.001) SELECT "django_session"."session_key", "django_session"."session_data", "django_session"."expire_date" FROM "django_session" WHERE ("django_session"."session_key" = 'r911zxvtt55w8of18v5mlwnph99gahqc' AND "django_session"."expire_date" > '2015-09-11T10:04:37.805148+00:00'::timestamptz); args=('r911zxvtt55w8of18v5mlwnph99gahqc', datetime.datetime(2015, 9, 11, 10, 4, 37, 805148, tzinfo=<UTC>))
+[11/Sep/2015 10:04:43] DEBUG [django.db.backends:89] (0.001) SELECT "authtoken_token"."key", "authtoken_token"."user_id", "authtoken_token"."created" FROM "authtoken_token" WHERE "authtoken_token"."key" = '93d5cc87c9212437efeeb3fb56249d0a77515bed'; args=('93d5cc87c9212437efeeb3fb56249d0a77515bed',)
+[11/Sep/2015 10:04:43] DEBUG [django.db.backends:89] (0.001) SELECT "ohmgear_users_user"."id", "ohmgear_users_user"."password", "ohmgear_users_user"."last_login", "ohmgear_users_user"."account_number", "ohmgear_users_user"."first_name", "ohmgear_users_user"."last_name", "ohmgear_users_user"."email", "ohmgear_users_user"."email_verification_code", "ohmgear_users_user"."user_type_id", "ohmgear_users_user"."pin_number", "ohmgear_users_user"."status", "ohmgear_users_user"."created_date", "ohmgear_users_user"."updated_date" FROM "ohmgear_users_user" WHERE "ohmgear_users_user"."id" = 13; args=(13,)
+[11/Sep/2015 10:04:43] DEBUG [django.db.backends:89] (0.001) SELECT "ohmgear_users_profile"."id", "ohmgear_users_profile"."dob", "ohmgear_users_profile"."gender", "ohmgear_users_profile"."address", "ohmgear_users_profile"."mobile_number", "ohmgear_users_profile"."custom_data", "ohmgear_users_profile"."created_date", "ohmgear_users_profile"."updated_date", "ohmgear_users_profile"."user_id", "ohmgear_users_profile"."income_group_id", "ohmgear_users_profile"."business_type_id", "ohmgear_users_profile"."activation_key", "ohmgear_users_profile"."key_expires" FROM "ohmgear_users_profile" WHERE "ohmgear_users_profile"."user_id" = 13; args=(13,)
+[11/Sep/2015 10:04:43] DEBUG [django.db.backends:89] (0.001) UPDATE "ohmgear_users_profile" SET "dob" = NULL, "gender" = NULL, "address" = 'sdfsdf', "mobile_number" = NULL, "custom_data" = NULL, "created_date" = '2015-09-11T09:55:31.736760+00:00'::timestamptz, "updated_date" = '2015-09-11T09:55:31.736798+00:00'::timestamptz, "user_id" = 13, "income_group_id" = NULL, "business_type_id" = NULL, "activation_key" = '7b99e3f3187eed8f952161e53a32666676c8408f', "key_expires" = '2015-09-11T09:55:31.736876+00:00'::timestamptz WHERE "ohmgear_users_profile"."id" = 9; args=(u'sdfsdf', datetime.datetime(2015, 9, 11, 9, 55, 31, 736760, tzinfo=<UTC>), datetime.datetime(2015, 9, 11, 9, 55, 31, 736798, tzinfo=<UTC>), 13, u'7b99e3f3187eed8f952161e53a32666676c8408f', datetime.datetime(2015, 9, 11, 9, 55, 31, 736876, tzinfo=<UTC>), 9)
+[11/Sep/2015 10:04:43] DEBUG [django.db.backends:89] (0.001) SELECT "django_session"."session_key", "django_session"."session_data", "django_session"."expire_date" FROM "django_session" WHERE ("django_session"."session_key" = 'r911zxvtt55w8of18v5mlwnph99gahqc' AND "django_session"."expire_date" > '2015-09-11T10:04:43.983524+00:00'::timestamptz); args=('r911zxvtt55w8of18v5mlwnph99gahqc', datetime.datetime(2015, 9, 11, 10, 4, 43, 983524, tzinfo=<UTC>))
+[11/Sep/2015 10:04:46] DEBUG [django.db.backends:89] (0.001) SELECT "authtoken_token"."key", "authtoken_token"."user_id", "authtoken_token"."created" FROM "authtoken_token" WHERE "authtoken_token"."key" = '93d5cc87c9212437efeeb3fb56249d0a77515bedd'; args=('93d5cc87c9212437efeeb3fb56249d0a77515bedd',)
+[11/Sep/2015 10:04:46] DEBUG [django.db.backends:89] (0.001) SELECT "django_session"."session_key", "django_session"."session_data", "django_session"."expire_date" FROM "django_session" WHERE ("django_session"."session_key" = 'r911zxvtt55w8of18v5mlwnph99gahqc' AND "django_session"."expire_date" > '2015-09-11T10:04:46.877730+00:00'::timestamptz); args=('r911zxvtt55w8of18v5mlwnph99gahqc', datetime.datetime(2015, 9, 11, 10, 4, 46, 877730, tzinfo=<UTC>))
+[11/Sep/2015 11:28:21] DEBUG [django.db.backends:89] (0.002) 
+            SELECT c.relname, c.relkind
+            FROM pg_catalog.pg_class c
+            LEFT JOIN pg_catalog.pg_namespace n ON n.oid = c.relnamespace
+            WHERE c.relkind IN ('r', 'v')
+                AND n.nspname NOT IN ('pg_catalog', 'pg_toast')
+                AND pg_catalog.pg_table_is_visible(c.oid); args=None
+[11/Sep/2015 11:28:21] DEBUG [django.db.backends:89] (0.000) SELECT "django_migrations"."app", "django_migrations"."name" FROM "django_migrations"; args=()
+[11/Sep/2015 11:29:53] DEBUG [django.db.backends:89] (0.001) SELECT (1) AS "a" FROM "ohmgear_users_user" WHERE "ohmgear_users_user"."email" = 'sazid.se222@gmail.com' LIMIT 1; args=(u'sazid.se222@gmail.com',)
+[11/Sep/2015 11:29:53] DEBUG [django.db.backends:89] (0.001) SELECT "ohmgear_users_usertype"."id", "ohmgear_users_usertype"."user_type" FROM "ohmgear_users_usertype" WHERE "ohmgear_users_usertype"."id" = 2; args=(2,)
+[11/Sep/2015 11:29:53] DEBUG [django.db.backends:89] (0.001) SELECT "django_session"."session_key", "django_session"."session_data", "django_session"."expire_date" FROM "django_session" WHERE ("django_session"."session_key" = 'r911zxvtt55w8of18v5mlwnph99gahqc' AND "django_session"."expire_date" > '2015-09-11T11:29:53.362613+00:00'::timestamptz); args=('r911zxvtt55w8of18v5mlwnph99gahqc', datetime.datetime(2015, 9, 11, 11, 29, 53, 362613, tzinfo=<UTC>))
+[11/Sep/2015 11:30:00] DEBUG [django.db.backends:89] (0.002) SELECT (1) AS "a" FROM "ohmgear_users_user" WHERE "ohmgear_users_user"."email" = 'sazid.se@gmail.com' LIMIT 1; args=(u'sazid.se@gmail.com',)
+[11/Sep/2015 11:30:00] DEBUG [django.db.backends:89] (0.001) SELECT "ohmgear_users_usertype"."id", "ohmgear_users_usertype"."user_type" FROM "ohmgear_users_usertype" WHERE "ohmgear_users_usertype"."id" = 2; args=(2,)
+[11/Sep/2015 11:30:00] DEBUG [django.db.backends:89] (0.000) SELECT (1) AS "a" FROM "ohmgear_users_user" WHERE ("ohmgear_users_user"."email" = 'sazid.se@gmail.com' AND "ohmgear_users_user"."user_type_id" = 2) LIMIT 1; args=(u'sazid.se@gmail.com', 2)
+[11/Sep/2015 11:30:00] DEBUG [django.db.backends:89] (0.001) INSERT INTO "ohmgear_users_user" ("password", "last_login", "account_number", "first_name", "last_name", "email", "email_verification_code", "user_type_id", "pin_number", "status", "created_date", "updated_date") VALUES ('1111', NULL, NULL, 'asdfsdf', NULL, 'sazid.se@gmail.com', NULL, 2, 0, 1111, '2015-09-11T11:30:00.437271+00:00'::timestamptz, '2015-09-11T11:30:00.437288+00:00'::timestamptz) RETURNING "ohmgear_users_user"."id"; args=(u'1111', None, None, u'asdfsdf', None, u'sazid.se@gmail.com', None, 2, 0, 1111, datetime.datetime(2015, 9, 11, 11, 30, 0, 437271, tzinfo=<UTC>), datetime.datetime(2015, 9, 11, 11, 30, 0, 437288, tzinfo=<UTC>))
+[11/Sep/2015 11:30:00] DEBUG [django.db.backends:89] (0.001) SELECT "ohmgear_email_emailtemplate"."id", "ohmgear_email_emailtemplate"."subject", "ohmgear_email_emailtemplate"."content", "ohmgear_email_emailtemplate"."slug", "ohmgear_email_emailtemplate"."status", "ohmgear_email_emailtemplate"."from_email", "ohmgear_email_emailtemplate"."created_date", "ohmgear_email_emailtemplate"."updated_date" FROM "ohmgear_email_emailtemplate" WHERE "ohmgear_email_emailtemplate"."slug" = 'account_confirmation'; args=('account_confirmation',)
+[11/Sep/2015 11:30:04] DEBUG [django.db.backends:89] (0.001) INSERT INTO "ohmgear_users_profile" ("dob", "gender", "address", "mobile_number", "custom_data", "created_date", "updated_date", "user_id", "income_group_id", "business_type_id", "activation_key", "key_expires") VALUES (NULL, NULL, NULL, NULL, NULL, '2015-09-11T11:30:04.936744+00:00'::timestamptz, '2015-09-11T11:30:04.936780+00:00'::timestamptz, 14, NULL, NULL, '15bac0458b7a31e1ebb09b52029d01103b41b752', '2015-09-11T11:30:04.936847+00:00'::timestamptz) RETURNING "ohmgear_users_profile"."id"; args=(None, None, None, None, None, datetime.datetime(2015, 9, 11, 11, 30, 4, 936744, tzinfo=<UTC>), datetime.datetime(2015, 9, 11, 11, 30, 4, 936780, tzinfo=<UTC>), 14, None, None, '15bac0458b7a31e1ebb09b52029d01103b41b752', datetime.datetime(2015, 9, 11, 11, 30, 4, 936847, tzinfo=<UTC>))
+[11/Sep/2015 11:30:04] DEBUG [django.db.backends:89] (0.001) SELECT "ohmgear_users_user"."id", "ohmgear_users_user"."password", "ohmgear_users_user"."last_login", "ohmgear_users_user"."account_number", "ohmgear_users_user"."first_name", "ohmgear_users_user"."last_name", "ohmgear_users_user"."email", "ohmgear_users_user"."email_verification_code", "ohmgear_users_user"."user_type_id", "ohmgear_users_user"."pin_number", "ohmgear_users_user"."status", "ohmgear_users_user"."created_date", "ohmgear_users_user"."updated_date" FROM "ohmgear_users_user" WHERE "ohmgear_users_user"."id" = 14; args=(14,)
+[11/Sep/2015 11:30:04] DEBUG [django.db.backends:89] (0.001) UPDATE "ohmgear_users_user" SET "password" = 'sha1$Wd4QOVeRNoQP$6ea6b3c94f513e08f3f8805fb3190edb21e28106', "last_login" = NULL, "account_number" = NULL, "first_name" = 'asdfsdf', "last_name" = NULL, "email" = 'sazid.se@gmail.com', "email_verification_code" = NULL, "user_type_id" = 2, "pin_number" = 0, "status" = 1111, "created_date" = '2015-09-11T11:30:00.437271+00:00'::timestamptz, "updated_date" = '2015-09-11T11:30:00.437288+00:00'::timestamptz WHERE "ohmgear_users_user"."id" = 14; args=(u'sha1$Wd4QOVeRNoQP$6ea6b3c94f513e08f3f8805fb3190edb21e28106', u'asdfsdf', u'sazid.se@gmail.com', 2, 0, 1111, datetime.datetime(2015, 9, 11, 11, 30, 0, 437271, tzinfo=<UTC>), datetime.datetime(2015, 9, 11, 11, 30, 0, 437288, tzinfo=<UTC>), 14)
+[11/Sep/2015 11:30:05] DEBUG [django.db.backends:89] (0.001) SELECT "django_session"."session_key", "django_session"."session_data", "django_session"."expire_date" FROM "django_session" WHERE ("django_session"."session_key" = 'r911zxvtt55w8of18v5mlwnph99gahqc' AND "django_session"."expire_date" > '2015-09-11T11:30:05.009458+00:00'::timestamptz); args=('r911zxvtt55w8of18v5mlwnph99gahqc', datetime.datetime(2015, 9, 11, 11, 30, 5, 9458, tzinfo=<UTC>))
+[11/Sep/2015 11:31:32] DEBUG [django.db.backends:89] (0.002) SELECT "ohmgear_users_profile"."id", "ohmgear_users_profile"."dob", "ohmgear_users_profile"."gender", "ohmgear_users_profile"."address", "ohmgear_users_profile"."mobile_number", "ohmgear_users_profile"."custom_data", "ohmgear_users_profile"."created_date", "ohmgear_users_profile"."updated_date", "ohmgear_users_profile"."user_id", "ohmgear_users_profile"."income_group_id", "ohmgear_users_profile"."business_type_id", "ohmgear_users_profile"."activation_key", "ohmgear_users_profile"."key_expires" FROM "ohmgear_users_profile" WHERE "ohmgear_users_profile"."activation_key" = '15bac0458b7a31e1ebb09b52029d01103b41b752'; args=(u'15bac0458b7a31e1ebb09b52029d01103b41b752',)
+[11/Sep/2015 11:31:32] DEBUG [django.db.backends:89] (0.001) SELECT "ohmgear_users_user"."id", "ohmgear_users_user"."password", "ohmgear_users_user"."last_login", "ohmgear_users_user"."account_number", "ohmgear_users_user"."first_name", "ohmgear_users_user"."last_name", "ohmgear_users_user"."email", "ohmgear_users_user"."email_verification_code", "ohmgear_users_user"."user_type_id", "ohmgear_users_user"."pin_number", "ohmgear_users_user"."status", "ohmgear_users_user"."created_date", "ohmgear_users_user"."updated_date" FROM "ohmgear_users_user" WHERE "ohmgear_users_user"."id" = 14; args=(14,)
+[11/Sep/2015 11:31:32] DEBUG [django.db.backends:89] (0.001) UPDATE "ohmgear_users_user" SET "password" = 'sha1$Wd4QOVeRNoQP$6ea6b3c94f513e08f3f8805fb3190edb21e28106', "last_login" = NULL, "account_number" = NULL, "first_name" = 'asdfsdf', "last_name" = NULL, "email" = 'sazid.se@gmail.com', "email_verification_code" = NULL, "user_type_id" = 2, "pin_number" = 0, "status" = 1, "created_date" = '2015-09-11T11:30:00.437271+00:00'::timestamptz, "updated_date" = '2015-09-11T11:30:00.437288+00:00'::timestamptz WHERE "ohmgear_users_user"."id" = 14; args=(u'sha1$Wd4QOVeRNoQP$6ea6b3c94f513e08f3f8805fb3190edb21e28106', u'asdfsdf', u'sazid.se@gmail.com', 2, 0, 1, datetime.datetime(2015, 9, 11, 11, 30, 0, 437271, tzinfo=<UTC>), datetime.datetime(2015, 9, 11, 11, 30, 0, 437288, tzinfo=<UTC>), 14)
+[11/Sep/2015 11:33:04] DEBUG [django.db.backends:89] (0.003) 
+            SELECT c.relname, c.relkind
+            FROM pg_catalog.pg_class c
+            LEFT JOIN pg_catalog.pg_namespace n ON n.oid = c.relnamespace
+            WHERE c.relkind IN ('r', 'v')
+                AND n.nspname NOT IN ('pg_catalog', 'pg_toast')
+                AND pg_catalog.pg_table_is_visible(c.oid); args=None
+[11/Sep/2015 11:33:04] DEBUG [django.db.backends:89] (0.001) SELECT "django_migrations"."app", "django_migrations"."name" FROM "django_migrations"; args=()
+[11/Sep/2015 12:27:07] DEBUG [django.db.backends:89] (0.001) SELECT "ohmgear_users_usertype"."id", "ohmgear_users_usertype"."user_type" FROM "ohmgear_users_usertype"; args=()
+[14/Sep/2015 04:53:01] DEBUG [django.db.backends:89] (1.185) 
+            SELECT c.relname, c.relkind
+            FROM pg_catalog.pg_class c
+            LEFT JOIN pg_catalog.pg_namespace n ON n.oid = c.relnamespace
+            WHERE c.relkind IN ('r', 'v')
+                AND n.nspname NOT IN ('pg_catalog', 'pg_toast')
+                AND pg_catalog.pg_table_is_visible(c.oid); args=None
+[14/Sep/2015 04:53:02] DEBUG [django.db.backends:89] (0.261) SELECT "django_migrations"."app", "django_migrations"."name" FROM "django_migrations"; args=()
+[14/Sep/2015 05:00:10] DEBUG [django.db.backends:89] (0.131) SELECT "ohmgear_users_usertype"."id", "ohmgear_users_usertype"."user_type" FROM "ohmgear_users_usertype"; args=()
+[14/Sep/2015 05:00:12] WARNING [django.request:170] Not Found: /favicon.ico
+[14/Sep/2015 05:00:12] WARNING [django.request:170] Not Found: /favicon.ico
+[14/Sep/2015 05:56:05] DEBUG [django.db.backends:89] (0.002) 
+            SELECT c.relname, c.relkind
+            FROM pg_catalog.pg_class c
+            LEFT JOIN pg_catalog.pg_namespace n ON n.oid = c.relnamespace
+            WHERE c.relkind IN ('r', 'v')
+                AND n.nspname NOT IN ('pg_catalog', 'pg_toast')
+                AND pg_catalog.pg_table_is_visible(c.oid); args=None
+[14/Sep/2015 05:56:05] DEBUG [django.db.backends:89] (0.001) SELECT "django_migrations"."app", "django_migrations"."name" FROM "django_migrations"; args=()
+[14/Sep/2015 05:56:14] DEBUG [django.db.backends:89] (0.002) 
+            SELECT c.relname, c.relkind
+            FROM pg_catalog.pg_class c
+            LEFT JOIN pg_catalog.pg_namespace n ON n.oid = c.relnamespace
+            WHERE c.relkind IN ('r', 'v')
+                AND n.nspname NOT IN ('pg_catalog', 'pg_toast')
+                AND pg_catalog.pg_table_is_visible(c.oid); args=None
+[14/Sep/2015 05:56:14] DEBUG [django.db.backends:89] (0.000) SELECT "django_migrations"."app", "django_migrations"."name" FROM "django_migrations"; args=()
+[14/Sep/2015 05:56:21] DEBUG [django.db.backends:89] (0.002) 
+            SELECT c.relname, c.relkind
+            FROM pg_catalog.pg_class c
+            LEFT JOIN pg_catalog.pg_namespace n ON n.oid = c.relnamespace
+            WHERE c.relkind IN ('r', 'v')
+                AND n.nspname NOT IN ('pg_catalog', 'pg_toast')
+                AND pg_catalog.pg_table_is_visible(c.oid); args=None
+[14/Sep/2015 05:56:21] DEBUG [django.db.backends:89] (0.000) SELECT "django_migrations"."app", "django_migrations"."name" FROM "django_migrations"; args=()
+[14/Sep/2015 06:13:27] DEBUG [django.db.backends:89] (0.003) 
+            SELECT c.relname, c.relkind
+            FROM pg_catalog.pg_class c
+            LEFT JOIN pg_catalog.pg_namespace n ON n.oid = c.relnamespace
+            WHERE c.relkind IN ('r', 'v')
+                AND n.nspname NOT IN ('pg_catalog', 'pg_toast')
+                AND pg_catalog.pg_table_is_visible(c.oid); args=None
+[14/Sep/2015 06:13:28] DEBUG [django.db.backends:89] (0.001) SELECT "django_migrations"."app", "django_migrations"."name" FROM "django_migrations"; args=()
+[14/Sep/2015 06:13:32] DEBUG [django.db.backends:89] (0.102) SELECT (1) AS "a" FROM "ohmgear_users_user" WHERE "ohmgear_users_user"."email" = 'sazidk@clavax.us' LIMIT 1; args=(u'sazidk@clavax.us',)
+[14/Sep/2015 06:13:33] DEBUG [django.db.backends:89] (0.020) SELECT "ohmgear_users_usertype"."id", "ohmgear_users_usertype"."user_type" FROM "ohmgear_users_usertype" WHERE "ohmgear_users_usertype"."id" = 2; args=(2,)
+[14/Sep/2015 06:13:33] DEBUG [django.db.backends:89] (0.060) SELECT "django_session"."session_key", "django_session"."session_data", "django_session"."expire_date" FROM "django_session" WHERE ("django_session"."session_key" = 'r911zxvtt55w8of18v5mlwnph99gahqc' AND "django_session"."expire_date" > '2015-09-14T06:13:33.171627+00:00'::timestamptz); args=('r911zxvtt55w8of18v5mlwnph99gahqc', datetime.datetime(2015, 9, 14, 6, 13, 33, 171627, tzinfo=<UTC>))
+[14/Sep/2015 06:13:47] DEBUG [django.db.backends:89] (0.002) SELECT (1) AS "a" FROM "ohmgear_users_user" WHERE "ohmgear_users_user"."email" = 'sazidk@clavax.us' LIMIT 1; args=(u'sazidk@clavax.us',)
+[14/Sep/2015 06:13:47] DEBUG [django.db.backends:89] (0.001) SELECT "ohmgear_users_usertype"."id", "ohmgear_users_usertype"."user_type" FROM "ohmgear_users_usertype" WHERE "ohmgear_users_usertype"."id" = 2; args=(2,)
+[14/Sep/2015 06:13:47] DEBUG [django.db.backends:89] (0.001) SELECT (1) AS "a" FROM "ohmgear_users_user" WHERE ("ohmgear_users_user"."email" = 'sazidk@clavax.us' AND "ohmgear_users_user"."user_type_id" = 2) LIMIT 1; args=(u'sazidk@clavax.us', 2)
+[14/Sep/2015 06:13:47] DEBUG [django.db.backends:89] (0.105) INSERT INTO "ohmgear_users_user" ("password", "last_login", "account_number", "first_name", "last_name", "email", "email_verification_code", "user_type_id", "pin_number", "status", "created_date", "updated_date") VALUES ('1111', NULL, NULL, 'asdfsdf', NULL, 'sazidk@clavax.us', NULL, 2, 0, 1111, '2015-09-14T06:13:47.384411+00:00'::timestamptz, '2015-09-14T06:13:47.384429+00:00'::timestamptz) RETURNING "ohmgear_users_user"."id"; args=(u'1111', None, None, u'asdfsdf', None, u'sazidk@clavax.us', None, 2, 0, 1111, datetime.datetime(2015, 9, 14, 6, 13, 47, 384411, tzinfo=<UTC>), datetime.datetime(2015, 9, 14, 6, 13, 47, 384429, tzinfo=<UTC>))
+[14/Sep/2015 06:13:47] DEBUG [django.db.backends:89] (0.088) INSERT INTO "ohmgear_users_profile" ("dob", "gender", "address", "mobile_number", "custom_data", "created_date", "updated_date", "user_id", "income_group_id", "business_type_id", "activation_key", "key_expires") VALUES (NULL, NULL, NULL, NULL, NULL, '2015-09-14T06:13:47.621376+00:00'::timestamptz, '2015-09-14T06:13:47.621395+00:00'::timestamptz, 15, NULL, NULL, 'b9bd4b0a268cdab773b19101296587a97c6f90ae', '2015-09-14T06:13:47.621671+00:00'::timestamptz) RETURNING "ohmgear_users_profile"."id"; args=(None, None, None, None, None, datetime.datetime(2015, 9, 14, 6, 13, 47, 621376, tzinfo=<UTC>), datetime.datetime(2015, 9, 14, 6, 13, 47, 621395, tzinfo=<UTC>), 15, None, None, 'b9bd4b0a268cdab773b19101296587a97c6f90ae', datetime.datetime(2015, 9, 14, 6, 13, 47, 621671, tzinfo=<UTC>))
+[14/Sep/2015 06:13:47] DEBUG [django.db.backends:89] (0.001) SELECT "ohmgear_users_user"."id", "ohmgear_users_user"."password", "ohmgear_users_user"."last_login", "ohmgear_users_user"."account_number", "ohmgear_users_user"."first_name", "ohmgear_users_user"."last_name", "ohmgear_users_user"."email", "ohmgear_users_user"."email_verification_code", "ohmgear_users_user"."user_type_id", "ohmgear_users_user"."pin_number", "ohmgear_users_user"."status", "ohmgear_users_user"."created_date", "ohmgear_users_user"."updated_date" FROM "ohmgear_users_user" WHERE "ohmgear_users_user"."id" = 15; args=(15,)
+[14/Sep/2015 06:13:47] DEBUG [django.db.backends:89] (0.001) UPDATE "ohmgear_users_user" SET "password" = 'sha1$qaLr7r80UT53$ad60c40498b9d16ac9b46028cf7bad6943a40918', "last_login" = NULL, "account_number" = NULL, "first_name" = 'asdfsdf', "last_name" = NULL, "email" = 'sazidk@clavax.us', "email_verification_code" = NULL, "user_type_id" = 2, "pin_number" = 0, "status" = 1111, "created_date" = '2015-09-14T06:13:47.384411+00:00'::timestamptz, "updated_date" = '2015-09-14T06:13:47.384429+00:00'::timestamptz WHERE "ohmgear_users_user"."id" = 15; args=(u'sha1$qaLr7r80UT53$ad60c40498b9d16ac9b46028cf7bad6943a40918', u'asdfsdf', u'sazidk@clavax.us', 2, 0, 1111, datetime.datetime(2015, 9, 14, 6, 13, 47, 384411, tzinfo=<UTC>), datetime.datetime(2015, 9, 14, 6, 13, 47, 384429, tzinfo=<UTC>), 15)
+[14/Sep/2015 06:13:47] DEBUG [django.db.backends:89] (0.001) SELECT "django_session"."session_key", "django_session"."session_data", "django_session"."expire_date" FROM "django_session" WHERE ("django_session"."session_key" = 'r911zxvtt55w8of18v5mlwnph99gahqc' AND "django_session"."expire_date" > '2015-09-14T06:13:47.813642+00:00'::timestamptz); args=('r911zxvtt55w8of18v5mlwnph99gahqc', datetime.datetime(2015, 9, 14, 6, 13, 47, 813642, tzinfo=<UTC>))
+[14/Sep/2015 06:14:54] DEBUG [django.db.backends:89] (0.002) 
+            SELECT c.relname, c.relkind
+            FROM pg_catalog.pg_class c
+            LEFT JOIN pg_catalog.pg_namespace n ON n.oid = c.relnamespace
+            WHERE c.relkind IN ('r', 'v')
+                AND n.nspname NOT IN ('pg_catalog', 'pg_toast')
+                AND pg_catalog.pg_table_is_visible(c.oid); args=None
+[14/Sep/2015 06:14:54] DEBUG [django.db.backends:89] (0.000) SELECT "django_migrations"."app", "django_migrations"."name" FROM "django_migrations"; args=()
+[14/Sep/2015 06:15:08] DEBUG [django.db.backends:89] (0.002) 
+            SELECT c.relname, c.relkind
+            FROM pg_catalog.pg_class c
+            LEFT JOIN pg_catalog.pg_namespace n ON n.oid = c.relnamespace
+            WHERE c.relkind IN ('r', 'v')
+                AND n.nspname NOT IN ('pg_catalog', 'pg_toast')
+                AND pg_catalog.pg_table_is_visible(c.oid); args=None
+[14/Sep/2015 06:15:08] DEBUG [django.db.backends:89] (0.000) SELECT "django_migrations"."app", "django_migrations"."name" FROM "django_migrations"; args=()
+[14/Sep/2015 06:15:23] DEBUG [django.db.backends:89] (0.003) 
+            SELECT c.relname, c.relkind
+            FROM pg_catalog.pg_class c
+            LEFT JOIN pg_catalog.pg_namespace n ON n.oid = c.relnamespace
+            WHERE c.relkind IN ('r', 'v')
+                AND n.nspname NOT IN ('pg_catalog', 'pg_toast')
+                AND pg_catalog.pg_table_is_visible(c.oid); args=None
+[14/Sep/2015 06:15:23] DEBUG [django.db.backends:89] (0.001) SELECT "django_migrations"."app", "django_migrations"."name" FROM "django_migrations"; args=()
+[14/Sep/2015 06:15:44] DEBUG [django.db.backends:89] (0.002) SELECT (1) AS "a" FROM "ohmgear_users_user" WHERE "ohmgear_users_user"."email" = 'sazidk@clavax.us' LIMIT 1; args=(u'sazidk@clavax.us',)
+[14/Sep/2015 06:15:44] DEBUG [django.db.backends:89] (0.001) SELECT "ohmgear_users_usertype"."id", "ohmgear_users_usertype"."user_type" FROM "ohmgear_users_usertype" WHERE "ohmgear_users_usertype"."id" = 2; args=(2,)
+[14/Sep/2015 06:15:44] DEBUG [django.db.backends:89] (0.000) SELECT (1) AS "a" FROM "ohmgear_users_user" WHERE ("ohmgear_users_user"."email" = 'sazidk@clavax.us' AND "ohmgear_users_user"."user_type_id" = 2) LIMIT 1; args=(u'sazidk@clavax.us', 2)
+[14/Sep/2015 06:15:44] DEBUG [django.db.backends:89] (0.001) INSERT INTO "ohmgear_users_user" ("password", "last_login", "account_number", "first_name", "last_name", "email", "email_verification_code", "user_type_id", "pin_number", "status", "created_date", "updated_date") VALUES ('1111', NULL, NULL, 'asdfsdf', NULL, 'sazidk@clavax.us', NULL, 2, 0, 1111, '2015-09-14T06:15:44.187719+00:00'::timestamptz, '2015-09-14T06:15:44.187750+00:00'::timestamptz) RETURNING "ohmgear_users_user"."id"; args=(u'1111', None, None, u'asdfsdf', None, u'sazidk@clavax.us', None, 2, 0, 1111, datetime.datetime(2015, 9, 14, 6, 15, 44, 187719, tzinfo=<UTC>), datetime.datetime(2015, 9, 14, 6, 15, 44, 187750, tzinfo=<UTC>))
+[14/Sep/2015 06:15:44] DEBUG [django.db.backends:89] (0.001) INSERT INTO "ohmgear_users_profile" ("dob", "gender", "address", "mobile_number", "custom_data", "created_date", "updated_date", "user_id", "income_group_id", "business_type_id", "activation_key", "key_expires") VALUES (NULL, NULL, NULL, NULL, NULL, '2015-09-14T06:15:44.221250+00:00'::timestamptz, '2015-09-14T06:15:44.221283+00:00'::timestamptz, 16, NULL, NULL, '2f82f21cd7af24a037fdf68680151dbccf8521a5', '2015-09-14T06:15:44.221345+00:00'::timestamptz) RETURNING "ohmgear_users_profile"."id"; args=(None, None, None, None, None, datetime.datetime(2015, 9, 14, 6, 15, 44, 221250, tzinfo=<UTC>), datetime.datetime(2015, 9, 14, 6, 15, 44, 221283, tzinfo=<UTC>), 16, None, None, '2f82f21cd7af24a037fdf68680151dbccf8521a5', datetime.datetime(2015, 9, 14, 6, 15, 44, 221345, tzinfo=<UTC>))
+[14/Sep/2015 06:15:44] DEBUG [django.db.backends:89] (0.001) SELECT "ohmgear_users_user"."id", "ohmgear_users_user"."password", "ohmgear_users_user"."last_login", "ohmgear_users_user"."account_number", "ohmgear_users_user"."first_name", "ohmgear_users_user"."last_name", "ohmgear_users_user"."email", "ohmgear_users_user"."email_verification_code", "ohmgear_users_user"."user_type_id", "ohmgear_users_user"."pin_number", "ohmgear_users_user"."status", "ohmgear_users_user"."created_date", "ohmgear_users_user"."updated_date" FROM "ohmgear_users_user" WHERE "ohmgear_users_user"."id" = 16; args=(16,)
+[14/Sep/2015 06:15:44] DEBUG [django.db.backends:89] (0.001) UPDATE "ohmgear_users_user" SET "password" = 'sha1$NUPVtgbrHJ7n$7ae255644b1f8e3c664e56c5ba4ac4e5c6a2b1fb', "last_login" = NULL, "account_number" = NULL, "first_name" = 'asdfsdf', "last_name" = NULL, "email" = 'sazidk@clavax.us', "email_verification_code" = NULL, "user_type_id" = 2, "pin_number" = 0, "status" = 1111, "created_date" = '2015-09-14T06:15:44.187719+00:00'::timestamptz, "updated_date" = '2015-09-14T06:15:44.187750+00:00'::timestamptz WHERE "ohmgear_users_user"."id" = 16; args=(u'sha1$NUPVtgbrHJ7n$7ae255644b1f8e3c664e56c5ba4ac4e5c6a2b1fb', u'asdfsdf', u'sazidk@clavax.us', 2, 0, 1111, datetime.datetime(2015, 9, 14, 6, 15, 44, 187719, tzinfo=<UTC>), datetime.datetime(2015, 9, 14, 6, 15, 44, 187750, tzinfo=<UTC>), 16)
+[14/Sep/2015 06:15:44] DEBUG [django.db.backends:89] (0.001) SELECT "django_session"."session_key", "django_session"."session_data", "django_session"."expire_date" FROM "django_session" WHERE ("django_session"."session_key" = 'r911zxvtt55w8of18v5mlwnph99gahqc' AND "django_session"."expire_date" > '2015-09-14T06:15:44.380919+00:00'::timestamptz); args=('r911zxvtt55w8of18v5mlwnph99gahqc', datetime.datetime(2015, 9, 14, 6, 15, 44, 380919, tzinfo=<UTC>))
+[14/Sep/2015 06:16:32] DEBUG [django.db.backends:89] (0.002) 
+            SELECT c.relname, c.relkind
+            FROM pg_catalog.pg_class c
+            LEFT JOIN pg_catalog.pg_namespace n ON n.oid = c.relnamespace
+            WHERE c.relkind IN ('r', 'v')
+                AND n.nspname NOT IN ('pg_catalog', 'pg_toast')
+                AND pg_catalog.pg_table_is_visible(c.oid); args=None
+[14/Sep/2015 06:16:32] DEBUG [django.db.backends:89] (0.000) SELECT "django_migrations"."app", "django_migrations"."name" FROM "django_migrations"; args=()
+[14/Sep/2015 06:16:39] DEBUG [django.db.backends:89] (0.004) 
+            SELECT c.relname, c.relkind
+            FROM pg_catalog.pg_class c
+            LEFT JOIN pg_catalog.pg_namespace n ON n.oid = c.relnamespace
+            WHERE c.relkind IN ('r', 'v')
+                AND n.nspname NOT IN ('pg_catalog', 'pg_toast')
+                AND pg_catalog.pg_table_is_visible(c.oid); args=None
+[14/Sep/2015 06:16:39] DEBUG [django.db.backends:89] (0.001) SELECT "django_migrations"."app", "django_migrations"."name" FROM "django_migrations"; args=()
+[14/Sep/2015 06:16:53] DEBUG [django.db.backends:89] (0.002) SELECT (1) AS "a" FROM "ohmgear_users_user" WHERE "ohmgear_users_user"."email" = 'sazidk@clavax.us' LIMIT 1; args=(u'sazidk@clavax.us',)
+[14/Sep/2015 06:16:53] DEBUG [django.db.backends:89] (0.001) SELECT "ohmgear_users_usertype"."id", "ohmgear_users_usertype"."user_type" FROM "ohmgear_users_usertype" WHERE "ohmgear_users_usertype"."id" = 2; args=(2,)
+[14/Sep/2015 06:16:53] DEBUG [django.db.backends:89] (0.000) SELECT (1) AS "a" FROM "ohmgear_users_user" WHERE ("ohmgear_users_user"."email" = 'sazidk@clavax.us' AND "ohmgear_users_user"."user_type_id" = 2) LIMIT 1; args=(u'sazidk@clavax.us', 2)
+[14/Sep/2015 06:16:53] DEBUG [django.db.backends:89] (0.001) INSERT INTO "ohmgear_users_user" ("password", "last_login", "account_number", "first_name", "last_name", "email", "email_verification_code", "user_type_id", "pin_number", "status", "created_date", "updated_date") VALUES ('1111', NULL, NULL, 'asdfsdf', NULL, 'sazidk@clavax.us', NULL, 2, 0, 1111, '2015-09-14T06:16:53.370176+00:00'::timestamptz, '2015-09-14T06:16:53.370450+00:00'::timestamptz) RETURNING "ohmgear_users_user"."id"; args=(u'1111', None, None, u'asdfsdf', None, u'sazidk@clavax.us', None, 2, 0, 1111, datetime.datetime(2015, 9, 14, 6, 16, 53, 370176, tzinfo=<UTC>), datetime.datetime(2015, 9, 14, 6, 16, 53, 370450, tzinfo=<UTC>))
+[14/Sep/2015 06:16:53] DEBUG [django.db.backends:89] (0.204) SELECT "ohmgear_email_emailtemplate"."id", "ohmgear_email_emailtemplate"."subject", "ohmgear_email_emailtemplate"."content", "ohmgear_email_emailtemplate"."slug", "ohmgear_email_emailtemplate"."status", "ohmgear_email_emailtemplate"."from_email", "ohmgear_email_emailtemplate"."created_date", "ohmgear_email_emailtemplate"."updated_date" FROM "ohmgear_email_emailtemplate" WHERE "ohmgear_email_emailtemplate"."slug" = 'account_confirmation'; args=('account_confirmation',)
+[14/Sep/2015 06:16:53] ERROR [django.request:256] Internal Server Error: /api/users/
+Traceback (most recent call last):
+  File "/home/sazid/.virtualenvs/vohmgear/local/lib/python2.7/site-packages/django/core/handlers/base.py", line 132, in get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/home/sazid/.virtualenvs/vohmgear/local/lib/python2.7/site-packages/django/views/decorators/csrf.py", line 58, in wrapped_view
+    return view_func(*args, **kwargs)
+  File "/home/sazid/.virtualenvs/vohmgear/local/lib/python2.7/site-packages/rest_framework/viewsets.py", line 85, in view
+    return self.dispatch(request, *args, **kwargs)
+  File "/home/sazid/.virtualenvs/vohmgear/local/lib/python2.7/site-packages/rest_framework/views.py", line 452, in dispatch
+    response = self.handle_exception(exc)
+  File "/home/sazid/.virtualenvs/vohmgear/local/lib/python2.7/site-packages/rest_framework/views.py", line 449, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "/var/www/html/ohmgear/apps/users/views.py", line 89, in create
+    user_id=serializer.save()
+  File "/home/sazid/.virtualenvs/vohmgear/local/lib/python2.7/site-packages/rest_framework/serializers.py", line 165, in save
+    self.instance = self.create(validated_data)
+  File "/home/sazid/.virtualenvs/vohmgear/local/lib/python2.7/site-packages/rest_framework/serializers.py", line 775, in create
+    instance = ModelClass.objects.create(**validated_data)
+  File "/home/sazid/.virtualenvs/vohmgear/local/lib/python2.7/site-packages/django/db/models/manager.py", line 127, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+  File "/home/sazid/.virtualenvs/vohmgear/local/lib/python2.7/site-packages/django/db/models/query.py", line 348, in create
+    obj.save(force_insert=True, using=self.db)
+  File "/home/sazid/.virtualenvs/vohmgear/local/lib/python2.7/site-packages/django/db/models/base.py", line 710, in save
+    force_update=force_update, update_fields=update_fields)
+  File "/home/sazid/.virtualenvs/vohmgear/local/lib/python2.7/site-packages/django/db/models/base.py", line 747, in save_base
+    update_fields=update_fields, raw=raw, using=using)
+  File "/home/sazid/.virtualenvs/vohmgear/local/lib/python2.7/site-packages/django/dispatch/dispatcher.py", line 201, in send
+    response = receiver(signal=self, sender=sender, **named)
+  File "/var/www/html/ohmgear/apps/users/signals.py", line 24, in register_profile
+    base_send_mail(user,type='account_confirmation',activation_key = activation_key)
+  File "/var/www/html/ohmgear/apps/email/views.py", line 29, in base_send_mail
+    [user.email], fail_silently=False,html_message=email_body)
+NameError: global name 'user' is not defined
+[14/Sep/2015 06:16:53] DEBUG [django.db.backends:89] (0.001) SELECT "ohmgear_users_user"."id", "ohmgear_users_user"."password", "ohmgear_users_user"."last_login", "ohmgear_users_user"."account_number", "ohmgear_users_user"."first_name", "ohmgear_users_user"."last_name", "ohmgear_users_user"."email", "ohmgear_users_user"."email_verification_code", "ohmgear_users_user"."user_type_id", "ohmgear_users_user"."pin_number", "ohmgear_users_user"."status", "ohmgear_users_user"."created_date", "ohmgear_users_user"."updated_date" FROM "ohmgear_users_user" LIMIT 21; args=()
+[14/Sep/2015 06:16:53] DEBUG [django.db.backends:89] (0.001) SELECT "ohmgear_users_usertype"."id", "ohmgear_users_usertype"."user_type" FROM "ohmgear_users_usertype" WHERE "ohmgear_users_usertype"."id" = 2; args=(2,)
+[14/Sep/2015 06:16:53] DEBUG [django.db.backends:89] (0.000) SELECT "ohmgear_users_usertype"."id", "ohmgear_users_usertype"."user_type" FROM "ohmgear_users_usertype" WHERE "ohmgear_users_usertype"."id" = 2; args=(2,)
+[14/Sep/2015 06:16:53] DEBUG [django.db.backends:89] (0.000) SELECT "ohmgear_users_usertype"."id", "ohmgear_users_usertype"."user_type" FROM "ohmgear_users_usertype" WHERE "ohmgear_users_usertype"."id" = 2; args=(2,)
+[14/Sep/2015 06:16:53] DEBUG [django.db.backends:89] (0.000) SELECT "ohmgear_users_usertype"."id", "ohmgear_users_usertype"."user_type" FROM "ohmgear_users_usertype" WHERE "ohmgear_users_usertype"."id" = 2; args=(2,)
+[14/Sep/2015 06:16:53] DEBUG [django.db.backends:89] (0.000) SELECT "ohmgear_users_usertype"."id", "ohmgear_users_usertype"."user_type" FROM "ohmgear_users_usertype" WHERE "ohmgear_users_usertype"."id" = 1; args=(1,)
+[14/Sep/2015 06:16:53] DEBUG [django.db.backends:89] (0.000) SELECT "ohmgear_users_usertype"."id", "ohmgear_users_usertype"."user_type" FROM "ohmgear_users_usertype" WHERE "ohmgear_users_usertype"."id" = 2; args=(2,)
+[14/Sep/2015 06:16:53] DEBUG [django.db.backends:89] (0.000) SELECT "ohmgear_users_usertype"."id", "ohmgear_users_usertype"."user_type" FROM "ohmgear_users_usertype" WHERE "ohmgear_users_usertype"."id" = 1; args=(1,)
+[14/Sep/2015 06:16:53] DEBUG [django.db.backends:89] (0.000) SELECT "ohmgear_users_usertype"."id", "ohmgear_users_usertype"."user_type" FROM "ohmgear_users_usertype" WHERE "ohmgear_users_usertype"."id" = 2; args=(2,)
+[14/Sep/2015 06:16:53] DEBUG [django.db.backends:89] (0.000) SELECT "ohmgear_users_usertype"."id", "ohmgear_users_usertype"."user_type" FROM "ohmgear_users_usertype" WHERE "ohmgear_users_usertype"."id" = 2; args=(2,)
+[14/Sep/2015 06:16:53] DEBUG [django.db.backends:89] (0.001) SELECT "ohmgear_users_usertype"."id", "ohmgear_users_usertype"."user_type" FROM "ohmgear_users_usertype" WHERE "ohmgear_users_usertype"."id" = 2; args=(2,)
+[14/Sep/2015 06:16:53] DEBUG [django.db.backends:89] (0.000) SELECT "ohmgear_users_usertype"."id", "ohmgear_users_usertype"."user_type" FROM "ohmgear_users_usertype" WHERE "ohmgear_users_usertype"."id" = 2; args=(2,)
+[14/Sep/2015 06:16:53] DEBUG [django.db.backends:89] (0.000) SELECT "ohmgear_users_usertype"."id", "ohmgear_users_usertype"."user_type" FROM "ohmgear_users_usertype" WHERE "ohmgear_users_usertype"."id" = 2; args=(2,)
+[14/Sep/2015 06:16:53] DEBUG [django.db.backends:89] (0.001) SELECT "django_session"."session_key", "django_session"."session_data", "django_session"."expire_date" FROM "django_session" WHERE ("django_session"."session_key" = 'r911zxvtt55w8of18v5mlwnph99gahqc' AND "django_session"."expire_date" > '2015-09-14T06:16:53.965125+00:00'::timestamptz); args=('r911zxvtt55w8of18v5mlwnph99gahqc', datetime.datetime(2015, 9, 14, 6, 16, 53, 965125, tzinfo=<UTC>))
+[14/Sep/2015 06:17:18] DEBUG [django.db.backends:89] (0.003) 
+            SELECT c.relname, c.relkind
+            FROM pg_catalog.pg_class c
+            LEFT JOIN pg_catalog.pg_namespace n ON n.oid = c.relnamespace
+            WHERE c.relkind IN ('r', 'v')
+                AND n.nspname NOT IN ('pg_catalog', 'pg_toast')
+                AND pg_catalog.pg_table_is_visible(c.oid); args=None
+[14/Sep/2015 06:17:18] DEBUG [django.db.backends:89] (0.000) SELECT "django_migrations"."app", "django_migrations"."name" FROM "django_migrations"; args=()
+[14/Sep/2015 06:17:29] DEBUG [django.db.backends:89] (0.002) 
+            SELECT c.relname, c.relkind
+            FROM pg_catalog.pg_class c
+            LEFT JOIN pg_catalog.pg_namespace n ON n.oid = c.relnamespace
+            WHERE c.relkind IN ('r', 'v')
+                AND n.nspname NOT IN ('pg_catalog', 'pg_toast')
+                AND pg_catalog.pg_table_is_visible(c.oid); args=None
+[14/Sep/2015 06:17:29] DEBUG [django.db.backends:89] (0.000) SELECT "django_migrations"."app", "django_migrations"."name" FROM "django_migrations"; args=()
+[14/Sep/2015 06:17:42] DEBUG [django.db.backends:89] (0.002) 
+            SELECT c.relname, c.relkind
+            FROM pg_catalog.pg_class c
+            LEFT JOIN pg_catalog.pg_namespace n ON n.oid = c.relnamespace
+            WHERE c.relkind IN ('r', 'v')
+                AND n.nspname NOT IN ('pg_catalog', 'pg_toast')
+                AND pg_catalog.pg_table_is_visible(c.oid); args=None
+[14/Sep/2015 06:17:42] DEBUG [django.db.backends:89] (0.000) SELECT "django_migrations"."app", "django_migrations"."name" FROM "django_migrations"; args=()
+[14/Sep/2015 06:17:55] DEBUG [django.db.backends:89] (0.002) 
+            SELECT c.relname, c.relkind
+            FROM pg_catalog.pg_class c
+            LEFT JOIN pg_catalog.pg_namespace n ON n.oid = c.relnamespace
+            WHERE c.relkind IN ('r', 'v')
+                AND n.nspname NOT IN ('pg_catalog', 'pg_toast')
+                AND pg_catalog.pg_table_is_visible(c.oid); args=None
+[14/Sep/2015 06:17:55] DEBUG [django.db.backends:89] (0.000) SELECT "django_migrations"."app", "django_migrations"."name" FROM "django_migrations"; args=()
+[14/Sep/2015 06:17:57] DEBUG [django.db.backends:89] (0.003) 
+            SELECT c.relname, c.relkind
+            FROM pg_catalog.pg_class c
+            LEFT JOIN pg_catalog.pg_namespace n ON n.oid = c.relnamespace
+            WHERE c.relkind IN ('r', 'v')
+                AND n.nspname NOT IN ('pg_catalog', 'pg_toast')
+                AND pg_catalog.pg_table_is_visible(c.oid); args=None
+[14/Sep/2015 06:17:57] DEBUG [django.db.backends:89] (0.001) SELECT "django_migrations"."app", "django_migrations"."name" FROM "django_migrations"; args=()
+[14/Sep/2015 06:19:11] DEBUG [django.db.backends:89] (0.001) SELECT (1) AS "a" FROM "ohmgear_users_user" WHERE "ohmgear_users_user"."email" = 'sazidk@clavax.us' LIMIT 1; args=(u'sazidk@clavax.us',)
+[14/Sep/2015 06:19:11] DEBUG [django.db.backends:89] (0.001) SELECT "ohmgear_users_usertype"."id", "ohmgear_users_usertype"."user_type" FROM "ohmgear_users_usertype" WHERE "ohmgear_users_usertype"."id" = 2; args=(2,)
+[14/Sep/2015 06:19:11] DEBUG [django.db.backends:89] (0.000) SELECT (1) AS "a" FROM "ohmgear_users_user" WHERE ("ohmgear_users_user"."email" = 'sazidk@clavax.us' AND "ohmgear_users_user"."user_type_id" = 2) LIMIT 1; args=(u'sazidk@clavax.us', 2)
+[14/Sep/2015 06:19:11] DEBUG [django.db.backends:89] (0.001) INSERT INTO "ohmgear_users_user" ("password", "last_login", "account_number", "first_name", "last_name", "email", "email_verification_code", "user_type_id", "pin_number", "status", "created_date", "updated_date") VALUES ('1111', NULL, NULL, 'asdfsdf', NULL, 'sazidk@clavax.us', NULL, 2, 0, 1111, '2015-09-14T06:19:11.826243+00:00'::timestamptz, '2015-09-14T06:19:11.826527+00:00'::timestamptz) RETURNING "ohmgear_users_user"."id"; args=(u'1111', None, None, u'asdfsdf', None, u'sazidk@clavax.us', None, 2, 0, 1111, datetime.datetime(2015, 9, 14, 6, 19, 11, 826243, tzinfo=<UTC>), datetime.datetime(2015, 9, 14, 6, 19, 11, 826527, tzinfo=<UTC>))
+[14/Sep/2015 06:19:11] DEBUG [django.db.backends:89] (0.001) SELECT "ohmgear_email_emailtemplate"."id", "ohmgear_email_emailtemplate"."subject", "ohmgear_email_emailtemplate"."content", "ohmgear_email_emailtemplate"."slug", "ohmgear_email_emailtemplate"."status", "ohmgear_email_emailtemplate"."from_email", "ohmgear_email_emailtemplate"."created_date", "ohmgear_email_emailtemplate"."updated_date" FROM "ohmgear_email_emailtemplate" WHERE "ohmgear_email_emailtemplate"."slug" = 'account_confirmation'; args=('account_confirmation',)
+[14/Sep/2015 06:19:16] DEBUG [django.db.backends:89] (0.001) INSERT INTO "ohmgear_users_profile" ("dob", "gender", "address", "mobile_number", "custom_data", "created_date", "updated_date", "user_id", "income_group_id", "business_type_id", "activation_key", "key_expires") VALUES (NULL, NULL, NULL, NULL, NULL, '2015-09-14T06:19:16.314619+00:00'::timestamptz, '2015-09-14T06:19:16.314657+00:00'::timestamptz, 18, NULL, NULL, 'e8e6169393fd0752f6dd5625fa6d48af37cddecf', '2015-09-14T06:19:16.314722+00:00'::timestamptz) RETURNING "ohmgear_users_profile"."id"; args=(None, None, None, None, None, datetime.datetime(2015, 9, 14, 6, 19, 16, 314619, tzinfo=<UTC>), datetime.datetime(2015, 9, 14, 6, 19, 16, 314657, tzinfo=<UTC>), 18, None, None, 'e8e6169393fd0752f6dd5625fa6d48af37cddecf', datetime.datetime(2015, 9, 14, 6, 19, 16, 314722, tzinfo=<UTC>))
+[14/Sep/2015 06:19:16] DEBUG [django.db.backends:89] (0.001) SELECT "ohmgear_users_user"."id", "ohmgear_users_user"."password", "ohmgear_users_user"."last_login", "ohmgear_users_user"."account_number", "ohmgear_users_user"."first_name", "ohmgear_users_user"."last_name", "ohmgear_users_user"."email", "ohmgear_users_user"."email_verification_code", "ohmgear_users_user"."user_type_id", "ohmgear_users_user"."pin_number", "ohmgear_users_user"."status", "ohmgear_users_user"."created_date", "ohmgear_users_user"."updated_date" FROM "ohmgear_users_user" WHERE "ohmgear_users_user"."id" = 18; args=(18,)
+[14/Sep/2015 06:19:16] DEBUG [django.db.backends:89] (0.001) UPDATE "ohmgear_users_user" SET "password" = 'sha1$jzXbrPmHu9yr$825e2390d473daefedf6ec761ace296be7324f8f', "last_login" = NULL, "account_number" = NULL, "first_name" = 'asdfsdf', "last_name" = NULL, "email" = 'sazidk@clavax.us', "email_verification_code" = NULL, "user_type_id" = 2, "pin_number" = 0, "status" = 1111, "created_date" = '2015-09-14T06:19:11.826243+00:00'::timestamptz, "updated_date" = '2015-09-14T06:19:11.826527+00:00'::timestamptz WHERE "ohmgear_users_user"."id" = 18; args=(u'sha1$jzXbrPmHu9yr$825e2390d473daefedf6ec761ace296be7324f8f', u'asdfsdf', u'sazidk@clavax.us', 2, 0, 1111, datetime.datetime(2015, 9, 14, 6, 19, 11, 826243, tzinfo=<UTC>), datetime.datetime(2015, 9, 14, 6, 19, 11, 826527, tzinfo=<UTC>), 18)
+[14/Sep/2015 06:19:16] DEBUG [django.db.backends:89] (0.001) SELECT "django_session"."session_key", "django_session"."session_data", "django_session"."expire_date" FROM "django_session" WHERE ("django_session"."session_key" = 'r911zxvtt55w8of18v5mlwnph99gahqc' AND "django_session"."expire_date" > '2015-09-14T06:19:16.394083+00:00'::timestamptz); args=('r911zxvtt55w8of18v5mlwnph99gahqc', datetime.datetime(2015, 9, 14, 6, 19, 16, 394083, tzinfo=<UTC>))
