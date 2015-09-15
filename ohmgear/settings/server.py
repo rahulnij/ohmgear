@@ -31,4 +31,4 @@ CELERY_RESULT_BACKEND = 'redis://127.0.0.1:6379'
 CELERY_ACCEPT_CONTENT = ['application/json']
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
-CELERY_IMPORTS=("BaseSendMail")
+CELERY_IMPORTS=("apps.email.views.BaseSendMail")
