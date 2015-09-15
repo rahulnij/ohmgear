@@ -6,8 +6,9 @@
 from django.contrib.contenttypes.models import ContentType
 from django.db.models.signals import post_save
 from models import User,Profile
-from apps.email.views import base_send_mail
+from apps.email.views import BaseSendMail
 import hashlib, datetime, random
+from django.forms.models import model_to_dict
 #---------------------------- Create profile at the time of registration --------------------------#
 def register_profile(sender, **kwargs):  
     if kwargs.get('created'):
@@ -20,8 +21,9 @@ def register_profile(sender, **kwargs):
                     salt = hashlib.sha1(str(random.random())).hexdigest()[:5]            
                     activation_key = hashlib.sha1(salt+user.email).hexdigest()            
                     key_expires = datetime.datetime.today() + datetime.timedelta(2)
-
-                    base_send_mail(user,type='account_confirmation',activation_key = activation_key)
+                    user = model_to_dict(user)
+                    #print user
+                    BaseSendMail.delay(user,type='account_confirmation',activation_key = activation_key)
 
                     profile.activation_key = activation_key
                     profile.key_expires = key_expires

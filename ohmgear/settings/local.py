@@ -61,4 +61,21 @@ LOGGING = {
             'level': 'DEBUG',
         },
     }
-}    
+}
+
+# CELERY STUFF
+INSTALLED_APPS += ("djcelery", )
+import djcelery
+djcelery.setup_loader()
+
+BROKER_URL = 'redis://localhost:6379'
+BROKER_HOST = 'localhost'
+BROKER_PORT = '6379'
+BROKER_USER = 'guest'
+BROKER_PASSWORD = 'guest'
+
+CELERY_RESULT_BACKEND = 'redis://localhost:6379'
+CELERY_ACCEPT_CONTENT = ['application/json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+#CELERY_TIMEZONE = 'Africa/Nairobi'
