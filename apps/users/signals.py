@@ -23,7 +23,7 @@ def register_profile(sender, **kwargs):
                     key_expires = datetime.datetime.today() + datetime.timedelta(2)
                     user = model_to_dict(user)
                     #print user
-                    BaseSendMail.delay(user,type='account_confirmation',activation_key = activation_key)
+                    BaseSendMail.delay(user,type='account_confirmation',key = activation_key)
 
                     profile.activation_key = activation_key
                     profile.key_expires = key_expires

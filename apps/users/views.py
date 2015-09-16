@@ -29,7 +29,7 @@ from rest_framework.authtoken.models import Token
 from functions import getToken,checkEmail
 import json
 from django.shortcuts import redirect
-
+import hashlib, datetime, random
 #class UserPermissionsObj(permissions.BasePermission):
 #    """
 #    Object-level permission to only allow owners of an object to edit it.
@@ -218,6 +218,9 @@ def useractivity(request,**kwargs):
     msg = {}
     if request.method == 'GET':
        activation_key = kwargs.get("activation_key")
+       reset_password_key = kwargs.get("reset_password_key")
+       
+       #------------- get the activation key and activate the account ----------------------#
        if activation_key:
           try: 
             user_profile = get_object_or_404(Profile, activation_key=activation_key)
@@ -232,7 +235,18 @@ def useractivity(request,**kwargs):
             else:
                return CustomeResponse('Account has been activated',status=status.HTTP_200_OK) 
           except:
-            return CustomeResponse({'msg':'Incorrect activation key'},status=status.HTTP_401_UNAUTHORIZED,validate_errors=1)                
+            return CustomeResponse({'msg':'Incorrect activation key'},status=status.HTTP_401_UNAUTHORIZED,validate_errors=1) 
+       #------------------------------------ End --------------------------------------------------#
+       
+       #--------------------  Get the reset password key and redirect to mobile ----------------------#
+       elif reset_password_key: 
+            if request.device:
+                from django.http import HttpResponse
+                response = HttpResponse("ohmgear://?resetPasswordKey="+reset_password_key, status=302)
+                response['Location'] = "ohmgear://?resetPasswordKey="+reset_password_key
+                return response 
+            else:                         
+               return CustomeResponse({'msg':'This url is used in app only'},status=status.HTTP_401_UNAUTHORIZED,validate_errors=1)               
        return CustomeResponse({'msg':'Please provide correct parameters'},status=status.HTTP_401_UNAUTHORIZED,validate_errors=1)              
     
     if request.method == 'POST':
@@ -241,7 +255,17 @@ def useractivity(request,**kwargs):
         if op == 'login':
                 username = request.POST.get('username','')
                 password = request.POST.get('password','')
-
+                #------------------- save password in case of forgot passord ----------------#
+                reset_password_key = request.POST.get('reset_password_key','')
+                if reset_password_key:
+                    try:
+                     profile = Profile.objects.select_related().get(reset_password_key=reset_password_key,user__email=username)
+                     profile
+                     profile.user.set_password(password)
+                     profile.user.save()
+                    except:
+                     return CustomeResponse({'msg':'There is problem in reset password'},status=status.HTTP_401_UNAUTHORIZED,validate_errors=1)
+                
                 if username and password:
                     user = authenticate_frontend(username=username, password=password)
                     if user and not None:
@@ -264,5 +288,36 @@ def useractivity(request,**kwargs):
                 user['token'] = token
                 ###------------------ End -----------------------------------#
                 return CustomeResponse(user,status=status.HTTP_200_OK)
+        # ----------- restet password and send the email------------------#
+        elif op == 'reset_password':
+            
+                email = request.POST.get('email','')
+                
+                try:
+                 profile = Profile.objects.select_related().get(user__email=request.DATA['email'])
+                except:
+                 profile = ''
+                if email:                   
+                    
+                    if profile and not None:
+                        salt = hashlib.sha1(str(random.random())).hexdigest()[:5]            
+                        reset_password_key = hashlib.sha1(salt+profile.user.email).hexdigest()
+                        
+                        from apps.email.views import BaseSendMail  
+                        user = model_to_dict(profile.user)
+                        BaseSendMail.delay(user,type='forgot_password',key = reset_password_key)                        
+                        profile.reset_password_key = reset_password_key
+                        profile.save()
+                        return CustomeResponse(user,status=status.HTTP_200_OK)
+                    else:
+                        msg = 'This email id does not exist.'
+                        return CustomeResponse({'msg':msg},status=status.HTTP_401_UNAUTHORIZED,validate_errors=1)
+                        #raise exceptions.ValidationError(msg)
+                else:
+                    msg = 'Must include "email".'
+                    return CustomeResponse({'msg':msg},status=status.HTTP_401_UNAUTHORIZED,validate_errors=1)
+
+                return CustomeResponse(profile,status=status.HTTP_200_OK)
+                 
         else:
              return CustomeResponse({'msg':'Please provide operation parameter op'},status=status.HTTP_401_UNAUTHORIZED,validate_errors=1)            

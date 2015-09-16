@@ -150,6 +150,7 @@ class Profile(models.Model):
     
     activation_key = models.CharField(max_length=40, blank=True)
     key_expires = models.DateTimeField(auto_now_add=True)
+    reset_password_key = models.CharField(max_length=40,null= True)
 
     def __unicode__(self):
         return '{"id":"%s","dob":"%s","gender":"%s","address":"%s","mobile_number":"%s","user":"%s","income_group":"%s","business_type":"%s"}' %(self.id,self.dob,self.gender,self.address,self.mobile_number,self.user,self.income_group,self.business_type)

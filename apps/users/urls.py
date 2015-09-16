@@ -8,7 +8,8 @@ router.register(r'sociallogin',SocialLoginViewSet)
 urlpatterns = [
     url(r'^', include(router.urls)),
     url(r'^useractivity/$','apps.users.views.useractivity',name='useractivity'),
-    url(r'^useractivity/(?P<activation_key>\w+)/$','apps.users.views.useractivity',name='registration_confirm'),
+    url(r'^account_confirmation/(?P<activation_key>\w+)/$','apps.users.views.useractivity',name='registration_confirm'),
+    url(r'^forgot_password/(?P<reset_password_key>\w+)/$','apps.users.views.useractivity',name='forgot_password'),
 ]
 
 from signals import *
