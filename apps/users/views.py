@@ -216,6 +216,7 @@ class SocialLoginViewSet(viewsets.ModelViewSet):
 @api_view(['GET','POST'])       
 def useractivity(request,**kwargs):
     msg = {}
+    print request.device
     if request.method == 'GET':
        activation_key = kwargs.get("activation_key")
        reset_password_key = kwargs.get("reset_password_key")
@@ -231,8 +232,8 @@ def useractivity(request,**kwargs):
                 from django.http import HttpResponse
                 #----------- token value and user_id for direct login into app ----------------------#
                 token_value = getToken(user.id)
-                response = HttpResponse("ohmgear://?token="+str(token_value)+'&user_id='+user.id, status=302)
-                response['Location'] = "ohmgear://?token="+str(token_value)+'&user_id='+user.id
+                response = HttpResponse("ohmgear://?token="+str(token_value)+'&user_id='+str(user.id), status=302)
+                response['Location'] = "ohmgear://?token="+str(token_value)+'&user_id='+str(user.id)
                 return response 
             else:
                return CustomeResponse('Account has been activated',status=status.HTTP_200_OK) 
