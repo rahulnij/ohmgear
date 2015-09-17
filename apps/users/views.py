@@ -260,7 +260,6 @@ def useractivity(request,**kwargs):
                 if reset_password_key:
                     try:
                      profile = Profile.objects.select_related().get(reset_password_key=reset_password_key,user__email=username)
-                     profile
                      profile.user.set_password(password)
                      profile.user.save()
                     except:
