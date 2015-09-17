@@ -231,8 +231,8 @@ def useractivity(request,**kwargs):
                 from django.http import HttpResponse
                 #----------- token value and user_id for direct login into app ----------------------#
                 token_value = getToken(user.id)
-                response = HttpResponse("ohmgear://?token="+token_value+'&user_id='+user.id, status=302)
-                response['Location'] = "ohmgear://?token="+token_value
+                response = HttpResponse("ohmgear://?token="+str(token_value)+'&user_id='+user.id, status=302)
+                response['Location'] = "ohmgear://?token="+str(token_value)+'&user_id='+user.id
                 return response 
             else:
                return CustomeResponse('Account has been activated',status=status.HTTP_200_OK) 
