@@ -229,8 +229,10 @@ def useractivity(request,**kwargs):
             user.save()
             if request.device:
                 from django.http import HttpResponse
-                response = HttpResponse("ohmgear://?activationKey="+activation_key, status=302)
-                response['Location'] = "ohmgear://?activationKey="+activation_key
+                #----------- token value and user_id for direct login into app ----------------------#
+                token_value = getToken(user.id)
+                response = HttpResponse("ohmgear://?token="+token_value+'&user_id='+user.id, status=302)
+                response['Location'] = "ohmgear://?token="+token_value
                 return response 
             else:
                return CustomeResponse('Account has been activated',status=status.HTTP_200_OK) 
