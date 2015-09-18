@@ -150,10 +150,14 @@ class Profile(models.Model):
     
     activation_key = models.CharField(max_length=40, blank=True)
     key_expires = models.DateTimeField(auto_now_add=True)
+    #------------ field for forgot passoword ---------------------#
     reset_password_key = models.CharField(max_length=40,null= True)
+    #------------ field for first time login ---------------------#
+    first_time_login  = models.BooleanField(default=False)
+    #------------- End -------------------------------------------#
 
     def __unicode__(self):
-        return '{"id":"%s","dob":"%s","gender":"%s","address":"%s","mobile_number":"%s","user":"%s","income_group":"%s","business_type":"%s"}' %(self.id,self.dob,self.gender,self.address,self.mobile_number,self.user,self.income_group,self.business_type)
+        return '{"id":"%s","dob":"%s","gender":"%s","address":"%s","mobile_number":"%s","user":"%s","income_group":"%s","business_type":"%s","first_time_login":"%s"}' %(self.id,self.dob,self.gender,self.address,self.mobile_number,self.user,self.income_group,self.business_type,self.first_time_login)
 
 
 

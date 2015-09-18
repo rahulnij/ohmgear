@@ -221,19 +221,26 @@ def useractivity(request,**kwargs):
        activation_key = kwargs.get("activation_key")
        reset_password_key = kwargs.get("reset_password_key")
        
-       #------------- get the activation key and activate the account ----------------------#
+       #------------- get the activation key and activate the account : Process after registration ----------------------#
        if activation_key:
           try: 
             user_profile = get_object_or_404(Profile, activation_key=activation_key)
+            print user_profile
             user = user_profile.user
             user.status = 1
+            if not user_profile.first_time_login:
+                   user_profile.first_time_login = True
+                   user_profile.save()
+                   var_first_time_login = 1
+            else:
+                var_first_time_login = 0 
             user.save()
             if request.device:
                 from django.http import HttpResponse
                 #----------- token value and user_id for direct login into app ----------------------#
                 token_value = getToken(user.id)
-                response = HttpResponse("ohmgear://?token="+str(token_value), status=302)
-                response['Location'] = "ohmgear://?token="+str(token_value)
+                response = HttpResponse("ohmgear://?"+str(token_value)+'&'+str(var_first_time_login), status=302)
+                response['Location'] = "ohmgear://?"+str(token_value)+'&'+str(var_first_time_login)
                 return response 
             else:
                return CustomeResponse('Account has been activated',status=status.HTTP_200_OK) 
@@ -241,7 +248,7 @@ def useractivity(request,**kwargs):
             return CustomeResponse({'msg':'Incorrect activation key'},status=status.HTTP_401_UNAUTHORIZED,validate_errors=1) 
        #------------------------------------ End --------------------------------------------------#
        
-       #--------------------  Get the reset password key and redirect to mobile ----------------------#
+       #--------------------  Get the reset password key and redirect to mobile : Process after forgot password mail sent----------------------#
        elif reset_password_key: 
             if request.device:
                 from django.http import HttpResponse
@@ -320,6 +327,24 @@ def useractivity(request,**kwargs):
                     return CustomeResponse({'msg':msg},status=status.HTTP_401_UNAUTHORIZED,validate_errors=1)
 
                 return CustomeResponse(profile,status=status.HTTP_200_OK)
+            
+        elif op == 'resend_register_mail':
+            
+                email = request.POST.get('email','')                
+                try:
+                 profile = Profile.objects.select_related().get(user__email=email)
+                except:
+                 profile = ''
+                
+                if profile:
+                   from apps.email.views import BaseSendMail
+                   user = model_to_dict(profile.user)
+                   BaseSendMail.delay(user,type='account_confirmation',key = profile.activation_key)
+                   return CustomeResponse({'msg':"email sent"},status=status.HTTP_200_OK)
+                else:
+                   return CustomeResponse({'msg':"email does not exist"},status=status.HTTP_401_UNAUTHORIZED,validate_errors=1) 
                  
+                 
+            
         else:
              return CustomeResponse({'msg':'Please provide operation parameter op'},status=status.HTTP_401_UNAUTHORIZED,validate_errors=1)            
