@@ -153,7 +153,7 @@ class Profile(models.Model):
     #------------ field for forgot passoword ---------------------#
     reset_password_key = models.CharField(max_length=40,null= True)
     #------------ field for first time login ---------------------#
-    first_time_login  = models.BooleanField(default=False)
+    first_time_login  = models.BooleanField(default=True)
     #------------- End -------------------------------------------#
 
     def __unicode__(self):

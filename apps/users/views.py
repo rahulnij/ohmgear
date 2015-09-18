@@ -125,7 +125,7 @@ class UserViewSet(viewsets.ModelViewSet):
 
 
 class ProfileViewSet(viewsets.ModelViewSet):
-    queryset = Profile.objects.all()
+    queryset = Profile.objects.select_related().all()
     serializer_class = ProfileSerializer
     authentication_classes = (ExpiringTokenAuthentication,)
     permission_classes = (IsAuthenticated,)
@@ -146,10 +146,9 @@ class ProfileViewSet(viewsets.ModelViewSet):
            messages = Profile.objects.get(user_id=request.DATA['user_id'])
          except:
            return CustomeResponse({'msg':'record not found'},status=status.HTTP_404_NOT_FOUND,validate_errors=1)
-       
          serializer =  ProfileSerializer(messages,data=request.DATA,partial=True,context={'request': request})
          if serializer.is_valid():
-            serializer.save()
+            serializer.save(first_time_login  = False)
             return CustomeResponse(serializer.data,status=status.HTTP_200_OK)
          else:
             return CustomeResponse(serializer.errors,status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
@@ -228,19 +227,13 @@ def useractivity(request,**kwargs):
             print user_profile
             user = user_profile.user
             user.status = 1
-            if not user_profile.first_time_login:
-                   user_profile.first_time_login = True
-                   user_profile.save()
-                   var_first_time_login = 1
-            else:
-                var_first_time_login = 0 
             user.save()
             if request.device:
                 from django.http import HttpResponse
                 #----------- token value and user_id for direct login into app ----------------------#
                 token_value = getToken(user.id)
-                response = HttpResponse("ohmgear://?tokon="+str(token_value)+'&'+str(var_first_time_login), status=302)
-                response['Location'] = "ohmgear://?tokon="+str(token_value)+'&'+str(var_first_time_login)
+                response = HttpResponse("ohmgear://?tokon="+str(token_value), status=302)
+                response['Location'] = "ohmgear://?tokon="+str(token_value)
                 return response 
             else:
                return CustomeResponse('Account has been activated',status=status.HTTP_200_OK) 
@@ -248,7 +241,7 @@ def useractivity(request,**kwargs):
             return CustomeResponse({'msg':'Incorrect activation key'},status=status.HTTP_401_UNAUTHORIZED,validate_errors=1) 
        #------------------------------------ End --------------------------------------------------#
        
-       #--------------------  Get the reset password key and redirect to mobile : Process after forgot password mail sent----------------------#
+       #--------------------  Get the reset password key and redirect to mobile : Processed when forgot password mail link clicked----------------------#
        elif reset_password_key: 
             if request.device:
                 from django.http import HttpResponse
@@ -294,6 +287,11 @@ def useractivity(request,**kwargs):
                 #----------- first check previus token if exist then delete -----------#
                 user = model_to_dict(user)
                 token = getToken(user["id"])
+                try:
+                 profile = Profile.objects.get(user_id=user["id"])
+                 user['first_time_login'] = profile.first_time_login
+                except:
+                 pass   
                 user['token'] = token
                 ###------------------ End -----------------------------------#
                 return CustomeResponse(user,status=status.HTTP_200_OK)
