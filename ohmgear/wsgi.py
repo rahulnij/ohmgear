@@ -8,9 +8,19 @@ https://docs.djangoproject.com/en/1.8/howto/deployment/wsgi/
 """
 
 import os
+import sys
+import socket
+import re
+#----------- clavax:Set setting according server -------------------------#
+HOSTNAME = socket.gethostname().lower().split('.')[0].replace('-','')
+if re.search('clavax',  HOSTNAME):
+   settings = "ohmgear.settings.local"
+else:
+   settings = "ohmgear.settings.server"
+#----------- End Setting -------------------------------------------#
 
 from django.core.wsgi import get_wsgi_application
 
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "ohmgear.settings.server")
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", settings)
 
 application = get_wsgi_application()
