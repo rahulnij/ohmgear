@@ -49,7 +49,7 @@ INSTALLED_APPS = (
     #'apps.identifiers',
     'apps.businesscards',
     'apps.contacts',
-    #'apps.identifiers',
+    'apps.identifiers',
     'apps.email',
     'rest_framework',
     'rest_framework.authtoken',
