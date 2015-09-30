@@ -7,6 +7,7 @@ urlpatterns = [
     # url(r'^$', 'ohmgear.views.home', name='home'),
     #url(r'^blog/', include('blog.urls')),
     url(r'^api/', include('apps.users.urls')),
+    url(r'^api/', include('apps.notes.urls')),
     url(r'^admin/', include(admin.site.urls)),
 ]
 #handler404 = 'ohmgear.custom_exception_handler.custom404'
