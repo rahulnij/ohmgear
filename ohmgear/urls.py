@@ -7,7 +7,10 @@ urlpatterns = [
     # url(r'^$', 'ohmgear.views.home', name='home'),
     #url(r'^blog/', include('blog.urls')),
     url(r'^api/', include('apps.users.urls')),
+    url(r'^api/', include('apps.businesscards.urls')),
     url(r'^admin/', include(admin.site.urls)),
 ]
+from django.contrib.staticfiles.urls import staticfiles_urlpatterns
+urlpatterns += staticfiles_urlpatterns()
 #handler404 = 'ohmgear.custom_exception_handler.custom404'
 #handler500 = 'ohmgear.custom_exception_handler.custom404'
