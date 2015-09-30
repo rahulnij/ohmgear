@@ -25,15 +25,15 @@ class BusinessCard(models.Model):
     class Meta:
      db_table = 'ohmgear_businesscards_businesscard'
     name = models.CharField(_("name"),null=True,max_length=50)
-    template = models.OneToOneField('BusinessCardTemplate')
+    bcard_type = models.IntegerField(_("Bussiness Card Type"),default=0)    
     status = models.IntegerField(_("Status"),default=0)
-    is_Actve = models.IntegerField(_("Is Active"),default=1)
+    is_Active = models.IntegerField(_("Is Active"),default=1)
     created_date = models.DateTimeField(_("Created Date"),auto_now_add=True)
     updated_date = models.DateTimeField(_("Updated Date"),auto_now_add= True)
-    user = models.OneToOneField(User)
+    user = models.ForeignKey(User)
     
     def __unicode__(self):
-        return'{"id:"%s","name":"%s","template_id":"%s"}'%(self.id,self.template_id)
+        return'{"id:"%s","name":"%s"}'%(self.id,self.name)
     
     
     
