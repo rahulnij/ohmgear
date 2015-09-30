@@ -11,7 +11,7 @@ class Notes(models.Model):
     note_headline = models.CharField(_('Note Headline'),max_length=50,null=True)
     note  =        models.CharField(_('Notes'),max_length=50,null=True)
     created_date  = models.DateTimeField(_('Created Date'),auto_now_add = True)
-    location =      models.CharField(_('location'),max_length=50,null=True)
+    location_area =      models.CharField(_('location'),max_length=50,null=True)
     contact =       models.OneToOneField(Contact,null = True)
     user =          models.OneToOneField(User,null=True)
     note_accessibilty  = models.CharField(_('Note Accessbility'),max_length=50,default =0)
