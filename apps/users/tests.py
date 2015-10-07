@@ -5,7 +5,7 @@ from ohmgear.functions import sql_select
 from apps.users.models import UserType
 from apps.email.models import EmailTemplate
 from apps.users.models import User
-
+from functions import getToken
 ## Test api : user registration
 #           : user login
 #           : social login
@@ -52,4 +52,19 @@ class UserTests(APITestCase):
     url = '/api/users/'
     data = {"first_name":"sazid","email":"sazid.se@gmail.com","password":"1111","user_type":2}
     response = self.client.post(url, data, format='json')
-    self.assertEqual(response.status_code, 201)    
+    self.assertEqual(response.status_code, 201)
+    
+    
+  def test_profile(self):
+    user = User.objects.get(email='sazidk@clavax.us')
+    Token = getToken(user.id)
+    auth_headers = {
+    'Authorization': 'Token'+str(Token),
+    }
+    response = self.client.post('/api/profile/', **auth_headers)
+    
+    print response
+#    url = '/api/profile/'
+#    data = {"user_id":user.id}
+#    response = self.client.post(url, data, format='json')
+    #self.assertEqual(response.status_code, 201)
