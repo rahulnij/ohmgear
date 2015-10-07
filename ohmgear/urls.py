@@ -25,6 +25,12 @@ import apps.businesscards.views as  businesscards_views
 router.register(r'api/businesscard', businesscards_views.BusinessViewSet)
 #-------------- End ---------------------------------------------#
 
+
+#-------------- Notes app url registration ----------------------#
+import apps.notes.views as  notes_views
+router.register(r'api/notes', notes_views.NotesViewSet)
+#-------------- End ---------------------------------------------#
+
 urlpatterns += patterns('',
     url(r'^admin/', include(admin.site.urls)),
 )
