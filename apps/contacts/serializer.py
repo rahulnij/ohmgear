@@ -12,7 +12,8 @@ class ContactsSerializer(serializers.ModelSerializer):
             'bcard_json_data',
             'template',
         )
-        
+
+#------------- Used in fetch contact data -------------------#        
 class ContactsSerializerWithJson(serializers.ModelSerializer):
     #bcard_json_data = serializers.CharField()
     bcard_json_data = serializers.SerializerMethodField('clean_bcard_json_data')

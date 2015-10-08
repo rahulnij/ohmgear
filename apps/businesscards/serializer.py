@@ -14,7 +14,7 @@ class BusinessCardSerializer(serializers.ModelSerializer):
             'name',
             'bcard_type',
             'status',
-            'is_Active',
+            'is_active',
             'user',
             'contact_detail'
         )
