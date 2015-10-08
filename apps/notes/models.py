@@ -9,12 +9,13 @@ class Notes(models.Model):
     class Meta:
         db_table = 'ohmgear_notes'
     note_headline = models.CharField(_('Note Headline'),max_length=50,null=True)
-    note  =        models.CharField(_('Notes'),max_length=50,null=True)
+    note  =        models.CharField(_('Notes'),max_length=500,null=True)
     created_date  = models.DateTimeField(_('Created Date'),auto_now_add = True)
     location_area =      models.CharField(_('Location Area'),max_length=50,null=True)
     contact =       models.OneToOneField(Contact,null = True)
     user =          models.OneToOneField(User,null=True)
-    note_accessibilty  = models.CharField(_('Note Accessbility'),max_length=50,default =0)
+    #------------------ Note Accesibility by default 0 for public 1 for shared  -------------------#  
+    note_accessibilty  = models.IntegerField(_('Note Accessbility'),default =0)
     updated_date  = models.DateTimeField(_('Updated Date'),auto_now_add = True)
     
     
