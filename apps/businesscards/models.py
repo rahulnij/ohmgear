@@ -26,7 +26,9 @@ class BusinessCard(models.Model):
      db_table = 'ohmgear_businesscards_businesscard'
     name = models.CharField(_("name"),null=True,max_length=50)
     bcard_type = models.IntegerField(_("Bussiness Card Type"),default=0)    
-    status = models.IntegerField(_("Status"),default=0)    
+    #-----------Status denotes whether business card is published or not ----#
+    status = models.IntegerField(_("Status"),default=0)
+    #-----------is_active denotes whether business card is active or not----#
     is_active = models.IntegerField(_("Is Active"),default=1)
     created_date = models.DateTimeField(_("Created Date"),auto_now_add=True)
     updated_date = models.DateTimeField(_("Updated Date"),auto_now_add= True)
