@@ -17,12 +17,14 @@ class Identifier(models.Model):
     
     class Meta:
      db_table = 'ohmgear_identifiers_identifier'
-    user = models.OneToOneField(User)
-    identifier = models.CharField(_("identifier"),null=True,max_length=50)
+    
+    #user = models.OneToOneField(User)
+    identifier = models.CharField(_("identifier"),null=True,max_length=50,unique=True)
+    #---------------- identifier type 1 for system generated and 2 for premium----#
     identifier_type = models.IntegerField(_("Identifier Type"),choices=IDENTIFIER_TYPE,default=1)
     created_date = models.DateTimeField(_("Created Date"),auto_now_add=True)
     updated_date = models.DateTimeField(_("Updated Date"),auto_now_add= True)
     
     
     def __unicode__(self):
-        return'{"id:"%s","identifier":"%s","identifier_type":"%s"}'%(self.id,self.identifier,self.identifier_type)
+        return'{"id:"%s","identifier_type":"%s"}'%(self.id,self.identifier_type)
