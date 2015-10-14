@@ -12,7 +12,8 @@ import validictory
 #--------------------- Storing Contacts as a Bulk -----------------------#
 @api_view(['GET','POST'])       
 def storeContacts(request,**kwargs):
-
+    if request.method == 'GET':
+        return CustomeResponse({'msg':'GET method not allowed'},status=status.HTTP_405_METHOD_NOT_ALLOWED,validate_errors=1)
     if request.method == 'POST':
         # ----------- Login ------------------#
         op = request.POST.get('op','')
