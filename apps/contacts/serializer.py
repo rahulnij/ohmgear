@@ -11,6 +11,7 @@ class ContactsSerializer(serializers.ModelSerializer):
             'businesscard',
             'bcard_json_data',
             'template',
+            'user'
         )
 
 #------------- Used in fetch contact data -------------------#        

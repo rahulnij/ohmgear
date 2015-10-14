@@ -2,6 +2,7 @@ from django.conf.urls import include, url,patterns
 from django.contrib import admin
 import token_authentication as views
 from rest_framework import routers
+from rest_framework.urlpatterns import format_suffix_patterns
 
 router = routers.DefaultRouter()
 
@@ -29,6 +30,16 @@ router.register(r'api/businesscard', businesscards_views.BusinessViewSet)
 #-------------- Notes app url registration ----------------------#
 import apps.notes.views as  notes_views
 router.register(r'api/notes', notes_views.NotesViewSet)
+#-------------- End ---------------------------------------------#
+
+#-------------- Contacts app url registration ----------------------#
+import apps.contacts.views as  contacts_views
+
+urlpatterns += [
+    url(r'^api/upload_contacs/$', contacts_views.storeContacts),    
+]
+
+urlpatterns += format_suffix_patterns(urlpatterns)
 #-------------- End ---------------------------------------------#
 
 urlpatterns += patterns('',

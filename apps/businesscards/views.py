@@ -10,29 +10,20 @@ from apps.contacts.serializer import ContactsSerializer
 
 from ohmgear.token_authentication import ExpiringTokenAuthentication
 from ohmgear.functions import CustomeResponse
-from ohmgear.json_default_data import BUSINESS_CARD_DATA_TYPE
+from ohmgear.json_default_data import BUSINESS_CARD_DATA_VALIDATION
 
 from django.core.exceptions import ValidationError
-import json,jsonschema
+import json,validictory
 from django.shortcuts import get_object_or_404
 # Create your views here.
 
 class BusinessViewSet(viewsets.ModelViewSet):
     queryset = BusinessCard.objects.all()
     serializer_class = BusinessCardSerializer
-    #authentication_classes = (ExpiringTokenAuthentication,)
-    #permission_classes = (IsAuthenticated,)    
+    authentication_classes = (ExpiringTokenAuthentication,)
+    permission_classes = (IsAuthenticated,)    
     
-    def get_permissions(self):
-        # Your logic should be all here
-        if self.request.method == 'POST':
-            self.authentication_classes = []
-            self.permission_classes = []
-        else:
-            pass
-            #self.authentication_classes = [ExpiringTokenAuthentication,]
-            #self.permission_classes = [IsAuthenticated, ]
-        return super(viewsets.ModelViewSet, self).get_permissions()  
+
     #---    -----------Method: GET-----------------------------#       
     def list(self, request):
          return CustomeResponse({'msg':'GET method not allowed'},status=status.HTTP_405_METHOD_NOT_ALLOWED,validate_errors=1)   
@@ -47,13 +38,15 @@ class BusinessViewSet(viewsets.ModelViewSet):
     #--------------Method: POST create new business card -----------------------------#
     def create(self, request):
          
-         #-------------------- First Validate the json contact data ------------------------------#
+         #-------------------- First Validate the json contact data ------------------------------# 
          try:
-            jsonschema.validate(json.loads(request.DATA["bcard_json_data"]), BUSINESS_CARD_DATA_TYPE)
-         except jsonschema.ValidationError as error:
+            validictory.validate(json.loads(request.DATA["bcard_json_data"]), BUSINESS_CARD_DATA_VALIDATION)
+         except validictory.ValidationError as error:
             return CustomeResponse({'msg':error.message },status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
-         except jsonschema.SchemaError as error:
-            return CustomeResponse({'msg':error.message },status=status.HTTP_400_BAD_REQUEST,validate_errors=1)        
+         except validictory.SchemaError as error:
+            return CustomeResponse({'msg':error.message },status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
+         except:
+            return CustomeResponse({'msg':"Please provide bcard_json_data in json format" },status=status.HTTP_400_BAD_REQUEST,validate_errors=1) 
          #---------------------- - End ----------------------------------------------------------- #
          
          

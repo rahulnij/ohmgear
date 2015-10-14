@@ -25,7 +25,7 @@ class BusinessCard(models.Model):
     class Meta:
      db_table = 'ohmgear_businesscards_businesscard'
     name = models.CharField(_("name"),null=True,max_length=50)
-    #----------- card type single or double----#
+     #----------- card type single or double----#
     bcard_type = models.IntegerField(_("Bussiness Card Type"),default=0)    
     #-----------Status denotes whether business card is published or not ----#
     status = models.IntegerField(_("Status"),default=0)
