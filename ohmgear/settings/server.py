@@ -2,7 +2,6 @@ from base import *
 #DOMAIN_NAME = 'http://ohmgear.in'
 DOMAIN_NAME = 'http://ohmgear.clavax.us'
 SITE_ROOT="/home/ohmgear/ohmgear/"
-STATIC_ROOT = "/home/ohmgear/ohmgear/static/"
 DEBUG = True
 ALLOWED_HOSTS = ['*']
 DATABASES = {
