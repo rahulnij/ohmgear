@@ -38,7 +38,7 @@ class BusinessViewSet(viewsets.ModelViewSet):
     #--------------Method: POST create new business card -----------------------------#
     def create(self, request):
          
-         #-------------------- First Validate the json contact data ------------------------------# 
+         #-------------------- First Validate the json contact data ------------------------------#
          try:
             validictory.validate(json.loads(request.DATA["bcard_json_data"]), BUSINESS_CARD_DATA_VALIDATION)
          except validictory.ValidationError as error:
@@ -64,6 +64,34 @@ class BusinessViewSet(viewsets.ModelViewSet):
  
          else:
             return CustomeResponse(serializer.errors,status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
+        
+    def update(self, request, pk=None):  
+         #-------------------- First Validate the json contact data ------------------------------#
+         try:
+            validictory.validate(json.loads(request.DATA["bcard_json_data"]), BUSINESS_CARD_DATA_VALIDATION)
+         except validictory.ValidationError as error:
+            return CustomeResponse({'msg':error.message },status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
+         except validictory.SchemaError as error:
+            return CustomeResponse({'msg':error.message },status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
+         except:
+            return CustomeResponse({'msg':"Please provide bcard_json_data in json format" },status=status.HTTP_400_BAD_REQUEST,validate_errors=1) 
+         #---------------------- - End ----------------------------------------------------------- #
+         
+         
+         serializer =  BusinessCardSerializer(data=request.DATA,context={'request': request})
+         if serializer.is_valid():
+            print request.DATA
+            contact_serializer =  ContactsSerializer(data=request.DATA,context={'request': request})
+            if contact_serializer.is_valid():
+                business = serializer.save()
+                contact = contact_serializer.save(businesscard = business)
+            else:
+                return CustomeResponse(contact_serializer.errors,status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
+            
+            return CustomeResponse(serializer.data,status=status.HTTP_201_CREATED)
+ 
+         else:
+            return CustomeResponse(serializer.errors,status=status.HTTP_400_BAD_REQUEST,validate_errors=1)        
         
 #    #--------------Method: PUT update the record-----------------------------#
 #    def update(self, request, pk=None):

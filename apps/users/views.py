@@ -301,7 +301,7 @@ def useractivity(request,**kwargs):
                 email = request.POST.get('email','')
                 
                 try:
-                 profile = Profile.objects.select_related().get(user__email=request.DATA['email'])
+                 profile = Profile.objects.select_related().get(user__email=request.DATA['email'],user_type__in=[2,3])
                 except:
                  profile = ''
                 if email:                   
