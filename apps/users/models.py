@@ -72,7 +72,8 @@ class UserType(models.Model):
     user_type = models.CharField(_('User Type'),max_length =50)
     
     def __unicode__(self):
-        return '{"id":"%s","user_type":"%s"}'%(self.id,self.user_type)
+       # return '{"id":"%s","user_type":"%s"}'%(self.id,self.user_type)
+       return (self.user_type)
 
 #----------------------- End -----------------------------------------------------------------#    
 
