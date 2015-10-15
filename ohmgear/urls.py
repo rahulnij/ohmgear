@@ -26,6 +26,7 @@ urlpatterns =patterns(
     url(r'^api/account_confirmation/(?P<activation_key>\w+)/$','apps.users.views.useractivity',name='registration_confirm'),
     url(r'^api/forgot_password/(?P<reset_password_key>\w+)/$','apps.users.views.useractivity',name='forgot_password'),
 )
+from apps.users.signals import *
 #-------------- End ---------------------------------------------#
 
 #-------------- Business app url registration ----------------------#

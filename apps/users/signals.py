@@ -26,6 +26,7 @@ def register_profile(sender, **kwargs):
                     profile.activation_key = activation_key
                     profile.key_expires = key_expires
                 #--------------------- End -------------------------------------------------------------#
+
                 profile.save()
                 if user.status is not 1:
                     BaseSendMail.delay(user,type='account_confirmation',key = activation_key)
