@@ -13,10 +13,16 @@ from functions import CreateSystemIdentifier
 class IdentifierViewSet(viewsets.ModelViewSet):
     queryset = Identifier.objects.select_related().all()
     serializer_class = IdentifierSerializer
+    
     #--------------Method: GET-----------------------------#       
-    def list(self,request):
-         return CustomeResponse({'msg':'GET method not allowed'},status=status.HTTP_405_METHOD_NOT_ALLOWED,validate_errors=1)
- 
+    def list(self,request,**kwargs):
+        if request.method == 'GET':
+            user =  self.request.QUERY_PARAMS.get('user', None)
+            userdata = Identifier.objects.filter(user=user).values()
+            return CustomeResponse(userdata,status=status.HTTP_201_CREATED)
+    
+                
+            
     #--------------Method: GET retrieve single record-----------------------------#
     def retrieve(self, request,pk=None):
         queryset = self.queryset
@@ -29,14 +35,19 @@ class IdentifierViewSet(viewsets.ModelViewSet):
     def create(self, request,fromsocial=None):
          
          serializer =  IdentifierSerializer(data=request.DATA,context={'request': request})
+         
          #print data
          #request.DATA['identifier'] = (''.join(random.choice('0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz') for i in range(6)))
          #------ object value which can be change are mutable object value which cannot be change are immutable  -----------#
          mutable = request.POST._mutable
          request.POST._mutable = True
-         request.POST['identifier'] =   CreateSystemIdentifier()
+        
+         if request.POST.get('identifier_type') == '1':
+            request.POST['identifier'] =   CreateSystemIdentifier()
+         else: 
+           pass
          request.POST._mutable = mutable
-         #serializer =  IdentifierSerializer(data=request.DATA,context={'request': request,'msg':'not exist'})
+         serializer =  IdentifierSerializer(data=request.DATA,context={'request': request,'msg':'not exist'})
          
          if serializer.is_valid():
              
@@ -45,7 +56,7 @@ class IdentifierViewSet(viewsets.ModelViewSet):
                 self._disable_signals = True
             #------------ End -----------------------------------#
             
-            #identifier_id=serializer.save() 
+            identifier_id=serializer.save()  
             if not fromsocial:
              return CustomeResponse(serializer.data,status=status.HTTP_201_CREATED)
             else:

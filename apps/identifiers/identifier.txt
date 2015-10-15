@@ -1,0 +1,26 @@
+Identifier
+Default identifier_type admin can set
+
+Identifier_tye
+1 System_Generated
+2 Premium
+
+
+First Time user will get Premium identifier
+
+Identifier is unique having combination of alphanumeric 6 character in system_generated and 
+4-12 alpha-numeric in premium identifier.
+
+When identifier_type is 2
+Required Parameters needed
+
+user_id
+identifier_type
+identifier
+
+When identifier_type is 1
+Required Parameters needed
+
+user_id
+identifier_type
+

@@ -18,10 +18,12 @@ class Identifier(models.Model):
     class Meta:
      db_table = 'ohmgear_identifiers_identifier'
     
-    #user = models.OneToOneField(User)
-    identifier = models.CharField(_("identifier"),null=True,max_length=50,unique=True)
+    user = models.ForeignKey(User)
+    identifier = models.CharField(_("identifier"),max_length=12,unique=True)
+    #-------------Identifier status whether identifier is active or not or is expired for business card---# 
+    status      = models.IntegerField(_("Status"),default=1)
     #---------------- identifier type 1 for system generated and 2 for premium----#
-    identifier_type = models.IntegerField(_("Identifier Type"),choices=IDENTIFIER_TYPE,default=1)
+    identifier_type = models.IntegerField(_("Identifier Type"))
     created_date = models.DateTimeField(_("Created Date"),auto_now_add=True)
     updated_date = models.DateTimeField(_("Updated Date"),auto_now_add= True)
     
