@@ -36,9 +36,6 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = (
-    #'suit',
-    #'grappelli',
-    'jet.dashboard',
     'jet',
     'django.contrib.admin',
     'django.contrib.auth',
@@ -48,9 +45,6 @@ INSTALLED_APPS = (
     'django.contrib.staticfiles',
     'apps.users',
     'apps.notes',
-    #'apps.businesscards',
-    #'apps.contacts',
-    #'apps.identifiers',
     'apps.businesscards',
     'apps.contacts',
     'apps.identifiers',
@@ -126,9 +120,9 @@ WSGI_APPLICATION = 'ohmgear.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'postgres',
-        'USER': 'postgres',
-        'PASSWORD': '',
+        'NAME': 'ohmgear',
+        'USER': 'ohmgear',
+        'PASSWORD': 'ohmgear@123',
         'HOST': 'localhost',
         'PORT': '',
     }
@@ -153,4 +147,4 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/1.8/howto/static-files/
 
 STATIC_URL = '/static/'
-STATIC_ROOT = "/var/www/html/myDjango/static/"
+#STATIC_ROOT = "/var/www/html/myDjango/static/"

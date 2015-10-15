@@ -22,3 +22,4 @@ requests==2.7.0
 sqlparse==0.1.16
 validictory==1.0.1
 wsgiref==0.1.2
+django-jet==0.1.1
