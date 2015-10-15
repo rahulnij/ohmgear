@@ -3,7 +3,8 @@ from rest_framework.test import APITestCase,APIClient
 from apps.users.models import User,UserType
 from apps.users.functions import getToken
 from apps.email.models import EmailTemplate
-
+from apps.businesscards.models import BusinessCardTemplate
+import json
 class UserTests(APITestCase):
   client = APIClient()
   
@@ -23,17 +24,22 @@ class UserTests(APITestCase):
             user.set_password('1111')
             user.save()
             #--------------------------------------------------------------------#
+            #--------- insert business card template ----------------------------#
+            BusinessCardTemplate.objects.create(template_name='test',template_content='testt')
        #-------------------------------------------------------------------------------------#
 
   def test_create_business_card(self):
     user = User.objects.get(email='sazidk@clavax.us')
     Token = getToken(user.id)
-    data = {"first_name":"sazid","email":"sazid.se@gmail.com","password":"1111","user_type":2}
+    #----------- insert template -------------------#
+    
+    #-----------------------------------------------#
+    data = {"bcard_json_data":'{"side_second": {"card_name": "first","language":"eq", "personal_info": {"nick_name": "", "name": "sdf"}, "organization_info": {"company": "", "title": ""}, "contact_info": {"phone": "", "skype_id": "", "email": "", "address": ""}}, "side_first": {"card_name": "test","language":"df", "personal_info": {"nick_name": "", "name": ""}, "organization_info": {"company": "", "title": ""}, "contact_info": {"phone": "", "skype_id": "", "email": "", "address": ""}}}'
+    ,"template":1,"user":user.id}
     auth_headers = {
     'HTTP_AUTHORIZATION': 'Token '+str(Token),
     }
-    print auth_headers
-    response = self.client.post('/api/businesscard/', {},**auth_headers)
-    print response.data
-    self.assertEqual(response, 201)
-    #print response
+    response = self.client.post('/api/businesscard/',data,format='json',**auth_headers)
+    self.assertEqual(response.status_code, 201)
+    
+    

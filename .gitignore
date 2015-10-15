@@ -1,4 +1,6 @@
+*.py~
 *.pyc
 nbproject
 mysite.log
 src
+static

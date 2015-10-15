@@ -2,7 +2,6 @@ from django.conf.urls import include, url,patterns
 from django.contrib import admin
 import token_authentication as views
 from rest_framework import routers
-from rest_framework.urlpatterns import format_suffix_patterns
 
 admin.site.site_header = 'ohmgear'
 
@@ -26,7 +25,6 @@ urlpatterns =patterns(
     url(r'^api/account_confirmation/(?P<activation_key>\w+)/$','apps.users.views.useractivity',name='registration_confirm'),
     url(r'^api/forgot_password/(?P<reset_password_key>\w+)/$','apps.users.views.useractivity',name='forgot_password'),
 )
-from apps.users.signals import *
 #-------------- End ---------------------------------------------#
 
 #-------------- Business app url registration ----------------------#
@@ -34,25 +32,10 @@ import apps.businesscards.views as  businesscards_views
 router.register(r'api/businesscard', businesscards_views.BusinessViewSet)
 #-------------- End ---------------------------------------------#
 
-#-------------- Identifiers app url ----------------------#
-import apps.identifiers.views as  identifiers_views
-router.register(r'api/identifiers', identifiers_views.IdentifierViewSet)
-#-------------- End ---------------------------------------------#
-
 
 #-------------- Notes app url registration ----------------------#
 import apps.notes.views as  notes_views
 router.register(r'api/notes', notes_views.NotesViewSet)
-#-------------- End ---------------------------------------------#
-
-#-------------- Contacts app url registration ----------------------#
-import apps.contacts.views as  contacts_views
-
-urlpatterns += [
-    url(r'^api/upload_contacs/$', contacts_views.storeContacts),    
-]
-
-urlpatterns += format_suffix_patterns(urlpatterns)
 #-------------- End ---------------------------------------------#
 
 urlpatterns += patterns('',

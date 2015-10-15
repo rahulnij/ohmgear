@@ -6,6 +6,7 @@ from django.utils.translation import ugettext_lazy as _
 from django_pgjson.fields import JsonField
 import datetime
 from datetime import timedelta
+from django.utils.html import format_html
 
 
 class CustomUserManager(BaseUserManager):
@@ -71,7 +72,8 @@ class UserType(models.Model):
     user_type = models.CharField(_('User Type'),max_length =50)
     
     def __unicode__(self):
-        return '{"id":"%s","user_type":"%s"}'%(self.id,self.user_type)
+       # return '{"id":"%s","user_type":"%s"}'%(self.id,self.user_type)
+       return (self.user_type)
 
 #----------------------- End -----------------------------------------------------------------#    
 
