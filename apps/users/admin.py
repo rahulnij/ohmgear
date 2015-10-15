@@ -14,7 +14,7 @@ class UserAdmin(admin.ModelAdmin):
         if obj.status:
             return 'Active'     
         else:
-            return 'Not-Active' 
+            return 'InActive' 
 
     get_status.short_description = 'status'
     get_status.allow_tags = True
