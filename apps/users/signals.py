@@ -20,8 +20,7 @@ def register_profile(sender, **kwargs):
                     #------------------- Send the registration mail to user and it have confirmation link ----------#
                     salt = hashlib.sha1(str(random.random())).hexdigest()[:5]            
                     activation_key = hashlib.sha1(salt+user.email).hexdigest()            
-                    key_expires = datetime.datetime.today() + datetime.timedelta(2)
-                    user = model_to_dict(user)
+                    key_expires = datetime.datetime.today() + datetime.timedelta(2)                    
                     #print user
                     profile.activation_key = activation_key
                     profile.key_expires = key_expires
@@ -29,6 +28,7 @@ def register_profile(sender, **kwargs):
 
                 profile.save()
                 if user.status is not 1:
+                    user = model_to_dict(user)
                     BaseSendMail.delay(user,type='account_confirmation',key = activation_key)
                 return
 post_save.connect(register_profile, sender=User, dispatch_uid='register_profile')
