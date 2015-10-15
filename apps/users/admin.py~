@@ -12,13 +12,11 @@ class UserAdmin(admin.ModelAdmin):
 
     def get_status(self, obj):
         if obj.status:
-            return 'Active'     
+            return 'Active'
         else:
-            return 'Not-Active' 
+            return 'Not Active'
 
     get_status.short_description = 'status'
-    get_status.allow_tags = True
-
     list_per_page = 25
     
 admin.site.register(User,UserAdmin)
