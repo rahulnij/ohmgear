@@ -299,9 +299,8 @@ def useractivity(request,**kwargs):
         elif op == 'reset_password':
             
                 email = request.POST.get('email','')
-                profile = Profile.objects.select_related().get(user__email=request.DATA['email'],user_type__in=[2,3])
                 try:
-                 profile = Profile.objects.select_related().get(user__email=request.DATA['email'],user_type__in=[2,3])
+                 profile = Profile.objects.select_related().get(user__email=request.DATA['email'],user__user_type__in=[2,3])
                 except:
                  profile = ''
                 if email:                   
