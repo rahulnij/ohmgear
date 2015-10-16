@@ -87,10 +87,10 @@ class UserViewSet(viewsets.ModelViewSet):
                 self._disable_signals = True
             #------------ End -----------------------------------#
             user_id=serializer.save() 
-            #---------------- Set the password -----------#
-            if 'password' in request.DATA and request.DATA['password'] is not None:
-               self.set_password(request,user_id.id)
-            #---------------- End ------------------------#
+#            #---------------- Set the password -----------#
+#            if 'password' in request.DATA and request.DATA['password'] is not None:
+#               self.set_password(request,user_id.id)
+#            #---------------- End ------------------------#
             if not fromsocial:
              return CustomeResponse(serializer.data,status=status.HTTP_201_CREATED)
             else:
@@ -108,10 +108,10 @@ class UserViewSet(viewsets.ModelViewSet):
          serializer =  UserSerializer(messages,data=request.DATA,partial=True,context={'request': request})
          if serializer.is_valid():
             serializer.save()
-            #---------------- Set the password -----------#
-            if 'password' in request.DATA and request.DATA['password'] is not None:
-               self.set_password(request,pk)
-            #---------------- End ------------------------#            
+#            #---------------- Set the password -----------#
+#            if 'password' in request.DATA and request.DATA['password'] is not None:
+#               self.set_password(request,pk)
+#            #---------------- End ------------------------#            
             return CustomeResponse(serializer.data,status=status.HTTP_201_CREATED)
          else:
             return CustomeResponse(serializer.errors,status=status.HTTP_400_BAD_REQUEST,validate_errors=1)

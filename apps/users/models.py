@@ -95,8 +95,8 @@ class User(AbstractBaseUser):
     user_type = models.ForeignKey(UserType,null= True)
     pin_number = models.IntegerField(_("Pin Number"),default=0)
     status = models.IntegerField(_("Status"),default=0)    
-    created_date=models.DateTimeField(_("Created Date"),auto_now_add=True)
-    updated_date=models.DateTimeField(_("Updated Date"),auto_now_add=True)
+    created_date=models.DateTimeField(_("Created Date"),auto_now_add=True,auto_now=False)
+    updated_date=models.DateTimeField(_("Updated Date"),auto_now_add=False,auto_now=True)
     objects = CustomUserManager()
 
     USERNAME_FIELD = 'email'
@@ -131,7 +131,15 @@ class User(AbstractBaseUser):
     
     @property
     def _disable_signals(self):
-        return self.status    
+        return self.status
+    
+    #Overriding
+    def save(self, *args, **kwargs):
+        #check if the row with this hash already exists.
+        if self.password:
+           self.set_password(self.password)           
+        super(User, self).save(*args, **kwargs)    
+    
 
 
     
@@ -144,8 +152,8 @@ class Profile(models.Model):
     address = models.CharField(_("Address"),max_length=80,null=True)
     mobile_number = models.CharField(_("Mobile Number"),max_length=10,null=True)   
     custom_data = JsonField(null=True)
-    created_date=models.DateTimeField(_("Created Date"),auto_now_add=True)
-    updated_date=models.DateTimeField(_("Updated Date"),auto_now_add=True)    
+    created_date=models.DateTimeField(_("Created Date"),auto_now_add=True,auto_now=False)
+    updated_date=models.DateTimeField(_("Updated Date"),auto_now_add=False,auto_now=True)    
     user = models.OneToOneField(User,null=True)
     income_group = models.ForeignKey(IncomeGroup, null=True, blank=True)
     business_type = models.ForeignKey(BusinessType,null= True)
@@ -168,7 +176,7 @@ class SocialLogin(models.Model):
         db_table = 'ohmgear_users_socialprofile'
     social_media_login_id = models.CharField(_("Social Media Login Id"),null=True,max_length=50)
     social_type = models.ForeignKey(SocialType,null=True)
-    created_date = models.DateTimeField(_("Created Date"),auto_now_add=True)
+    created_date=models.DateTimeField(_("Created Date"),auto_now_add=True,auto_now=False)
     user = models.OneToOneField(User,null=True)
     
     def __unicode__(self):

@@ -1,0 +1,9 @@
+#---------- Run Celery ---------------------#
+Command: python manage.py celeryd
+Default Port:6379
+#-------------------------------------------#
+
+#---------- Run Redis ----------------------#
+Command: src/redis-server
+Default Port:6379
+#-------------------------------------------#

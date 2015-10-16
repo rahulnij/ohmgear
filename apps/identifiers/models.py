@@ -24,8 +24,8 @@ class Identifier(models.Model):
     status      = models.IntegerField(_("Status"),default=1)
     #---------------- identifier type 1 for system generated and 2 for premium----#
     identifier_type = models.IntegerField(_("Identifier Type"))
-    created_date = models.DateTimeField(_("Created Date"),auto_now_add=True)
-    updated_date = models.DateTimeField(_("Updated Date"),auto_now_add= True)
+    created_date=models.DateTimeField(_("Created Date"),auto_now_add=True,auto_now=False)
+    updated_date=models.DateTimeField(_("Updated Date"),auto_now_add=False,auto_now=True)
     
     
     def __unicode__(self):

@@ -11,8 +11,8 @@ class EmailTemplate(models.Model):
     slug = models.SlugField() 
     status = models.BooleanField()
     from_email = models.CharField(max_length=255,default='')
-    created_date=models.DateTimeField(_("Created Date"),auto_now_add=True)
-    updated_date=models.DateTimeField(_("Updated Date"),auto_now_add=True)
+    created_date=models.DateTimeField(_("Created Date"),auto_now_add=True,auto_now=False)
+    updated_date=models.DateTimeField(_("Updated Date"),auto_now_add=False,auto_now=True)
     
     def __unicode__(self):
         return '{"id:"%s","subject":"%s","content":"%s","slug":"%s"}'%(self.id,self.subject,self.content,self.slug)

@@ -16,8 +16,8 @@ class Contact(models.Model):
     bcard_json_data = JsonField(null=True)
     template = models.ForeignKey(BusinessCardTemplate)
     user = models.ForeignKey(User)
-    created_date= models.DateTimeField(_("Created Date"),auto_now_add = True)
-    updated_date= models.DateTimeField(_("Updated Date"),auto_now_add = True)
+    created_date=models.DateTimeField(_("Created Date"),auto_now_add=True,auto_now=False)
+    updated_date=models.DateTimeField(_("Updated Date"),auto_now_add=False,auto_now=True)
     def __unicode__(self):
         return '{"id:"%s","bcard_json_data":"%s","businesscard":"%s"}'%(self.id,self.bcard_json_data,self.businesscard)
     
