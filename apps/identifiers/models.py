@@ -22,10 +22,14 @@ class Identifier(models.Model):
     identifier = models.CharField(_("identifier"),max_length=12,unique=True)
     #-------------Identifier status whether identifier is active or not or is expired for business card---# 
     status      = models.IntegerField(_("Status"),default=1)
+    #--------------Payment status whether user have paid for idnetifier or not
+    paymentstatus      = models.IntegerField(_("Payment Status"),default=0)
     #---------------- identifier type 1 for system generated and 2 for premium----#
     identifier_type = models.IntegerField(_("Identifier Type"))
-    created_date=models.DateTimeField(_("Created Date"),auto_now_add=True,auto_now=False)
-    updated_date=models.DateTimeField(_("Updated Date"),auto_now_add=False,auto_now=True)
+    #---------------- identifier last date which date identifier will get expired----#
+    idetifierlastdate  = models.DateTimeField(_("Identifier Last Date"))
+    created_date = models.DateTimeField(_("Created Date"),auto_now_add=True)
+    updated_date = models.DateTimeField(_("Updated Date"),auto_now_add= True)
     
     
     def __unicode__(self):
