@@ -94,77 +94,124 @@ BUSINESS_CARD_DATA_VALIDATION = {
             "side_first":{
                     
                     "type": "object",
-                    "properties":{
-                            "card_name": {
-                                        "type": "string","blank": True,"minLength": 0, "maxLength": 50
-                                   },
-                            "language":{"type": "string","blank": True,"minLength": 2, "maxLength": 2},         
-                            "personal_info":
+                    "properties":{        
+                            "basic_info":
                                { 
                                 "type": "object",
                                 "properties": {
                                                        "name":{"type": "string","blank": True},
-                                                       "nick_name":{"type": "string","blank": True}
+                                                       "nick_name":{"type": "string","blank": True},
+                                                       "card_name": {"type": "string","blank": True,"minLength": 0, "maxLength": 50},
+                                                       "language":{"type": "string","blank": True,"minLength": 2, "maxLength": 2},                                                       
+                                                       "title":{"type": "string","blank": True,"minLength": 0, "maxLength": 50},
+                                                       "company_name":{"type": "string","blank": True,"minLength": 0, "maxLength": 50}
                                                }              
-                                },
-                            "organization_info":
-                               { 
-                                "type": "object",
-                                "properties": {
-                                                       "company":{"type": "string","blank": True,"minLength": 0, "maxLength": 50},
-                                                       "title":{"type": "string","blank": True,"minLength": 0, "maxLength": 50}
-                                               }
-                                               
                                 },
                             "contact_info":
                                { 
                                 "type": "object",
                                 "properties": {
-                                                       "phone":{"type": "string","pattern": "^$|^[0-9-]+$","blank": True},
-                                                       "email":{"type": "string","pattern": "^$|^[A-Za-z0-9][A-Za-z0-9\.]*@([A-Za-z0-9]+\.)+[A-Za-z0-9]+$","blank": True},
-                                                       "skype_id":{"type": "string","blank": True},
-                                                       "address":{"type": "string","blank": True,"minLength": 0, "maxLength": 50}
+                                                       "phone":{"type": "array","items":[{}],"blank": True},
+                                                       "email":{"type": "array","items":[{}],"blank": True},
+                                                       "message":{"type": "array","items":[{}],"blank": True},
+                                                       "website":{"type": "array","items":[{}],"blank": True},
+                                                       "social_network":{"type": "array","items":[{}],"blank": True},
+                                                       "address":{
+                                                               "type": "object",
+                                                               "properties": {
+                                                                "work":{
+                                                                  "type": "object",
+                                                                  "properties": {
+                                                                     "city":{"type": "string","blank": True,"minLength": 0, "maxLength": 50},
+                                                                     "country":{"type": "string","blank": True,"minLength": 0, "maxLength": 50},
+                                                                     "state":{"type": "string","blank": True,"minLength": 0, "maxLength": 50},
+                                                                     "street":{"type": "string","blank": True,"minLength": 0, "maxLength": 50},
+                                                                     "zipCode":{"type": "string","blank": True,"minLength": 0, "maxLength": 50}
+                                                                  }
+                                                                }   ,
+                                                               "phone":{
+                                                                  "type": "object",
+                                                                  "properties": {
+                                                                     "city":{"type": "string","blank": True,"minLength": 0, "maxLength": 50},
+                                                                     "country":{"type": "string","blank": True,"minLength": 0, "maxLength": 50},
+                                                                     "state":{"type": "string","blank": True,"minLength": 0, "maxLength": 50},
+                                                                     "street":{"type": "string","blank": True,"minLength": 0, "maxLength": 50},
+                                                                     "zipCode":{"type": "string","blank": True,"minLength": 0, "maxLength": 50}                                                                 
+                                                                  
+                                                                  }                                                                  
+                                                                
+                                                                
+                                                                }
+                                                               
+                                                               }
+                                                       
+                                                       }
+                                                           
                                                }              
                                 }
                     }
-            },    
-            "side_second":{                    
+            },
+            "side_second":{
                     
                     "type": "object",
-                    "properties":{
-                            "card_name": {
-                                        "type": "string","blank": True,"minLength": 0, "maxLength": 50
-                                   },
-                            "language":{"type": "string","blank": True,"minLength": 2, "maxLength": 2},         
-                            "personal_info":
+                    "properties":{        
+                            "basic_info":
                                { 
                                 "type": "object",
                                 "properties": {
                                                        "name":{"type": "string","blank": True},
-                                                       "nick_name":{"type": "string","blank": True}
+                                                       "nick_name":{"type": "string","blank": True},
+                                                       "card_name": {"type": "string","blank": True,"minLength": 0, "maxLength": 50},
+                                                       "language":{"type": "string","blank": True,"minLength": 2, "maxLength": 2},                                                       
+                                                       "title":{"type": "string","blank": True,"minLength": 0, "maxLength": 50},
+                                                       "company_name":{"type": "string","blank": True,"minLength": 0, "maxLength": 50}
                                                }              
-                                },
-                            "organization_info":
-                               { 
-                                "type": "object",
-                                "properties": {
-                                                       "company":{"type": "string","blank": True,"minLength": 0, "maxLength": 50},
-                                                       "title":{"type": "string","blank": True,"minLength": 0, "maxLength": 50}
-                                               }
-                                               
                                 },
                             "contact_info":
                                { 
                                 "type": "object",
                                 "properties": {
-                                                       "phone":{"type": "string","pattern": "^$|^[0-9-]+$","blank": True},
-                                                       "email":{"type": "string","pattern": "^$|^[A-Za-z0-9][A-Za-z0-9\.]*@([A-Za-z0-9]+\.)+[A-Za-z0-9]+$","blank": True},
-                                                       "skype_id":{"type": "string","blank": True},
-                                                       "address":{"type": "string","blank": True,"minLength": 0, "maxLength": 50}
+                                                       "phone":{"type": "array","items":[{}],"blank": True},
+                                                       "email":{"type": "array","items":[{}],"blank": True},
+                                                       "message":{"type": "array","items":[{}],"blank": True},
+                                                       "website":{"type": "array","items":[{}],"blank": True},
+                                                       "social_network":{"type": "array","items":[{}],"blank": True},
+                                                       "address":{
+                                                               "type": "object",
+                                                               "properties": {
+                                                                "work":{
+                                                                  "type": "object",
+                                                                  "properties": {
+                                                                     "city":{"type": "string","blank": True,"minLength": 0, "maxLength": 50},
+                                                                     "country":{"type": "string","blank": True,"minLength": 0, "maxLength": 50},
+                                                                     "state":{"type": "string","blank": True,"minLength": 0, "maxLength": 50},
+                                                                     "street":{"type": "string","blank": True,"minLength": 0, "maxLength": 50},
+                                                                     "zipCode":{"type": "string","blank": True,"minLength": 0, "maxLength": 10}
+                                                                  }
+                                                                }   ,
+                                                               "phone":{
+                                                                  "type": "object",
+                                                                  "properties": {
+                                                                     "city":{"type": "string","blank": True,"minLength": 0, "maxLength": 50},
+                                                                     "country":{"type": "string","blank": True,"minLength": 0, "maxLength": 50},
+                                                                     "state":{"type": "string","blank": True,"minLength": 0, "maxLength": 50},
+                                                                     "street":{"type": "string","blank": True,"minLength": 0, "maxLength": 50},
+                                                                     "zipCode":{"type": "string","blank": True,"minLength": 0, "maxLength": 10}                                                                 
+                                                                  
+                                                                  }                                                                  
+                                                                
+                                                                
+                                                                }
+                                                               
+                                                               }
+                                                       
+                                                       }
+                                                           
                                                }              
                                 }
                     }
-            }
+            }            
+            
     
   }
 }
@@ -172,60 +219,72 @@ BUSINESS_CARD_DATA_VALIDATION = {
 BUSINESS_CARD = {
 
     "side_first":{
-            "language":"",
-            "card_name":"",
-            "personal_info":{
+            "basic_info":{
                                "name":"",
-                               "nick_name":""
+                               "nick_name":"",                               
+                               "language":"en",
+                               "card_name":"",
+                               "title":"",
+                               "company_name":""
                             },
-            "organization_info":{
-                                 "company":"",
-                                 "title":""
-                                },
             "contact_info":{
-                             "phone":"",
-                             "email":"",
-                             "skype_id":"",
-                             "address":"",                            
-                           },
-            "fields":{
-                          "static_fields":{
-                                        "tag_line":"",
-                                        "birthday":"",
-                                        "social_profile":"",
-                                        "instant_messaging":""
-                                   },
-                          "dynamic_fields":[{"text":"value"},{"text":"value"}]
-                                     
-                     }                            
+                                 "phone":[{}],
+                                 "email":[{}],
+                                 "message":[{}],
+                                 "website":[{}], 
+                                 "social_network":[{}],
+                                   "address":{
+                                        "work":{
+                                           "city":"",
+                                           "country":"",
+                                           "state":"",
+                                           "street":"",
+                                           "zipCode":""
+                                        },
+                                        "phone":{
+                                           "city":"",
+                                           "country":"",
+                                           "state":"",
+                                           "street":"",
+                                           "zipCode":""
+                                        }                                   
+                                   }
+                                   
+                            }         
     },    
     "side_second":{
-            "language":"",
-            "card_name":"",
-            "personal_info":{
+            "basic_info":{
                                "name":"",
-                               "nick_name":""
+                               "nick_name":"",                               
+                               "language":"en",
+                               "card_name":"",
+                               "title":"",
+                               "company_name":""
                             },
-            "organization_info":{
-                                 "company":"",
-                                 "title":""
-                                },
             "contact_info":{
-                             "phone":"",
-                             "email":"",
-                             "skype_id":"",
-                             "address":"",                                                          
-                           },
-            "fields":{
-                          "static_fields":{
-                                        "tag_line":"",
-                                        "birthday":"",
-                                        "social_profile":"",
-                                        "instant_messaging":""
-                                   },
-                          "dynamic_fields":[{"text":"value"},{"text":"value"}]
-                                     
-                     }                           
+                                 "phone":[{}],
+                                 "email":[{}],
+                                 "message":[{}],
+                                 "website":[{}], 
+                                 "social_network":[{}],
+                                 "address":{
+                                        "work":{
+                                           "city":"",
+                                           "country":"",
+                                           "state":"",
+                                           "street":"",
+                                           "zipCode":""
+                                        },
+                                        "phone":{
+                                           "city":"",
+                                           "country":"",
+                                           "state":"",
+                                           "street":"",
+                                           "zipCode":""
+                                        }                                   
+                                   }
+                                   
+                            }         
     }     
 
 }
