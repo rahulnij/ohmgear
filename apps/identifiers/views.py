@@ -25,33 +25,19 @@ class IdentifierViewSet(viewsets.ModelViewSet):
             user =  self.request.QUERY_PARAMS.get('user', None)
             userdata = Identifier.objects.filter(user=user).values()
             if userdata:
-                print userdata
                 return CustomeResponse(userdata,status=status.HTTP_201_CREATED)
             else:
                 if not identifierdata:
                     return CustomeResponse({'msg':'Identifier available'},status=status.HTTP_201_CREATED)
                 
                 else:
-                    print "already exist"
-                    print identifier
                     list = []
                     for i in range(5):
-                        
                         identifiersuggestion=''.join(random.choice('0123456789') for i in range(2))
-                        print "identifiersuggestion"
-                        print identifiersuggestion
-                        #data  =insert_list.append(Identifier(identifier=identifier))
                         newidentifier = identifier + identifiersuggestion
-                        print "newidentifier"
-                        print newidentifier
                         matchidentifier = Identifier.objects.filter(identifier=newidentifier).values()
-                        print "matchidentifier"
-                        print matchidentifier
                         if not matchidentifier:
-                           print newidentifier
                            list.append(newidentifier)
-                           #list = identifier
-                    
                     return CustomeResponse({'msg':list},status=status.HTTP_200_OK,validate_errors=1)
     
                 
