@@ -27,7 +27,7 @@ class Identifier(models.Model):
     #---------------- identifier type 1 for system generated and 2 for premium----#
     identifier_type = models.IntegerField(_("Identifier Type"))
     #---------------- identifier last date which date identifier will get expired----#
-    idetifierlastdate  = models.DateTimeField(_("Identifier Last Date"))
+    idetifierlastdate  = models.DateField(_("Identifier Last Date"),null=True)
     created_date = models.DateTimeField(_("Created Date"),auto_now_add=True)
     updated_date = models.DateTimeField(_("Updated Date"),auto_now_add= True)
     
