@@ -11,8 +11,8 @@ class Notes(models.Model):
     note_headline = models.CharField(_('Note Headline'),max_length=50,null=True)
     note  =        models.CharField(_('Notes'),max_length=500,null=True)
     location_area =      models.CharField(_('Location Area'),max_length=50,null=True)
-    contact =       models.OneToOneField(Contact,null = True)
-    user =          models.OneToOneField(User,null=True)
+    contact =       models.OneToOneField(Contact)
+    user =          models.ForeignKey(User)
     #------------------ Note Accesibility by default 0 for public 1 for shared  -------------------#  
     note_accessibilty  = models.IntegerField(_('Note Accessbility'),default =0)
     created_date=models.DateTimeField(_("Created Date"),auto_now_add=True,auto_now=False)

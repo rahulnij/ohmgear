@@ -5,9 +5,11 @@ from serializer import IdentifierSerializer
 from ohmgear.functions import CustomeResponse
 from rest_framework.decorators import api_view
 import rest_framework.status as status
-#import random
+from datetime import date
+import datetime
+import random
 from functions import CreateSystemIdentifier
-
+from cron import  my_scheduled_job
 
 # Create your views here.
 class IdentifierViewSet(viewsets.ModelViewSet):
@@ -17,9 +19,26 @@ class IdentifierViewSet(viewsets.ModelViewSet):
     #--------------Method: GET-----------------------------#       
     def list(self,request,**kwargs):
         if request.method == 'GET':
+            
+            identifier =  self.request.QUERY_PARAMS.get('identifier', None)
+            identifierdata = Identifier.objects.filter(identifier=identifier).values()
             user =  self.request.QUERY_PARAMS.get('user', None)
             userdata = Identifier.objects.filter(user=user).values()
-            return CustomeResponse(userdata,status=status.HTTP_201_CREATED)
+            if userdata:
+                return CustomeResponse(userdata,status=status.HTTP_201_CREATED)
+            else:
+                if not identifierdata:
+                    return CustomeResponse({'msg':'Identifier available'},status=status.HTTP_201_CREATED)
+                
+                else:
+                    list = []
+                    for i in range(5):
+                        identifiersuggestion=''.join(random.choice('0123456789') for i in range(2))
+                        newidentifier = identifier + identifiersuggestion
+                        matchidentifier = Identifier.objects.filter(identifier=newidentifier).values()
+                        if not matchidentifier:
+                           list.append(newidentifier)
+                    return CustomeResponse({'msg':list},status=status.HTTP_200_OK,validate_errors=1)
     
                 
             
@@ -32,7 +51,7 @@ class IdentifierViewSet(viewsets.ModelViewSet):
         return CustomeResponse(serializer.data,status=status.HTTP_200_OK)
     
     #--------------Method: POST create new Identifier -----------------------------#
-    def create(self, request,fromsocial=None):
+    def create(self, request):
          
          serializer =  IdentifierSerializer(data=request.DATA,context={'request': request})
          
@@ -41,27 +60,24 @@ class IdentifierViewSet(viewsets.ModelViewSet):
          #------ object value which can be change are mutable object value which cannot be change are immutable  -----------#
          mutable = request.POST._mutable
          request.POST._mutable = True
+         request.DATA['idetifierlastdate'] = str((datetime.date.today() + datetime.timedelta(3*365/12)).isoformat())
+        #----------------------------- 
         
+         #my_scheduled_job()
+         
          if request.POST.get('identifier_type') == '1':
             request.POST['identifier'] =   CreateSystemIdentifier()
          else: 
            pass
-         request.POST._mutable = mutable
+         #request.POST._mutable = mutable
          serializer =  IdentifierSerializer(data=request.DATA,context={'request': request,'msg':'not exist'})
          
          if serializer.is_valid():
-             
-            #------------ enable/desable signal -----------------#
-            if fromsocial:
-                self._disable_signals = True
-            #------------ End -----------------------------------#
+            serializer.save()  
+            return CustomeResponse(serializer.data,status=status.HTTP_201_CREATED)
             
-            identifier_id=serializer.save()  
-            if not fromsocial:
-             return CustomeResponse(serializer.data,status=status.HTTP_201_CREATED)
-            else:
-             return serializer.data   
          else:
             return CustomeResponse(serializer.errors,status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
+    
     
 
