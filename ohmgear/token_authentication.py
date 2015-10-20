@@ -29,8 +29,8 @@ class ExpiringTokenAuthentication(TokenAuthentication):
         if not token.user.is_active:
             raise exceptions.AuthenticationFailed('User inactive or deleted')
 
-        if token.created < timezone.now() - timedelta(hours=EXPIRE_HOURS):
-            raise exceptions.AuthenticationFailed('Token has expired')        
+#        if token.created < timezone.now() - timedelta(hours=EXPIRE_HOURS):
+#            raise exceptions.AuthenticationFailed('Token has expired')        
         return (token.user, token)
     
     
