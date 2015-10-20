@@ -31,7 +31,7 @@ class BusinessViewSet(viewsets.ModelViewSet):
     #--------------Method: GET retrieve single record-----------------------------#
     def retrieve(self,request,pk=None):
         queryset = self.queryset
-        user = get_object_or_404(BusinessCard,pk=pk,contact_detail__bcard_json_data__contains = 'test')
+        user = get_object_or_404(BusinessCard,pk=pk)
         serializer = self.serializer_class(user,context={'request':request})
         return CustomeResponse(serializer.data,status=status.HTTP_200_OK)
     
@@ -49,10 +49,16 @@ class BusinessViewSet(viewsets.ModelViewSet):
 #            return CustomeResponse({'msg':"Please provide bcard_json_data in json format" },status=status.HTTP_400_BAD_REQUEST,validate_errors=1) 
          #---------------------- - End ----------------------------------------------------------- #
          
-         
+         #---------------------- Handle File Upload : Business card image  ----------------------------------------#
+         try:
+             bcard_image = request.FILES['bcard_image']
+         except:
+             bcard_image = ''
+         if bcard_image:
+             pass             
+         #----------------------------------------------------------------------------------#
          serializer =  BusinessCardSerializer(data=request.DATA,context={'request': request})
          if serializer.is_valid():
-            print request.DATA
             contact_serializer =  ContactsSerializer(data=request.DATA,context={'request': request})
             if contact_serializer.is_valid():
                 business = serializer.save()
