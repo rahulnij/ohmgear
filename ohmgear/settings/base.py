@@ -38,7 +38,7 @@ ALLOWED_HOSTS = []
 INSTALLED_APPS = (
     #'suit',
     #'grappelli',
-   # 'jet.dashboard',
+    'jet.dashboard',
     'jet',
     'django.contrib.admin',
     'django.contrib.auth',
@@ -126,9 +126,9 @@ WSGI_APPLICATION = 'ohmgear.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'postgres',
-        'USER': 'postgres',
-        'PASSWORD': '',
+        'NAME': 'ohmgear',
+        'USER': 'ohmgear',
+        'PASSWORD': 'ohmgear@123',
         'HOST': 'localhost',
         'PORT': '',
     }
@@ -147,7 +147,7 @@ USE_I18N = True
 USE_L10N = True
 
 USE_TZ = True
-
+JET_THEME = 'green'
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.8/howto/static-files/

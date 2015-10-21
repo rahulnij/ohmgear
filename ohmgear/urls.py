@@ -18,8 +18,8 @@ router.register(r'api/sociallogin',users_views.SocialLoginViewSet)
 urlpatterns =patterns(
     '',  
    # url(r'^grappelli/', include('grappelli.urls')), 
-   url(r'^jet/', include('jet.urls', 'jet')),  # Django JET URLS
-   url(r'^jet/dashboard/', include('jet.dashboard.urls', 'jet-dashboard')), 
+    url(r'^jet/', include('jet.urls', 'jet')),  # Django JET URLS
+    url(r'^jet/dashboard/', include('jet.dashboard.urls', 'jet-dashboard')), 
  
     url(r'^admin/', include(admin.site.urls)),
     url(r'^api/useractivity/$','apps.users.views.useractivity',name='useractivity'),
