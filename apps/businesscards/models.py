@@ -31,6 +31,7 @@ class BusinessCard(models.Model):
     status = models.IntegerField(_("Status"),default=0)
     #-----------is_active denotes whether business card is active or not----#
     is_active = models.IntegerField(_("Is Active"),default=1)
+    bcard_image_name = models.ImageField(_("Business Card Image"),upload_to='uploads/', max_length=254)
     created_date=models.DateTimeField(_("Created Date"),auto_now_add=True,auto_now=False)
     updated_date=models.DateTimeField(_("Updated Date"),auto_now_add=False,auto_now=True)
     user = models.ForeignKey(User)

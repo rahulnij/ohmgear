@@ -14,7 +14,6 @@ from django.contrib.auth import authenticate
 from django.utils.translation import ugettext_lazy as _
 import datetime
 from django.utils.timezone import utc
-from ohmgear.functions import custome_response
 
 
 EXPIRE_HOURS = getattr(settings, 'REST_FRAMEWORK_TOKEN_EXPIRE_HOURS', 2)

@@ -74,7 +74,12 @@ REST_FRAMEWORK = {
         #'rest_framework.authentication.TokenAuthentication',
         #'ohmgear.token_authentication.ExpiringTokenAuthentication',
     ),
-    'EXCEPTION_HANDLER': 'ohmgear.custom_exception_handler.custom_exception_handler'
+    'EXCEPTION_HANDLER': 'ohmgear.custom_exception_handler.custom_exception_handler',
+    'DEFAULT_PARSER_CLASSES': (
+            'rest_framework.parsers.JSONParser',
+            'rest_framework.parsers.FormParser',
+            'rest_framework.parsers.MultiPartParser',
+        ),
 }
 AUTH_USER_MODEL = 'users.User'
 AUTHENTICATION_BACKENDS = (
@@ -141,10 +146,13 @@ USE_I18N = True
 USE_L10N = True
 
 USE_TZ = True
-
+JET_THEME = 'green'
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.8/howto/static-files/
 
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+MEDIA_ROOT = os.path.join(STATIC_ROOT, 'uploads')
+
+BCARDS_TEMPLATE_IMAGE = os.path.join(MEDIA_ROOT, 'bcards_template_image')
