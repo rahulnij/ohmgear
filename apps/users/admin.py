@@ -32,16 +32,11 @@ class UserAdmin(admin.ModelAdmin):
         if obj.status:
             return 'Active'     
         else:
-<<<<<<< HEAD
-            return 'InActive' 
-=======
             return 'InActive'
  
     def serial_number(self, obj):
         self.counter = self.counter + 1
         return self.counter
->>>>>>> a2c5dfec1f442eb0fbefb80aadb7ec37086f0ade
-
     get_status.short_description = 'status'
     get_status.allow_tags = True
     list_per_page = 25
