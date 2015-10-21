@@ -38,7 +38,8 @@ class BusinessCard(models.Model):
     
     def __unicode__(self):
         return'{"id:"%s","name":"%s"}'%(self.id,self.name)
-    
+    def upload_to(instance, filename):
+        return 'user_profile_image/{}/{}'.format(instance.user_id, filename)    
     
     
 
