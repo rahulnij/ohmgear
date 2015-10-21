@@ -6,11 +6,11 @@ from .models import User
 
 def inactive_users(modeladmin, request, queryset):
     queryset.update(status='0')
-inactive_users.short_description = "InActivate users"
+inactive_users.short_description = "InActive selected users"
 
 def active_users(modeladmin, request, queryset):
     queryset.update(status='1')
-active_users.short_description = "Activate users"
+active_users.short_description = "Active selected users"
 
 
 class UserAdmin(admin.ModelAdmin):
@@ -21,22 +21,22 @@ class UserAdmin(admin.ModelAdmin):
     # custom drop down option in the admin 
     actions = [inactive_users,active_users]
     counter = 0
-    
-   # non-editable fields in the admin
-   # def get_readonly_fields(self, request, obj=None):
-   #	if obj: # editing an existing object
-   #     	return self.readonly_fields + ('password','user_type')
-   #    	return self.readonly_fields  
-    
+    # non-editable fields in the admin
+    def get_readonly_fields(self, request, obj=None):
+    	if obj: # editing an existing object
+        	return self.readonly_fields + ('password','user_type')
+        	return self.readonly_fields  
+
     def get_status(self, obj):
         if obj.status:
             return 'Active'     
         else:
-            return 'InActive'
+            return 'Not-Active'
  
     def serial_number(self, obj):
         self.counter = self.counter + 1
         return self.counter
+
     get_status.short_description = 'status'
     get_status.allow_tags = True
     list_per_page = 25

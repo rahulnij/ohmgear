@@ -9,12 +9,13 @@ from serializer import BusinessCardSerializer
 from apps.contacts.serializer import ContactsSerializer
 
 from ohmgear.token_authentication import ExpiringTokenAuthentication
-from ohmgear.functions import CustomeResponse
+from ohmgear.functions import CustomeResponse,handle_uploaded_file
 from ohmgear.json_default_data import BUSINESS_CARD_DATA_VALIDATION
 
 from django.core.exceptions import ValidationError
 import json,validictory
 from django.shortcuts import get_object_or_404
+from django.conf import settings
 # Create your views here.
 
 class BusinessViewSet(viewsets.ModelViewSet):
@@ -47,17 +48,17 @@ class BusinessViewSet(viewsets.ModelViewSet):
 #            return CustomeResponse({'msg':error.message },status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
 #         except:
 #            return CustomeResponse({'msg':"Please provide bcard_json_data in json format" },status=status.HTTP_400_BAD_REQUEST,validate_errors=1) 
-         #---------------------- - End ----------------------------------------------------------- #
+         #---------------------------------- End ----------------------------------------------------------- #
          
-         #---------------------- Handle File Upload : Business card image  ----------------------------------------#
+         #---------------------- Handle File Upload : Business Card Image  ------------------#
          try:
              bcard_image = request.FILES['bcard_image']
          except:
              bcard_image = ''
          if bcard_image:
-             pass             
+             pass
          #----------------------------------------------------------------------------------#
-         serializer =  BusinessCardSerializer(data=request.DATA,context={'request': request})
+         serializer =  BusinessCardSerializer(data=request.data,context={'request': request})
          if serializer.is_valid():
             contact_serializer =  ContactsSerializer(data=request.DATA,context={'request': request})
             if contact_serializer.is_valid():
