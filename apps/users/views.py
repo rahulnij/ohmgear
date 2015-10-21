@@ -264,6 +264,7 @@ def useractivity(request,**kwargs):
                     try:
                      profile = Profile.objects.select_related().get(reset_password_key=reset_password_key,user__email=username)
                      profile.user.set_password(password)
+                     profile.user.update_password = False
                      profile.user.save()
                     except:
                      return CustomeResponse({'msg':'There is problem in reset password'},status=status.HTTP_401_UNAUTHORIZED,validate_errors=1)
