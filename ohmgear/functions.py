@@ -77,23 +77,17 @@ class CustomeResponse(Response):
                 self[name] = value
 #------------------ End ----------------------------------#
 
-def custome_response(data,error = 0,**arg):
-    #print vars(HttpRequest)
-    dataArry = {}
-    errorStr = ''
-    if error:
-       dataArry['status'] = False  
-       if 'msg' in data:
-           dataArry['msg'] =  data['msg']
-       if 'data' in data:
-            dataArry['data'] = data['data']
-       else:           
-        for val in data.items():
-            errorStr = errorStr +'$'+ str(val[0])+':'+str(val[1][0])
-        errorStr = errorStr[1:]
-        dataArry['data'] = errorStr   
-    else:
-       dataArry['status'] = True 
-       dataArry['data'] = data
-       
-    return dataArry
+#---------------------------- File Uploads ---------------#
+def handle_uploaded_file(f,file,image_path=None):
+    name, extension = file.name.rsplit('.',1)
+    import uuid,os
+    filename = "%s.%s" % (uuid.uuid4(), extension)
+    path = image_path+filename
+    try:
+        destination = open(filepath, 'wb+')
+        for chunk in f.chunks():
+            destination.write(chunk)
+        destination.close()
+    except:
+        return False
+#---------------------------- End File uploads ------------#
