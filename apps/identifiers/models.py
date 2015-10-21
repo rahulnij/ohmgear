@@ -10,7 +10,7 @@ TEMPLATE_TYPE = (('1', 'option1'),
                   ('3', 'option3'),                  
                  )
       
-IDENTIFIER_TYPE = (('1','System Generated'),
+IDENTIFIERTYPE = (('1','System Generated'),
                     ('2','Premium'),
                     )
 class Identifier(models.Model):
@@ -25,12 +25,14 @@ class Identifier(models.Model):
     #--------------Payment status whether user have paid for idnetifier or not
     paymentstatus      = models.IntegerField(_("Payment Status"),default=0)
     #---------------- identifier type 1 for system generated and 2 for premium----#
-    identifier_type = models.IntegerField(_("Identifier Type"))
+    identifiertype = models.IntegerField(_("Identifier Type"))
     #---------------- identifier last date which date identifier will get expired----#
-    idetifierlastdate  = models.DateField(_("Identifier Last Date"),null=True)
+    identifierlastdate  = models.DateField(_("Identifier Last Date"),null=True)
+    #---------------- Total No of months identifier is valid----#
+    totalmonths          = models.IntegerField(_("Total Months"),default =3)
     created_date = models.DateTimeField(_("Created Date"),auto_now_add=True)
     updated_date = models.DateTimeField(_("Updated Date"),auto_now_add= True)
     
     
     def __unicode__(self):
-        return'{"id:"%s","identifier_type":"%s"}'%(self.id,self.identifier_type)
+        return'{"id:"%s","identifiertype":"%s"}'%(self.id,self.identifiertype)
