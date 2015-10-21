@@ -99,6 +99,8 @@ class User(AbstractBaseUser):
     updated_date=models.DateTimeField(_("Updated Date"),auto_now_add=False,auto_now=True)
     objects = CustomUserManager()
 
+    update_password =  True
+
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['first_name']
 
@@ -136,7 +138,7 @@ class User(AbstractBaseUser):
     #Overriding
     def save(self, *args, **kwargs):
         #check if the row with this hash already exists.
-        if self.password:
+        if self.password and self.update_password:
            self.set_password(self.password)           
         super(User, self).save(*args, **kwargs)    
     

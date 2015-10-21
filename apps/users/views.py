@@ -224,9 +224,9 @@ def useractivity(request,**kwargs):
        if activation_key:
           try: 
             user_profile = get_object_or_404(Profile, activation_key=activation_key)
-            print user_profile
             user = user_profile.user
             user.status = 1
+            user.update_password = False
             user.save()
             if request.device:
                 from django.http import HttpResponse
