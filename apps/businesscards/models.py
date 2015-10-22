@@ -31,16 +31,17 @@ class BusinessCard(models.Model):
     status = models.IntegerField(_("Status"),default=0)
     #-----------is_active denotes whether business card is active or not----#
     is_active = models.IntegerField(_("Is Active"),default=1)
-    bcard_image_name = models.ImageField(_("Business Card Image"),upload_to='uploads/bcards_template_image/', max_length=254,blank=True,null=True)
+    #------------- Business Card Image both side ---------------------------#
+    bcard_image_frontend = models.ImageField(_("Business Card Image Frontend"),upload_to='uploads/bcards_template_image/', max_length=254,blank=True,null=True)
+    bcard_image_backend= models.ImageField(_("Business Card Image Backend"),upload_to='uploads/bcards_template_image/', max_length=254,blank=True,null=True)
+    #------------- End ---------------------------#
     created_date=models.DateTimeField(_("Created Date"),auto_now_add=True,auto_now=False)
     updated_date=models.DateTimeField(_("Updated Date"),auto_now_add=False,auto_now=True)
-    user = models.ForeignKey(User)
+    user = models.ForeignKey(User,related_name='buser')
     
     def __unicode__(self):
         return'{"id:"%s","name":"%s"}'%(self.id,self.name)
-    def upload_to(instance, filename):
-        return 'user_profile_image/{}/{}'.format(instance.user_id, filename)    
-    
+  
     
 
 class BusinessCardIdentifier(models.Model):

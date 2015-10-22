@@ -80,6 +80,7 @@ REST_FRAMEWORK = {
             'rest_framework.parsers.FormParser',
             'rest_framework.parsers.MultiPartParser',
         ),
+    'UPLOADED_FILES_USE_URL': True,    
 }
 AUTH_USER_MODEL = 'users.User'
 AUTHENTICATION_BACKENDS = (
@@ -95,6 +96,12 @@ EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_HOST_USER = 'bhoopendra.ohmgear@gmail.com'
 EMAIL_HOST_PASSWORD = 'q@123456'
+
+TEMPLATE_CONTEXT_PROCESSORS = (
+    # other context processors....
+    'django.core.context_processors.static',
+    # other context processors....
+)
 #----------------------- End setting -------------------------------------------#
 
 ROOT_URLCONF = 'ohmgear.urls'
@@ -151,8 +158,13 @@ JET_THEME = 'green'
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.8/howto/static-files/
 
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+MEDIA_URL = '/media/'
+
 STATIC_URL = '/static/'
-STATIC_ROOT = os.path.join(BASE_DIR, 'static')
-MEDIA_ROOT = os.path.join(STATIC_ROOT, 'uploads')
+STATIC_ROOT = os.path.join(MEDIA_ROOT, 'static')
+
+STATICFILES_DIRS = ()
+
 
 BCARDS_TEMPLATE_IMAGE = os.path.join(MEDIA_ROOT, 'bcards_template_image')

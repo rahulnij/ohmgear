@@ -63,5 +63,11 @@ urlpatterns += router.urls
 
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 urlpatterns += staticfiles_urlpatterns()
+
+#------------- Only on Development to server media files otherwise we will disable -------------#
+from django.conf import settings
+urlpatterns += patterns('',
+        (r'^media/(?P<path>.*)$', 'django.views.static.serve', {'document_root': settings.MEDIA_ROOT, 'show_indexes': True}),
+    )
 #handler404 = 'ohmgear.custom_exception_handler.custom404'
 #handler500 = 'ohmgear.custom_exception_handler.custom404'

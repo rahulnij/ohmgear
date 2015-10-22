@@ -53,23 +53,22 @@ class Base64ImageField(serializers.ImageField):
         return extension
 
 class BusinessCardSerializer(serializers.ModelSerializer):
-    
-    #contact_detail = serializers.RelatedField(read_only= True)
     #contact_detail1 = serializers.RelatedField(source='contact_detail',read_only= True)
     contact_detail = ContactsSerializerWithJson(read_only=True)
-    bcard_image_name = serializers.ImageField(max_length=None, use_url=False,)    
+    bcard_image_frontend = serializers.ImageField(max_length=None, use_url=True,required=False)
+    bcard_image_backend = serializers.ImageField(max_length=None, use_url=True,required=False)
     class Meta:
         model = BusinessCard
         fields = (
             'id',
             'name',
             'bcard_type',
-            'bcard_image_name',
-            'status',
+            'bcard_image_frontend',
+            'bcard_image_backend',
             'is_active',
             'user',
             'contact_detail',
         )
-        
+  
         
         
