@@ -102,7 +102,7 @@ ROOT_URLCONF = 'ohmgear.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [BASE_DIR,'ohmgear/templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
