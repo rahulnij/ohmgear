@@ -9,7 +9,6 @@ from datetime import date
 import datetime
 import random
 from functions import CreateSystemIdentifier
-from cron import  my_scheduled_job
 
 # Create your views here.
 class IdentifierViewSet(viewsets.ModelViewSet):
@@ -21,13 +20,19 @@ class IdentifierViewSet(viewsets.ModelViewSet):
         if request.method == 'GET':
             
             identifier =  self.request.QUERY_PARAMS.get('identifier', None)
+            
+            # -----------check whether idnetifier is exist or not if not give suggested identifier--------#
             identifierdata = Identifier.objects.filter(identifier=identifier).values()
+            
+            # -----------Get all identifiers of the user--------#
             user =  self.request.QUERY_PARAMS.get('user', None)
             userdata = Identifier.objects.filter(user=user).values()
             if userdata:
                 return CustomeResponse(userdata,status=status.HTTP_201_CREATED)
             else:
-                if not identifierdata:
+                if identifier is None:
+                    return CustomeResponse({'msg':'user id is not exist'},status=status.HTTP_201_CREATED)
+                if not identifierdata and identifier is not None:
                     return CustomeResponse({'msg':'Identifier available'},status=status.HTTP_201_CREATED)
                 
                 else:
@@ -55,17 +60,13 @@ class IdentifierViewSet(viewsets.ModelViewSet):
          
          serializer =  IdentifierSerializer(data=request.DATA,context={'request': request})
          
-         #print data
-         #request.DATA['identifier'] = (''.join(random.choice('0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz') for i in range(6)))
          #------ object value which can be change are mutable object value which cannot be change are immutable  -----------#
          mutable = request.POST._mutable
          request.POST._mutable = True
-         request.DATA['idetifierlastdate'] = str((datetime.date.today() + datetime.timedelta(3*365/12)).isoformat())
-        #----------------------------- 
+         request.DATA['identifierlastdate'] = str((datetime.date.today() + datetime.timedelta(3*365/12)).isoformat())
         
-         #my_scheduled_job()
-         
-         if request.POST.get('identifier_type') == '1':
+        
+         if request.POST.get('identifiertype') == '1':
             request.POST['identifier'] =   CreateSystemIdentifier()
          else: 
            pass

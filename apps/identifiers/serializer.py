@@ -10,21 +10,31 @@ import rest_framework.status as status
 class IdentifierSerializer(serializers.ModelSerializer):
     class Meta:
         model = Identifier
-        fields = ('id','user','identifier','identifier_type','idetifierlastdate')
+        fields = ('id','user','identifier','identifiertype','identifierlastdate')
 #        read_only_fields = ('id',)
 
     def validate(self, attrs):
         msg = {}
         value = attrs
         identifier =  value ['identifier'] 
-        identifier_type = value['identifier_type']
+        identifiertype = value['identifiertype']
         
         
-        if identifier_type == 2:
+        if identifiertype == 2:
             identifier = validate_identifier(identifier)
             
             if identifier == 0 :
                 raise serializers.ValidationError("Identifier is not in correct format")
+            
+            
+        elif identifiertype  == 1:
+            pass
+            
+        else :
+            raise serializers.ValidationError("identifiertype can be 1 or 2 only ")
+                
+            
+            
                  
             
         return attrs 
