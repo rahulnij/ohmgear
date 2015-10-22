@@ -23,6 +23,7 @@ urlpatterns =patterns(
  
     url(r'^admin/', include(admin.site.urls)),
     url(r'^api/useractivity/$','apps.users.views.useractivity',name='useractivity'),
+    url(r'^api/cron/$','apps.cron.views.updateidentifierstatus',name='updateidentifierstatus'),
     url(r'^api/account_confirmation/(?P<activation_key>\w+)/$','apps.users.views.useractivity',name='registration_confirm'),
     url(r'^api/forgot_password/(?P<reset_password_key>\w+)/$','apps.users.views.useractivity',name='forgot_password'),
 )
@@ -44,6 +45,7 @@ router.register(r'api/identifiers', identifiers_views.IdentifierViewSet)
 import apps.notes.views as  notes_views
 router.register(r'api/notes', notes_views.NotesViewSet)
 #-------------- End ---------------------------------------------#
+
 
 #-------------- Contacts app url registration ----------------------#
 import apps.contacts.views as  contacts_views
