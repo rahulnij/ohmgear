@@ -24,10 +24,21 @@ class BusinessViewSet(viewsets.ModelViewSet):
     authentication_classes = (ExpiringTokenAuthentication,)
     permission_classes = (IsAuthenticated,)    
     
+    
+    def get_queryset(self):
+        queryset = self.queryset
+        user_id = self.request.QUERY_PARAMS.get('user_id', None)
+        if user_id is not None:
+           queryset = queryset.filter(user_id=user_id) 
+        return queryset
 
     #---    -----------Method: GET-----------------------------#       
-    def list(self, request):
-         return CustomeResponse({'msg':'GET method not allowed'},status=status.HTTP_405_METHOD_NOT_ALLOWED,validate_errors=1)   
+#    def list(self, request):
+#        user_id = self.request.QUERY_PARAMS.get('user_id', None)
+#        if user_id is not None:
+#            queryset = self.queryset.filter(user_id=user_id) 
+#        else:
+#         return CustomeResponse({'msg':'GET method allowed with filters only'},status=status.HTTP_405_METHOD_NOT_ALLOWED,validate_errors=1)   
     
     #--------------Method: GET retrieve single record-----------------------------#
     def retrieve(self,request,pk=None):

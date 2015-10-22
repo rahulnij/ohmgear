@@ -9,7 +9,6 @@ from datetime import date
 import datetime
 import random
 from functions import CreateSystemIdentifier
-from cron import  updateidentifierstatus
 
 # Create your views here.
 class IdentifierViewSet(viewsets.ModelViewSet):
@@ -65,9 +64,8 @@ class IdentifierViewSet(viewsets.ModelViewSet):
          mutable = request.POST._mutable
          request.POST._mutable = True
          request.DATA['identifierlastdate'] = str((datetime.date.today() + datetime.timedelta(3*365/12)).isoformat())
-        #----------------------------- 
-         updateidentifierstatus()
-         
+        
+        
          if request.POST.get('identifiertype') == '1':
             request.POST['identifier'] =   CreateSystemIdentifier()
          else: 

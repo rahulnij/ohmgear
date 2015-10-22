@@ -1,6 +1,3 @@
-Identifier
-Default identifier_type admin can set
-
 Identifier_tye
 1 System_Generated
 2 Premium

@@ -23,6 +23,7 @@ urlpatterns =patterns(
  
     url(r'^admin/', include(admin.site.urls)),
     url(r'^api/useractivity/$','apps.users.views.useractivity',name='useractivity'),
+    url(r'^api/cron/$','apps.cron.views.updateidentifierstatus',name='updateidentifierstatus'),
     url(r'^api/account_confirmation/(?P<activation_key>\w+)/$','apps.users.views.useractivity',name='registration_confirm'),
     url(r'^api/forgot_password/(?P<reset_password_key>\w+)/$','apps.users.views.useractivity',name='forgot_password'),
 )
@@ -45,6 +46,7 @@ import apps.notes.views as  notes_views
 router.register(r'api/notes', notes_views.NotesViewSet)
 #-------------- End ---------------------------------------------#
 
+
 #-------------- Contacts app url registration ----------------------#
 import apps.contacts.views as  contacts_views
 
@@ -63,5 +65,11 @@ urlpatterns += router.urls
 
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 urlpatterns += staticfiles_urlpatterns()
+
+#------------- Only on Development to server media files otherwise we will disable -------------#
+from django.conf import settings
+urlpatterns += patterns('',
+        (r'^media/(?P<path>.*)$', 'django.views.static.serve', {'document_root': settings.MEDIA_ROOT, 'show_indexes': True}),
+    )
 #handler404 = 'ohmgear.custom_exception_handler.custom404'
 #handler500 = 'ohmgear.custom_exception_handler.custom404'
