@@ -25,6 +25,16 @@ class IdentifierSerializer(serializers.ModelSerializer):
             
             if identifier == 0 :
                 raise serializers.ValidationError("Identifier is not in correct format")
+            
+            
+        elif identifiertype  == 1:
+            pass
+            
+        else :
+            raise serializers.ValidationError("identifiertype can be 1 or 2 only ")
+                
+            
+            
                  
             
         return attrs 
