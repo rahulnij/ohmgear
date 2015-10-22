@@ -21,17 +21,19 @@ class IdentifierViewSet(viewsets.ModelViewSet):
         if request.method == 'GET':
             
             identifier =  self.request.QUERY_PARAMS.get('identifier', None)
+            
             # -----------check whether idnetifier is exist or not if not give suggested identifier--------#
             identifierdata = Identifier.objects.filter(identifier=identifier).values()
             
             # -----------Get all identifiers of the user--------#
             user =  self.request.QUERY_PARAMS.get('user', None)
-            
             userdata = Identifier.objects.filter(user=user).values()
             if userdata:
                 return CustomeResponse(userdata,status=status.HTTP_201_CREATED)
             else:
-                if not identifierdata:
+                if identifier is None:
+                    return CustomeResponse({'msg':'user id is not exist'},status=status.HTTP_201_CREATED)
+                if not identifierdata and identifier is not None:
                     return CustomeResponse({'msg':'Identifier available'},status=status.HTTP_201_CREATED)
                 
                 else:
