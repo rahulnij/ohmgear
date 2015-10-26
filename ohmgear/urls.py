@@ -8,6 +8,11 @@ admin.site.site_header = 'ohmgear'
 
 router = routers.DefaultRouter()
 
+#-------------- test app for local testing ----------------------#
+from apps.test_purposes.test_view import  FtestViewSet
+router.register(r'api/test_purposes', FtestViewSet)
+#-------------- End ---------------------------------------------#
+
 #-------------- Users app url registration ----------------------#
 import apps.users.views as  users_views
 
