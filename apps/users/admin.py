@@ -39,6 +39,6 @@ class UserAdmin(admin.ModelAdmin):
         return self.counter
     get_status.short_description = 'status'
     get_status.allow_tags = True
-    list_per_page = 25
+    list_per_page = 100
     
 admin.site.register(User,UserAdmin)
