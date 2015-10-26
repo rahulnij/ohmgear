@@ -27,7 +27,7 @@ class NotesViewSet(viewsets.ModelViewSet):
     #--------------Method: POST create new Note -----------------------------#
     def create(self, request,fromsocial=None):
          
-         serializer =  NotesSerializer(data=request.DATA,context={'request': request})
+         serializer =  NotesSerializer(data=request.data,context={'request': request})
          if serializer.is_valid():
              
             #------------ enable/desable signal -----------------#

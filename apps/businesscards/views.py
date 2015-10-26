@@ -25,20 +25,22 @@ class BusinessViewSet(viewsets.ModelViewSet):
     permission_classes = (IsAuthenticated,)    
     
     
-    def get_queryset(self):
-        queryset = self.queryset
-        user_id = self.request.QUERY_PARAMS.get('user_id', None)
-        if user_id is not None:
-           queryset = queryset.filter(user_id=user_id) 
-        return queryset
-
-    #---    -----------Method: GET-----------------------------#       
-#    def list(self, request):
+#    def get_queryset(self):
+#        queryset = self.queryset
 #        user_id = self.request.QUERY_PARAMS.get('user_id', None)
 #        if user_id is not None:
-#            queryset = self.queryset.filter(user_id=user_id) 
-#        else:
-#         return CustomeResponse({'msg':'GET method allowed with filters only'},status=status.HTTP_405_METHOD_NOT_ALLOWED,validate_errors=1)   
+#           queryset = queryset.filter(user_id=user_id) 
+#        return queryset
+
+    #---    -----------Method: GET-----------------------------#       
+    def list(self, request):
+        user_id = self.request.QUERY_PARAMS.get('user_id', None)
+        if user_id is not None:
+            queryset = self.queryset.select_related('user').get(user_id=user_id)
+            serializer = self.serializer_class(queryset,context={'request':request})
+            return CustomeResponse(serializer.data,status=status.HTTP_200_OK)             
+        else:
+         return CustomeResponse({'msg':'GET method allowed with filters only'},status=status.HTTP_405_METHOD_NOT_ALLOWED,validate_errors=1)   
     
     #--------------Method: GET retrieve single record-----------------------------#
     def retrieve(self,request,pk=None):
@@ -71,10 +73,20 @@ class BusinessViewSet(viewsets.ModelViewSet):
          #----------------------------------------------------------------------------------#
          serializer =  BusinessCardSerializer(data=request.data,context={'request': request})
          if serializer.is_valid():
-            contact_serializer =  ContactsSerializer(data=request.DATA,context={'request': request})
-            if contact_serializer.is_valid():
-                business = serializer.save()
-                contact = contact_serializer.save(businesscard = business)
+#            contact_serializer =  ContactsSerializer(data=request.DATA,context={'request': request})
+#            if contact_serializer.is_valid():
+#                business = serializer.save()
+#                contact = contact_serializer.save(businesscard = business)
+                #--------------------- Save Notes --------------------------#
+                if request.data['bcard_json_data']:
+                    bcard_json_data = json.loads(request.data['bcard_json_data'])
+                    if bcard_json_data["notes"]["note_frontend"]:
+                            import NotesViewSet
+                            note_view_obj = NotesViewSet()
+                            data = note_view_obj.create(request)
+                            return CustomeResponse(data,status=status.HTTP_201_CREATED)
+                        
+                #-----------------------------------------------------------#
             else:
                 return CustomeResponse(contact_serializer.errors,status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
             
@@ -85,14 +97,14 @@ class BusinessViewSet(viewsets.ModelViewSet):
         
     def update(self, request, pk=None):  
          #-------------------- First Validate the json contact data ------------------------------#
-         try:
-            validictory.validate(json.loads(request.DATA["bcard_json_data"]), BUSINESS_CARD_DATA_VALIDATION)
-         except validictory.ValidationError as error:
-            return CustomeResponse({'msg':error.message },status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
-         except validictory.SchemaError as error:
-            return CustomeResponse({'msg':error.message },status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
-         except:
-            return CustomeResponse({'msg':"Please provide bcard_json_data in json format" },status=status.HTTP_400_BAD_REQUEST,validate_errors=1) 
+#         try:
+#            validictory.validate(json.loads(request.DATA["bcard_json_data"]), BUSINESS_CARD_DATA_VALIDATION)
+#         except validictory.ValidationError as error:
+#            return CustomeResponse({'msg':error.message },status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
+#         except validictory.SchemaError as error:
+#            return CustomeResponse({'msg':error.message },status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
+#         except:
+#            return CustomeResponse({'msg':"Please provide bcard_json_data in json format" },status=status.HTTP_400_BAD_REQUEST,validate_errors=1) 
          #---------------------- - End ----------------------------------------------------------- #
          
          
