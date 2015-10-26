@@ -1,5 +1,5 @@
 from rest_framework import  serializers
-from models import BusinessCard
+from models import BusinessCard,BusinessCardIdentifier
 from apps.contacts.serializer import ContactsSerializerWithJson
 # Serializers define the API representation.
 
@@ -70,5 +70,31 @@ class BusinessCardSerializer(serializers.ModelSerializer):
             'contact_detail',
         )
   
+  
+class BusinessCardIdentifierSerializer(serializers.ModelSerializer):
+   
+    class Meta:
+        model = BusinessCardIdentifier
+        fields = ('id','identifier','businesscard','status')
+          
+    def validate(self, attrs):
+        #print "dataattaat"
+        msg = {}
+        value =attrs
+        businesscardid =  value['businesscard']
+        businesscardid = businesscardid.id
+        
+        businesscardidentifierdata =     BusinessCardIdentifier.objects.filter(businesscard=businesscardid)
+        if not businesscardidentifierdata:
+            pass
+        else:
+            totalbusinesscardrecord =  businesscardidentifierdata.count()
+        
+            for i in range(totalbusinesscardrecord):
+                identifierstatus =  businesscardidentifierdata[i].status
+                if(identifierstatus == 1):
+                    raise serializers.ValidationError("Businesscard can have 1 identifier only")
+        
+        return attrs  
         
         
