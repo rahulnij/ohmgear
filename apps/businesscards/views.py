@@ -73,20 +73,10 @@ class BusinessViewSet(viewsets.ModelViewSet):
          #----------------------------------------------------------------------------------#
          serializer =  BusinessCardSerializer(data=request.data,context={'request': request})
          if serializer.is_valid():
-#            contact_serializer =  ContactsSerializer(data=request.DATA,context={'request': request})
-#            if contact_serializer.is_valid():
-#                business = serializer.save()
-#                contact = contact_serializer.save(businesscard = business)
-                #--------------------- Save Notes --------------------------#
-                if request.data['bcard_json_data']:
-                    bcard_json_data = json.loads(request.data['bcard_json_data'])
-                    if bcard_json_data["notes"]["note_frontend"]:
-                            import NotesViewSet
-                            note_view_obj = NotesViewSet()
-                            data = note_view_obj.create(request)
-                            return CustomeResponse(data,status=status.HTTP_201_CREATED)
-                        
-                #-----------------------------------------------------------#
+            contact_serializer =  ContactsSerializer(data=request.DATA,context={'request': request})
+            if contact_serializer.is_valid():
+                business = serializer.save()
+                contact = contact_serializer.save(businesscard = business)
             else:
                 return CustomeResponse(contact_serializer.errors,status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
             
@@ -97,14 +87,14 @@ class BusinessViewSet(viewsets.ModelViewSet):
         
     def update(self, request, pk=None):  
          #-------------------- First Validate the json contact data ------------------------------#
-#         try:
-#            validictory.validate(json.loads(request.DATA["bcard_json_data"]), BUSINESS_CARD_DATA_VALIDATION)
-#         except validictory.ValidationError as error:
-#            return CustomeResponse({'msg':error.message },status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
-#         except validictory.SchemaError as error:
-#            return CustomeResponse({'msg':error.message },status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
-#         except:
-#            return CustomeResponse({'msg':"Please provide bcard_json_data in json format" },status=status.HTTP_400_BAD_REQUEST,validate_errors=1) 
+         try:
+            validictory.validate(json.loads(request.DATA["bcard_json_data"]), BUSINESS_CARD_DATA_VALIDATION)
+         except validictory.ValidationError as error:
+            return CustomeResponse({'msg':error.message },status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
+         except validictory.SchemaError as error:
+            return CustomeResponse({'msg':error.message },status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
+         except:
+            return CustomeResponse({'msg':"Please provide bcard_json_data in json format" },status=status.HTTP_400_BAD_REQUEST,validate_errors=1) 
          #---------------------- - End ----------------------------------------------------------- #
          
          
