@@ -40,6 +40,11 @@ import apps.businesscards.views as  businesscards_views
 router.register(r'api/businesscard', businesscards_views.BusinessViewSet)
 #-------------- End ---------------------------------------------#
 
+#------------------BusinessCard Idnetifier-----------------------#
+import apps.businesscards.views as businesscardidentifier_views
+router.register(r'api/businesscardidentifier',businesscardidentifier_views.BusinessCardIdentifierViewSet)
+#----------------End---------------------------------------------#
+
 #-------------- Identifiers app url ----------------------#
 import apps.identifiers.views as  identifiers_views
 router.register(r'api/identifiers', identifiers_views.IdentifierViewSet)

@@ -10,7 +10,7 @@ import rest_framework.status as status
 class IdentifierSerializer(serializers.ModelSerializer):
     class Meta:
         model = Identifier
-        fields = ('id','user','identifier','identifiertype','identifierlastdate')
+        fields = ('id','user','identifier','identifiertype','paymentstatus','identifierlastdate')
 #        read_only_fields = ('id',)
 
     def validate(self, attrs):

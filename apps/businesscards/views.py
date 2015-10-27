@@ -4,8 +4,8 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework import viewsets
 import rest_framework.status as status
 
-from models import BusinessCard,BusinessCardTemplate
-from serializer import BusinessCardSerializer
+from models import BusinessCard,BusinessCardTemplate,BusinessCardIdentifier,Identifier
+from serializer import BusinessCardSerializer,BusinessCardIdentifierSerializer
 from apps.contacts.serializer import ContactsSerializer
 
 from ohmgear.token_authentication import ExpiringTokenAuthentication
@@ -17,6 +17,36 @@ import json,validictory
 from django.shortcuts import get_object_or_404
 from django.conf import settings
 # Create your views here.
+
+class BusinessCardIdentifierViewSet(viewsets.ModelViewSet):
+    queryset  = BusinessCardIdentifier.objects.all()
+    serializer_class = BusinessCardIdentifierSerializer
+     #--------------Method: GET-----------------------------#       
+    def list(self,request):
+        return CustomeResponse({'msg':'GET method not allowed'},status=status.HTTP_405_METHOD_NOT_ALLOWED,validate_errors=1)
+ 
+    
+    def create(self,request):
+       serializer = BusinessCardIdentifierSerializer(data = request.data,context={'request':request})
+       if serializer.is_valid():
+           serializer.save()
+           return CustomeResponse(serializer.data,status=status.HTTP_201_CREATED)
+       else:
+           return CustomeResponse(serializer.errors,status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
+        
+        
+    def update(self, request, pk=None):
+        
+           getidentifierid = BusinessCardIdentifier.objects.filter(id=pk).values()
+           identifierid =  getidentifierid[0]['identifier_id']
+          
+           #------Unlink Identifier status 0 in identifier table--------#
+           Identifier.objects.filter(id=identifierid).update(status=0 )
+           #------Unlink Businesscard Identifier status 0 in Bsuinesscardidentifier table--------#
+           BusinessCardIdentifier.objects.filter(id=pk).update(status=0 )
+           return CustomeResponse({'msg':"Business card Identifiers has deleted"},status=status.HTTP_200_OK)
+         
+     
 
 class BusinessViewSet(viewsets.ModelViewSet):
     queryset = BusinessCard.objects.all()
@@ -168,3 +198,6 @@ class BusinessViewSet(viewsets.ModelViewSet):
 #
 #    def destroy(self, request, pk=None):
 #        return CustomeResponse({'msg':'DELETE method not allowed'},status=status.HTTP_405_METHOD_NOT_ALLOWED,flag=1)
+
+
+    

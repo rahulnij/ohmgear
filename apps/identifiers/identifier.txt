@@ -21,3 +21,9 @@ Required Parameters needed
 user_id
 identifier_type
 
+
+
+We Cannot Delete the identifier from identifier table because 
+if second time same user requested for other identifier he has to pay
+ he will not get any free period for premium than systematic identifier.
+i.e (Simple if first  free identifier is expired of user its status will be 0)  
