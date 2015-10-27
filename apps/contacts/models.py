@@ -9,7 +9,7 @@ User = settings.AUTH_USER_MODEL
 
 # Create your models here.
 
-class Contact(models.Model):
+class Contacts(models.Model):
     class Meta:
         db_table = 'ohmgear_contacts_contact'
     businesscard_id = models.OneToOneField(BusinessCard,null=True, blank=True,related_name='contact_detail',db_column="businesscard_id")

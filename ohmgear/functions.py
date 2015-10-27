@@ -63,7 +63,7 @@ class CustomeResponse(Response):
             else:
                tempData['status'] = False 
         else:
-           tempData['data'] = data
+           tempData['msg'] = data['msg']
            tempData['status'] = True
         #-------  End ----------------------------------------#        
         

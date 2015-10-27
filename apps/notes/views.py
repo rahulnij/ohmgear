@@ -41,7 +41,7 @@ class NotesViewSet(viewsets.ModelViewSet):
              return serializer.errors   
     
         
-    def update(self, request, pk=None):
+    def update(self, request, pk=None,call_from_function=None):
          try:
            messages = Notes.objects.get(id=pk)
          except:

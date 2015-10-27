@@ -1,11 +1,11 @@
 from rest_framework import serializers
 
-from models import Contact
+from models import Contacts
 # Serializers define the API representation.
 class ContactsSerializer(serializers.ModelSerializer):
     #bcard_json_data = serializers.CharField()
     class Meta:
-        model = Contact
+        model = Contacts
         fields = (
             'id',
             'businesscard_id',
@@ -22,7 +22,7 @@ class ContactsSerializerWithJson(serializers.ModelSerializer):
         return obj.bcard_json_data    
     
     class Meta:
-        model = Contact
+        model = Contacts
         fields = (
             'id',
             'businesscard_id',
