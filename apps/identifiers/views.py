@@ -9,12 +9,15 @@ from datetime import date
 import datetime
 import random
 from functions import CreateSystemIdentifier
+from ohmgear.token_authentication import ExpiringTokenAuthentication
+from rest_framework.permissions import IsAuthenticated
 
 # Create your views here.
 class IdentifierViewSet(viewsets.ModelViewSet):
     queryset = Identifier.objects.select_related().all()
     serializer_class = IdentifierSerializer
-    
+    authentication_classes = (ExpiringTokenAuthentication,)
+    permission_classes = (IsAuthenticated,) 
     #--------------Method: GET-----------------------------#       
     def list(self,request,**kwargs):
         if request.method == 'GET':

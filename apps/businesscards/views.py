@@ -22,6 +22,8 @@ from django.conf import settings
 class BusinessCardIdentifierViewSet(viewsets.ModelViewSet):
     queryset  = BusinessCardIdentifier.objects.all()
     serializer_class = BusinessCardIdentifierSerializer
+    authentication_classes = (ExpiringTokenAuthentication,)
+    permission_classes = (IsAuthenticated,) 
      #--------------Method: GET-----------------------------#       
     def list(self,request):
         return CustomeResponse({'msg':'GET method not allowed'},status=status.HTTP_405_METHOD_NOT_ALLOWED,validate_errors=1)
