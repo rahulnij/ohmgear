@@ -64,7 +64,7 @@ LOGGING = {
 }
 
 # CELERY STUFF
-INSTALLED_APPS += ("djcelery", )
+INSTALLED_APPS += ("djcelery","apps.test_purposes", )
 import djcelery
 djcelery.setup_loader()
 

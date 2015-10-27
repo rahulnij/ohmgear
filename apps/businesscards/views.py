@@ -4,8 +4,8 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework import viewsets
 import rest_framework.status as status
 
-from models import BusinessCard,BusinessCardTemplate
-from serializer import BusinessCardSerializer
+from models import BusinessCard,BusinessCardTemplate,BusinessCardIdentifier,Identifier
+from serializer import BusinessCardSerializer,BusinessCardIdentifierSerializer
 from apps.contacts.serializer import ContactsSerializer
 
 from ohmgear.token_authentication import ExpiringTokenAuthentication
@@ -18,6 +18,36 @@ from django.shortcuts import get_object_or_404
 from django.conf import settings
 # Create your views here.
 
+class BusinessCardIdentifierViewSet(viewsets.ModelViewSet):
+    queryset  = BusinessCardIdentifier.objects.all()
+    serializer_class = BusinessCardIdentifierSerializer
+     #--------------Method: GET-----------------------------#       
+    def list(self,request):
+        return CustomeResponse({'msg':'GET method not allowed'},status=status.HTTP_405_METHOD_NOT_ALLOWED,validate_errors=1)
+ 
+    
+    def create(self,request):
+       serializer = BusinessCardIdentifierSerializer(data = request.data,context={'request':request})
+       if serializer.is_valid():
+           serializer.save()
+           return CustomeResponse(serializer.data,status=status.HTTP_201_CREATED)
+       else:
+           return CustomeResponse(serializer.errors,status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
+        
+        
+    def update(self, request, pk=None):
+        
+           getidentifierid = BusinessCardIdentifier.objects.filter(id=pk).values()
+           identifierid =  getidentifierid[0]['identifier_id']
+          
+           #------Unlink Identifier status 0 in identifier table--------#
+           Identifier.objects.filter(id=identifierid).update(status=0 )
+           #------Unlink Businesscard Identifier status 0 in Bsuinesscardidentifier table--------#
+           BusinessCardIdentifier.objects.filter(id=pk).update(status=0 )
+           return CustomeResponse({'msg':"Business card Identifiers has deleted"},status=status.HTTP_200_OK)
+         
+     
+
 class BusinessViewSet(viewsets.ModelViewSet):
     queryset = BusinessCard.objects.all()
     serializer_class = BusinessCardSerializer
@@ -25,20 +55,22 @@ class BusinessViewSet(viewsets.ModelViewSet):
     permission_classes = (IsAuthenticated,)    
     
     
-    def get_queryset(self):
-        queryset = self.queryset
-        user_id = self.request.QUERY_PARAMS.get('user_id', None)
-        if user_id is not None:
-           queryset = queryset.filter(user_id=user_id) 
-        return queryset
-
-    #---    -----------Method: GET-----------------------------#       
-#    def list(self, request):
+#    def get_queryset(self):
+#        queryset = self.queryset
 #        user_id = self.request.QUERY_PARAMS.get('user_id', None)
 #        if user_id is not None:
-#            queryset = self.queryset.filter(user_id=user_id) 
-#        else:
-#         return CustomeResponse({'msg':'GET method allowed with filters only'},status=status.HTTP_405_METHOD_NOT_ALLOWED,validate_errors=1)   
+#           queryset = queryset.filter(user_id=user_id) 
+#        return queryset
+
+    #---    -----------Method: GET-----------------------------#       
+    def list(self, request):
+        user_id = self.request.QUERY_PARAMS.get('user_id', None)
+        if user_id is not None:
+            queryset = self.queryset.select_related('user').get(user_id=user_id)
+            serializer = self.serializer_class(queryset,context={'request':request})
+            return CustomeResponse(serializer.data,status=status.HTTP_200_OK)             
+        else:
+         return CustomeResponse({'msg':'GET method allowed with filters only'},status=status.HTTP_405_METHOD_NOT_ALLOWED,validate_errors=1)   
     
     #--------------Method: GET retrieve single record-----------------------------#
     def retrieve(self,request,pk=None):
@@ -61,38 +93,48 @@ class BusinessViewSet(viewsets.ModelViewSet):
 #            return CustomeResponse({'msg':"Please provide bcard_json_data in json format" },status=status.HTTP_400_BAD_REQUEST,validate_errors=1) 
          #---------------------------------- End ----------------------------------------------------------- #
          
-         #---------------------- Handle File Upload : Business Card Image  ------------------#
-         try:
-             bcard_image = request.FILES['bcard_image']
-         except:
-             bcard_image = ''
-         if bcard_image:
-             pass
-         #----------------------------------------------------------------------------------#
          serializer =  BusinessCardSerializer(data=request.data,context={'request': request})
          if serializer.is_valid():
             contact_serializer =  ContactsSerializer(data=request.DATA,context={'request': request})
             if contact_serializer.is_valid():
                 business = serializer.save()
-                contact = contact_serializer.save(businesscard = business)
+                #print contact_serializer.validated_data['businesscard_id']
+                contact_serializer.validated_data['businesscard_id'] = business
+                contact = contact_serializer.save()
+                #-------------- Save Notes -------------------------------#
+                data_new = serializer.data.copy()
+                try:
+                    if request.data['note_frontend']:
+                                from apps.notes.views import NotesViewSet
+                                note_view_obj = NotesViewSet()
+                                request_new = request.DATA.copy()
+                                request_new.DATA = {}
+                                request_new.DATA["user_id"]=request.data['user_id']
+                                request_new.DATA["contact_id"]=contact.id
+                                request_new.DATA["note"]=request.data['note_frontend']
+                                data = note_view_obj.create(request_new,call_from_function=1) 
+                                data_new['note_frontend'] = request.data['note_frontend']
+                except:
+                    pass                            
+                #-------------------------End-----------------------------------#            
             else:
                 return CustomeResponse(contact_serializer.errors,status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
             
-            return CustomeResponse(serializer.data,status=status.HTTP_201_CREATED)
+            return CustomeResponse(data_new,status=status.HTTP_201_CREATED)
  
          else:
             return CustomeResponse(serializer.errors,status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
         
     def update(self, request, pk=None):  
          #-------------------- First Validate the json contact data ------------------------------#
-         try:
-            validictory.validate(json.loads(request.DATA["bcard_json_data"]), BUSINESS_CARD_DATA_VALIDATION)
-         except validictory.ValidationError as error:
-            return CustomeResponse({'msg':error.message },status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
-         except validictory.SchemaError as error:
-            return CustomeResponse({'msg':error.message },status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
-         except:
-            return CustomeResponse({'msg':"Please provide bcard_json_data in json format" },status=status.HTTP_400_BAD_REQUEST,validate_errors=1) 
+#         try:
+#            validictory.validate(json.loads(request.DATA["bcard_json_data"]), BUSINESS_CARD_DATA_VALIDATION)
+#         except validictory.ValidationError as error:
+#            return CustomeResponse({'msg':error.message },status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
+#         except validictory.SchemaError as error:
+#            return CustomeResponse({'msg':error.message },status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
+#         except:
+#            return CustomeResponse({'msg':"Please provide bcard_json_data in json format" },status=status.HTTP_400_BAD_REQUEST,validate_errors=1) 
          #---------------------- - End ----------------------------------------------------------- #
          
          
@@ -102,7 +144,28 @@ class BusinessViewSet(viewsets.ModelViewSet):
             contact_serializer =  ContactsSerializer(data=request.DATA,context={'request': request})
             if contact_serializer.is_valid():
                 business = serializer.save()
-                contact = contact_serializer.save(businesscard = business)
+                contact_serializer.validated_data['businesscard_id'] = business
+                contact = contact_serializer.save()
+
+                #-------------- Save Notes -------------------------------#
+                data_new = serializer.data.copy()
+                try:
+                    if request.data['note_frontend']:
+                                from apps.notes.views import NotesViewSet
+                                from apps.notes.models import Notes
+                                note_view_obj = NotesViewSet()
+                                request_new = request.DATA.copy()
+                                request_new.DATA = {}
+                                request_new.DATA["id"]=Notes.objects.get()
+                                request_new.DATA["user_id"]=request.data['user_id']
+                                request_new.DATA["contact_id"]=contact.id
+                                request_new.DATA["note"]=request.data['note_frontend']
+                                data = note_view_obj.update(request_new,call_from_function=1) 
+                                data_new['note_frontend'] = request.data['note_frontend']
+                except:
+                    pass                            
+                #-------------------------End-----------------------------------#
+                
             else:
                 return CustomeResponse(contact_serializer.errors,status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
             
@@ -135,3 +198,6 @@ class BusinessViewSet(viewsets.ModelViewSet):
 #
 #    def destroy(self, request, pk=None):
 #        return CustomeResponse({'msg':'DELETE method not allowed'},status=status.HTTP_405_METHOD_NOT_ALLOWED,flag=1)
+
+
+    

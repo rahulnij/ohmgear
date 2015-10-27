@@ -25,23 +25,20 @@ class NotesViewSet(viewsets.ModelViewSet):
         return CustomeResponse(serializer.data,status=status.HTTP_200_OK)
     
     #--------------Method: POST create new Note -----------------------------#
-    def create(self, request,fromsocial=None):
+    def create(self, request,call_from_function=None):
          
          serializer =  NotesSerializer(data=request.DATA,context={'request': request})
          if serializer.is_valid():
-             
-            #------------ enable/desable signal -----------------#
-            if fromsocial:
-                self._disable_signals = True
-            #------------ End -----------------------------------#
             note_id=serializer.save() 
-            if not fromsocial:
+            if not call_from_function:
              return CustomeResponse(serializer.data,status=status.HTTP_201_CREATED)
             else:
              return serializer.data   
          else:
+           if not call_from_function:  
             return CustomeResponse(serializer.errors,status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
-    
+           else:
+             return serializer.errors   
     
         
     def update(self, request, pk=None):

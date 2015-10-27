@@ -12,10 +12,10 @@ User = settings.AUTH_USER_MODEL
 class Contact(models.Model):
     class Meta:
         db_table = 'ohmgear_contacts_contact'
-    businesscard = models.OneToOneField(BusinessCard,null=True, blank=True,related_name='contact_detail')
+    businesscard_id = models.OneToOneField(BusinessCard,null=True, blank=True,related_name='contact_detail',db_column="businesscard_id")
     bcard_json_data = JsonField(null=True)
-    template = models.ForeignKey(BusinessCardTemplate)
-    user = models.ForeignKey(User)
+    template_id = models.ForeignKey(BusinessCardTemplate,db_column="template_id")
+    user_id = models.ForeignKey(User,db_column="user_id")
     created_date=models.DateTimeField(_("Created Date"),auto_now_add=True,auto_now=False)
     updated_date=models.DateTimeField(_("Updated Date"),auto_now_add=False,auto_now=True)
     def __unicode__(self):

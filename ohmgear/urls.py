@@ -8,6 +8,11 @@ admin.site.site_header = 'ohmgear'
 
 router = routers.DefaultRouter()
 
+#-------------- test app for local testing ----------------------#
+from apps.test_purposes.test_view import  FtestViewSet
+router.register(r'api/test_purposes', FtestViewSet)
+#-------------- End ---------------------------------------------#
+
 #-------------- Users app url registration ----------------------#
 import apps.users.views as  users_views
 
@@ -34,6 +39,11 @@ from apps.users.signals import *
 import apps.businesscards.views as  businesscards_views
 router.register(r'api/businesscard', businesscards_views.BusinessViewSet)
 #-------------- End ---------------------------------------------#
+
+#------------------BusinessCard Idnetifier-----------------------#
+import apps.businesscards.views as businesscardidentifier_views
+router.register(r'api/businesscardidentifier',businesscardidentifier_views.BusinessCardIdentifierViewSet)
+#----------------End---------------------------------------------#
 
 #-------------- Identifiers app url ----------------------#
 import apps.identifiers.views as  identifiers_views
