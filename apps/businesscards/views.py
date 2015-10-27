@@ -63,38 +63,48 @@ class BusinessViewSet(viewsets.ModelViewSet):
 #            return CustomeResponse({'msg':"Please provide bcard_json_data in json format" },status=status.HTTP_400_BAD_REQUEST,validate_errors=1) 
          #---------------------------------- End ----------------------------------------------------------- #
          
-         #---------------------- Handle File Upload : Business Card Image  ------------------#
-         try:
-             bcard_image = request.FILES['bcard_image']
-         except:
-             bcard_image = ''
-         if bcard_image:
-             pass
-         #----------------------------------------------------------------------------------#
          serializer =  BusinessCardSerializer(data=request.data,context={'request': request})
          if serializer.is_valid():
             contact_serializer =  ContactsSerializer(data=request.DATA,context={'request': request})
             if contact_serializer.is_valid():
                 business = serializer.save()
-                contact = contact_serializer.save(businesscard = business)
+                #print contact_serializer.validated_data['businesscard_id']
+                contact_serializer.validated_data['businesscard_id'] = business
+                contact = contact_serializer.save()
+                #-------------- Save Notes -------------------------------#
+                data_new = serializer.data.copy()
+                try:
+                    if request.data['note_frontend']:
+                                from apps.notes.views import NotesViewSet
+                                note_view_obj = NotesViewSet()
+                                request_new = request.DATA.copy()
+                                request_new.DATA = {}
+                                request_new.DATA["user_id"]=request.data['user_id']
+                                request_new.DATA["contact_id"]=contact.id
+                                request_new.DATA["note"]=request.data['note_frontend']
+                                data = note_view_obj.create(request_new,call_from_function=1) 
+                                data_new['note_frontend'] = request.data['note_frontend']
+                except:
+                    pass                            
+                #-------------------------End-----------------------------------#            
             else:
                 return CustomeResponse(contact_serializer.errors,status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
             
-            return CustomeResponse(serializer.data,status=status.HTTP_201_CREATED)
+            return CustomeResponse(data_new,status=status.HTTP_201_CREATED)
  
          else:
             return CustomeResponse(serializer.errors,status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
         
     def update(self, request, pk=None):  
          #-------------------- First Validate the json contact data ------------------------------#
-         try:
-            validictory.validate(json.loads(request.DATA["bcard_json_data"]), BUSINESS_CARD_DATA_VALIDATION)
-         except validictory.ValidationError as error:
-            return CustomeResponse({'msg':error.message },status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
-         except validictory.SchemaError as error:
-            return CustomeResponse({'msg':error.message },status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
-         except:
-            return CustomeResponse({'msg':"Please provide bcard_json_data in json format" },status=status.HTTP_400_BAD_REQUEST,validate_errors=1) 
+#         try:
+#            validictory.validate(json.loads(request.DATA["bcard_json_data"]), BUSINESS_CARD_DATA_VALIDATION)
+#         except validictory.ValidationError as error:
+#            return CustomeResponse({'msg':error.message },status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
+#         except validictory.SchemaError as error:
+#            return CustomeResponse({'msg':error.message },status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
+#         except:
+#            return CustomeResponse({'msg':"Please provide bcard_json_data in json format" },status=status.HTTP_400_BAD_REQUEST,validate_errors=1) 
          #---------------------- - End ----------------------------------------------------------- #
          
          
@@ -104,7 +114,28 @@ class BusinessViewSet(viewsets.ModelViewSet):
             contact_serializer =  ContactsSerializer(data=request.DATA,context={'request': request})
             if contact_serializer.is_valid():
                 business = serializer.save()
-                contact = contact_serializer.save(businesscard = business)
+                contact_serializer.validated_data['businesscard_id'] = business
+                contact = contact_serializer.save()
+
+                #-------------- Save Notes -------------------------------#
+                data_new = serializer.data.copy()
+                try:
+                    if request.data['note_frontend']:
+                                from apps.notes.views import NotesViewSet
+                                from apps.notes.models import Notes
+                                note_view_obj = NotesViewSet()
+                                request_new = request.DATA.copy()
+                                request_new.DATA = {}
+                                request_new.DATA["id"]=Notes.objects.get()
+                                request_new.DATA["user_id"]=request.data['user_id']
+                                request_new.DATA["contact_id"]=contact.id
+                                request_new.DATA["note"]=request.data['note_frontend']
+                                data = note_view_obj.update(request_new,call_from_function=1) 
+                                data_new['note_frontend'] = request.data['note_frontend']
+                except:
+                    pass                            
+                #-------------------------End-----------------------------------#
+                
             else:
                 return CustomeResponse(contact_serializer.errors,status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
             

@@ -8,10 +8,10 @@ class ContactsSerializer(serializers.ModelSerializer):
         model = Contact
         fields = (
             'id',
-            'businesscard',
+            'businesscard_id',
             'bcard_json_data',
-            'template',
-            'user'
+            'template_id',
+            'user_id'
         )
 
 #------------- Used in fetch contact data -------------------#        
@@ -25,8 +25,9 @@ class ContactsSerializerWithJson(serializers.ModelSerializer):
         model = Contact
         fields = (
             'id',
-            'businesscard',
+            'businesscard_id',
             'bcard_json_data',
-            'template',
+            'template_id',
+            'user_id'
         )        
         

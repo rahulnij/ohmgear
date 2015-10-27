@@ -37,7 +37,7 @@ class BusinessCard(models.Model):
     #------------- End ---------------------------#
     created_date=models.DateTimeField(_("Created Date"),auto_now_add=True,auto_now=False)
     updated_date=models.DateTimeField(_("Updated Date"),auto_now_add=False,auto_now=True)
-    user = models.ForeignKey(User,related_name='buser')
+    user_id = models.ForeignKey(User,related_name='buser',db_column="user_id")
     
     def __unicode__(self):
         return'{"id:"%s","name":"%s"}'%(self.id,self.name)

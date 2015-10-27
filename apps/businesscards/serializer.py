@@ -66,7 +66,7 @@ class BusinessCardSerializer(serializers.ModelSerializer):
             'bcard_image_frontend',
             'bcard_image_backend',
             'is_active',
-            'user',
+            'user_id',
             'contact_detail',
         )
   
