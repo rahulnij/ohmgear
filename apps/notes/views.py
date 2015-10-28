@@ -25,33 +25,33 @@ class NotesViewSet(viewsets.ModelViewSet):
         return CustomeResponse(serializer.data,status=status.HTTP_200_OK)
     
     #--------------Method: POST create new Note -----------------------------#
-    def create(self, request,call_from_function=None):
-         
-         serializer =  NotesSerializer(data=request.DATA,context={'request': request})
-         if serializer.is_valid():
-            note_id=serializer.save() 
-            if not call_from_function:
-             return CustomeResponse(serializer.data,status=status.HTTP_201_CREATED)
-            else:
-             return serializer.data   
-         else:
-           if not call_from_function:  
-            return CustomeResponse(serializer.errors,status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
-           else:
-             return serializer.errors   
-    
-        
-    def update(self, request, pk=None):
-         try:
-           messages = Notes.objects.get(id=pk)
-         except:
-           return CustomeResponse({'msg':'record not found'},status=status.HTTP_404_NOT_FOUND,validate_errors=1)
-         serializer =  NotesSerializer(messages,data=request.DATA,partial=True,context={'request': request})
-         if serializer.is_valid():
-            serializer.save()
-            return CustomeResponse(serializer.data,status=status.HTTP_200_OK)
-         else:
-            return CustomeResponse(serializer.errors,status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
+#    def create(self, request,call_from_function=None):
+#         
+#         serializer =  NotesSerializer(data=request.DATA,context={'request': request})
+#         if serializer.is_valid():
+#            note_id=serializer.save() 
+#            if not call_from_function:
+#             return CustomeResponse(serializer.data,status=status.HTTP_201_CREATED)
+#            else:
+#             return serializer.data   
+#         else:
+#           if not call_from_function:  
+#            return CustomeResponse(serializer.errors,status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
+#           else:
+#             return serializer.errors   
+#    
+#        
+#    def update(self, request, pk=None,call_from_function=None):
+#         try:
+#           messages = Notes.objects.get(id=pk)
+#         except:
+#           return CustomeResponse({'msg':'record not found'},status=status.HTTP_404_NOT_FOUND,validate_errors=1)
+#         serializer =  NotesSerializer(messages,data=request.DATA,partial=True,context={'request': request})
+#         if serializer.is_valid():
+#            serializer.save()
+#            return CustomeResponse(serializer.data,status=status.HTTP_200_OK)
+#         else:
+#            return CustomeResponse(serializer.errors,status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
 
     
     def partial_update(self, request, pk=None):

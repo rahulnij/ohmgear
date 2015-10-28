@@ -9,7 +9,7 @@ User = settings.AUTH_USER_MODEL
 
 # Create your models here.
 
-class Contact(models.Model):
+class Contacts(models.Model):
     class Meta:
         db_table = 'ohmgear_contacts_contact'
     businesscard_id = models.OneToOneField(BusinessCard,null=True, blank=True,related_name='contact_detail',db_column="businesscard_id")
@@ -19,7 +19,7 @@ class Contact(models.Model):
     created_date=models.DateTimeField(_("Created Date"),auto_now_add=True,auto_now=False)
     updated_date=models.DateTimeField(_("Updated Date"),auto_now_add=False,auto_now=True)
     def __unicode__(self):
-        return '{"id:"%s","bcard_json_data":"%s","businesscard":"%s"}'%(self.id,self.bcard_json_data,self.businesscard)
+        return '{"id:"%s","bcard_json_data":"%s","businesscard_id":"%s"}'%(self.id,self.bcard_json_data,self.businesscard_id)
     
     
         
