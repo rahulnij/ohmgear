@@ -5,10 +5,6 @@ from django.conf import settings
 User = settings.AUTH_USER_MODEL
 # Create your models here.
 
-TEMPLATE_TYPE = (('1', 'option1'),
-                  ('2', 'option2'),
-                  ('3', 'option3'),                  
-                 )
       
 IDENTIFIERTYPE = (('1','System Generated'),
                     ('2','Premium'),
