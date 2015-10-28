@@ -79,11 +79,14 @@ class BusinessViewSet(viewsets.ModelViewSet):
          return None   
 
     #--------------Method: GET retrieve single record-----------------------------#
-    def retrieve(self,request,pk=None):
+    def retrieve(self,request,pk=None,call_from_function=None):
         queryset = self.queryset
         user = get_object_or_404(BusinessCard,pk=pk)
         serializer = self.serializer_class(user,context={'request':request})
-        return CustomeResponse(serializer.data,status=status.HTTP_200_OK)
+        if call_from_function:
+            return serializer.data
+        else:
+            return CustomeResponse(serializer.data,status=status.HTTP_200_OK)
     
     #--------------Method: POST create new business card -----------------------------#
     def create(self, request):
@@ -99,6 +102,18 @@ class BusinessViewSet(viewsets.ModelViewSet):
 #            return CustomeResponse({'msg':"Please provide bcard_json_data in json format" },status=status.HTTP_400_BAD_REQUEST,validate_errors=1) 
          #---------------------------------- End ----------------------------------------------------------- #
          
+         #---------------------------- Duplicate the business card -------------------------------------#
+         try:
+           bcard_id = request.data["bcard_id"]
+         except:
+           bcard_id = None  
+         if bcard_id:
+            from functions import createDuplicateBusinessCard
+            bcards_id_new = createDuplicateBusinessCard(bcard_id)
+            data          =  self.retrieve(request,pk=bcards_id_new,call_from_function=1)
+            return CustomeResponse(data,status=status.HTTP_200_OK)
+         
+         #----------------------------- End ------------------------------------------------------------#
          serializer =  BusinessCardSerializer(data=request.data,context={'request': request})
          if serializer.is_valid():
             contact_serializer =  ContactsSerializer(data=request.DATA,context={'request': request})

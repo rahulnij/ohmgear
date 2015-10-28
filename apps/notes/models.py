@@ -22,7 +22,7 @@ class Notes(models.Model):
     updated_date=models.DateTimeField(_("Updated Date"),auto_now_add=False,auto_now=True)
     
     def __unicode__(self):
-        return '{"id":"%s","note_headline":"%s","note":"%s","location_area":"%s","note_accessibilty":"%s","contact":"%s","user":"%s","bcard_side_no"}' %(self.id,self.note_headline,self.note,self.location_area,self.note_accessibilty,self.contact,self.user,self.bcard_side_no)
+        return '{"id":"%s","note_headline":"%s","note":"%s","location_area":"%s","note_accessibilty":"%s","contact_id":"%s","user_id":"%s","bcard_side_no":"%s"}' %(self.id,self.note_headline,self.note,self.location_area,self.note_accessibilty,self.contact_id,self.user_id,self.bcard_side_no)
     
     
     
