@@ -57,6 +57,20 @@ class BusinessCardIdentifier(models.Model):
     def __unicode__(self):
         return'{"id:"%s","businesscard":"%s","identifier":"%s","status":"%s"}'%(self.id,self.businesscard,self.identifier,self.status)
     
+class BusinessCardMedia(models.Model):
     
+    class Meta:
+        db_table = 'ohmgear_businesscards_media'
+    user = models.ForeignKey(User)
+    businesscard = models.ForeignKey(BusinessCard)
+    img_url      = models.ImageField(_("Image Url"),default=1)
+    created_date=models.DateTimeField(_("Created Date"),auto_now_add=True,auto_now=False)
+    updated_date=models.DateTimeField(_("Updated Date"),auto_now_add=False,auto_now=True)
+    position      = models.IntegerField(_("Position"),default=1) # 1=Horizontal ,2=Vertical
+    status      = models.IntegerField(_("Status"),default=1)
+    
+    def __unicode__(self):
+        return'{"id:"%s","businesscard":"%s","user":"%s","status":"%s"}'%(self.id,self.businesscard,self.user,self.status)
+        
     
     

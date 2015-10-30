@@ -56,6 +56,12 @@ import apps.notes.views as  notes_views
 router.register(r'api/notes', notes_views.NotesViewSet)
 #-------------- End ---------------------------------------------#
 
+#-------------- Business card Media app url registration ----------------------#
+import apps.businesscards.views as  businesscards_views
+router.register(r'api/businesscardmedia', businesscards_views.BusinessCardMediaViewSet)
+#-------------- End ---------------------------------------------#
+
+
 
 #-------------- Contacts app url registration ----------------------#
 import apps.contacts.views as  contacts_views
@@ -81,5 +87,9 @@ from django.conf import settings
 urlpatterns += patterns('',
         (r'^media/(?P<path>.*)$', 'django.views.static.serve', {'document_root': settings.MEDIA_ROOT, 'show_indexes': True}),
     )
+    
+#------------------------------------------------------------------------------------------------------ #
+
+
 #handler404 = 'ohmgear.custom_exception_handler.custom404'
 #handler500 = 'ohmgear.custom_exception_handler.custom404'
