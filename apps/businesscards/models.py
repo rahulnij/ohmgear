@@ -66,11 +66,12 @@ class BusinessCardMedia(models.Model):
     img_url      = models.ImageField(_("Image Url"),default=1)
     created_date=models.DateTimeField(_("Created Date"),auto_now_add=True,auto_now=False)
     updated_date=models.DateTimeField(_("Updated Date"),auto_now_add=False,auto_now=True)
+    front_back      = models.IntegerField(_("Front Back"),default=1) # 1=Front ,2=Back
     position      = models.IntegerField(_("Position"),default=1) # 1=Horizontal ,2=Vertical
     status      = models.IntegerField(_("Status"),default=1)
     
     def __unicode__(self):
-        return'{"id:"%s","businesscard":"%s","user":"%s","status":"%s"}'%(self.id,self.businesscard,self.user,self.status)
+        return'{"id:"%s","businesscard":"%s","user":"%s","status":"%s","front_back":"%s"}'%(self.id,self.businesscard,self.user,self.status,self.front_back)
         
     
     

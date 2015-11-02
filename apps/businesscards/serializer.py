@@ -100,7 +100,7 @@ class BusinessCardIdentifierSerializer(serializers.ModelSerializer):
         
 class BusinessCardMediaSerializer(serializers.ModelSerializer):
     
-   # image_url = serializers.ImageField(max_length=None, use_url=True,required=False)
+    image_url = serializers.ImageField(max_length=None, use_url=True,required=False)
     class Meta:
         model = BusinessCardMedia
 

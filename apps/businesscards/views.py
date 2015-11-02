@@ -227,16 +227,20 @@ class BusinessViewSet(viewsets.ModelViewSet):
 
 
 class BusinessCardMediaViewSet(viewsets.ModelViewSet):
-    queryset  = BusinessCardMedia.objects.all()
+    queryset  = BusinessCardMedia.objects.all().values()
     serializer_class = BusinessCardMediaSerializer
     #authentication_classes = (ExpiringTokenAuthentication,)
     #permission_classes = (IsAuthenticated,) 
      #--------------Method: GET-----------------------------#       
     def list(self,request):
-        return CustomeResponse({'msg':'GET method not allowed'},status=status.HTTP_405_METHOD_NOT_ALLOWED,validate_errors=1)
- 
-    
-    
+       # return CustomeResponse({'msg':'GET method not allowed'},status=status.HTTP_405_METHOD_NOT_ALLOWED,validate_errors=1)
+        if request.method == 'GET':
+            queryset = self.queryset
+            #print queryset
+            #businesscardmedia = get_object_or_404(queryset, pk=pk)
+            #serializer = self.serializer_class(businesscardmedia,context={'request': request})
+            return CustomeResponse({'msg':queryset},status=status.HTTP_200_OK)
+  
     def create(self,request):
         serializer = BusinessCardMediaSerializer(data = request.data,context={'request':request})
         if serializer.is_valid():
