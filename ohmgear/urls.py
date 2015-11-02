@@ -80,6 +80,11 @@ import apps.vacationcard.views as vacationcard_views
 router.register(r'api/vacationcard',vacationcard_views.VacationCardViewSet)
 #---------------End ------------------------------------------------#
 
+#----------------Businesscard Vacation url ---------------------------#
+import apps.vacationcard.views as businesscardvacation_views
+router.register(r'api/businesscardvacation',businesscardvacation_views.BusinessCardVacationViewSet)
+#-----------------End-------------------------------------------------#
+
 
 urlpatterns += patterns('',
     url(r'^admin/', include(admin.site.urls)),

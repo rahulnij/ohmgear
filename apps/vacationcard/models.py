@@ -15,16 +15,17 @@ class VacationCard(models.Model):
     status          =   models.IntegerField(_('Status'),default =1)
     
     def __unicode__(self):
-        return'{"id":"%s","user":"%s"}'%(self.id,self.user)
+        return'{"id":"%s","user_id":"%s"}'%(self.id,self.user_id)
     
     
     
 class BusinessCardVacation(models.Model):
     class Meta:
         db_table = 'ohmgear_vacationcard_businesscardvacation'
+        unique_together = ('user_id', 'businesscard_id')
         
-    vacationcard_id    =   models.OneToOneField(VacationCard,db_column ="vacationcard_id")
-    businesscard_id    =   models.OneToOneField(BusinessCard,db_column = "businesscard_id")
+    vacationcard_id    =   models.ForeignKey(VacationCard,db_column ="vacationcard_id")
+    businesscard_id    =   models.ForeignKey(BusinessCard,db_column = "businesscard_id")
     user_id         =   models.ForeignKey(User,db_column = "user_id")
     created_date=models.DateTimeField(_("Created Date"),auto_now_add=True,auto_now=False)
     updated_date=models.DateTimeField(_("Updated Date"),auto_now_add=False,auto_now=True)
