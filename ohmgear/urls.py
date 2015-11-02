@@ -40,6 +40,7 @@ import apps.businesscards.views as  businesscards_views
 router.register(r'api/businesscard', businesscards_views.BusinessViewSet)
 #-------------- End ---------------------------------------------#
 
+
 #------------------BusinessCard Idnetifier-----------------------#
 import apps.businesscards.views as businesscardidentifier_views
 router.register(r'api/businesscardidentifier',businesscardidentifier_views.BusinessCardIdentifierViewSet)
@@ -66,6 +67,13 @@ urlpatterns += [
 
 urlpatterns += format_suffix_patterns(urlpatterns)
 #-------------- End ---------------------------------------------#
+
+
+#---------------Vacation Card app url-------------------------------#
+import apps.vacationcard.views as vacationcard_views
+router.register(r'api/vacationcard',vacationcard_views.VacationCardViewSet)
+#---------------End ------------------------------------------------#
+
 
 urlpatterns += patterns('',
     url(r'^admin/', include(admin.site.urls)),
