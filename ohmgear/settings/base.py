@@ -48,6 +48,7 @@ INSTALLED_APPS = (
     'apps.businesscards',
     'apps.contacts',
     'apps.identifiers',
+    'apps.vacationcard',
     'apps.email',
     'apps.promocode',
     'rest_framework',

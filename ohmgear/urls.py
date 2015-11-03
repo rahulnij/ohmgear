@@ -40,6 +40,7 @@ import apps.businesscards.views as  businesscards_views
 router.register(r'api/businesscard', businesscards_views.BusinessViewSet)
 #-------------- End ---------------------------------------------#
 
+
 #------------------BusinessCard Idnetifier-----------------------#
 import apps.businesscards.views as businesscardidentifier_views
 router.register(r'api/businesscardidentifier',businesscardidentifier_views.BusinessCardIdentifierViewSet)
@@ -57,6 +58,21 @@ router.register(r'api/notes', notes_views.NotesViewSet)
 #-------------- End ---------------------------------------------#
 
 
+#-------------- Available Skills in the database  ----------------------#
+import apps.businesscards.views as  businesscards_views
+router.register(r'api/businesscardskillavailable', businesscards_views.BusinessCardSkillAvailableViewSet)
+#-------------- End ---------------------------------------------#
+
+#-------------- Add Skills ----------------------#
+import apps.businesscards.views as  businesscards_views
+router.register(r'api/businesscardaddskill', businesscards_views.BusinessCardAddSkillViewSet)
+#-------------- End ---------------------------------------------#
+
+#-------------- Business card Media  ----------------------#
+import apps.businesscards.views as  businesscards_views
+router.register(r'api/businesscardmedia', businesscards_views.BusinessCardMediaViewSet)
+#-------------- End ---------------------------------------------#
+
 #-------------- Contacts app url registration ----------------------#
 import apps.contacts.views as  contacts_views
 
@@ -66,6 +82,18 @@ urlpatterns += [
 
 urlpatterns += format_suffix_patterns(urlpatterns)
 #-------------- End ---------------------------------------------#
+
+
+#---------------Vacation Card app url-------------------------------#
+import apps.vacationcard.views as vacationcard_views
+router.register(r'api/vacationcard',vacationcard_views.VacationCardViewSet)
+#---------------End ------------------------------------------------#
+
+#----------------Businesscard Vacation url ---------------------------#
+import apps.vacationcard.views as businesscardvacation_views
+router.register(r'api/businesscardvacation',businesscardvacation_views.BusinessCardVacationViewSet)
+#-----------------End-------------------------------------------------#
+
 
 urlpatterns += patterns('',
     url(r'^admin/', include(admin.site.urls)),
@@ -81,5 +109,9 @@ from django.conf import settings
 urlpatterns += patterns('',
         (r'^media/(?P<path>.*)$', 'django.views.static.serve', {'document_root': settings.MEDIA_ROOT, 'show_indexes': True}),
     )
+    
+#------------------------------------------------------------------------------------------------------ #
+
+
 #handler404 = 'ohmgear.custom_exception_handler.custom404'
 #handler500 = 'ohmgear.custom_exception_handler.custom404'

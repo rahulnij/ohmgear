@@ -57,6 +57,46 @@ class BusinessCardIdentifier(models.Model):
     def __unicode__(self):
         return'{"id:"%s","businesscard":"%s","identifier":"%s","status":"%s"}'%(self.id,self.businesscard,self.identifier,self.status)
     
+class BusinessCardMedia(models.Model):
     
+    class Meta:
+        db_table = 'ohmgear_businesscards_media'
+    #user = models.ForeignKey(User)
+    user_id = models.ForeignKey(User,db_column="user_id")
+    businesscard = models.ForeignKey(BusinessCard)
+    img_url      = models.ImageField(_("Image Url"),default=1)
+    created_date=models.DateTimeField(_("Created Date"),auto_now_add=True,auto_now=False)
+    updated_date=models.DateTimeField(_("Updated Date"),auto_now_add=False,auto_now=True)
+    front_back      = models.IntegerField(_("Front Back"),default=1) # 1=Front ,2=Back
+    position      = models.IntegerField(_("Position"),default=1) # 1=Horizontal ,2=Vertical
+    status      = models.IntegerField(_("Status"),default=1)
     
+    def __unicode__(self):
+        return'{"id:"%s","businesscard":"%s","user":"%s","status":"%s","front_back":"%s"}'%(self.id,self.businesscard,self.user,self.status,self.front_back)
+        
     
+class BusinessCardSkillAvailable(models.Model):
+    
+    class Meta:
+        db_table = 'ohmgear_businesscards_businesscardavailableskills'
+    skill_name = models.CharField(_("Skill Name"),null=True,max_length=50)
+    status      = models.IntegerField(_("Status"),default=1)
+    
+    def __unicode__(self):
+        return'{"id:"%s","skillset":"%s"}'%(self.id,self.skill_name)
+  
+class BusinessCardAddSkill(models.Model):
+    
+    class Meta:
+        db_table = 'ohmgear_businesscards_businesscardaddskills'
+    #user = models.ForeignKey(User)
+    user_id = models.ForeignKey(User,db_column="user_id")
+    businesscard = models.ForeignKey(BusinessCard)
+    created_date=models.DateTimeField(_("Created Date"),auto_now_add=True,auto_now=False)
+    updated_date=models.DateTimeField(_("Updated Date"),auto_now_add=False,auto_now=True)
+    skill_name = models.CharField(_("Skill Name"),null=True,max_length=50)
+    status      = models.IntegerField(_("Status"),default=1)
+    
+    def __unicode__(self):
+        return'{"id:"%s","businesscard":"%s","skillname":"%s"}'%(self.id,self.businesscard,self.skill_name)
+            
