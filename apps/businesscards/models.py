@@ -74,4 +74,27 @@ class BusinessCardMedia(models.Model):
         return'{"id:"%s","businesscard":"%s","user":"%s","status":"%s","front_back":"%s"}'%(self.id,self.businesscard,self.user,self.status,self.front_back)
         
     
+class BusinessCardSkillAvailable(models.Model):
     
+    class Meta:
+        db_table = 'ohmgear_businesscards_businesscardavailableskills'
+    skill_name = models.CharField(_("Skill Name"),null=True,max_length=50)
+    status      = models.IntegerField(_("Status"),default=1)
+    
+    def __unicode__(self):
+        return'{"id:"%s","skillset":"%s"}'%(self.id,self.skill_name)
+  
+class BusinessCardAddSkill(models.Model):
+    
+    class Meta:
+        db_table = 'ohmgear_businesscards_businesscardaddskills'
+    user = models.ForeignKey(User)
+    businesscard = models.ForeignKey(BusinessCard)
+    created_date=models.DateTimeField(_("Created Date"),auto_now_add=True,auto_now=False)
+    updated_date=models.DateTimeField(_("Updated Date"),auto_now_add=False,auto_now=True)
+    skill_name = models.CharField(_("Skill Name"),null=True,max_length=50)
+    status      = models.IntegerField(_("Status"),default=1)
+    
+    def __unicode__(self):
+        return'{"id:"%s","businesscard":"%s","skillname":"%s"}'%(self.id,self.businesscard,self.skill_name)
+            
