@@ -61,7 +61,8 @@ class BusinessCardMedia(models.Model):
     
     class Meta:
         db_table = 'ohmgear_businesscards_media'
-    user = models.ForeignKey(User)
+    #user = models.ForeignKey(User)
+    user_id = models.ForeignKey(User,db_column="user_id")
     businesscard = models.ForeignKey(BusinessCard)
     img_url      = models.ImageField(_("Image Url"),default=1)
     created_date=models.DateTimeField(_("Created Date"),auto_now_add=True,auto_now=False)
@@ -88,7 +89,8 @@ class BusinessCardAddSkill(models.Model):
     
     class Meta:
         db_table = 'ohmgear_businesscards_businesscardaddskills'
-    user = models.ForeignKey(User)
+    #user = models.ForeignKey(User)
+    user_id = models.ForeignKey(User,db_column="user_id")
     businesscard = models.ForeignKey(BusinessCard)
     created_date=models.DateTimeField(_("Created Date"),auto_now_add=True,auto_now=False)
     updated_date=models.DateTimeField(_("Updated Date"),auto_now_add=False,auto_now=True)
