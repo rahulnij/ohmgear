@@ -1,5 +1,5 @@
 from rest_framework import  serializers
-from models import BusinessCard,BusinessCardIdentifier,BusinessCardMedia
+from models import BusinessCard,BusinessCardIdentifier,BusinessCardMedia ,BusinessCardSkillAvailable,BusinessCardAddSkill
 from apps.contacts.serializer import ContactsSerializerWithJson
 # Serializers define the API representation.
 
@@ -96,7 +96,12 @@ class BusinessCardIdentifierSerializer(serializers.ModelSerializer):
                     raise serializers.ValidationError("Businesscard can have 1 identifier only")
         
         return attrs  
-
+    
+    
+class BusinessCardAddSkillSerializer(serializers.ModelSerializer):
+    
+    class Meta:
+        model = BusinessCardAddSkill 
         
 class BusinessCardMediaSerializer(serializers.ModelSerializer):
     
@@ -104,4 +109,9 @@ class BusinessCardMediaSerializer(serializers.ModelSerializer):
     class Meta:
         model = BusinessCardMedia
 
-          
+class BusinessCardSkillAvailableSerializer(serializers.ModelSerializer):
+    
+    class Meta:
+        model = BusinessCardSkillAvailable  
+
+

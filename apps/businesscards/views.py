@@ -4,8 +4,8 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework import viewsets
 import rest_framework.status as status
 
-from models import BusinessCard,BusinessCardTemplate,BusinessCardIdentifier,Identifier,BusinessCardMedia
-from serializer import BusinessCardSerializer,BusinessCardIdentifierSerializer,BusinessCardMediaSerializer
+from models import BusinessCard,BusinessCardTemplate,BusinessCardIdentifier,Identifier,BusinessCardMedia,BusinessCardSkillAvailable,BusinessCardAddSkill
+from serializer import BusinessCardSerializer,BusinessCardIdentifierSerializer,BusinessCardMediaSerializer,BusinessCardSkillAvailableSerializer,BusinessCardAddSkillSerializer
 from apps.contacts.serializer import ContactsSerializer
 from apps.contacts.models import Contacts
 
@@ -225,7 +225,7 @@ class BusinessViewSet(viewsets.ModelViewSet):
          except:
            return CustomeResponse({'msg':'record not found'},status=status.HTTP_404_NOT_FOUND,validate_errors=1)
 
-
+# BusinessCard Gallery 
 class BusinessCardMediaViewSet(viewsets.ModelViewSet):
     queryset  = BusinessCardMedia.objects.all().values()
     serializer_class = BusinessCardMediaSerializer
@@ -260,5 +260,82 @@ class BusinessCardMediaViewSet(viewsets.ModelViewSet):
            Identifier.objects.filter(id=identifierid).update(status=0 )
            #------Unlink Businesscard Identifier status 0 in Bsuinesscardidentifier table--------#
            BusinessCardMediaSerializer.objects.filter(id=pk).update(status=0 )
-           return CustomeResponse({'msg':"Business card Identifiers has deleted"},status=status.HTTP_200_OK)
-         
+           return CustomeResponse({'msg':"Business card Identifiers has been deleted"},status=status.HTTP_200_OK)
+
+
+#BusinessCard Available Skills
+
+class BusinessCardSkillAvailableViewSet(viewsets.ModelViewSet):
+    queryset  = BusinessCardSkillAvailable.objects.all().values()
+    serializer_class = BusinessCardSkillAvailableSerializer
+    #authentication_classes = (ExpiringTokenAuthentication,)
+    #permission_classes = (IsAuthenticated,) 
+     #--------------Method: GET-----------------------------#       
+    def list(self,request):
+       # return CustomeResponse({'msg':'GET method not allowed'},status=status.HTTP_405_METHOD_NOT_ALLOWED,validate_errors=1)
+        if request.method == 'GET':
+            skill =  self.request.QUERY_PARAMS.get('skill', None)
+            queryset = BusinessCardSkillAvailable.objects.filter(skill_name__istartswith=skill).values()
+           # queryset = self.queryset
+            #businesscardmedia = get_object_or_404(queryset, pk=pk)
+            #serializer = self.serializer_class(businesscardmedia,context={'request': request})
+            return CustomeResponse({'msg':queryset},status=status.HTTP_200_OK)
+  
+    def create(self,request):
+        serializer = BusinessCardSkillAvailableSerializer(data = request.data,context={'request':request})
+        if serializer.is_valid():
+            serializer.save()
+            return CustomeResponse(serializer.data,status=status.HTTP_201_CREATED)
+        else:
+            return CustomeResponse(serializer.errors,status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
+
+        
+        
+    def update(self, request, pk=None):
+        
+           getidentifierid = BusinessCardSkillAvailable.objects.filter(id=pk).values()
+           identifierid =  getidentifierid[0]['identifier_id']
+          
+           #------Unlink Identifier status 0 in identifier table--------#
+           Identifier.objects.filter(id=identifierid).update(status=0 )
+           #------Unlink Businesscard Identifier status 0 in Bsuinesscardidentifier table--------#
+           BusinessCardSkillAvailable.objects.filter(id=pk).update(status=0 )
+           return CustomeResponse({'msg':"Business card Skills has been deleted"},status=status.HTTP_200_OK)
+       
+ # Add Skills to Business Card      
+class BusinessCardAddSkillViewSet(viewsets.ModelViewSet):
+    queryset  = BusinessCardAddSkill.objects.all().values()
+    serializer_class = BusinessCardAddSkillSerializer
+    #authentication_classes = (ExpiringTokenAuthentication,)
+    #permission_classes = (IsAuthenticated,) 
+     #--------------Method: GET-----------------------------#       
+    def list(self,request):
+       # return CustomeResponse({'msg':'GET method not allowed'},status=status.HTTP_405_METHOD_NOT_ALLOWED,validate_errors=1)
+        if request.method == 'GET':
+            queryset = self.queryset
+            #print queryset
+            #businesscardmedia = get_object_or_404(queryset, pk=pk)
+            #serializer = self.serializer_class(businesscardmedia,context={'request': request})
+            return CustomeResponse({'msg':queryset},status=status.HTTP_200_OK)
+  
+    def create(self,request):
+        serializer = BusinessCardAddSkillSerializer(data = request.data,context={'request':request})
+        if serializer.is_valid():
+            serializer.save()
+            return CustomeResponse(serializer.data,status=status.HTTP_201_CREATED)
+        else:
+            return CustomeResponse(serializer.errors,status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
+
+        
+        
+    def update(self, request, pk=None):
+        
+           getidentifierid = BusinessCardAddSkill.objects.filter(id=pk).values()
+           identifierid =  getidentifierid[0]['identifier_id']
+          
+           #------Unlink Identifier status 0 in identifier table--------#
+           Identifier.objects.filter(id=identifierid).update(status=0 )
+           #------Unlink Businesscard Identifier status 0 in Bsuinesscardidentifier table--------#
+           BusinessCardAddSkill.objects.filter(id=pk).update(status=0 )
+           return CustomeResponse({'msg':"Business card Skills has been deleted"},status=status.HTTP_200_OK)
+                  

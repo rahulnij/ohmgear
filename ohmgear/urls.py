@@ -57,12 +57,21 @@ import apps.notes.views as  notes_views
 router.register(r'api/notes', notes_views.NotesViewSet)
 #-------------- End ---------------------------------------------#
 
-#-------------- Business card Media app url registration ----------------------#
+
+#-------------- Available Skills in the database  ----------------------#
+import apps.businesscards.views as  businesscards_views
+router.register(r'api/businesscardskillavailable', businesscards_views.BusinessCardSkillAvailableViewSet)
+#-------------- End ---------------------------------------------#
+
+#-------------- Add Skills ----------------------#
+import apps.businesscards.views as  businesscards_views
+router.register(r'api/businesscardaddskill', businesscards_views.BusinessCardAddSkillViewSet)
+#-------------- End ---------------------------------------------#
+
+#-------------- Business card Media  ----------------------#
 import apps.businesscards.views as  businesscards_views
 router.register(r'api/businesscardmedia', businesscards_views.BusinessCardMediaViewSet)
 #-------------- End ---------------------------------------------#
-
-
 
 #-------------- Contacts app url registration ----------------------#
 import apps.contacts.views as  contacts_views
