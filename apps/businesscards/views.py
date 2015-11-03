@@ -276,10 +276,11 @@ class BusinessCardSkillAvailableViewSet(viewsets.ModelViewSet):
         if request.method == 'GET':
             skill =  self.request.QUERY_PARAMS.get('skill', None)
             queryset = BusinessCardSkillAvailable.objects.filter(skill_name__istartswith=skill).values()
-           # queryset = self.queryset
-            #businesscardmedia = get_object_or_404(queryset, pk=pk)
-            #serializer = self.serializer_class(businesscardmedia,context={'request': request})
-            return CustomeResponse({'msg':queryset},status=status.HTTP_200_OK)
+            if queryset: 
+                for items in queryset:
+                    return CustomeResponse({'msg':queryset},status=status.HTTP_200_OK)
+            else:
+               return CustomeResponse({'msg':"Data not exist"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
   
     def create(self,request):
         serializer = BusinessCardSkillAvailableSerializer(data = request.data,context={'request':request})
