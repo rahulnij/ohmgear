@@ -51,8 +51,9 @@ class VacationCardViewSet(viewsets.ModelViewSet):
         VacationTripserializer = VacationTripSerializer(data=request.DATA,context={'request':request})
       
         try:
-             vacation = request.DATA['vacation']
-             stops = json.loads(request.DATA['vacation'])
+            vacation = request.DATA['vacation']
+            stops = json.loads(request.DATA['vacation'])
+            stops =  stops["data"]
         except:
             return CustomeResponse({'status':'fail','msg':'Please provide correct Json Format of vacation'},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
             
