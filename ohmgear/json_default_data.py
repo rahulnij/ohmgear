@@ -285,11 +285,6 @@ BUSINESS_CARD = {
                                    }
                                    
                             }         
-    },
-    "notes":{
-            "note_frontend":"",
-            "note_backend":""    
     }
-
 }
 
