@@ -257,18 +257,18 @@ class BusinessViewSet(viewsets.ModelViewSet):
                 contact_new = contact_serializer.save()
                 #-------------- Save Notes -------------------------------#
                 data_new = serializer.data.copy()
-                #try:
-                if request.data['note_frontend'] or request.data['note_backend']:
-                                user = User.objects.get(id=request.data['user_id'])
-                                from apps.notes.models import Notes
-                                if "note_frontend" in request.data and request.data['note_frontend']:                                    
-                                    data = Notes.objects.update_or_create(user_id=user,contact_id=contact,note=request.data['note_frontend'],bcard_side_no=1) 
-                                    data_new['note_frontend'] = request.data['note_frontend']
-                                if "note_backend" in request.data and request.data['note_backend']:
-                                    data = Notes.objects.update_or_create(user_id=user,contact_id=contact,note=request.data['note_frontend'],bcard_side_no=2) 
-                                    data_new['note_backend'] = request.data['note_backend']                                    
-                #except:
-                #    pass                            
+                try:
+                    if request.data['note_frontend'] or request.data['note_backend']:
+                                    user = User.objects.get(id=request.data['user_id'])
+                                    from apps.notes.models import Notes
+                                    if "note_frontend" in request.data and request.data['note_frontend']:                                    
+                                        data = Notes.objects.update_or_create(user_id=user,contact_id=contact,note=request.data['note_frontend'],bcard_side_no=1) 
+                                        data_new['note_frontend'] = request.data['note_frontend']
+                                    if "note_backend" in request.data and request.data['note_backend']:
+                                        data = Notes.objects.update_or_create(user_id=user,contact_id=contact,note=request.data['note_frontend'],bcard_side_no=2) 
+                                        data_new['note_backend'] = request.data['note_backend']                                    
+                except:
+                    pass                            
                 #-------------------------End-----------------------------------#                
                 
             else:
