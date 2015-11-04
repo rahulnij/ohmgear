@@ -298,11 +298,15 @@ class BusinessCardMediaViewSet(viewsets.ModelViewSet):
     def list(self,request):
        # return CustomeResponse({'msg':'GET method not allowed'},status=status.HTTP_405_METHOD_NOT_ALLOWED,validate_errors=1)
         if request.method == 'GET':
-            queryset = self.queryset
-            #print queryset
-            #businesscardmedia = get_object_or_404(queryset, pk=pk)
-            #serializer = self.serializer_class(businesscardmedia,context={'request': request})
-            return CustomeResponse({'msg':queryset},status=status.HTTP_200_OK)
+            
+            bcard_id =  self.request.QUERY_PARAMS.get('bcard_id', None)
+            queryset = BusinessCardMedia.objects.filter(businesscard_id=bcard_id).values()
+            if queryset: 
+                for items in queryset:
+                    return CustomeResponse({'msg':queryset},status=status.HTTP_200_OK)
+            else:
+               return CustomeResponse({'msg':"Data not exist"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
+            
   
     def create(self,request):
         serializer = BusinessCardMediaSerializer(data = request.data,context={'request':request})
