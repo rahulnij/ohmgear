@@ -274,7 +274,7 @@ class BusinessViewSet(viewsets.ModelViewSet):
             else:
                 return CustomeResponse(contact_serializer.errors,status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
             
-            return CustomeResponse(data_new,status=status.HTTP_201_CREATED)
+            return CustomeResponse(data_new,status=status.HTTP_200_OK)
  
          else:
             return CustomeResponse(serializer.errors,status=status.HTTP_400_BAD_REQUEST,validate_errors=1)        
