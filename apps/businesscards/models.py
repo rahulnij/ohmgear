@@ -2,6 +2,7 @@ from django.db import models
 from django.utils.translation import ugettext_lazy as _
 from apps.identifiers.models import Identifier
 from django.conf import settings
+from simple_history.models import HistoricalRecords
 User = settings.AUTH_USER_MODEL
 # Create your models here.
 
