@@ -79,7 +79,3 @@ CELERY_ACCEPT_CONTENT = ['application/json']
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
 #CELERY_TIMEZONE = 'Africa/Nairobi'
-
-#--------- UPLOAD URL PATHS -------------------#
-BCARDS_TEMPLATE_IMAGE_URL = DOMAIN_NAME
-#--------- End --------------------------------#

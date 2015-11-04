@@ -17,6 +17,7 @@ from django.core.exceptions import ValidationError
 import json,validictory
 from django.shortcuts import get_object_or_404
 from django.conf import settings
+from apps.users.models import User
 # Create your views here.
 
 class BusinessCardIdentifierViewSet(viewsets.ModelViewSet):
@@ -88,8 +89,108 @@ class BusinessViewSet(viewsets.ModelViewSet):
         else:
             return CustomeResponse(serializer.data,status=status.HTTP_200_OK)
     
-    #--------------Method: POST create new business card -----------------------------#
-    def create(self, request):
+    #--------------Method: POST create new business card and other operation -----------------------------#
+    key_text = ''
+    new_dict = {}
+    key_store = []
+    
+    def get_value(self,d, k, i):
+     print d,k,i   
+     if isinstance(d[k[i]], str):
+        return d[k[i]]
+     return self.get_value(d[k[i]], k, i+1)    
+    
+    def checkItems(self,first=None,second=None):
+                if isinstance(first, dict):
+                    for key, item in first.iteritems():
+                        
+                          if isinstance(item, dict):
+                            self.key_store.append(key)
+                            #print self.new_dict,self.key_store
+                            #print self.get_value(self.new_dict,self.key_store,0)
+                            self.checkItems(item,self.get_value(self.new_dict,self.key_store,0))                       
+                        
+                          if not key in second:
+                             second[key] = first[key]
+                        
+                print  second             
+                          
+    def create(self, request): 
+         #---------------------------- Duplicate the business card ----------------------------#
+         try:
+           bcard_id = request.data["bcard_id"]     
+         except:
+           bcard_id = None
+           
+         try:
+           op = request.data["op"]
+         except:             
+           op = None
+           
+         try:           
+           user_id = request.data["user_id"] 
+         except:
+           user_id = None
+           
+         if op == 'duplicate':   
+            if bcard_id and user_id:
+               #----------------- Check that  bcard_id blongs to user -----------------#
+               #--------------------------- End ---------------------------------------#
+               from functions import createDuplicateBusinessCard
+               bcards_id_new = createDuplicateBusinessCard(bcard_id,user_id)
+               if bcards_id_new:
+                 data =  self.retrieve(request,pk=bcards_id_new,call_from_function=1)
+               else:
+                   return CustomeResponse({"msg":"some problem occured on server side."},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
+               return CustomeResponse(data,status=status.HTTP_200_OK)
+            else:
+               return CustomeResponse({"msg":"Please provide bcard_id and user_id"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)        
+         
+         #----------------------------- End ----------------------------------------------------#
+         
+         #---------------------------- Merge business card -------------------------------------#
+         try:
+           merge_bcards_ids = request.data["merge_bcards_ids"]
+           target_bacard_id = request.data["target_bacard_id"]
+         except:
+           merge_bcards_ids = None
+           target_bacard_id = None
+                   
+         if op == 'merge':
+            from functions import DiffJson            
+            first = json.loads('{"first_name": "Poligraph", "last_name": {"saaa1":"de1","saaa2":{"dde":"e4e"}}}') 
+            second = json.loads('{"first_name": "Poligraphovich", "last_name": {"saaa1":"de1","saaa2":{"dde":"e4e"}}}')
+            
+            self.new_dict = second
+            self.checkItems(first,second) 
+            print self.key_store
+            if merge_bcards_ids and target_bacard_id and user_id:
+                return True   
+            else:
+                return CustomeResponse({"msg":"Please provide merge_bcards_ids, target_bacard_id, user_id"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)        
+            
+         #----------------------------- End ----------------------------------------------------#
+         
+         #---------------------------- Delete Business Card -------------------------------------#         
+         if op == 'delete':
+             try:
+              bcard_ids = request.data["bcard_ids"]
+             except:
+              bcard_ids = None
+             if bcard_ids and user_id:
+                 try:
+                  business_card = BusinessCard.objects.filter(id__in=json.loads(bcard_ids),user_id= user_id)
+                  if business_card:
+                    business_card.delete()   
+                    return CustomeResponse({"msg":"business card deleted successfully."},status=status.HTTP_200_OK)
+                  else:
+                    return CustomeResponse({"msg":"business card does not exists."},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)  
+                 except:
+                  return CustomeResponse({"msg":"some problem occured on server side during delete business cards"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)           
+                 
+         
+         
+         #------------------------------- End ---------------------------------------------------#
          
          #-------------------- First Validate the json contact data ------------------------------#
 #         try:
@@ -102,42 +203,27 @@ class BusinessViewSet(viewsets.ModelViewSet):
 #            return CustomeResponse({'msg':"Please provide bcard_json_data in json format" },status=status.HTTP_400_BAD_REQUEST,validate_errors=1) 
          #---------------------------------- End ----------------------------------------------------------- #
          
-         #---------------------------- Duplicate the business card -------------------------------------#
-         try:
-           bcard_id = request.data["bcard_id"]
-         except:
-           bcard_id = None  
-         if bcard_id:
-            from functions import createDuplicateBusinessCard
-            bcards_id_new = createDuplicateBusinessCard(bcard_id)
-            data          =  self.retrieve(request,pk=bcards_id_new,call_from_function=1)
-            return CustomeResponse(data,status=status.HTTP_200_OK)
-         
-         #----------------------------- End ------------------------------------------------------------#
          serializer =  BusinessCardSerializer(data=request.data,context={'request': request})
          if serializer.is_valid():
             contact_serializer =  ContactsSerializer(data=request.DATA,context={'request': request})
             if contact_serializer.is_valid():
                 business = serializer.save()
-                #print contact_serializer.validated_data['businesscard_id']
                 contact_serializer.validated_data['businesscard_id'] = business
-                contact = contact_serializer.save()
+                contact_serializer.save()
+                contact = Contacts.objects.get(businesscard_id=business.id)
+                
                 #-------------- Save Notes -------------------------------#
                 data_new = serializer.data.copy()
                 try:
                     if request.data['note_frontend']:
-                                from apps.notes.views import NotesViewSet
-                                note_view_obj = NotesViewSet()
-                                request_new = request.DATA.copy()
-                                request_new.DATA = {}
-                                request_new.DATA["user_id"]=request.data['user_id']
-                                request_new.DATA["contact_id"]=contact.id
-                                request_new.DATA["note"]=request.data['note_frontend']
-                                data = note_view_obj.create(request_new,call_from_function=1) 
+                                from apps.notes.models import Notes
+                                user = User.objects.get(id=request.data['user_id'])
+                                data = Notes.objects.update_or_create(user_id=user,contact_id=contact,note=request.data['note_frontend'],bcard_side_no=1) 
                                 data_new['note_frontend'] = request.data['note_frontend']
                 except:
                     pass                            
-                #-------------------------End-----------------------------------#            
+                #-------------------------End-----------------------------------#   
+                
             else:
                 return CustomeResponse(contact_serializer.errors,status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
             
@@ -168,43 +254,21 @@ class BusinessViewSet(viewsets.ModelViewSet):
             contact_serializer =  ContactsSerializer(contact,data=request.DATA,context={'request': request})
             if contact_serializer.is_valid():
                 business = serializer.save()
-                contact = contact_serializer.save()
-                print contact.id
+                contact_new = contact_serializer.save()
                 #-------------- Save Notes -------------------------------#
                 data_new = serializer.data.copy()
-                #try:
-                if request.data['note_frontend'] or request.data['note_backend']:                        
-                                from apps.notes.views import NotesViewSet
-                                from apps.notes.models import Notes
-                                note_view_obj = NotesViewSet() 
-                                request_new = request.DATA.copy()
-                                request_new.DATA = {}
-                                request_new.DATA["user_id"]=request.data['user_id']
-                                request_new.DATA["contact_id"]=contact.id
-                                if "note_frontend" in request.data and request.data['note_frontend']:
-                                    request_new.DATA["note"]=request.data['note_frontend']
-                                    try:
-                                     note_id = Notes.objects.get(contact_id = contact.id,user_id = request.data['user_id'],bcard_side_no = 1)
-                                    except:
-                                     note_id = ""
-                                    if note_id: 
-                                        data = note_view_obj.update(request_new,pk=note_id.id,call_from_function=1)
-                                    else:
-                                        data = note_view_obj.create(request_new,call_from_function=1)
-                                    data_new['note_frontend'] = request.data['note_frontend']
-                                if "note_backend" in request.data and request.data['note_backend']:
-                                    request_new.DATA["note"]=request.data['note_backend']
-                                    try:
-                                     note_id = Notes.objects.get(contact_id = contact.id,user_id = request.data['user_id'],bcard_side_no = 2)
-                                    except:
-                                     note_id = ""
-                                    if note_id: 
-                                        data = note_view_obj.update(request_new,pk=note_id.id,call_from_function=1)
-                                    else:
-                                        data = note_view_obj.create(request_new,call_from_function=1)
-                                    data_new['note_backend'] = request.data['note_backend']                                    
-                #except:
-                #    pass                            
+                try:
+                    if request.data['note_frontend'] or request.data['note_backend']:
+                                    user = User.objects.get(id=request.data['user_id'])
+                                    from apps.notes.models import Notes
+                                    if "note_frontend" in request.data and request.data['note_frontend']:                                    
+                                        data = Notes.objects.update_or_create(user_id=user,contact_id=contact,note=request.data['note_frontend'],bcard_side_no=1) 
+                                        data_new['note_frontend'] = request.data['note_frontend']
+                                    if "note_backend" in request.data and request.data['note_backend']:
+                                        data = Notes.objects.update_or_create(user_id=user,contact_id=contact,note=request.data['note_frontend'],bcard_side_no=2) 
+                                        data_new['note_backend'] = request.data['note_backend']                                    
+                except:
+                    pass                            
                 #-------------------------End-----------------------------------#                
                 
             else:
@@ -217,7 +281,6 @@ class BusinessViewSet(viewsets.ModelViewSet):
         
 
     def destroy(self, request, pk=None):
-         print pk
          try:
            bcards = BusinessCard.objects.get(id=pk)
            bcards.delete()
