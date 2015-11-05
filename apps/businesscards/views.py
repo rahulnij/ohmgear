@@ -18,6 +18,7 @@ import json,validictory
 from django.shortcuts import get_object_or_404
 from django.conf import settings
 from apps.users.models import User
+from apps.vacationcard.models import VacationCard 
 # Create your views here.
 
 class BusinessCardIdentifierViewSet(viewsets.ModelViewSet):
@@ -168,6 +169,7 @@ class BusinessViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         user_id = self.request.QUERY_PARAMS.get('user_id', None)
         published = self.request.QUERY_PARAMS.get('published', None)
+        business_id = self.request.QUERY_PARAMS.get('business_id', None)
         check = 0
         #---------------------- Filter ------------------------#
         if published is not None and user_id is not None:
@@ -176,9 +178,16 @@ class BusinessViewSet(viewsets.ModelViewSet):
             elif published == '1':
               queryset = self.queryset.select_related('user_id').filter(user_id=user_id,status=1)
             check = 1  
+        elif user_id and business_id == 'all':
+                #----------------- All user business card -------------------------------------#
+                queryset1 = self.queryset.select_related('user_id').filter(user_id=user_id)  
+                queryset2 = VacationCard.objects.filter(user_id=user_id)
+                queryset = (queryset1 | queryset2) 
+                check = 1
         elif user_id is not None:
             queryset = self.queryset.select_related('user_id').filter(user_id=user_id)
             check = 1
+        
         #------------------------- End -------------------------#  
         if check: 
          return queryset
@@ -190,10 +199,23 @@ class BusinessViewSet(viewsets.ModelViewSet):
         queryset = self.queryset
         user = get_object_or_404(BusinessCard,pk=pk)
         serializer = self.serializer_class(user,context={'request':request})
+        media=BusinessCardMedia.objects.filter(businesscard_id=pk,front_back__in=[1,2],status=1).values('img_url','front_back')
+        data = {}
+        data = serializer.data
+        if media:
+           try: 
+            for item in media:
+                if item['front_back'] == 1:
+                         data['bcard_image_frontend'] = str(settings.DOMAIN_NAME)+str(settings.MEDIA_URL)+str(item['img_url'])
+                elif item['front_back'] == 2:
+                         data['bcard_image_backend'] = str(settings.DOMAIN_NAME)+str(settings.MEDIA_URL)+str(item['img_url'])
+           except:
+               pass
+                        
         if call_from_function:
-            return serializer.data
+            return data
         else:
-            return CustomeResponse(serializer.data,status=status.HTTP_200_OK)
+            return CustomeResponse(data,status=status.HTTP_200_OK)
     
     #--------------Method: POST create new business card and other operation -----------------------------#
     key_text = ''
