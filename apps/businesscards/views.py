@@ -464,10 +464,5 @@ class BusinessViewSet(viewsets.ModelViewSet):
         
 
     def destroy(self, request, pk=None):
-         try:
-           bcards = BusinessCard.objects.get(id=pk)
-           bcards.delete()
-           return CustomeResponse({'msg':'record deleted'},status=status.HTTP_200_OK)
-         except:
-           return CustomeResponse({'msg':'record not found'},status=status.HTTP_404_NOT_FOUND,validate_errors=1)
+         return CustomeResponse({'msg':'record not found'},status=status.HTTP_404_NOT_FOUND,validate_errors=1)
 
