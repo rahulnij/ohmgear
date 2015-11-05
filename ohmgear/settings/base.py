@@ -53,7 +53,7 @@ INSTALLED_APPS = (
     'apps.promocode',
     'rest_framework',
     'rest_framework.authtoken',
-    
+    'simple_history',
 )
 
 MIDDLEWARE_CLASSES = (
@@ -65,7 +65,8 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'django.middleware.security.SecurityMiddleware',
-    'apps.users.mobile_detect_middleware.MobileDetectionMiddleware'
+    'apps.users.mobile_detect_middleware.MobileDetectionMiddleware',
+    'simple_history.middleware.HistoryRequestMiddleware'
 )
 #------------------------- Custome setting ------------------------------------#
 REST_FRAMEWORK = {
