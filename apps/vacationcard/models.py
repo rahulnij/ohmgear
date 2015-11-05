@@ -9,13 +9,13 @@ User = settings.AUTH_USER_MODEL
 class VacationCard(models.Model):
     class Meta:
         db_table  = 'ohmgear_vacationcard_vacationcard'
-    user_id            =   models.ForeignKey(User,db_column ="user_id")
+    user_id            =   models.ForeignKey(User,db_column ="user_id",related_name='user_vacationcard')
     created_date=models.DateTimeField(_("Created Date"),auto_now_add=True,auto_now=False)
     updated_date=models.DateTimeField(_("Updated Date"),auto_now_add=False,auto_now=True)
     status          =   models.IntegerField(_('Status'),default =1)
     
     def __unicode__(self):
-        return'{"id":"%s","user_id":"%s"}'%(self.id,self.user_id)
+        return'{"id":"%s","user_id":"%s"}' %(self.id,self.user_id.id)
     
     
     
