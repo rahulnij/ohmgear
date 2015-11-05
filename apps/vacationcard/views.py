@@ -1,4 +1,3 @@
-from django.shortcuts import render
 from rest_framework import routers, serializers, viewsets
 from models import VacationTrip,BusinessCardVacation,VacationCard
 from serializer import VacationTripSerializer,VacationCardSerializer,BusinessCardVacationSerializer
@@ -54,7 +53,6 @@ class VacationCardViewSet(viewsets.ModelViewSet):
             vacation = request.DATA['vacation']
             stops = json.loads(request.DATA['vacation'])
             stops =  stops["data"]
-            print stops
         except:
             return CustomeResponse({'status':'fail','msg':'Please provide correct Json Format of vacation'},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
             
