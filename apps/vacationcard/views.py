@@ -62,12 +62,20 @@ class VacationCardViewSet(viewsets.ModelViewSet):
             if stops and vacationid.id:
                     tempContainer = []
                     for data in stops:
+                        temp_dict = u''
                         tempdata = {}
-                        tempdata =   data
-                        tempdata['vacationcard_id'] = vacationid.id
+                        #tempdata =   data
+                        tempdata["x"] =   data
+                        #stops += data
+                        tempdata["x"]['vacationcard_id'] = vacationid.id
+                        #tempdata['vacationcard_id'] = vacationid.id
                         tempContainer.append(tempdata)
-
-                    serializer = VacationTripSerializer(data=tempContainer,many=True)
+                    
+                     
+                        tempContainer =  tempContainer[0]['x']
+                    print tempContainer
+                    
+                    serializer = VacationTripSerializer(data=[tempContainer],many=True)
                     if serializer.is_valid():
                         serializer.save()
                         return CustomeResponse(serializer.data,status=status.HTTP_201_CREATED)
