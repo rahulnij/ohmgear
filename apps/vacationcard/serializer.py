@@ -14,6 +14,7 @@ class VacationTripSerializer(serializers.ModelSerializer):
             'id',
             'country',
             'state',
+            'city',
             'contact_no',
             'notes',
             'trip_start_date',

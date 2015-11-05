@@ -22,7 +22,7 @@ class VacationCard(models.Model):
 class BusinessCardVacation(models.Model):
     class Meta:
         db_table = 'ohmgear_vacationcard_businesscardvacation'
-        unique_together = ('user_id', 'businesscard_id')
+       # unique_together = ('user_id', 'businesscard_id')
         
     vacationcard_id    =   models.ForeignKey(VacationCard,db_column ="vacationcard_id")
     businesscard_id    =   models.ForeignKey(BusinessCard,db_column = "businesscard_id")
@@ -32,7 +32,7 @@ class BusinessCardVacation(models.Model):
     status                  =   models.IntegerField(_('Status'),default =1)
         
     def __unicode__(self):
-        return '{"id":"%s","vacationcard","businesscard":"%s"}'%(self.id,self.vacationcard,self.businesscard)
+        return '{"id":"%s","vacationcard_id","businesscard_id":"%s"}'%(self.id,self.vacationcard_id,self.businesscard_id)
     
     
 class VacationTrip(models.Model):
@@ -41,7 +41,8 @@ class VacationTrip(models.Model):
         
     country         =   models.CharField(_('Country'),max_length=50)
     state           =   models.CharField(_('State'),max_length=50)
-    contact_no      = models.CharField(_("Contact Number"),max_length=10,null=True)
+    city            =   models.CharField(_('City'),max_length=50)
+    contact_no      = models.CharField(_("Contact Number"),max_length=50,null=True)
     notes           =   models.CharField(_('Notes'),max_length = 2000)
     user_id         =   models.ForeignKey(User,db_column="user_id")
     trip_start_date =   models.DateField(_('Trip Start Date'))
