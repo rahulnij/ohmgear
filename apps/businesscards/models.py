@@ -38,9 +38,10 @@ class BusinessCard(models.Model):
     
     
     identifier_new = models.ManyToManyField(Identifier, through = 'BusinessCardIdentifier',related_name='identifier_new')
+    history = HistoricalRecords()
     
     def __unicode__(self):
-        return'{"id":"%s","name":"%s"}' %(self.id,self.name)
+        return'{"id":"%s","name":"%s","user_id":"%s"}' %(self.id,self.name,self.user_id.id)
   
     
 

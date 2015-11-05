@@ -28,7 +28,7 @@ class VacationTripSerializer(serializers.ModelSerializer):
 class VacationCardSerializer(serializers.ModelSerializer):
     class Meta:
         model = VacationCard
-        
+        fields = ('id','user_id',)
         
 class BusinessCardVacationSerializer(serializers.ModelSerializer):
     class Meta:
