@@ -50,6 +50,113 @@ class BusinessCardIdentifierViewSet(viewsets.ModelViewSet):
            BusinessCardIdentifier.objects.filter(id=pk).update(status=0 )
            return CustomeResponse({'msg':"Business card Identifiers has deleted"},status=status.HTTP_200_OK)
          
+# BusinessCard Gallery 
+class BusinessCardMediaViewSet(viewsets.ModelViewSet):
+    queryset  = BusinessCardMedia.objects.all()
+    serializer_class = BusinessCardMediaSerializer
+  
+    def list(self,request):
+            bcard_id = self.request.QUERY_PARAMS.get('bcard_id', None) 
+            if bcard_id:
+                self.queryset = self.queryset.filter(businesscard_id=bcard_id)
+                if self.queryset: 
+                    data = {}
+                    data['all'] = []
+                    data['top'] = []
+                    i = 0 
+                    for items in self.queryset:
+                        if items.status == 1:
+                           data['top'].append({"front_back":items.front_back,"img_url":str(settings.DOMAIN_NAME)+str(settings.MEDIA_URL)+str(items.img_url)})
+                        data['all'].append({"front_back":items.front_back,"img_url":str(settings.DOMAIN_NAME)+str(settings.MEDIA_URL)+str(items.img_url)})
+                    return CustomeResponse(data,status=status.HTTP_200_OK)
+                else:
+                   return CustomeResponse({'msg':"Data not exist"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
+            else:
+                return CustomeResponse({'msg':"Without parameters does not support"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
+                            
+            
+  
+    def create(self,request,call_from_function=None):
+        data = request.data.copy()
+        data['status'] = 0 
+        serializer = BusinessCardMediaSerializer(data = data,context={'request':request})
+        
+        if serializer.is_valid():
+            serializer.save()
+            if call_from_function:
+               return json.loads(unicode(serializer.data))
+            else:
+               return CustomeResponse(serializer.data,status=status.HTTP_201_CREATED) 
+        else:
+            if call_from_function:
+               return serializer.errors
+            else:
+              return CustomeResponse(serializer.errors,status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
+        
+    def update(self, request, pk=None):
+         return CustomeResponse({'msg':"Update method does not allow"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
+
+#BusinessCard Available Skills
+
+class BusinessCardSkillAvailableViewSet(viewsets.ModelViewSet):
+    queryset  = BusinessCardSkillAvailable.objects.all().values()
+    serializer_class = BusinessCardSkillAvailableSerializer
+    #authentication_classes = (ExpiringTokenAuthentication,)
+    #permission_classes = (IsAuthenticated,) 
+     #--------------Method: GET-----------------------------#       
+    def list(self,request):
+       # return CustomeResponse({'msg':'GET method not allowed'},status=status.HTTP_405_METHOD_NOT_ALLOWED,validate_errors=1)
+        if request.method == 'GET':
+            skill =  self.request.QUERY_PARAMS.get('skill', None)
+            queryset = BusinessCardSkillAvailable.objects.filter(skill_name__istartswith=skill).values()
+            if queryset: 
+                for items in queryset:
+                    return CustomeResponse({'msg':queryset},status=status.HTTP_200_OK)
+            else:
+               return CustomeResponse({'msg':"Data not exist"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
+  
+    def create(self,request):
+        serializer = BusinessCardSkillAvailableSerializer(data = request.data,context={'request':request})
+        if serializer.is_valid():
+            serializer.save()
+            return CustomeResponse(serializer.data,status=status.HTTP_201_CREATED)
+        else:
+            return CustomeResponse(serializer.errors,status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
+
+        
+        
+    def update(self, request, pk=None):
+         return CustomeResponse({'msg':"Update method does not allow"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
+       
+ # Add Skills to Business Card      
+class BusinessCardAddSkillViewSet(viewsets.ModelViewSet):
+    queryset  = BusinessCardAddSkill.objects.all().values()
+    serializer_class = BusinessCardAddSkillSerializer
+    #authentication_classes = (ExpiringTokenAuthentication,)
+    #permission_classes = (IsAuthenticated,) 
+     #--------------Method: GET-----------------------------#       
+    def list(self,request):
+       # return CustomeResponse({'msg':'GET method not allowed'},status=status.HTTP_405_METHOD_NOT_ALLOWED,validate_errors=1)
+        if request.method == 'GET':
+            queryset = self.queryset
+            #print queryset
+            #businesscardmedia = get_object_or_404(queryset, pk=pk)
+            #serializer = self.serializer_class(businesscardmedia,context={'request': request})
+            return CustomeResponse({'msg':queryset},status=status.HTTP_200_OK)
+  
+    def create(self,request):
+        serializer = BusinessCardAddSkillSerializer(data = request.data,context={'request':request})
+        if serializer.is_valid():
+            serializer.save()
+            return CustomeResponse(serializer.data,status=status.HTTP_201_CREATED)
+        else:
+            return CustomeResponse(serializer.errors,status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
+
+        
+        
+    def update(self, request, pk=None):
+         return CustomeResponse({'msg':"Update method does not allow"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
+                  
      
 
 class BusinessViewSet(viewsets.ModelViewSet):
@@ -211,18 +318,40 @@ class BusinessViewSet(viewsets.ModelViewSet):
                 contact_serializer.validated_data['businesscard_id'] = business
                 contact_serializer.save()
                 contact = Contacts.objects.get(businesscard_id=business.id)
-                
+                user = User.objects.get(id=request.data['user_id'])
                 #-------------- Save Notes -------------------------------#
                 data_new = serializer.data.copy()
                 try:
                     if request.data['note_frontend']:
-                                from apps.notes.models import Notes
-                                user = User.objects.get(id=request.data['user_id'])
+                                from apps.notes.models import Notes                                
                                 data = Notes.objects.update_or_create(user_id=user,contact_id=contact,note=request.data['note_frontend'],bcard_side_no=1) 
                                 data_new['note_frontend'] = request.data['note_frontend']
                 except:
                     pass                            
-                #-------------------------End-----------------------------------#   
+                #-------------------------End-----------------------------------#  
+                
+                #-------------- Save Image in image Gallary -------------------------------#
+                try:
+                 if 'bcard_image_frontend' in request.data and  request.data['bcard_image_frontend']: 
+                   #------------------ Set previous image 0 ----------------------------------------# 
+                   BusinessCardMedia.objects.filter(user_id=user,businesscard_id=business,front_back=1).update(status=0)
+                   bcard_image_frontend, created = BusinessCardMedia.objects.update_or_create(user_id=user,businesscard_id=business,img_url=request.data['bcard_image_frontend'],front_back=1,status=1)
+                   #print bcard_image_frontend.img_url
+                   data_new['bcard_image_frontend'] = str(settings.DOMAIN_NAME)+str(settings.MEDIA_URL)+str(bcard_image_frontend.img_url)                  
+                except:
+                   data_new['bcard_image_frontend'] = ""
+                
+                try:
+                 if 'bcard_image_backend' in request.data and  request.data['bcard_image_backend']:
+                   BusinessCardMedia.objects.filter(user_id=user,businesscard_id=business,front_back=2).update(status=0)  
+                   bcard_image_backend, created = BusinessCardMedia.objects.update_or_create(user_id=user,businesscard_id=business,img_url=request.data['bcard_image_backend'],front_back=2,status=1)
+                   if bcard_image_frontend:
+                      data_new['bcard_image_backend'] = str(settings.DOMAIN_NAME)+str(settings.MEDIA_URL)+str(bcard_image_backend.img_url)                  
+                      pass
+                except:
+                    pass                
+                
+                #-------------------------End-----------------------------------#                  
                 
             else:
                 return CustomeResponse(contact_serializer.errors,status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
@@ -255,11 +384,12 @@ class BusinessViewSet(viewsets.ModelViewSet):
             if contact_serializer.is_valid():
                 business = serializer.save()
                 contact_new = contact_serializer.save()
+                user = User.objects.get(id=request.data['user_id'])
                 #-------------- Save Notes -------------------------------#
                 data_new = serializer.data.copy()
                 try:
                     if request.data['note_frontend'] or request.data['note_backend']:
-                                    user = User.objects.get(id=request.data['user_id'])
+                                    
                                     from apps.notes.models import Notes
                                     if "note_frontend" in request.data and request.data['note_frontend']:                                    
                                         data = Notes.objects.update_or_create(user_id=user,contact_id=contact,note=request.data['note_frontend'],bcard_side_no=1) 
@@ -269,7 +399,31 @@ class BusinessViewSet(viewsets.ModelViewSet):
                                         data_new['note_backend'] = request.data['note_backend']                                    
                 except:
                     pass                            
-                #-------------------------End-----------------------------------#                
+                #-------------------------End-----------------------------------# 
+                
+                #-------------- Save Image in image Gallary -------------------------------#
+                try:
+                 if 'bcard_image_frontend' in request.data and  request.data['bcard_image_frontend']: 
+                   #------------------ Set previous image 0 ----------------------------------------# 
+                   BusinessCardMedia.objects.filter(user_id=user,businesscard_id=business,front_back=1).update(status=0)
+                   bcard_image_frontend, created = BusinessCardMedia.objects.update_or_create(user_id=user,businesscard_id=business,img_url=request.data['bcard_image_frontend'],front_back=1,status=1)
+                   #print bcard_image_frontend.img_url
+                   data_new['bcard_image_frontend'] = str(settings.DOMAIN_NAME)+str(settings.MEDIA_URL)+str(bcard_image_frontend.img_url)                  
+                except:
+                   data_new['bcard_image_frontend'] = ""
+                
+                try:
+                 if 'bcard_image_backend' in request.data and  request.data['bcard_image_backend']:
+                   BusinessCardMedia.objects.filter(user_id=user,businesscard_id=business,front_back=2).update(status=0)  
+                   bcard_image_backend, created = BusinessCardMedia.objects.update_or_create(user_id=user,businesscard_id=business,img_url=request.data['bcard_image_backend'],front_back=2,status=1)
+                   if bcard_image_frontend:
+                      data_new['bcard_image_backend'] = str(settings.DOMAIN_NAME)+str(settings.MEDIA_URL)+str(bcard_image_backend.img_url)                  
+                      pass
+                except:
+                    pass                
+                
+                #-------------------------End-----------------------------------#                 
+                
                 
             else:
                 return CustomeResponse(contact_serializer.errors,status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
@@ -288,122 +442,3 @@ class BusinessViewSet(viewsets.ModelViewSet):
          except:
            return CustomeResponse({'msg':'record not found'},status=status.HTTP_404_NOT_FOUND,validate_errors=1)
 
-# BusinessCard Gallery 
-class BusinessCardMediaViewSet(viewsets.ModelViewSet):
-    queryset  = BusinessCardMedia.objects.all().values()
-    serializer_class = BusinessCardMediaSerializer
-    #authentication_classes = (ExpiringTokenAuthentication,)
-    #permission_classes = (IsAuthenticated,) 
-     #--------------Method: GET-----------------------------#       
-    def list(self,request):
-       # return CustomeResponse({'msg':'GET method not allowed'},status=status.HTTP_405_METHOD_NOT_ALLOWED,validate_errors=1)
-        if request.method == 'GET':
-            
-            bcard_id =  self.request.QUERY_PARAMS.get('bcard_id', None)
-            queryset = BusinessCardMedia.objects.filter(businesscard_id=bcard_id).values()
-            if queryset: 
-                for items in queryset:
-                    return CustomeResponse({'msg':queryset},status=status.HTTP_200_OK)
-            else:
-               return CustomeResponse({'msg':"Data not exist"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
-            
-  
-    def create(self,request):
-        serializer = BusinessCardMediaSerializer(data = request.data,context={'request':request})
-        if serializer.is_valid():
-            serializer.save()
-            return CustomeResponse(serializer.data,status=status.HTTP_201_CREATED)
-        else:
-            return CustomeResponse(serializer.errors,status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
-
-        
-        
-    def update(self, request, pk=None):
-        
-           getidentifierid = BusinessCardMediaSerializer.objects.filter(id=pk).values()
-           identifierid =  getidentifierid[0]['identifier_id']
-          
-           #------Unlink Identifier status 0 in identifier table--------#
-           Identifier.objects.filter(id=identifierid).update(status=0 )
-           #------Unlink Businesscard Identifier status 0 in Bsuinesscardidentifier table--------#
-           BusinessCardMediaSerializer.objects.filter(id=pk).update(status=0 )
-           return CustomeResponse({'msg':"Business card Identifiers has been deleted"},status=status.HTTP_200_OK)
-
-
-#BusinessCard Available Skills
-
-class BusinessCardSkillAvailableViewSet(viewsets.ModelViewSet):
-    queryset  = BusinessCardSkillAvailable.objects.all().values()
-    serializer_class = BusinessCardSkillAvailableSerializer
-    #authentication_classes = (ExpiringTokenAuthentication,)
-    #permission_classes = (IsAuthenticated,) 
-     #--------------Method: GET-----------------------------#       
-    def list(self,request):
-       # return CustomeResponse({'msg':'GET method not allowed'},status=status.HTTP_405_METHOD_NOT_ALLOWED,validate_errors=1)
-        if request.method == 'GET':
-            skill =  self.request.QUERY_PARAMS.get('skill', None)
-            queryset = BusinessCardSkillAvailable.objects.filter(skill_name__istartswith=skill).values()
-            if queryset: 
-                for items in queryset:
-                    return CustomeResponse({'msg':queryset},status=status.HTTP_200_OK)
-            else:
-               return CustomeResponse({'msg':"Data not exist"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
-  
-    def create(self,request):
-        serializer = BusinessCardSkillAvailableSerializer(data = request.data,context={'request':request})
-        if serializer.is_valid():
-            serializer.save()
-            return CustomeResponse(serializer.data,status=status.HTTP_201_CREATED)
-        else:
-            return CustomeResponse(serializer.errors,status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
-
-        
-        
-    def update(self, request, pk=None):
-        
-           getidentifierid = BusinessCardSkillAvailable.objects.filter(id=pk).values()
-           identifierid =  getidentifierid[0]['identifier_id']
-          
-           #------Unlink Identifier status 0 in identifier table--------#
-           Identifier.objects.filter(id=identifierid).update(status=0 )
-           #------Unlink Businesscard Identifier status 0 in Bsuinesscardidentifier table--------#
-           BusinessCardSkillAvailable.objects.filter(id=pk).update(status=0 )
-           return CustomeResponse({'msg':"Business card Skills has been deleted"},status=status.HTTP_200_OK)
-       
- # Add Skills to Business Card      
-class BusinessCardAddSkillViewSet(viewsets.ModelViewSet):
-    queryset  = BusinessCardAddSkill.objects.all().values()
-    serializer_class = BusinessCardAddSkillSerializer
-    #authentication_classes = (ExpiringTokenAuthentication,)
-    #permission_classes = (IsAuthenticated,) 
-     #--------------Method: GET-----------------------------#       
-    def list(self,request):
-       # return CustomeResponse({'msg':'GET method not allowed'},status=status.HTTP_405_METHOD_NOT_ALLOWED,validate_errors=1)
-        if request.method == 'GET':
-            queryset = self.queryset
-            #print queryset
-            #businesscardmedia = get_object_or_404(queryset, pk=pk)
-            #serializer = self.serializer_class(businesscardmedia,context={'request': request})
-            return CustomeResponse({'msg':queryset},status=status.HTTP_200_OK)
-  
-    def create(self,request):
-        serializer = BusinessCardAddSkillSerializer(data = request.data,context={'request':request})
-        if serializer.is_valid():
-            serializer.save()
-            return CustomeResponse(serializer.data,status=status.HTTP_201_CREATED)
-        else:
-            return CustomeResponse(serializer.errors,status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
-
-        
-        
-    def update(self, request, pk=None):
-        
-           getidentifierid = BusinessCardAddSkill.objects.filter(id=pk).values()
-           identifierid =  getidentifierid[0]['identifier_id']
-          
-           #------Unlink Identifier status 0 in identifier table--------#
-           Identifier.objects.filter(id=identifierid).update(status=0 )
-           #------Unlink Businesscard Identifier status 0 in Bsuinesscardidentifier table--------#
-           BusinessCardAddSkill.objects.filter(id=pk).update(status=0 )
-           return CustomeResponse({'msg':"Business card Skills has been deleted"},status=status.HTTP_200_OK)
-                  

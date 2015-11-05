@@ -38,39 +38,33 @@ from apps.users.signals import *
 #-------------- Business app url registration ----------------------#
 import apps.businesscards.views as  businesscards_views
 router.register(r'api/businesscard', businesscards_views.BusinessViewSet)
-#-------------- End ---------------------------------------------#
-
-
 #------------------BusinessCard Idnetifier-----------------------#
 import apps.businesscards.views as businesscardidentifier_views
 router.register(r'api/businesscardidentifier',businesscardidentifier_views.BusinessCardIdentifierViewSet)
-#----------------End---------------------------------------------#
 
-#-------------- Identifiers app url ----------------------#
-import apps.identifiers.views as  identifiers_views
-router.register(r'api/identifiers', identifiers_views.IdentifierViewSet)
-#-------------- End ---------------------------------------------#
+#-------------- Business card Media  ----------------------#
+import apps.businesscards.views as  businesscards_views
+router.register(r'api/businesscardmedia', businesscards_views.BusinessCardMediaViewSet)
 
-
-#-------------- Notes app url registration ----------------------#
-import apps.notes.views as  notes_views
-router.register(r'api/notes', notes_views.NotesViewSet)
-#-------------- End ---------------------------------------------#
-
+#-------------- Add Skills ----------------------#
+import apps.businesscards.views as  businesscards_views
+router.register(r'api/businesscardaddskill', businesscards_views.BusinessCardAddSkillViewSet)
 
 #-------------- Available Skills in the database  ----------------------#
 import apps.businesscards.views as  businesscards_views
 router.register(r'api/businesscardskillavailable', businesscards_views.BusinessCardSkillAvailableViewSet)
 #-------------- End ---------------------------------------------#
 
-#-------------- Add Skills ----------------------#
-import apps.businesscards.views as  businesscards_views
-router.register(r'api/businesscardaddskill', businesscards_views.BusinessCardAddSkillViewSet)
+#-------------- Identifiers app url ----------------------#
+import apps.identifiers.views as  identifiers_views
+router.register(r'api/identifiers', identifiers_views.IdentifierViewSet)
+
 #-------------- End ---------------------------------------------#
 
-#-------------- Business card Media  ----------------------#
-import apps.businesscards.views as  businesscards_views
-router.register(r'api/businesscardmedia', businesscards_views.BusinessCardMediaViewSet)
+
+#-------------- Notes app url registration ----------------------#
+import apps.notes.views as  notes_views
+router.register(r'api/notes', notes_views.NotesViewSet)
 #-------------- End ---------------------------------------------#
 
 #-------------- Contacts app url registration ----------------------#
@@ -87,8 +81,6 @@ urlpatterns += format_suffix_patterns(urlpatterns)
 #---------------Vacation Card app url-------------------------------#
 import apps.vacationcard.views as vacationcard_views
 router.register(r'api/vacationcard',vacationcard_views.VacationCardViewSet)
-#---------------End ------------------------------------------------#
-
 #----------------Businesscard Vacation url ---------------------------#
 import apps.vacationcard.views as businesscardvacation_views
 router.register(r'api/businesscardvacation',businesscardvacation_views.BusinessCardVacationViewSet)

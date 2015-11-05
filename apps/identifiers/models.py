@@ -13,7 +13,6 @@ class Identifier(models.Model):
     
     class Meta:
      db_table = 'ohmgear_identifiers_identifier'
-    
     user = models.ForeignKey(User)
     identifier = models.CharField(_("identifier"),max_length=12,unique=True)
     #-------------Identifier status whether identifier is active or not or is expired for business card---# 
@@ -31,4 +30,4 @@ class Identifier(models.Model):
     
     
     def __unicode__(self):
-        return'{"id:"%s","identifiertype":"%s"}'%(self.id,self.identifiertype)
+        return'{"id":"%s","identifier":"%s","identifiertype":"%s"}' %(self.id,self.identifier,self.identifiertype)
