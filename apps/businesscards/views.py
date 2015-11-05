@@ -99,21 +99,22 @@ class BusinessCardMediaViewSet(viewsets.ModelViewSet):
 #BusinessCard Available Skills
 
 class BusinessCardSkillAvailableViewSet(viewsets.ModelViewSet):
-    queryset  = BusinessCardSkillAvailable.objects.all().values()
+    queryset  = BusinessCardSkillAvailable.objects.all()
     serializer_class = BusinessCardSkillAvailableSerializer
     #authentication_classes = (ExpiringTokenAuthentication,)
     #permission_classes = (IsAuthenticated,) 
-     #--------------Method: GET-----------------------------#       
+     #--------------Method: GET-----------------------------#   
+    def get_queryset(self):
+        skill = self.request.QUERY_PARAMS.get('skill', None)
+        if skill:
+            self.queryset = self.queryset.filter(skill_name=skill)
+        
     def list(self,request):
-       # return CustomeResponse({'msg':'GET method not allowed'},status=status.HTTP_405_METHOD_NOT_ALLOWED,validate_errors=1)
-        if request.method == 'GET':
-            skill =  self.request.QUERY_PARAMS.get('skill', None)
-            queryset = BusinessCardSkillAvailable.objects.filter(skill_name__istartswith=skill).values()
-            if queryset: 
-                for items in queryset:
-                    return CustomeResponse({'msg':queryset},status=status.HTTP_200_OK)
+            serializer = self.serializer_class(self.queryset,many=True)
+            if serializer: 
+                    return CustomeResponse(serializer.data,status=status.HTTP_200_OK)
             else:
-               return CustomeResponse({'msg':"Data not exist"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
+               return CustomeResponse(serializer.errors,status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
   
     def create(self,request):
         serializer = BusinessCardSkillAvailableSerializer(data = request.data,context={'request':request})
@@ -130,20 +131,17 @@ class BusinessCardSkillAvailableViewSet(viewsets.ModelViewSet):
        
  # Add Skills to Business Card      
 class BusinessCardAddSkillViewSet(viewsets.ModelViewSet):
-    queryset  = BusinessCardAddSkill.objects.all().values()
+    queryset  = BusinessCardAddSkill.objects.all()
     serializer_class = BusinessCardAddSkillSerializer
     #authentication_classes = (ExpiringTokenAuthentication,)
     #permission_classes = (IsAuthenticated,) 
      #--------------Method: GET-----------------------------#       
     def list(self,request):
-       # return CustomeResponse({'msg':'GET method not allowed'},status=status.HTTP_405_METHOD_NOT_ALLOWED,validate_errors=1)
-        if request.method == 'GET':
-            queryset = self.queryset
-            #print queryset
-            #businesscardmedia = get_object_or_404(queryset, pk=pk)
-            #serializer = self.serializer_class(businesscardmedia,context={'request': request})
-            return CustomeResponse({'msg':queryset},status=status.HTTP_200_OK)
-  
+        return CustomeResponse({'msg':'GET method not allowed'},status=status.HTTP_405_METHOD_NOT_ALLOWED,validate_errors=1)
+
+    def retrieve(self,request,pk=None):
+        return CustomeResponse({'msg':'GET method not allowed'},status=status.HTTP_405_METHOD_NOT_ALLOWED,validate_errors=1)
+    
     def create(self,request):
         serializer = BusinessCardAddSkillSerializer(data = request.data,context={'request':request})
         if serializer.is_valid():
@@ -152,8 +150,7 @@ class BusinessCardAddSkillViewSet(viewsets.ModelViewSet):
         else:
             return CustomeResponse(serializer.errors,status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
 
-        
-        
+             
     def update(self, request, pk=None):
          return CustomeResponse({'msg':"Update method does not allow"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
                   
