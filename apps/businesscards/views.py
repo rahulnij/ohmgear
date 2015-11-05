@@ -14,12 +14,13 @@ from ohmgear.functions import CustomeResponse,handle_uploaded_file
 from ohmgear.json_default_data import BUSINESS_CARD_DATA_VALIDATION
 
 from django.core.exceptions import ValidationError
-import json,validictory
+import validictory
 from django.shortcuts import get_object_or_404
 from django.conf import settings
 from apps.users.models import User
 from apps.vacationcard.models import VacationCard 
 from apps.vacationcard.serializer import VacationCardSerializer
+import simplejson as json
 # Create your views here.
 
 class BusinessCardIdentifierViewSet(viewsets.ModelViewSet):
