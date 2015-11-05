@@ -58,6 +58,7 @@ class BusinessCardMediaViewSet(viewsets.ModelViewSet):
     def list(self,request):
             bcard_id = self.request.QUERY_PARAMS.get('bcard_id', None) 
             if bcard_id:
+                #-------- Should be pass queryset to serializer but error occured ---#
                 self.queryset = self.queryset.filter(businesscard_id=bcard_id)
                 if self.queryset: 
                     data = {}
@@ -105,8 +106,6 @@ class BusinessCardSkillAvailableViewSet(viewsets.ModelViewSet):
     #permission_classes = (IsAuthenticated,) 
      #--------------Method: GET-----------------------------#       
     def list(self,request):
-       # return CustomeResponse({'msg':'GET method not allowed'},status=status.HTTP_405_METHOD_NOT_ALLOWED,validate_errors=1)
-        if request.method == 'GET':
             skill =  self.request.QUERY_PARAMS.get('skill', None)
             queryset = BusinessCardSkillAvailable.objects.filter(skill_name__istartswith=skill).values()
             if queryset: 
@@ -405,7 +404,7 @@ class BusinessViewSet(viewsets.ModelViewSet):
                 try:
                  if 'bcard_image_frontend' in request.data and  request.data['bcard_image_frontend']: 
                    #------------------ Set previous image 0 ----------------------------------------# 
-                   BusinessCardMedia.objects.filter(user_id=user,businesscard_id=business,front_back=1).update(status=0)
+                   BusinessCardMedia.objects.filter(businesscard_id=business,front_back=1).update(status=0)
                    bcard_image_frontend, created = BusinessCardMedia.objects.update_or_create(user_id=user,businesscard_id=business,img_url=request.data['bcard_image_frontend'],front_back=1,status=1)
                    #print bcard_image_frontend.img_url
                    data_new['bcard_image_frontend'] = str(settings.DOMAIN_NAME)+str(settings.MEDIA_URL)+str(bcard_image_frontend.img_url)                  
@@ -414,7 +413,7 @@ class BusinessViewSet(viewsets.ModelViewSet):
                 
                 try:
                  if 'bcard_image_backend' in request.data and  request.data['bcard_image_backend']:
-                   BusinessCardMedia.objects.filter(user_id=user,businesscard_id=business,front_back=2).update(status=0)  
+                   BusinessCardMedia.objects.filter(businesscard_id=business,front_back=2).update(status=0)  
                    bcard_image_backend, created = BusinessCardMedia.objects.update_or_create(user_id=user,businesscard_id=business,img_url=request.data['bcard_image_backend'],front_back=2,status=1)
                    if bcard_image_frontend:
                       data_new['bcard_image_backend'] = str(settings.DOMAIN_NAME)+str(settings.MEDIA_URL)+str(bcard_image_backend.img_url)                  
