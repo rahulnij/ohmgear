@@ -316,7 +316,7 @@ class BusinessViewSet(viewsets.ModelViewSet):
               bcard_ids = None
              if bcard_ids and user_id:
                  #try:
-                  business_card = BusinessCard.objects.filter(id__in=json.loads(bcard_ids),user_id= user_id)
+                  business_card = BusinessCard.objects.filter(id__in=[19],user_id= user_id)
                   if business_card:
                     business_card.delete()   
                     return CustomeResponse({"msg":"business card deleted successfully."},status=status.HTTP_200_OK)
