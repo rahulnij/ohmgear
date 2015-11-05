@@ -29,7 +29,7 @@ class VacationCardViewSet(viewsets.ModelViewSet):
                 uservacationcard.append(vacationcardid)
             userbusinessvacationcardinfo = BusinessCardVacation.objects.values('vacationcard_id').annotate(totalnoofbusinesscard=Count('businesscard_id')).filter(vacationcard_id__in = uservacationcard)
 
-            uservacationtripinfo = VacationTrip.objects.values('vacationcard_id').annotate(min_start_date=Min('trip_start_date'),max_end_date = Max('trip_end_date')).filter(vacationcard_id__in = uservacationcard)
+            uservacationtripinfo = VacationTrip.objects.values('vacationcard_id','country','state').annotate(min_start_date=Min('trip_start_date'),max_end_date = Max('trip_end_date')).filter(vacationcard_id__in = uservacationcard)
                 
                 
             lst = sorted(itertools.chain(userbusinessvacationcardinfo,uservacationtripinfo), key=lambda x:x['vacationcard_id'])
@@ -73,8 +73,8 @@ class VacationCardViewSet(viewsets.ModelViewSet):
                     
                      
                         tempContainer =  tempContainer[0]['x']
-                    print tempContainer
                     
+
                     serializer = VacationTripSerializer(data=[tempContainer],many=True)
                     if serializer.is_valid():
                         serializer.save()
