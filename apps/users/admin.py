@@ -2,7 +2,7 @@ from django.contrib import admin
 import csv
 from django.utils.encoding import smart_str
 from django.http import HttpResponse
-
+from simple_history.admin import SimpleHistoryAdmin
 # Register your models here.
 
 from .models import User
