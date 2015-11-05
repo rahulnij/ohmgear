@@ -415,11 +415,11 @@ class BusinessViewSet(viewsets.ModelViewSet):
                  if 'bcard_image_backend' in request.data and  request.data['bcard_image_backend']:
                    BusinessCardMedia.objects.filter(businesscard_id=business,front_back=2).update(status=0)  
                    bcard_image_backend, created = BusinessCardMedia.objects.update_or_create(user_id=user,businesscard_id=business,img_url=request.data['bcard_image_backend'],front_back=2,status=1)
-                   if bcard_image_frontend:
+                   if bcard_image_backend:
                       data_new['bcard_image_backend'] = str(settings.DOMAIN_NAME)+str(settings.MEDIA_URL)+str(bcard_image_backend.img_url)                  
-                      pass
+                      
                 except:
-                    pass                
+                    data_new['bcard_image_backend'] = ""                
                 
                 #-------------------------End-----------------------------------#                 
                 
