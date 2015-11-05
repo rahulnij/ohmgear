@@ -1,4 +1,3 @@
-from django.shortcuts import render
 from rest_framework import routers, serializers, viewsets
 from models import VacationTrip,BusinessCardVacation,VacationCard
 from serializer import VacationTripSerializer,VacationCardSerializer,BusinessCardVacationSerializer
