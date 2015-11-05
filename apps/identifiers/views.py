@@ -63,37 +63,44 @@ class IdentifierViewSet(viewsets.ModelViewSet):
     #--------------Method: POST create new Identifier -----------------------------#
     def create(self, request):
          
-         serializer =  IdentifierSerializer(data=request.DATA,context={'request': request})
+        serializer =  IdentifierSerializer(data=request.DATA,context={'request': request})
          
-         businesscard = request.DATA['businesscard']
-         #print businesscard_id
-         #------ object value which can be change are mutable object value which cannot be change are immutable  -----------#
-         mutable = request.POST._mutable
-         request.POST._mutable = True
-         request.DATA['identifierlastdate'] = str((datetime.date.today() + datetime.timedelta(3*365/12)).isoformat())
+        try:
+            businesscard = request.DATA['businesscard']
+        except:
+            return CustomeResponse({'status':'fail','msg':'Please provide businesscard'},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
             
-        
-         if request.POST.get('identifiertype') == '1':
-            request.POST['identifier'] =   CreateSystemIdentifier()
-         else: 
-           pass
-         #request.POST._mutable = mutable
-         serializer =  IdentifierSerializer(data=request.DATA,context={'request': request,'msg':'not exist'})
-         
-         if serializer.is_valid():
-            identifier_id = serializer.save()  
-            identifier =  identifier_id.id
-            if businesscard:
-                businesscardidentifierserializer =  BusinessCardIdentifierSerializer(data=request.DATA,context={'request': request,'msg':'not exist'})
-                request.POST['identifier'] = identifier
-                if businesscardidentifierserializer.is_valid():
-                    businesscardidentifierserializer.save()
-                    return CustomeResponse(serializer.data,status=status.HTTP_201_CREATED)
-                else:
-                    return CustomeResponse(businesscardidentifierserializer.errors,status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
-            return CustomeResponse(serializer.data,status=status.HTTP_201_CREATED)        
-         else:
-            return CustomeResponse(serializer.errors,status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
+            
+            
+            
+        #print businesscard_id
+        #------ object value which can be change are mutable object value which cannot be change are immutable  -----------#
+        mutable = request.POST._mutable
+        request.POST._mutable = True
+        request.DATA['identifierlastdate'] = str((datetime.date.today() + datetime.timedelta(3*365/12)).isoformat())
+
+
+        if request.POST.get('identifiertype') == '1':
+           request.POST['identifier'] =   CreateSystemIdentifier()
+        else: 
+          pass
+        #request.POST._mutable = mutable
+        serializer =  IdentifierSerializer(data=request.DATA,context={'request': request,'msg':'not exist'})
+
+        if serializer.is_valid():
+           identifier_id = serializer.save()  
+           identifier =  identifier_id.id
+           if businesscard:
+               businesscardidentifierserializer =  BusinessCardIdentifierSerializer(data=request.DATA,context={'request': request,'msg':'not exist'})
+               request.POST['identifier'] = identifier
+               if businesscardidentifierserializer.is_valid():
+                   businesscardidentifierserializer.save()
+                   return CustomeResponse(serializer.data,status=status.HTTP_201_CREATED)
+               else:
+                   return CustomeResponse(businesscardidentifierserializer.errors,status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
+           return CustomeResponse(serializer.data,status=status.HTTP_201_CREATED)        
+        else:
+           return CustomeResponse(serializer.errors,status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
     
     
 
