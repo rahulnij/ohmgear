@@ -19,6 +19,7 @@ from django.shortcuts import get_object_or_404
 from django.conf import settings
 from apps.users.models import User
 from apps.vacationcard.models import VacationCard 
+from apps.vacationcard.serializer import VacationCardSerializer
 # Create your views here.
 
 class BusinessCardIdentifierViewSet(viewsets.ModelViewSet):
@@ -101,19 +102,21 @@ class BusinessCardMediaViewSet(viewsets.ModelViewSet):
 #BusinessCard Available Skills
 
 class BusinessCardSkillAvailableViewSet(viewsets.ModelViewSet):
-    queryset  = BusinessCardSkillAvailable.objects.all().values()
+    queryset  = BusinessCardSkillAvailable.objects.all()
     serializer_class = BusinessCardSkillAvailableSerializer
     #authentication_classes = (ExpiringTokenAuthentication,)
     #permission_classes = (IsAuthenticated,) 
-     #--------------Method: GET-----------------------------#       
+     #--------------Method: GET-----------------------------#   
+        
     def list(self,request):
-            skill =  self.request.QUERY_PARAMS.get('skill', None)
-            queryset = BusinessCardSkillAvailable.objects.filter(skill_name__istartswith=skill).values()
-            if queryset: 
-                for items in queryset:
-                    return CustomeResponse({'msg':queryset},status=status.HTTP_200_OK)
+            skill = self.request.QUERY_PARAMS.get('skill', None)
+            if skill:
+               self.queryset = self.queryset.filter(skill_name=skill)
+            serializer = self.serializer_class(self.queryset,many=True)
+            if serializer: 
+                    return CustomeResponse(serializer.data,status=status.HTTP_200_OK)
             else:
-               return CustomeResponse({'msg':"Data not exist"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
+               return CustomeResponse(serializer.errors,status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
   
     def create(self,request):
         serializer = BusinessCardSkillAvailableSerializer(data = request.data,context={'request':request})
@@ -130,20 +133,17 @@ class BusinessCardSkillAvailableViewSet(viewsets.ModelViewSet):
        
  # Add Skills to Business Card      
 class BusinessCardAddSkillViewSet(viewsets.ModelViewSet):
-    queryset  = BusinessCardAddSkill.objects.all().values()
+    queryset  = BusinessCardAddSkill.objects.all()
     serializer_class = BusinessCardAddSkillSerializer
     #authentication_classes = (ExpiringTokenAuthentication,)
     #permission_classes = (IsAuthenticated,) 
      #--------------Method: GET-----------------------------#       
     def list(self,request):
-       # return CustomeResponse({'msg':'GET method not allowed'},status=status.HTTP_405_METHOD_NOT_ALLOWED,validate_errors=1)
-        if request.method == 'GET':
-            queryset = self.queryset
-            #print queryset
-            #businesscardmedia = get_object_or_404(queryset, pk=pk)
-            #serializer = self.serializer_class(businesscardmedia,context={'request': request})
-            return CustomeResponse({'msg':queryset},status=status.HTTP_200_OK)
-  
+        return CustomeResponse({'msg':'GET method not allowed'},status=status.HTTP_405_METHOD_NOT_ALLOWED,validate_errors=1)
+
+    def retrieve(self,request,pk=None):
+        return CustomeResponse({'msg':'GET method not allowed'},status=status.HTTP_405_METHOD_NOT_ALLOWED,validate_errors=1)
+    
     def create(self,request):
         serializer = BusinessCardAddSkillSerializer(data = request.data,context={'request':request})
         if serializer.is_valid():
@@ -152,48 +152,56 @@ class BusinessCardAddSkillViewSet(viewsets.ModelViewSet):
         else:
             return CustomeResponse(serializer.errors,status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
 
-        
-        
+             
     def update(self, request, pk=None):
          return CustomeResponse({'msg':"Update method does not allow"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
                   
      
-
 class BusinessViewSet(viewsets.ModelViewSet):
     queryset = BusinessCard.objects.all()
     serializer_class = BusinessCardSerializer
     authentication_classes = (ExpiringTokenAuthentication,)
     permission_classes = (IsAuthenticated,)    
+    vacation_data = ''
     
-    
-    def get_queryset(self):
+   
+    def list(self,request):
+        
         user_id = self.request.QUERY_PARAMS.get('user_id', None)
         published = self.request.QUERY_PARAMS.get('published', None)
         business_id = self.request.QUERY_PARAMS.get('business_id', None)
-        check = 0
+        vacation_data_check = 0
         #---------------------- Filter ------------------------#
         if published is not None and user_id is not None:
             if published == '0':
-              queryset = self.queryset.select_related('user_id').filter(user_id=user_id,status=0)
+              self.queryset = self.queryset.select_related('user_id').filter(user_id=user_id,status=0)
             elif published == '1':
-              queryset = self.queryset.select_related('user_id').filter(user_id=user_id,status=1)
-            check = 1  
-        elif user_id and business_id == 'all':
+              self.queryset = self.queryset.select_related('user_id').filter(user_id=user_id,status=1)
+        elif user_id is not None and business_id == 'all':
                 #----------------- All user business card -------------------------------------#
-                queryset1 = self.queryset.select_related('user_id').filter(user_id=user_id)  
-                queryset2 = VacationCard.objects.filter(user_id=user_id)
-                queryset = (queryset1 | queryset2) 
-                check = 1
+                self.queryset = self.queryset.select_related('user_id').filter(user_id=user_id)  
+                self.vacation_data = VacationCard.objects.all().filter(user_id=user_id)
+                vacation_data_check = 1
         elif user_id is not None:
-            queryset = self.queryset.select_related('user_id').filter(user_id=user_id)
+            self.queryset = self.queryset.select_related('user_id').filter(user_id=user_id)
             check = 1
         
-        #------------------------- End -------------------------#  
-        if check: 
-         return queryset
-        else:
-         return None   
+        #------------------------- End -------------------------#
+        serializer = self.serializer_class(self.queryset,many=True)
 
+        if vacation_data_check:
+             data = {}
+             data['business_cards'] = serializer.data
+             data['vacation_cards'] =""            
+             vacation_data = []
+             for item in self.vacation_data:
+                 vacation_data.append({"id":item.id,"user_id":item.user_id.id})
+             data['vacation_cards'] = vacation_data
+             return CustomeResponse(data,status=status.HTTP_200_OK)
+        else:
+            return CustomeResponse(serializer.data,status=status.HTTP_200_OK)
+         
+    
     #--------------Method: GET retrieve single record-----------------------------#
     def retrieve(self,request,pk=None,call_from_function=None):
         queryset = self.queryset
