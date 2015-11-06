@@ -12,7 +12,7 @@ from serializer import BusinessCardSerializer,BusinessCardIdentifierSerializer,B
 
 from apps.contacts.serializer import ContactsSerializer
 from apps.contacts.models import Contacts
-
+from apps.identifiers.models import Identifier
 from ohmgear.token_authentication import ExpiringTokenAuthentication
 from ohmgear.functions import CustomeResponse,handle_uploaded_file
 from ohmgear.json_default_data import BUSINESS_CARD_DATA_VALIDATION
@@ -47,6 +47,9 @@ class CardSummary(APIView):
         return CustomeResponse({'msg':'POST method not allowed'},status=status.HTTP_405_METHOD_NOT_ALLOWED,validate_errors=1)
 #---------------------- End ----------------------------------#
 
+import itertools
+# Create your views here.
+
 class BusinessCardIdentifierViewSet(viewsets.ModelViewSet):
     queryset  = BusinessCardIdentifier.objects.all()
     serializer_class = BusinessCardIdentifierSerializer
@@ -54,9 +57,64 @@ class BusinessCardIdentifierViewSet(viewsets.ModelViewSet):
     permission_classes = (IsAuthenticated,) 
      #--------------Method: GET-----------------------------#       
     def list(self,request):
-        return CustomeResponse({'msg':'GET method not allowed'},status=status.HTTP_405_METHOD_NOT_ALLOWED,validate_errors=1)
- 
-    
+        #return CustomeResponse({'msg':'GET method not allowed'},status=status.HTTP_405_METHOD_NOT_ALLOWED,validate_errors=1)
+        if request.method == 'GET':
+            
+            user_id =  self.request.QUERY_PARAMS.get('user_id', None)
+           # print user_id
+            
+            """
+            get all idnetifiers from identifiers table
+            
+            """
+            getidentifiers = Identifier.objects.all().filter(user_id = user_id).values()
+            totalidentifiers =  getidentifiers.count()
+            identifierid = []
+            for i in range(totalidentifiers):
+                getidentifierid = getidentifiers[i]['id']
+                identifierid.append(getidentifierid)
+           
+           
+            """
+            get all businesscard idnetifiers from businesscardidentifiers table
+            
+            """
+            
+            getbusinesscardidentifiers = BusinessCardIdentifier.objects.all().filter(identifier_id__in = identifierid).values()
+            totalbusinesscardidentifiers =  getbusinesscardidentifiers.count()
+            #print getbusinesscardidentifiers
+            businesscardid = []
+            for i in range(totalbusinesscardidentifiers):
+                getbusinesscardid = getbusinesscardidentifiers[i]['businesscard_id_id']
+                businesscardid.append(getbusinesscardid)
+           
+           
+           
+            """
+            get all businesscard details which having identifiers from businesscard table
+            
+            """
+           
+            getbusinesscarddetails = BusinessCard.objects.all().filter(id__in = businesscardid).values()
+            #print "getbusinesscarddetails"
+            #print getbusinesscarddetails
+           
+           
+            lst = sorted(itertools.chain(getidentifiers,getbusinesscardidentifiers), key=lambda x:x['vacationcard_id'])
+            list_c = []
+            for k,v in itertools.groupby(lst, key=lambda x:x['vacationcard_id']):
+                d = {}
+                for dct in v:
+                    d.update(dct)
+                list_c.append(d)
+            #print list_c
+            if list_c:
+                return CustomeResponse({'msg':list_c},status=status.HTTP_201_CREATED)
+            else:
+                return CustomeResponse({'msg':"No Data Found"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
+           
+           
+            
     def create(self,request):
        #print request.data
        serializer = BusinessCardIdentifierSerializer(data = request.data,context={'request':request})
@@ -137,7 +195,7 @@ class BusinessCardSkillAvailableViewSet(viewsets.ModelViewSet):
     def list(self,request):
             skill = self.request.QUERY_PARAMS.get('skill', None)
             if skill:
-               self.queryset = self.queryset.filter(skill_name=skill)
+               self.queryset = self.queryset.filter(skill_name__istartswith=skill)
             serializer = self.serializer_class(self.queryset,many=True)
             if serializer: 
                     return CustomeResponse(serializer.data,status=status.HTTP_200_OK)
