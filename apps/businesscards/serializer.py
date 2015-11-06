@@ -17,7 +17,7 @@ class BusinessCardIdentifierSerializer(serializers.ModelSerializer):
         businesscardid =  value['businesscard_id']
         businesscardid = businesscardid.id
         
-        businesscardidentifierdata =     BusinessCardIdentifier.objects.filter(businesscard=businesscardid)
+        businesscardidentifierdata =     BusinessCardIdentifier.objects.filter(businesscard_id=businesscardid)
         if not businesscardidentifierdata:
             pass
         else:

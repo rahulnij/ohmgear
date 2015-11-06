@@ -55,7 +55,7 @@ class VacationCardViewSet(viewsets.ModelViewSet):
             stops =  stops["data"]
         except:
             return CustomeResponse({'status':'fail','msg':'Please provide correct Json Format of vacation'},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
-            
+       # print stops    
         if VacationCardserializer.is_valid():
             vacationid = VacationCardserializer.save()
             if stops and vacationid.id:
@@ -68,13 +68,12 @@ class VacationCardViewSet(viewsets.ModelViewSet):
                         #stops += data
                         tempdata["x"]['vacationcard_id'] = vacationid.id
                         #tempdata['vacationcard_id'] = vacationid.id
-                        tempContainer.append(tempdata)
+                        
+                        tempContainer.append(tempdata['x'])
                     
                      
-                        tempContainer =  tempContainer[0]['x']
-                    
-
-                    serializer = VacationTripSerializer(data=[tempContainer],many=True)
+                        #tempContainer =  tempContainer[0]['x   
+                    serializer = VacationTripSerializer(data=tempContainer,many=True)
                     if serializer.is_valid():
                         serializer.save()
                         return CustomeResponse(serializer.data,status=status.HTTP_201_CREATED)

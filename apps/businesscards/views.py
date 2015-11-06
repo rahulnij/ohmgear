@@ -33,6 +33,7 @@ class BusinessCardIdentifierViewSet(viewsets.ModelViewSet):
  
     
     def create(self,request):
+       #print request.data
        serializer = BusinessCardIdentifierSerializer(data = request.data,context={'request':request})
        if serializer.is_valid():
            serializer.save()
