@@ -4,6 +4,7 @@ from apps.identifiers.models import Identifier
 from django.conf import settings
 from simple_history.models import HistoricalRecords
 User = settings.AUTH_USER_MODEL
+from apps.vacationcard.models import VacationCard
 # Create your models here.
 
 class BusinessCardTemplate(models.Model):
@@ -38,6 +39,8 @@ class BusinessCard(models.Model):
     
     
     business_identifier = models.ManyToManyField(Identifier, through = 'BusinessCardIdentifier',related_name='business_identifier')
+    business_vacation = models.ManyToManyField(VacationCard, through = 'BusinessCardVacation',related_name='business_vacation')
+    
     history = HistoricalRecords()
     
     def __unicode__(self):
@@ -71,14 +74,6 @@ class BusinessCardMedia(models.Model):
     position      = models.IntegerField(_("Position"),default=1) # 1=Horizontal ,2=Vertical
     status      = models.IntegerField(_("Status"),default=0)
     
-    def bcard_image_frontend(self, businesscard):
-        qs = BusinessCardMedia.objects.filter(businesscard_id=businesscard, front_back=1)
-        if qs:
-           return  qs.img_url
-    def bcard_image_backend(self, businesscard):
-        qs = BusinessCardMedia.objects.filter(businesscard_id=businesscard, front_back=2)
-        if qs:
-           return  qs.img_url 
     def __unicode__(self):
         return '{"id:"%s","businesscard_id":"%s","user_id":"%s","status":"%s","front_back":"%s","img_url":"%s"}' %(self.id,self.businesscard_id,self.user_id,self.status,self.front_back,self.img_url)
         
@@ -107,4 +102,19 @@ class BusinessCardAddSkill(models.Model):
     
     def __unicode__(self):
         return'{"id:"%s","businesscard_id":"%s","skillname":"%s"}' %(self.id,self.businesscard_id,self.skill_name)
-            
+    
+    
+class BusinessCardVacation(models.Model):
+    class Meta:
+        db_table = 'ohmgear_vacationcard_businesscardvacation'
+       # unique_together = ('user_id', 'businesscard_id')
+        
+    vacationcard_id    =   models.ForeignKey(VacationCard,db_column ="vacationcard_id")
+    businesscard_id    =   models.ForeignKey(BusinessCard,db_column = "businesscard_id")
+    user_id         =   models.ForeignKey(User,db_column = "user_id")
+    created_date=models.DateTimeField(_("Created Date"),auto_now_add=True,auto_now=False)
+    updated_date=models.DateTimeField(_("Updated Date"),auto_now_add=False,auto_now=True)
+    status                  =   models.IntegerField(_('Status'),default =1)
+        
+    def __unicode__(self):
+        return '{"id":"%s","vacationcard_id","businesscard_id":"%s"}'%(self.id,self.vacationcard_id,self.businesscard_id)           

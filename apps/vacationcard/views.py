@@ -1,5 +1,5 @@
 from rest_framework import routers, serializers, viewsets
-from models import VacationTrip,BusinessCardVacation,VacationCard
+from models import VacationTrip,VacationCard
 from serializer import VacationTripSerializer,VacationCardSerializer,BusinessCardVacationSerializer
 from ohmgear.functions import CustomeResponse
 from rest_framework.decorators import api_view
@@ -9,6 +9,8 @@ from rest_framework.permissions import IsAuthenticated
 import json
 import itertools
 from django.db.models import Count,Min, Max
+
+from apps.businesscards.models import BusinessCardVacation
 
 class VacationCardViewSet(viewsets.ModelViewSet):
     queryset = VacationTrip.objects.select_related().all()
