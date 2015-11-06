@@ -37,7 +37,7 @@ class BusinessCard(models.Model):
     user_id = models.ForeignKey(User,related_name='buser',db_column="user_id")
     
     
-    identifier_new = models.ManyToManyField(Identifier, through = 'BusinessCardIdentifier',related_name='identifier_new')
+    business_identifier = models.ManyToManyField(Identifier, through = 'BusinessCardIdentifier',related_name='business_identifier')
     history = HistoricalRecords()
     
     def __unicode__(self):
@@ -71,6 +71,14 @@ class BusinessCardMedia(models.Model):
     position      = models.IntegerField(_("Position"),default=1) # 1=Horizontal ,2=Vertical
     status      = models.IntegerField(_("Status"),default=0)
     
+    def bcard_image_frontend(self, businesscard):
+        qs = BusinessCardMedia.objects.filter(businesscard_id=businesscard, front_back=1)
+        if qs:
+           return  qs.img_url
+    def bcard_image_backend(self, businesscard):
+        qs = BusinessCardMedia.objects.filter(businesscard_id=businesscard, front_back=2)
+        if qs:
+           return  qs.img_url 
     def __unicode__(self):
         return '{"id:"%s","businesscard_id":"%s","user_id":"%s","status":"%s","front_back":"%s","img_url":"%s"}' %(self.id,self.businesscard_id,self.user_id,self.status,self.front_back,self.img_url)
         
