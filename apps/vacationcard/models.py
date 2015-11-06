@@ -43,7 +43,7 @@ class VacationTrip(models.Model):
     state           =   models.CharField(_('State'),max_length=50)
     city            =   models.CharField(_('City'),max_length=50)
     contact_no      = models.CharField(_("Contact Number"),max_length=50,null=True,blank=True)
-    notes           =   models.CharField(_('Notes'),max_length = 2000,null =True)
+    notes           =   models.CharField(_('Notes'),max_length = 2000,null =True,blank=True)
     user_id         =   models.ForeignKey(User,db_column="user_id")
     trip_start_date =   models.DateField(_('Trip Start Date'))
     trip_end_date   =   models.DateField(_('Trip End Date'))
