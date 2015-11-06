@@ -20,7 +20,6 @@ from django.conf import settings
 from apps.users.models import User
 from apps.vacationcard.models import VacationCard 
 from apps.vacationcard.serializer import VacationCardSerializer
-import itertools
 # Create your views here.
 
 class BusinessCardIdentifierViewSet(viewsets.ModelViewSet):
@@ -53,36 +52,47 @@ class BusinessCardIdentifierViewSet(viewsets.ModelViewSet):
             
             """
             
-            getbusinesscardidentifiers = BusinessCardIdentifier.objects.all().filter(identifier_id__in = identifierid).values()
+            getbusinesscardidentifiers = BusinessCardIdentifier.objects.filter(identifier_id__in = identifierid).values()
             totalbusinesscardidentifiers =  getbusinesscardidentifiers.count()
-            #print getbusinesscardidentifiers
+         
             businesscardid = []
+            businesscardidentifierid = []
             for i in range(totalbusinesscardidentifiers):
                 getbusinesscardid = getbusinesscardidentifiers[i]['businesscard_id_id']
+                getbusinesscardidentifierid = getbusinesscardidentifiers[i]['identifier_id_id']
                 businesscardid.append(getbusinesscardid)
+                businesscardidentifierid.append(getbusinesscardidentifierid)
            
            
-           
+        
             """
             get all businesscard details which having identifiers from businesscard table
             
             """
+            getbusinesscardidentifiersdetails =dict()
+            getbusinesscardidentifiersdetails['businesscardidentifier'] = BusinessCardIdentifier.objects.filter(identifier_id__id__in=identifierid,businesscard_id__id__in = businesscardid).values()
+          
+            #print "getbusinesscardidentifiersdetails"
+            #print getbusinesscardidentifiersdetails
+            #print "----------------------------------------------------"
            
-            getbusinesscarddetails = BusinessCard.objects.all().filter(id__in = businesscardid).values()
-            #print "getbusinesscarddetails"
-            #print getbusinesscarddetails
+            #getallidentifiers = Identifier.objects.all().filter(user_id = user_id,id)
+            getallidentifierswithoutbusinesscardattached = dict()
+            getallidentifierswithoutbusinesscardattached['identifiers']= Identifier.objects.exclude(id__in =businesscardidentifierid).filter(user_id = user_id)
+            
+            #print "getallidentifierswithoutbusinesscardattached"
+            #print getallidentifierswithoutbusinesscardattached
            
-           
-            lst = sorted(itertools.chain(getidentifiers,getbusinesscardidentifiers), key=lambda x:x['vacationcard_id'])
-            list_c = []
-            for k,v in itertools.groupby(lst, key=lambda x:x['vacationcard_id']):
-                d = {}
-                for dct in v:
-                    d.update(dct)
-                list_c.append(d)
-            #print list_c
-            if list_c:
-                return CustomeResponse({'msg':list_c},status=status.HTTP_201_CREATED)
+            #getbusinesscarddetails = BusinessCard.objects.all().filter(id__in = businesscardid).values()
+            
+            z = getbusinesscardidentifiersdetails.copy()
+            z.update(getallidentifierswithoutbusinesscardattached)
+            
+            #print "z"
+            #print z
+                
+            if getbusinesscardidentifiersdetails:
+                return CustomeResponse({'msg':getbusinesscardidentifiersdetails},status=status.HTTP_201_CREATED)
             else:
                 return CustomeResponse({'msg':"No Data Found"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
            
@@ -93,6 +103,7 @@ class BusinessCardIdentifierViewSet(viewsets.ModelViewSet):
        serializer = BusinessCardIdentifierSerializer(data = request.data,context={'request':request})
        if serializer.is_valid():
            serializer.save()
+           BusinessCard.objects.filter(id= request.data['businesscard_id']).update(status= 1 )
            return CustomeResponse(serializer.data,status=status.HTTP_201_CREATED)
        else:
            return CustomeResponse(serializer.errors,status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
