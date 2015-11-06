@@ -50,6 +50,7 @@ INSTALLED_APPS = (
     'apps.identifiers',
     'apps.email',
     'apps.promocode',
+    'apps.folders',
     'rest_framework',
     'rest_framework.authtoken',
     

@@ -67,6 +67,11 @@ urlpatterns += [
 urlpatterns += format_suffix_patterns(urlpatterns)
 #-------------- End ---------------------------------------------#
 
+#-------------- folders app url registration ---------------------------------#
+import apps.folders.views as folder_view
+router.register(r'api/folder',folder_view.FolderViewSet)
+#-------------- End: folders app ---------------------------------------------#
+
 urlpatterns += patterns('',
     url(r'^admin/', include(admin.site.urls)),
 )

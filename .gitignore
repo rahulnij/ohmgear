@@ -5,3 +5,4 @@ src
 static
 media
 *.*~
+ohmgear/settings/local.py
