@@ -62,10 +62,7 @@ class BusinessCardSerializer(serializers.ModelSerializer):
     #identifier_new = serializers.ReadOnlyField(source='*')
     #------------------------ End -----------------------------------------------------------#
     class Meta:
-        model = BusinessCard,
-        read_only_fields = (
-        'bcard_image_frontend',
-        ),
+        model = BusinessCard
         fields = (
             'id',
             'name',
@@ -83,6 +80,7 @@ class BusinessCardSummarySerializer(serializers.HyperlinkedModelSerializer):
     businesscard_skills = BusinessCardAddSkillSerializerReference(many=True,read_only=True)
     business_identifier = IdentifierSerializer(many=True,read_only=True)
     business_vacation = VacationCardSerializer(many=True,read_only=True)
+    media_url = VacationCardSerializer(many=True,read_only=True)
     #------------------------ End -----------------------------------------------------------#
     class Meta:
         model = BusinessCard
