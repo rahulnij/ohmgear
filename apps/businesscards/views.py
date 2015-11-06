@@ -168,7 +168,7 @@ class BusinessCardSkillAvailableViewSet(viewsets.ModelViewSet):
     def list(self,request):
             skill = self.request.QUERY_PARAMS.get('skill', None)
             if skill:
-               self.queryset = self.queryset.filter(skill_name=skill)
+               self.queryset = self.queryset.filter(skill_name__istartswith=skill)
             serializer = self.serializer_class(self.queryset,many=True)
             if serializer: 
                     return CustomeResponse(serializer.data,status=status.HTTP_200_OK)
