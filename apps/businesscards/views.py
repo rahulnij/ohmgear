@@ -14,13 +14,12 @@ from ohmgear.functions import CustomeResponse,handle_uploaded_file
 from ohmgear.json_default_data import BUSINESS_CARD_DATA_VALIDATION
 
 from django.core.exceptions import ValidationError
-import validictory
+import json,validictory
 from django.shortcuts import get_object_or_404
 from django.conf import settings
 from apps.users.models import User
 from apps.vacationcard.models import VacationCard 
 from apps.vacationcard.serializer import VacationCardSerializer
-import simplejson as json
 # Create your views here.
 
 class BusinessCardIdentifierViewSet(viewsets.ModelViewSet):
@@ -314,18 +313,18 @@ class BusinessViewSet(viewsets.ModelViewSet):
               bcard_ids = request.data["bcard_ids"]
              except:
               bcard_ids = None
-             if bcard_ids is not None and user_id:
-                 #try:
-                  bcard_ids = json.loads(bcard_ids)
-                  print bcard_ids
+             if bcard_ids and user_id:
+                 try:
+                  bcard_ids = bcard_ids.split(",")
+                  bcard_ids = filter(None, bcard_ids)
                   business_card = BusinessCard.objects.filter(id__in=bcard_ids,user_id= user_id)
                   if business_card:
                     business_card.delete()   
                     return CustomeResponse({"msg":"business card deleted successfully."},status=status.HTTP_200_OK)
                   else:
                     return CustomeResponse({"msg":"business card does not exists."},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)  
-                 #except:
-                  #return CustomeResponse({"msg":"some problem occured on server side during delete business cards"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)           
+                 except:
+                  return CustomeResponse({"msg":"some problem occured on server side during delete business cards"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)           
                  
          
          
