@@ -4,8 +4,12 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework import viewsets
 import rest_framework.status as status
 
-from models import BusinessCard,BusinessCardTemplate,BusinessCardIdentifier,Identifier,BusinessCardMedia,BusinessCardSkillAvailable,BusinessCardAddSkill
-from serializer import BusinessCardSerializer,BusinessCardIdentifierSerializer,BusinessCardMediaSerializer,BusinessCardSkillAvailableSerializer,BusinessCardAddSkillSerializer
+from models import BusinessCard,BusinessCardTemplate,BusinessCardIdentifier,Identifier,BusinessCardMedia,\
+BusinessCardSkillAvailable,BusinessCardAddSkill
+
+from serializer import BusinessCardSerializer,BusinessCardIdentifierSerializer,BusinessCardMediaSerializer\
+,BusinessCardSkillAvailableSerializer,BusinessCardAddSkillSerializer,BusinessCardSummarySerializer
+
 from apps.contacts.serializer import ContactsSerializer
 from apps.contacts.models import Contacts
 from apps.identifiers.models import Identifier
@@ -20,6 +24,29 @@ from django.conf import settings
 from apps.users.models import User
 from apps.vacationcard.models import VacationCard 
 from apps.vacationcard.serializer import VacationCardSerializer
+from rest_framework.views import APIView
+#---------------- Business Card Summary ----------------------#
+class CardSummary(APIView):
+    """
+    View to card summary.
+    """
+    authentication_classes = (ExpiringTokenAuthentication,)
+    permission_classes = (IsAuthenticated,)
+    queryset = BusinessCard.objects.all()
+    
+    def get(self, request):
+        bcard_id = self.request.QUERY_PARAMS.get('bcard_id', None)
+        if bcard_id:
+           queryset = self.queryset.filter(id=bcard_id) 
+           print queryset
+           serializer = BusinessCardSummarySerializer(queryset,many=True)
+           return CustomeResponse(serializer.data,status=status.HTTP_200_OK)
+        else:
+           return CustomeResponse({'msg':'GET method not allowed without business card id'},status=status.HTTP_405_METHOD_NOT_ALLOWED,validate_errors=1) 
+    def post(self, request, format=None):
+        return CustomeResponse({'msg':'POST method not allowed'},status=status.HTTP_405_METHOD_NOT_ALLOWED,validate_errors=1)
+#---------------------- End ----------------------------------#
+
 import itertools
 # Create your views here.
 

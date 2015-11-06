@@ -33,31 +33,36 @@ urlpatterns =patterns(
     url(r'^api/forgot_password/(?P<reset_password_key>\w+)/$','apps.users.views.useractivity',name='forgot_password'),
 )
 from apps.users.signals import *
+import apps.businesscards.views as  businesscards_views
 #-------------- End ---------------------------------------------#
 
 #-------------- Business app url registration ----------------------#
-import apps.businesscards.views as  businesscards_views
 router.register(r'api/businesscard', businesscards_views.BusinessViewSet)
 #------------------BusinessCard Idnetifier-----------------------#
 import apps.businesscards.views as businesscardidentifier_views
 router.register(r'api/businesscardidentifier',businesscardidentifier_views.BusinessCardIdentifierViewSet)
 
 #-------------- Business card Media  ----------------------#
-import apps.businesscards.views as  businesscards_views
 router.register(r'api/businesscardmedia', businesscards_views.BusinessCardMediaViewSet)
 
 #-------------- Add Skills ----------------------#
-import apps.businesscards.views as  businesscards_views
 router.register(r'api/businesscardaddskill', businesscards_views.BusinessCardAddSkillViewSet)
 
 #-------------- Available Skills in the database  ----------------------#
-import apps.businesscards.views as  businesscards_views
 router.register(r'api/businesscardskillavailable', businesscards_views.BusinessCardSkillAvailableViewSet)
+
+#-------------- Business card Summary  ----------------------#
+#router.register(r'api/businesscardsummary', businesscards_views.CardSummary)
+urlpatterns += [
+    url(r'^api/businesscardsummary/$', businesscards_views.CardSummary.as_view()),    
+]
+
 #-------------- End ---------------------------------------------#
 
 #-------------- Identifiers app url ----------------------#
 import apps.identifiers.views as  identifiers_views
 router.register(r'api/identifiers', identifiers_views.IdentifierViewSet)
+
 
 #-------------- End ---------------------------------------------#
 

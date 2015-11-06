@@ -59,7 +59,6 @@ class BusinessCardSkillAvailableSerializer(serializers.ModelSerializer):
 class BusinessCardSerializer(serializers.ModelSerializer):
 
     contact_detail = ContactsSerializerWithJson(read_only=True)
-    businesscard_skills = BusinessCardAddSkillSerializerReference(many=True,read_only=True)
     #identifier_new = serializers.ReadOnlyField(source='*')
     #------------------------ End -----------------------------------------------------------#
     class Meta:
@@ -69,10 +68,24 @@ class BusinessCardSerializer(serializers.ModelSerializer):
             'name',
             'bcard_type',
             'is_active',
+            'status',
             'user_id',
             'contact_detail',
-            'businesscard_skills',
             #'identifier_new',
         )
+ 
+from apps.identifiers.serializer import IdentifierSerializer        
+class BusinessCardSummarySerializer(serializers.HyperlinkedModelSerializer):
+    businesscard_skills = BusinessCardAddSkillSerializerReference(many=True,read_only=True)
+    business_identifier = IdentifierSerializer(many=True,read_only=True)
+    #------------------------ End -----------------------------------------------------------#
+    class Meta:
+        model = BusinessCard
+        fields = (
+            'id',
+            'name',
+            'businesscard_skills',
+            'business_identifier',
+        )        
   
 
