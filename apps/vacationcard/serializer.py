@@ -1,6 +1,7 @@
 from django.conf.urls import url, include
 #from apps.identifiers.models import Identifier
-from models import VacationTrip,VacationCard,BusinessCardVacation
+from models import VacationTrip,VacationCard
+from apps.businesscards.models import BusinessCardVacation
 from rest_framework import routers, serializers, viewsets
 from ohmgear.functions import CustomeResponse
 import rest_framework.status as status
