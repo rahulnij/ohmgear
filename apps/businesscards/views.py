@@ -1,21 +1,5 @@
 from django.shortcuts import render
-import rest_framework.status as status
-from models import BusinessCard,BusinessCardTemplate,BusinessCardIdentifier,Identifier,BusinessCardMedia,BusinessCardSkillAvailable,BusinessCardAddSkill,BusinessCardHistory
-from serializer import BusinessCardSerializer,BusinessCardIdentifierSerializer,BusinessCardMediaSerializer,BusinessCardSkillAvailableSerializer,BusinessCardAddSkillSerializer,BusinessCardHistorySerializer
-from apps.contacts.serializer import ContactsSerializer
-from apps.contacts.models import Contacts
 
-from ohmgear.token_authentication import ExpiringTokenAuthentication
-from ohmgear.functions import CustomeResponse,handle_uploaded_file
-from ohmgear.json_default_data import BUSINESS_CARD_DATA_VALIDATION
-
-from django.core.exceptions import ValidationError
-import json,validictory
-from django.shortcuts import get_object_or_404
-from django.conf import settings
-from apps.users.models import User
-from apps.vacationcard.models import VacationCard 
-from apps.vacationcard.serializer import VacationCardSerializer
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import viewsets
 import rest_framework.status as status
