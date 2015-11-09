@@ -3,6 +3,7 @@ from django.utils.translation import ugettext_lazy as _
 from apps.identifiers.models import Identifier
 from django.conf import settings
 from simple_history.models import HistoricalRecords
+from django_pgjson.fields import JsonField
 User = settings.AUTH_USER_MODEL
 from apps.vacationcard.models import VacationCard
 #from serializer import BusinessCardMediaSerializer
@@ -13,7 +14,7 @@ class BusinessCardTemplate(models.Model):
         class Meta:
             db_table = 'ohmgear_businesscards_businesscardtemplate'
         template_name = models.CharField(_("Template Name"),max_length=50)
-        template_content = models.CharField(_("Template Content"),max_length= 100)
+        template_content = models.CharField(_("Template Content"),max_length=50)
         status  = models.IntegerField(_("Status"),default=0)
         created_date=models.DateTimeField(_("Created Date"),auto_now_add=True,auto_now=False)
         updated_date=models.DateTimeField(_("Updated Date"),auto_now_add=False,auto_now=True)
@@ -66,6 +67,7 @@ class BusinessCardIdentifier(models.Model):
     status      = models.IntegerField(_("Status"),default=1)
     created_date=models.DateTimeField(_("Created Date"),auto_now_add=True,auto_now=False)
     updated_date=models.DateTimeField(_("Updated Date"),auto_now_add=False,auto_now=True)
+    history = HistoricalRecords()
     
     def __unicode__(self):
         return'{"id:"%s","businesscard_id":"%s","identifier_id":"%s","status":"%s"}' %(self.id,self.businesscard_id,self.identifier_id,self.status)
@@ -82,6 +84,7 @@ class BusinessCardMedia(models.Model):
     front_back      = models.IntegerField(_("Front Back"),default=1) # 1=Front ,2=Back
     position      = models.IntegerField(_("Position"),default=1) # 1=Horizontal ,2=Vertical
     status      = models.IntegerField(_("Status"),default=0)
+    history = HistoricalRecords()
     
     def __unicode__(self):
         return '{"id:"%s","businesscard_id":"%s","user_id":"%s","status":"%s","front_back":"%s","img_url":"%s"}' %(self.id,self.businesscard_id,self.user_id,self.status,self.front_back,self.img_url)
@@ -96,6 +99,26 @@ class BusinessCardSkillAvailable(models.Model):
     
     def __unicode__(self):
         return'{"id:"%s","skillset":"%s"}'%(self.id,self.skill_name)
+    
+    
+class BusinessCardHistory(models.Model):
+    
+    class Meta:
+        db_table = 'contacts_historicalcontacts'
+    user_id = models.ForeignKey(User,db_column="user_id")
+    bcard_json_data = JsonField(null=True)
+    businesscard= models.ForeignKey(BusinessCard,db_column='businesscard_id')
+    created_date=models.DateTimeField(_("Created Date"),auto_now_add=True,auto_now=False)
+    updated_date=models.DateTimeField(_("Updated Date"),auto_now_add=False,auto_now=True)
+    template_id = models.IntegerField(_("Template Id"),null=True)
+    history_id = models.IntegerField(_("History Id"),null=True)
+    history_date = models.DateTimeField(_("History Date"),auto_now_add=False,auto_now=True)
+    history_user_id =  models.IntegerField(_("History User Id"),null=True)
+    history_type = models.IntegerField(_("History Type"),null=True)
+    
+    def __unicode__(self):
+        return'{"id:"%s","user_id":"%s","bcard_json_data":"%s"}'%(self.id,self.user_id,self.bcard_json_data)
+    
   
 class BusinessCardAddSkill(models.Model):
     
@@ -108,6 +131,7 @@ class BusinessCardAddSkill(models.Model):
     updated_date=models.DateTimeField(_("Updated Date"),auto_now_add=False,auto_now=True)
     skill_name = models.CharField(_("Skill Name"),null=True,max_length=50)
     status      = models.IntegerField(_("Status"),default=1)
+    history = HistoricalRecords()
     
     def __unicode__(self):
         return'{"id:"%s","businesscard_id":"%s","skillname":"%s"}' %(self.id,self.businesscard_id,self.skill_name)

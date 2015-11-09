@@ -59,6 +59,12 @@ urlpatterns += [
 
 #-------------- End ---------------------------------------------#
 
+#-------------- BusinessCard History  ----------------------#
+import apps.businesscards.views as  businesscards_views
+router.register(r'api/businesscardshistory', businesscards_views.BusinessCardHistoryViewSet)
+#-------------- End ---------------------------------------------#
+
+
 #-------------- Identifiers app url ----------------------#
 import apps.identifiers.views as  identifiers_views
 router.register(r'api/identifiers', identifiers_views.IdentifierViewSet)
