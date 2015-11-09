@@ -4,11 +4,15 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework import viewsets
 import rest_framework.status as status
 
-from models import BusinessCard,BusinessCardTemplate,BusinessCardIdentifier,Identifier,BusinessCardMedia,BusinessCardSkillAvailable,BusinessCardAddSkill,BusinessCardHistory
-from serializer import BusinessCardSerializer,BusinessCardIdentifierSerializer,BusinessCardMediaSerializer,BusinessCardSkillAvailableSerializer,BusinessCardAddSkillSerializer,BusinessCardHistorySerializer
+from models import BusinessCard,BusinessCardTemplate,BusinessCardIdentifier,Identifier,BusinessCardMedia,\
+BusinessCardSkillAvailable,BusinessCardAddSkill
+
+from serializer import BusinessCardSerializer,BusinessCardIdentifierSerializer,BusinessCardMediaSerializer\
+,BusinessCardSkillAvailableSerializer,BusinessCardAddSkillSerializer,BusinessCardSummarySerializer
+
 from apps.contacts.serializer import ContactsSerializer
 from apps.contacts.models import Contacts
-
+from apps.identifiers.models import Identifier
 from ohmgear.token_authentication import ExpiringTokenAuthentication
 from ohmgear.functions import CustomeResponse,handle_uploaded_file
 from ohmgear.json_default_data import BUSINESS_CARD_DATA_VALIDATION
@@ -20,6 +24,31 @@ from django.conf import settings
 from apps.users.models import User
 from apps.vacationcard.models import VacationCard 
 from apps.vacationcard.serializer import VacationCardSerializer
+
+from rest_framework.views import APIView
+#---------------- Business Card Summary ----------------------#
+class CardSummary(APIView):
+    """
+    View to card summary.
+    """
+    authentication_classes = (ExpiringTokenAuthentication,)
+    permission_classes = (IsAuthenticated,)
+    queryset = BusinessCard.objects.all()
+    
+    def get(self, request):
+        bcard_id = self.request.QUERY_PARAMS.get('bcard_id', None)
+        if bcard_id:
+           queryset = self.queryset.filter(id=bcard_id) 
+           print queryset
+           serializer = BusinessCardSummarySerializer(queryset,many=True)
+           return CustomeResponse(serializer.data,status=status.HTTP_200_OK)
+        else:
+           return CustomeResponse({'msg':'GET method not allowed without business card id'},status=status.HTTP_405_METHOD_NOT_ALLOWED,validate_errors=1) 
+    def post(self, request, format=None):
+        return CustomeResponse({'msg':'POST method not allowed'},status=status.HTTP_405_METHOD_NOT_ALLOWED,validate_errors=1)
+#---------------------- End ----------------------------------#
+
+
 # Create your views here.
 
 class BusinessCardIdentifierViewSet(viewsets.ModelViewSet):
@@ -29,14 +58,82 @@ class BusinessCardIdentifierViewSet(viewsets.ModelViewSet):
     permission_classes = (IsAuthenticated,) 
      #--------------Method: GET-----------------------------#       
     def list(self,request):
-        return CustomeResponse({'msg':'GET method not allowed'},status=status.HTTP_405_METHOD_NOT_ALLOWED,validate_errors=1)
- 
-    
+        #return CustomeResponse({'msg':'GET method not allowed'},status=status.HTTP_405_METHOD_NOT_ALLOWED,validate_errors=1)
+        if request.method == 'GET':
+            
+            user_id =  self.request.QUERY_PARAMS.get('user_id', None)
+           # print user_id
+            
+            """
+            get all identifiers from identifiers table
+            
+            """
+            getidentifiers = Identifier.objects.all().filter(user_id = user_id).values()
+            totalidentifiers =  getidentifiers.count()
+            identifierid = []
+            for i in range(totalidentifiers):
+                getidentifierid = getidentifiers[i]['id']
+                identifierid.append(getidentifierid)
+                
+            #print getidentifiers
+           
+            """
+            get all businesscard idnetifiers from businesscardidentifiers table
+            
+            """
+            
+            getbusinesscardidentifiers = BusinessCardIdentifier.objects.filter(identifier_id__in = identifierid).values()
+            totalbusinesscardidentifiers =  getbusinesscardidentifiers.count()
+            
+            businesscardid = []
+            businesscardidentifierid = []
+            for i in range(totalbusinesscardidentifiers):
+                getbusinesscardid = getbusinesscardidentifiers[i]['businesscard_id_id']
+                getbusinesscardidentifierid = getbusinesscardidentifiers[i]['identifier_id_id']
+                businesscardid.append(getbusinesscardid)
+                businesscardidentifierid.append(getbusinesscardidentifierid)
+           
+            print getbusinesscardidentifiers
+        
+            """
+            get all businesscard details which having identifiers from businesscard table
+            
+            """
+            getbusinesscardidentifiersdetails =dict()
+            getbusinesscardidentifiersdetails['businesscardidentifier'] = BusinessCardIdentifier.objects.filter(identifier_id__id__in=identifierid,businesscard_id__id__in = businesscardid).values()
+          
+            #print "getbusinesscardidentifiersdetails"
+            #print getbusinesscardidentifiersdetails
+            #print "----------------------------------------------------"
+           
+            #getallidentifiers = Identifier.objects.all().filter(user_id = user_id,id)
+            getallidentifierswithoutbusinesscardattached = dict()
+            getallidentifierswithoutbusinesscardattached['identifiers']= Identifier.objects.exclude(id__in =businesscardidentifierid).filter(user_id = user_id).values()
+            
+            #print "getallidentifierswithoutbusinesscardattached"
+            #print getallidentifierswithoutbusinesscardattached
+           
+            #getbusinesscarddetails = BusinessCard.objects.all().filter(id__in = businesscardid).values()
+            
+            z = getbusinesscardidentifiersdetails.copy()
+            z.update(getallidentifierswithoutbusinesscardattached)
+            
+            #print "z"
+            #print z
+                
+            if getbusinesscardidentifiersdetails:
+                return CustomeResponse({'msg':getidentifiers},status=status.HTTP_201_CREATED)
+            else:
+                return CustomeResponse({'msg':"No Data Found"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
+           
+           
+            
     def create(self,request):
        #print request.data
        serializer = BusinessCardIdentifierSerializer(data = request.data,context={'request':request})
        if serializer.is_valid():
            serializer.save()
+           BusinessCard.objects.filter(id= request.data['businesscard_id']).update(status= 1 )
            return CustomeResponse(serializer.data,status=status.HTTP_201_CREATED)
        else:
            return CustomeResponse(serializer.errors,status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
@@ -99,48 +196,6 @@ class BusinessCardMediaViewSet(viewsets.ModelViewSet):
         
     def update(self, request, pk=None):
          return CustomeResponse({'msg':"Update method does not allow"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
-
-
-#BusinessCard History
-
-class BusinessCardHistoryViewSet(viewsets.ModelViewSet):
-    queryset  = BusinessCardHistory.objects.all()
-    serializer_class = BusinessCardHistorySerializer
-    #authentication_classes = (ExpiringTokenAuthentication,)
-    #permission_classes = (IsAuthenticated,) 
-     #--------------Method: GET-----------------------------#   
-        
-    def list(self,request):
-            bid = self.request.QUERY_PARAMS.get('bid', None)
-            if bid:
-               self.queryset = self.queryset.filter(businesscard_id=bid).reverse()[:5].values()
-               
-               if self.queryset: 
-                    data = {}
-                    data['side_first'] = []
-                    data['side_second'] = []
-                    
-                    for items in self.queryset:
-                        data['side_first'].append({"bcard_json_data":items['bcard_json_data']['side_first']['basic_info']})
-                        data['side_second'].append({"bcard_json_data":items['bcard_json_data']['side_second']['contact_info']})
-                        print data
-            serializer = self.serializer_class(self.queryset,many=True)
-            if serializer: 
-                    return CustomeResponse(self.queryset,status=status.HTTP_200_OK)
-            else:
-               return CustomeResponse(serializer.errors,status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
-  
-    def create(self,request):
-        serializer = BusinessCardHistorySerializer(data = request.data,context={'request':request})
-        if serializer.is_valid():
-            serializer.save()
-            return CustomeResponse(serializer.data,status=status.HTTP_201_CREATED)
-        else:
-            return CustomeResponse(serializer.errors,status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
-    
-    def update(self, request, pk=None):
-         return CustomeResponse({'msg':"Update method does not allow"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
-       
 
 #BusinessCard Available Skills
 
@@ -510,4 +565,3 @@ class BusinessViewSet(viewsets.ModelViewSet):
 
     def destroy(self, request, pk=None):
          return CustomeResponse({'msg':'record not found'},status=status.HTTP_404_NOT_FOUND,validate_errors=1)
-
