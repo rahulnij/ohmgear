@@ -5,6 +5,7 @@ from django.conf import settings
 from simple_history.models import HistoricalRecords
 User = settings.AUTH_USER_MODEL
 from apps.vacationcard.models import VacationCard
+#from serializer import BusinessCardMediaSerializer
 # Create your models here.
 
 class BusinessCardTemplate(models.Model):
@@ -46,7 +47,15 @@ class BusinessCard(models.Model):
     def __unicode__(self):
         return'{"id":"%s","name":"%s","user_id":"%s"}' %(self.id,self.name,self.user_id.id)
   
-    
+    def bcard_image_frontend(self):
+        media = BusinessCardMedia.objects.filter(businesscard_id=self.id,status=1)
+        data =[]
+        #i = 0
+        for item in media:
+            print item
+            data.append({"img_url":str(settings.DOMAIN_NAME)+str(settings.MEDIA_URL)+str(item.img_url),"front_back":item.front_back})
+            #i = i + 1
+        return data    
 
 class BusinessCardIdentifier(models.Model):
     
@@ -66,7 +75,7 @@ class BusinessCardMedia(models.Model):
     class Meta:
         db_table = 'ohmgear_businesscards_media'
     user_id = models.ForeignKey(User,db_column="user_id")
-    businesscard_id = models.ForeignKey(BusinessCard,db_column='businesscard_id')
+    businesscard_id = models.ForeignKey(BusinessCard,db_column='businesscard_id',related_name='businesscard_media')
     img_url      = models.ImageField(_("Image Url"),upload_to='uploads/bcards_gallary/', max_length=254)
     created_date=models.DateTimeField(_("Created Date"),auto_now_add=True,auto_now=False)
     updated_date=models.DateTimeField(_("Updated Date"),auto_now_add=False,auto_now=True)

@@ -39,7 +39,6 @@ class CardSummary(APIView):
         bcard_id = self.request.QUERY_PARAMS.get('bcard_id', None)
         if bcard_id:
            queryset = self.queryset.filter(id=bcard_id) 
-           print queryset
            serializer = BusinessCardSummarySerializer(queryset,many=True)
            return CustomeResponse(serializer.data,status=status.HTTP_200_OK)
         else:
