@@ -89,7 +89,7 @@ class BusinessCardIdentifierViewSet(viewsets.ModelViewSet):
                 #print identifiers['id']
                 getidentifierid = identifiers['id']
                 identifierid.append(getidentifierid)
-<<<<<<< HEAD
+
                 tempdata    =   {}
                 tempdata['identifiers'] = identifiers
                 tempdata['identifiers']['identifier_id'] = identifiers['id']
@@ -98,11 +98,7 @@ class BusinessCardIdentifierViewSet(viewsets.ModelViewSet):
             #print identifierid
 
             
-            
-=======
 
-           
->>>>>>> 9a2b8dd80641a98732c45288c6938ca583e73dc3
             """
             get all businesscard idnetifiers from businesscardidentifiers table
             
@@ -111,10 +107,7 @@ class BusinessCardIdentifierViewSet(viewsets.ModelViewSet):
             
             getbusinesscardidentifiers = BusinessCardIdentifier.objects.all().filter(identifier_id__in = identifierid).values()
             totalbusinesscardidentifiers =  getbusinesscardidentifiers.count()
-<<<<<<< HEAD
-=======
 
->>>>>>> 9a2b8dd80641a98732c45288c6938ca583e73dc3
             businesscardid = []
             businesscardidentifierid = []
             for i in range(totalbusinesscardidentifiers):
@@ -122,14 +115,11 @@ class BusinessCardIdentifierViewSet(viewsets.ModelViewSet):
                 getbusinesscardidentifierid = getbusinesscardidentifiers[i]['identifier_id_id']
                 businesscardid.append(getbusinesscardid)
                 businesscardidentifierid.append(getbusinesscardidentifierid)
-<<<<<<< HEAD
+
            
            # print "getallbusinesscardidentifiers"
             #print getallbusinesscardidentifiers
-=======
 
->>>>>>> 9a2b8dd80641a98732c45288c6938ca583e73dc3
-        
             """
             get all businesscard details which having identifiers from businesscard table
             
@@ -143,13 +133,10 @@ class BusinessCardIdentifierViewSet(viewsets.ModelViewSet):
            
             #getallidentifiers = Identifier.objects.all().filter(user_id = user_id,id)
             getallidentifierswithoutbusinesscardattached = dict()
-<<<<<<< HEAD
-            getallidentifierswithoutbusinesscardattached['identifiers']= Identifier.objects.exclude(id__in =businesscardidentifierid).filter(user_id = user_id).values()
-=======
 
             getallidentifierswithoutbusinesscardattached['identifiers']= Identifier.objects.exclude(id__in =businesscardidentifierid).filter(user_id = user_id).values()
 
->>>>>>> 9a2b8dd80641a98732c45288c6938ca583e73dc3
+
             
             #print "getallidentifierswithoutbusinesscardattached"
             #print getallidentifierswithoutbusinesscardattached
@@ -163,17 +150,16 @@ class BusinessCardIdentifierViewSet(viewsets.ModelViewSet):
             #print "z"
             #print z
                 
-<<<<<<< HEAD
+
            # if getbusinesscardidentifiersdetails:
             if getallidentifiers:
                 return CustomeResponse({'msg':getbusinesscardidentifiers},status=status.HTTP_201_CREATED)
-=======
+
             if getbusinesscardidentifiersdetails:
 
                 return CustomeResponse({'msg':getbusinesscardidentifiersdetails},status=status.HTTP_201_CREATED)
 
 
->>>>>>> 9a2b8dd80641a98732c45288c6938ca583e73dc3
             else:
                 return CustomeResponse({'msg':"No Data Found"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
            
@@ -201,19 +187,24 @@ class BusinessCardIdentifierViewSet(viewsets.ModelViewSet):
            BusinessCardIdentifier.objects.filter(id=pk).update(status=0 )
            return CustomeResponse({'msg':"Business card has been unlinked with identifiers "},status=status.HTTP_200_OK)
        
-       
-    def delete(self, request, pk, format=None):
-        print "testdata"
+     
+    #-------Delete Identifiers it will first inactive the businesscard than delete the linking of identifier with businesscard in businesscard_identifier table
+     #than delete the identifeirs in identifier table ------------# 
+    def destroy(self, request, pk=None):
         businesscard_identifier = BusinessCardIdentifier.objects.filter(id=pk)
-        print businesscard_identifier
+
         if businesscard_identifier:
-            print "test"
-            #business_card.delete()   
-        #snippet = self.get_object(pk)
-        #print delete
-        #snippet.delete()
-        return Response(status=status.HTTP_200_OK)
-        
+            businesscard_id = businesscard_identifier[0].businesscard_id.id
+            identifier_id   = businesscard_identifier[0].identifier_id_id
+            BusinessCard.objects.filter(id=businesscard_id).update(status=0 )
+            Identifier.objects.filter(id=identifier_id).delete()
+            businesscard_identifier.delete()   
+            return CustomeResponse({'msg':"Business card has been Inactive and identifiers has been deleted "},status=status.HTTP_200_OK)
+        else:
+             return CustomeResponse({'msg':"Businesscard Identifier Id not found"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
+                            
+            
+    
          
 # BusinessCard Gallery 
 class BusinessCardMediaViewSet(viewsets.ModelViewSet):
