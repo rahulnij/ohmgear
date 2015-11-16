@@ -1,36 +1,10 @@
 from rest_framework import  serializers
 from models import BusinessCard,BusinessCardIdentifier,BusinessCardMedia ,BusinessCardSkillAvailable,BusinessCardAddSkill
 from apps.contacts.serializer import ContactsSerializerWithJson
+from apps.identifiers.serializer import IdentifierSerializer
 # Serializers define the API representation.
 
-  
-class BusinessCardIdentifierSerializer(serializers.ModelSerializer):
    
-    class Meta:
-        model = BusinessCardIdentifier
-        fields = ('id','identifier_id','businesscard_id','status')
-          
-    def validate(self, attrs):
-        #print "dataattaat"
-        msg = {}
-        value =attrs
-        businesscardid =  value['businesscard_id']
-        businesscardid = businesscardid.id
-        
-        businesscardidentifierdata =     BusinessCardIdentifier.objects.filter(businesscard_id=businesscardid)
-        if not businesscardidentifierdata:
-            pass
-        else:
-            totalbusinesscardrecord =  businesscardidentifierdata.count()
-        
-            for i in range(totalbusinesscardrecord):
-                identifierstatus =  businesscardidentifierdata[i].status
-                if(identifierstatus == 1):
-                    raise serializers.ValidationError("Businesscard can have 1 identifier only")
-        
-        return attrs  
-    
-    
 class BusinessCardAddSkillSerializer(serializers.ModelSerializer):
     
     class Meta:
@@ -95,3 +69,29 @@ class BusinessCardSummarySerializer(serializers.HyperlinkedModelSerializer):
         )        
   
 
+class BusinessCardIdentifierSerializer(serializers.ModelSerializer):
+    #identifier_link_business = IdentifierSerializer(many=True,read_only=True)
+   
+    class Meta:
+        model = BusinessCardIdentifier
+        fields = ('id','identifier_id','businesscard_id','status')
+          
+    def validate(self, attrs):
+        #print "dataattaat"
+        msg = {}
+        value =attrs
+        businesscardid =  value['businesscard_id']
+        businesscardid = businesscardid.id
+        
+        businesscardidentifierdata =     BusinessCardIdentifier.objects.filter(businesscard_id=businesscardid)
+        if not businesscardidentifierdata:
+            pass
+        else:
+            totalbusinesscardrecord =  businesscardidentifierdata.count()
+        
+            for i in range(totalbusinesscardrecord):
+                identifierstatus =  businesscardidentifierdata[i].status
+                if(identifierstatus == 1):
+                    raise serializers.ValidationError("Businesscard can have 1 identifier only")
+        
+        return attrs 
