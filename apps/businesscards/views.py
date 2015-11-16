@@ -223,7 +223,7 @@ class BusinessCardHistoryViewSet(viewsets.ModelViewSet):
                     for items in self.queryset:
                         data['side_first'].append({"bcard_json_data":items['bcard_json_data']['side_first']['basic_info']})
                         data['side_second'].append({"bcard_json_data":items['bcard_json_data']['side_second']['contact_info']})
-                        print data
+                        #print data
             serializer = self.serializer_class(self.queryset,many=True)
             if serializer: 
                     return CustomeResponse(self.queryset,status=status.HTTP_200_OK)

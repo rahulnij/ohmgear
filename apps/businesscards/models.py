@@ -43,7 +43,7 @@ class BusinessCard(models.Model):
     business_identifier = models.ManyToManyField(Identifier, through = 'BusinessCardIdentifier',related_name='business_identifier')
     business_vacation = models.ManyToManyField(VacationCard, through = 'BusinessCardVacation',related_name='business_vacation')
     
-    history = HistoricalRecords()
+    #history = HistoricalRecords()
     
     def __unicode__(self):
         return'{"id":"%s","name":"%s","user_id":"%s"}' %(self.id,self.name,self.user_id.id)
@@ -67,7 +67,7 @@ class BusinessCardIdentifier(models.Model):
     status      = models.IntegerField(_("Status"),default=1)
     created_date=models.DateTimeField(_("Created Date"),auto_now_add=True,auto_now=False)
     updated_date=models.DateTimeField(_("Updated Date"),auto_now_add=False,auto_now=True)
-    history = HistoricalRecords()
+    #history = HistoricalRecords()
     
     def __unicode__(self):
         return'{"id:"%s","businesscard_id":"%s","identifier_id":"%s","status":"%s"}' %(self.id,self.businesscard_id,self.identifier_id,self.status)
@@ -84,7 +84,7 @@ class BusinessCardMedia(models.Model):
     front_back      = models.IntegerField(_("Front Back"),default=1) # 1=Front ,2=Back
     position      = models.IntegerField(_("Position"),default=1) # 1=Horizontal ,2=Vertical
     status      = models.IntegerField(_("Status"),default=0)
-    history = HistoricalRecords()
+    #history = HistoricalRecords()
     
     def __unicode__(self):
         return '{"id:"%s","businesscard_id":"%s","user_id":"%s","status":"%s","front_back":"%s","img_url":"%s"}' %(self.id,self.businesscard_id,self.user_id,self.status,self.front_back,self.img_url)
@@ -103,18 +103,18 @@ class BusinessCardSkillAvailable(models.Model):
     
 class BusinessCardHistory(models.Model):
     
-    class Meta:
-        db_table = 'contacts_historicalcontacts'
-    user_id = models.ForeignKey(User,db_column="user_id")
-    bcard_json_data = JsonField(null=True)
-    businesscard= models.ForeignKey(BusinessCard,db_column='businesscard_id')
-    created_date=models.DateTimeField(_("Created Date"),auto_now_add=True,auto_now=False)
-    updated_date=models.DateTimeField(_("Updated Date"),auto_now_add=False,auto_now=True)
-    template_id = models.IntegerField(_("Template Id"),null=True)
-    history_id = models.IntegerField(_("History Id"),null=True)
-    history_date = models.DateTimeField(_("History Date"),auto_now_add=False,auto_now=True)
-    history_user_id =  models.IntegerField(_("History User Id"),null=True)
-    history_type = models.IntegerField(_("History Type"),null=True)
+    #class Meta:
+        #db_table = 'contacts_historicalcontacts'
+    #user_id = models.ForeignKey(User,db_column="user_id")
+    #bcard_json_data = JsonField(null=True)
+    #businesscard= models.ForeignKey(BusinessCard,db_column='businesscard_id')
+    #created_date=models.DateTimeField(_("Created Date"),auto_now_add=True,auto_now=False)
+    #updated_date=models.DateTimeField(_("Updated Date"),auto_now_add=False,auto_now=True)
+    #template_id = models.IntegerField(_("Template Id"),null=True)
+    #history_id = models.IntegerField(_("History Id"),null=True)
+    #history_date = models.DateTimeField(_("History Date"),auto_now_add=False,auto_now=True)
+    #history_user_id =  models.IntegerField(_("History User Id"),null=True)
+    #history_type = models.IntegerField(_("History Type"),null=True)
     
     def __unicode__(self):
         return'{"id:"%s","user_id":"%s","bcard_json_data":"%s"}'%(self.id,self.user_id,self.bcard_json_data)
@@ -131,7 +131,7 @@ class BusinessCardAddSkill(models.Model):
     updated_date=models.DateTimeField(_("Updated Date"),auto_now_add=False,auto_now=True)
     skill_name = models.CharField(_("Skill Name"),null=True,max_length=50)
     status      = models.IntegerField(_("Status"),default=1)
-    history = HistoricalRecords()
+    #history = HistoricalRecords()
     
     def __unicode__(self):
         return'{"id:"%s","businesscard_id":"%s","skillname":"%s"}' %(self.id,self.businesscard_id,self.skill_name)
