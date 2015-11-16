@@ -89,7 +89,6 @@ class BusinessCardIdentifierViewSet(viewsets.ModelViewSet):
                 #print identifiers['id']
                 getidentifierid = identifiers['id']
                 identifierid.append(getidentifierid)
-
                 tempdata    =   {}
                 tempdata['identifiers'] = identifiers
                 tempdata['identifiers']['identifier_id'] = identifiers['id']
@@ -97,7 +96,7 @@ class BusinessCardIdentifierViewSet(viewsets.ModelViewSet):
             #print tempcontainer
             #print identifierid
 
-            
+
 
             """
             get all businesscard idnetifiers from businesscardidentifiers table
@@ -116,9 +115,8 @@ class BusinessCardIdentifierViewSet(viewsets.ModelViewSet):
                 businesscardid.append(getbusinesscardid)
                 businesscardidentifierid.append(getbusinesscardidentifierid)
 
-           
-           # print "getallbusinesscardidentifiers"
-            #print getallbusinesscardidentifiers
+
+        
 
             """
             get all businesscard details which having identifiers from businesscard table
@@ -151,14 +149,12 @@ class BusinessCardIdentifierViewSet(viewsets.ModelViewSet):
             #print z
                 
 
-           # if getbusinesscardidentifiersdetails:
-            if getallidentifiers:
-                return CustomeResponse({'msg':getbusinesscardidentifiers},status=status.HTTP_201_CREATED)
 
+           # if getbusinesscardidentifiersdetails:
+        
             if getbusinesscardidentifiersdetails:
 
                 return CustomeResponse({'msg':getbusinesscardidentifiersdetails},status=status.HTTP_201_CREATED)
-
 
             else:
                 return CustomeResponse({'msg':"No Data Found"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
@@ -266,7 +262,7 @@ class BusinessCardHistoryViewSet(viewsets.ModelViewSet):
     def list(self,request):
             bid = self.request.QUERY_PARAMS.get('bid', None)
             if bid:
-               self.queryset = self.queryset.filter(businesscard_id=bid).reverse()[:5].values()
+               self.queryset = self.queryset.filter(businesscard_id=bid).order_by('id').values()
                
                if self.queryset: 
                     data = {}
