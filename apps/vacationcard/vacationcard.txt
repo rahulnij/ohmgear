@@ -1,0 +1,28 @@
+There are 3 tables used for Vacation
+
+1 VacationCard : For creating any vacation
+2 VacationTrip : For adding stops in a vacation
+3 businesscardvacation : For attach vacationcard to businesscard
+
+
+Steps :
+1 url : http://localhost:8000/api/vacationcard/
+vacation : [{"country":"ankurgumber","contact_no":"8800362589","state":"Haryana","city": "gzb","notes":"hsfdjdfjfsed","trip_start_date":"2015-08-10","trip_end_date":"2015-11-28","user_id":2},{"country":"ankurgumber","contact_no":"8800362589","state":"Haryana","notes":"hsfdjdfjfsed","trip_start_date":"2015-08-10","trip_end_date":"2015-11-28","city": "gzb","user_id":2}]
+user_id   : 2
+
+
+user_id will add in first Vacation Card table  than vacation info will add in vacation trip table along with VacationCard_id of Vacation Card table
+
+
+2 url : http://localhost:8000/api/businesscardvacation/
+ businesscard_id : 
+ vacationcard_id
+ user_id :
+ 
+ In this we are attaching vaction card with single or  mulitple businesscard
+ 
+3 url : http://localhost:8000/api/vacationcard/?vacationcard_id=2
+
+In this by user_id Vacationcard info will be fetched having details of vacationstart_date ,vacationend_date,and how many business card attached to this vacation. 
+ 
+

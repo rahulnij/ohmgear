@@ -33,21 +33,43 @@ urlpatterns =patterns(
     url(r'^api/forgot_password/(?P<reset_password_key>\w+)/$','apps.users.views.useractivity',name='forgot_password'),
 )
 from apps.users.signals import *
+import apps.businesscards.views as  businesscards_views
 #-------------- End ---------------------------------------------#
 
 #-------------- Business app url registration ----------------------#
-import apps.businesscards.views as  businesscards_views
 router.register(r'api/businesscard', businesscards_views.BusinessViewSet)
-#-------------- End ---------------------------------------------#
-
 #------------------BusinessCard Idnetifier-----------------------#
 import apps.businesscards.views as businesscardidentifier_views
 router.register(r'api/businesscardidentifier',businesscardidentifier_views.BusinessCardIdentifierViewSet)
-#----------------End---------------------------------------------#
+
+#-------------- Business card Media  ----------------------#
+router.register(r'api/businesscardmedia', businesscards_views.BusinessCardMediaViewSet)
+
+#-------------- Add Skills ----------------------#
+router.register(r'api/businesscardaddskill', businesscards_views.BusinessCardAddSkillViewSet)
+
+#-------------- Available Skills in the database  ----------------------#
+router.register(r'api/businesscardskillavailable', businesscards_views.BusinessCardSkillAvailableViewSet)
+
+#-------------- Business card Summary  ----------------------#
+#router.register(r'api/businesscardsummary', businesscards_views.CardSummary)
+urlpatterns += [
+    url(r'^api/businesscardsummary/$', businesscards_views.CardSummary.as_view()),    
+]
+
+#-------------- End ---------------------------------------------#
+
+#-------------- BusinessCard History  ----------------------#
+import apps.businesscards.views as  businesscards_views
+router.register(r'api/businesscardshistory', businesscards_views.BusinessCardHistoryViewSet)
+#-------------- End ---------------------------------------------#
+
 
 #-------------- Identifiers app url ----------------------#
 import apps.identifiers.views as  identifiers_views
 router.register(r'api/identifiers', identifiers_views.IdentifierViewSet)
+
+
 #-------------- End ---------------------------------------------#
 
 
@@ -55,7 +77,6 @@ router.register(r'api/identifiers', identifiers_views.IdentifierViewSet)
 import apps.notes.views as  notes_views
 router.register(r'api/notes', notes_views.NotesViewSet)
 #-------------- End ---------------------------------------------#
-
 
 #-------------- Contacts app url registration ----------------------#
 import apps.contacts.views as  contacts_views
@@ -67,10 +88,22 @@ urlpatterns += [
 urlpatterns += format_suffix_patterns(urlpatterns)
 #-------------- End ---------------------------------------------#
 
+
 #-------------- folders app url registration ---------------------------------#
 import apps.folders.views as folder_view
 router.register(r'api/folder',folder_view.FolderViewSet)
 #-------------- End: folders app ---------------------------------------------#
+
+
+#---------------Vacation Card app url-------------------------------#
+import apps.vacationcard.views as vacationcard_views
+router.register(r'api/vacationcard',vacationcard_views.VacationCardViewSet)
+#----------------Businesscard Vacation url ---------------------------#
+import apps.vacationcard.views as businesscardvacation_views
+router.register(r'api/businesscardvacation',businesscardvacation_views.BusinessCardVacationViewSet)
+#-----------------End-------------------------------------------------#
+
+
 
 urlpatterns += patterns('',
     url(r'^admin/', include(admin.site.urls)),
@@ -86,5 +119,9 @@ from django.conf import settings
 urlpatterns += patterns('',
         (r'^media/(?P<path>.*)$', 'django.views.static.serve', {'document_root': settings.MEDIA_ROOT, 'show_indexes': True}),
     )
+    
+#------------------------------------------------------------------------------------------------------ #
+
+
 #handler404 = 'ohmgear.custom_exception_handler.custom404'
 #handler500 = 'ohmgear.custom_exception_handler.custom404'

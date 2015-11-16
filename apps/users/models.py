@@ -159,7 +159,7 @@ class Profile(models.Model):
     user = models.OneToOneField(User,null=True)
     income_group = models.ForeignKey(IncomeGroup, null=True, blank=True)
     business_type = models.ForeignKey(BusinessType,null= True)
-    
+    profile_image = models.ImageField(_("Profile Image"),upload_to='uploads/profile_img/', max_length=254,blank=True,null=True)
     activation_key = models.CharField(max_length=40, blank=True)
     key_expires = models.DateTimeField(auto_now_add=True)
     #------------ field for forgot passoword ---------------------#

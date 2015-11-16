@@ -1,7 +1,9 @@
 from django.shortcuts import render
 from rest_framework import routers, serializers, viewsets
 from models import Identifier
+from apps.businesscards.models import BusinessCardIdentifier
 from serializer import IdentifierSerializer
+from apps.businesscards.serializer import BusinessCardIdentifierSerializer
 from ohmgear.functions import CustomeResponse
 from rest_framework.decorators import api_view
 import rest_framework.status as status
@@ -63,11 +65,12 @@ class IdentifierViewSet(viewsets.ModelViewSet):
          
          serializer =  IdentifierSerializer(data=request.DATA,context={'request': request})
          
+         #print businesscard_id
          #------ object value which can be change are mutable object value which cannot be change are immutable  -----------#
          mutable = request.POST._mutable
          request.POST._mutable = True
          request.DATA['identifierlastdate'] = str((datetime.date.today() + datetime.timedelta(3*365/12)).isoformat())
-        
+            
         
          if request.POST.get('identifiertype') == '1':
             request.POST['identifier'] =   CreateSystemIdentifier()
@@ -77,9 +80,8 @@ class IdentifierViewSet(viewsets.ModelViewSet):
          serializer =  IdentifierSerializer(data=request.DATA,context={'request': request,'msg':'not exist'})
          
          if serializer.is_valid():
-            serializer.save()  
-            return CustomeResponse(serializer.data,status=status.HTTP_201_CREATED)
-            
+            identifier_id = serializer.save()      
+            return CustomeResponse(serializer.data,status=status.HTTP_201_CREATED)        
          else:
             return CustomeResponse(serializer.errors,status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
     
