@@ -1,5 +1,5 @@
 from rest_framework import  serializers
-from models import BusinessCard,BusinessCardIdentifier,BusinessCardMedia ,BusinessCardSkillAvailable,BusinessCardAddSkill
+from models import BusinessCard,BusinessCardIdentifier,BusinessCardMedia ,BusinessCardSkillAvailable,BusinessCardAddSkill,BusinessCardHistory
 from apps.contacts.serializer import ContactsSerializerWithJson
 from apps.identifiers.serializer import IdentifierSerializer
 # Serializers define the API representation.
@@ -27,7 +27,12 @@ class BusinessCardSkillAvailableSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = BusinessCardSkillAvailable  
-
+        
+class BusinessCardHistorySerializer(serializers.ModelSerializer):
+    
+    class Meta:
+        model = BusinessCardHistory 
+        #fields = ('user_id','businesscard_id','id')
 
 #----------------- Main Business Card ----------------------------#
 class BusinessCardSerializer(serializers.ModelSerializer):
@@ -36,10 +41,7 @@ class BusinessCardSerializer(serializers.ModelSerializer):
     #identifier_new = serializers.ReadOnlyField(source='*')
     #------------------------ End -----------------------------------------------------------#
     class Meta:
-        model = BusinessCard,
-        read_only_fields = (
-        'bcard_image_frontend',
-        ),
+        model = BusinessCard
         fields = (
             'id',
             'name',
@@ -57,6 +59,7 @@ class BusinessCardSummarySerializer(serializers.HyperlinkedModelSerializer):
     businesscard_skills = BusinessCardAddSkillSerializerReference(many=True,read_only=True)
     business_identifier = IdentifierSerializer(many=True,read_only=True)
     business_vacation = VacationCardSerializer(many=True,read_only=True)
+    business_media = serializers.CharField(source='bcard_image_frontend')
     #------------------------ End -----------------------------------------------------------#
     class Meta:
         model = BusinessCard
@@ -66,6 +69,7 @@ class BusinessCardSummarySerializer(serializers.HyperlinkedModelSerializer):
             'businesscard_skills',
             'business_identifier',
             'business_vacation',
+            'business_media',
         )        
   
 

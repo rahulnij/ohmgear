@@ -4,11 +4,9 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework import viewsets
 import rest_framework.status as status
 
-from models import BusinessCard,BusinessCardTemplate,BusinessCardIdentifier,Identifier,BusinessCardMedia,\
-BusinessCardSkillAvailable,BusinessCardAddSkill
+from models import BusinessCard,BusinessCardTemplate,BusinessCardIdentifier,Identifier,BusinessCardMedia,BusinessCardSkillAvailable,BusinessCardAddSkill,BusinessCardHistory
 
-from serializer import BusinessCardSerializer,BusinessCardIdentifierSerializer,BusinessCardMediaSerializer\
-,BusinessCardSkillAvailableSerializer,BusinessCardAddSkillSerializer,BusinessCardSummarySerializer
+from serializer import BusinessCardSerializer,BusinessCardIdentifierSerializer,BusinessCardMediaSerializer,BusinessCardSkillAvailableSerializer,BusinessCardAddSkillSerializer,BusinessCardSummarySerializer,BusinessCardHistorySerializer
 
 from apps.contacts.serializer import ContactsSerializer
 from apps.contacts.models import Contacts
@@ -39,7 +37,7 @@ class CardSummary(APIView):
         bcard_id = self.request.QUERY_PARAMS.get('bcard_id', None)
         if bcard_id:
            queryset = self.queryset.filter(id=bcard_id) 
-           print queryset
+
            serializer = BusinessCardSummarySerializer(queryset,many=True)
            return CustomeResponse(serializer.data,status=status.HTTP_200_OK)
         else:
@@ -65,7 +63,11 @@ class BusinessCardIdentifierViewSet(viewsets.ModelViewSet):
            # print user_id
             
             """
+
+
             get all identifiers from identifiers table
+
+
             
             """
             getallidentifiers = Identifier.objects.all().filter(user_id = user_id)
@@ -87,6 +89,7 @@ class BusinessCardIdentifierViewSet(viewsets.ModelViewSet):
                 #print identifiers['id']
                 getidentifierid = identifiers['id']
                 identifierid.append(getidentifierid)
+<<<<<<< HEAD
                 tempdata    =   {}
                 tempdata['identifiers'] = identifiers
                 tempdata['identifiers']['identifier_id'] = identifiers['id']
@@ -96,6 +99,10 @@ class BusinessCardIdentifierViewSet(viewsets.ModelViewSet):
 
             
             
+=======
+
+           
+>>>>>>> 9a2b8dd80641a98732c45288c6938ca583e73dc3
             """
             get all businesscard idnetifiers from businesscardidentifiers table
             
@@ -104,6 +111,10 @@ class BusinessCardIdentifierViewSet(viewsets.ModelViewSet):
             
             getbusinesscardidentifiers = BusinessCardIdentifier.objects.all().filter(identifier_id__in = identifierid).values()
             totalbusinesscardidentifiers =  getbusinesscardidentifiers.count()
+<<<<<<< HEAD
+=======
+
+>>>>>>> 9a2b8dd80641a98732c45288c6938ca583e73dc3
             businesscardid = []
             businesscardidentifierid = []
             for i in range(totalbusinesscardidentifiers):
@@ -111,9 +122,13 @@ class BusinessCardIdentifierViewSet(viewsets.ModelViewSet):
                 getbusinesscardidentifierid = getbusinesscardidentifiers[i]['identifier_id_id']
                 businesscardid.append(getbusinesscardid)
                 businesscardidentifierid.append(getbusinesscardidentifierid)
+<<<<<<< HEAD
            
            # print "getallbusinesscardidentifiers"
             #print getallbusinesscardidentifiers
+=======
+
+>>>>>>> 9a2b8dd80641a98732c45288c6938ca583e73dc3
         
             """
             get all businesscard details which having identifiers from businesscard table
@@ -128,7 +143,13 @@ class BusinessCardIdentifierViewSet(viewsets.ModelViewSet):
            
             #getallidentifiers = Identifier.objects.all().filter(user_id = user_id,id)
             getallidentifierswithoutbusinesscardattached = dict()
+<<<<<<< HEAD
             getallidentifierswithoutbusinesscardattached['identifiers']= Identifier.objects.exclude(id__in =businesscardidentifierid).filter(user_id = user_id).values()
+=======
+
+            getallidentifierswithoutbusinesscardattached['identifiers']= Identifier.objects.exclude(id__in =businesscardidentifierid).filter(user_id = user_id).values()
+
+>>>>>>> 9a2b8dd80641a98732c45288c6938ca583e73dc3
             
             #print "getallidentifierswithoutbusinesscardattached"
             #print getallidentifierswithoutbusinesscardattached
@@ -142,9 +163,17 @@ class BusinessCardIdentifierViewSet(viewsets.ModelViewSet):
             #print "z"
             #print z
                 
+<<<<<<< HEAD
            # if getbusinesscardidentifiersdetails:
             if getallidentifiers:
                 return CustomeResponse({'msg':getbusinesscardidentifiers},status=status.HTTP_201_CREATED)
+=======
+            if getbusinesscardidentifiersdetails:
+
+                return CustomeResponse({'msg':getbusinesscardidentifiersdetails},status=status.HTTP_201_CREATED)
+
+
+>>>>>>> 9a2b8dd80641a98732c45288c6938ca583e73dc3
             else:
                 return CustomeResponse({'msg':"No Data Found"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
            
@@ -230,6 +259,47 @@ class BusinessCardMediaViewSet(viewsets.ModelViewSet):
             else:
               return CustomeResponse(serializer.errors,status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
         
+    def update(self, request, pk=None):
+         return CustomeResponse({'msg':"Update method does not allow"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
+
+
+#BusinessCard History
+
+class BusinessCardHistoryViewSet(viewsets.ModelViewSet):
+    queryset  = BusinessCardHistory.objects.all()
+    serializer_class = BusinessCardHistorySerializer
+    #authentication_classes = (ExpiringTokenAuthentication,)
+    #permission_classes = (IsAuthenticated,) 
+     #--------------Method: GET-----------------------------#   
+        
+    def list(self,request):
+            bid = self.request.QUERY_PARAMS.get('bid', None)
+            if bid:
+               self.queryset = self.queryset.filter(businesscard_id=bid).reverse()[:5].values()
+               
+               if self.queryset: 
+                    data = {}
+                    data['side_first'] = []
+                    data['side_second'] = []
+                    
+                    for items in self.queryset:
+                        data['side_first'].append({"bcard_json_data":items['bcard_json_data']['side_first']['basic_info']})
+                        data['side_second'].append({"bcard_json_data":items['bcard_json_data']['side_second']['contact_info']})
+                        #print data
+            serializer = self.serializer_class(self.queryset,many=True)
+            if serializer: 
+                    return CustomeResponse(self.queryset,status=status.HTTP_200_OK)
+            else:
+               return CustomeResponse(serializer.errors,status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
+  
+    def create(self,request):
+        serializer = BusinessCardHistorySerializer(data = request.data,context={'request':request})
+        if serializer.is_valid():
+            serializer.save()
+            return CustomeResponse(serializer.data,status=status.HTTP_201_CREATED)
+        else:
+            return CustomeResponse(serializer.errors,status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
+    
     def update(self, request, pk=None):
          return CustomeResponse({'msg':"Update method does not allow"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
 
@@ -601,4 +671,3 @@ class BusinessViewSet(viewsets.ModelViewSet):
 
     def destroy(self, request, pk=None):
          return CustomeResponse({'msg':'record not found'},status=status.HTTP_404_NOT_FOUND,validate_errors=1)
-
