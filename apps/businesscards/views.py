@@ -89,7 +89,6 @@ class BusinessCardIdentifierViewSet(viewsets.ModelViewSet):
                 #print identifiers['id']
                 getidentifierid = identifiers['id']
                 identifierid.append(getidentifierid)
-<<<<<<< HEAD
                 tempdata    =   {}
                 tempdata['identifiers'] = identifiers
                 tempdata['identifiers']['identifier_id'] = identifiers['id']
@@ -97,12 +96,7 @@ class BusinessCardIdentifierViewSet(viewsets.ModelViewSet):
             #print tempcontainer
             #print identifierid
 
-            
-            
-=======
 
-           
->>>>>>> 9a2b8dd80641a98732c45288c6938ca583e73dc3
             """
             get all businesscard idnetifiers from businesscardidentifiers table
             
@@ -111,10 +105,7 @@ class BusinessCardIdentifierViewSet(viewsets.ModelViewSet):
             
             getbusinesscardidentifiers = BusinessCardIdentifier.objects.all().filter(identifier_id__in = identifierid).values()
             totalbusinesscardidentifiers =  getbusinesscardidentifiers.count()
-<<<<<<< HEAD
-=======
 
->>>>>>> 9a2b8dd80641a98732c45288c6938ca583e73dc3
             businesscardid = []
             businesscardidentifierid = []
             for i in range(totalbusinesscardidentifiers):
@@ -122,13 +113,7 @@ class BusinessCardIdentifierViewSet(viewsets.ModelViewSet):
                 getbusinesscardidentifierid = getbusinesscardidentifiers[i]['identifier_id_id']
                 businesscardid.append(getbusinesscardid)
                 businesscardidentifierid.append(getbusinesscardidentifierid)
-<<<<<<< HEAD
-           
-           # print "getallbusinesscardidentifiers"
-            #print getallbusinesscardidentifiers
-=======
 
->>>>>>> 9a2b8dd80641a98732c45288c6938ca583e73dc3
         
             """
             get all businesscard details which having identifiers from businesscard table
@@ -143,13 +128,9 @@ class BusinessCardIdentifierViewSet(viewsets.ModelViewSet):
            
             #getallidentifiers = Identifier.objects.all().filter(user_id = user_id,id)
             getallidentifierswithoutbusinesscardattached = dict()
-<<<<<<< HEAD
-            getallidentifierswithoutbusinesscardattached['identifiers']= Identifier.objects.exclude(id__in =businesscardidentifierid).filter(user_id = user_id).values()
-=======
 
             getallidentifierswithoutbusinesscardattached['identifiers']= Identifier.objects.exclude(id__in =businesscardidentifierid).filter(user_id = user_id).values()
 
->>>>>>> 9a2b8dd80641a98732c45288c6938ca583e73dc3
             
             #print "getallidentifierswithoutbusinesscardattached"
             #print getallidentifierswithoutbusinesscardattached
@@ -163,17 +144,11 @@ class BusinessCardIdentifierViewSet(viewsets.ModelViewSet):
             #print "z"
             #print z
                 
-<<<<<<< HEAD
-           # if getbusinesscardidentifiersdetails:
-            if getallidentifiers:
-                return CustomeResponse({'msg':getbusinesscardidentifiers},status=status.HTTP_201_CREATED)
-=======
+
             if getbusinesscardidentifiersdetails:
 
                 return CustomeResponse({'msg':getbusinesscardidentifiersdetails},status=status.HTTP_201_CREATED)
 
-
->>>>>>> 9a2b8dd80641a98732c45288c6938ca583e73dc3
             else:
                 return CustomeResponse({'msg':"No Data Found"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
            
@@ -275,7 +250,7 @@ class BusinessCardHistoryViewSet(viewsets.ModelViewSet):
     def list(self,request):
             bid = self.request.QUERY_PARAMS.get('bid', None)
             if bid:
-               self.queryset = self.queryset.filter(businesscard_id=bid).reverse()[:5].values()
+               self.queryset = self.queryset.filter(businesscard_id=bid).order_by('id').values()
                
                if self.queryset: 
                     data = {}
