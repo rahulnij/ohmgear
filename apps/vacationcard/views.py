@@ -105,9 +105,12 @@ class BusinessCardVacationViewSet(viewsets.ModelViewSet):
         try:
             businesscard_id =  request.data['businesscard_id']
             bcard_id = json.loads(request.DATA['businesscard_id'])
+            bcard_id =  bcard_id['data']
+            request.DATA['businesscard_id'] = bcard_id[0]  
         except:
             return CustomeResponse({'status':'fail','msg':'Please provide businesscard_id'},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
-        request.DATA['businesscard_id'] = bcard_id[0]  
+
+
         
         if serializer.is_valid(): 
             vacationcard_id =  request.data['vacationcard_id'] 

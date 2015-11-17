@@ -18,7 +18,7 @@ class Contacts(models.Model):
     template_id = models.ForeignKey(BusinessCardTemplate,db_column="template_id")
     user_id = models.ForeignKey(User,db_column="user_id")
     created_date=models.DateTimeField(_("Created Date"),auto_now_add=True,auto_now=False)
-    updated_date=models.DateTimeField(_("Updated Date"),auto_now_add=False,auto_now=True)
+    updated_date=models.DateField(_("Updated Date"),auto_now_add=False,auto_now=True)
     history = HistoricalRecords()
     
     def __unicode__(self):
