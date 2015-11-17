@@ -1,14 +1,22 @@
 from django.shortcuts import get_object_or_404
 from rest_framework import viewsets
-from apps.folders.models import Folder
-from apps.folders.serializer import FolderSerializer
 from rest_framework.response import Response
 import rest_framework.status as status
+
+#Folder modules
+from apps.folders.models import Folder
+from apps.folders.serializer import FolderSerializer
+
+#Authentication modules
+from rest_framework.permissions import IsAuthenticated
+from ohmgear.token_authentication import ExpiringTokenAuthentication
 
 # create user and admin viewset or model
 
 
 class FolderViewSet(viewsets.ViewSet):
+	authentication_classes = (ExpiringTokenAuthentication,)
+	permission_classes = (IsAuthenticated,)
 	queryset = Folder.objects.all()
 
 	def create(self, request):
