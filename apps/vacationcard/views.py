@@ -23,13 +23,11 @@ class VacationCardViewSet(viewsets.ModelViewSet):
     def list(self,request):
         
         if request.method == 'GET':
+           #-----------get all vacations of the user and no of business card attached to it------# 
            # user = user_profile.user
             user_id =  request.user.id
             #print user_id
             #user_id =   self.request.QUERY_PARAMS.get('user_id',None)
-            
-            
-            
             Uservacationcardinfo = VacationCard.objects.filter(user_id=user_id).values()
             totalvacationcard =  Uservacationcardinfo.count()
             uservacationcard = []
@@ -80,7 +78,6 @@ class VacationCardViewSet(viewsets.ModelViewSet):
                         #stops += data
                         tempdata["x"]['vacationcard_id'] = vacationid.id
                         #tempdata['vacationcard_id'] = vacationid.id
-                        
                         tempContainer.append(tempdata['x'])
                     
                      
@@ -102,7 +99,7 @@ class BusinessCardVacationViewSet(viewsets.ModelViewSet):
     serializer_class    =   BusinessCardVacationSerializer
     
     def list(self,request):
-        
+        #-------------view vacationinfo ------------#
         vacation_id = self.request.QUERY_PARAMS.get('vacationcard_id',None)
         uservacationvacationinfo = dict()
         uservacationvacationinfo['trips'] = VacationTrip.objects.filter(vacationcard_id=vacation_id).values()
@@ -122,7 +119,7 @@ class BusinessCardVacationViewSet(viewsets.ModelViewSet):
  
         
         
-        return CustomeResponse({'msg':uservacationinfo},status=status.HTTP_201_CREATED)
+        return CustomeResponse(uservacationinfo,status=status.HTTP_201_CREATED)
     
     def create(self,request):
         
