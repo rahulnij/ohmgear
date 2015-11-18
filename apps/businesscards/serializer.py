@@ -1,5 +1,5 @@
 from rest_framework import  serializers
-from models import BusinessCard,BusinessCardIdentifier,BusinessCardMedia ,BusinessCardSkillAvailable,BusinessCardAddSkill,BusinessCardHistory
+from models import BusinessCard,BusinessCardIdentifier,BusinessCardMedia ,BusinessCardSkillAvailable,BusinessCardAddSkill
 from apps.contacts.serializer import ContactsSerializerWithJson
 from apps.identifiers.serializer import IdentifierSerializer
 # Serializers define the API representation.
@@ -28,12 +28,6 @@ class BusinessCardSkillAvailableSerializer(serializers.ModelSerializer):
     class Meta:
         model = BusinessCardSkillAvailable  
         
-class BusinessCardHistorySerializer(serializers.ModelSerializer):
-    
-    class Meta:
-        model = BusinessCardHistory 
-        #fields = ('user_id','businesscard_id','id')
-
 #----------------- Main Business Card ----------------------------#
 class BusinessCardSerializer(serializers.ModelSerializer):
 
