@@ -92,6 +92,16 @@ class VacationCardViewSet(viewsets.ModelViewSet):
          return CustomeResponse(VacationCardserializer.errors,status=status.HTTP_401_UNAUTHORIZED,validate_errors=1)
      
      
+    def destroy(self,request,pk=None):
+        #-------For delete first have to call viewvaction API than will send trip id to delete trip--#
+        #------------Delete a single stop in Vacation-----#
+        vacation_stop = VacationTrip.objects.filter(id=pk)
+        
+        if vacation_stop:
+            vacation_stop.delete()
+            return CustomeResponse({'msg':'Trip has been deleted'},status=status.HTTP_200_OK)
+        else:
+            return CustomeResponse({'msg':'Trip_id not found'},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
 
 class BusinessCardVacationViewSet(viewsets.ModelViewSet):
     
@@ -154,7 +164,27 @@ class BusinessCardVacationViewSet(viewsets.ModelViewSet):
                 return CustomeResponse(businessvacationcardserializer.errors,status=status.HTTP_201_CREATED,validate_errors=1)
         else:
                 return CustomeResponse(serializer.errors,status=status.HTTP_201_CREATED,validate_errors=1)
-
+            
+    
+    def destroy(self,request,pk=None):
+        #------Delete Vacation all trips and businessacrdvaction related to vaction----#
+        vacationcard_info = VacationCard.objects.filter(id=pk)
+        if vacationcard_info:
+            vacation_id =  vacationcard_info[0].id
+            vacationtrip_info = VacationTrip.objects.filter(vacationcard_id=vacation_id)
+            businesscardvacation_info = BusinessCardVacation.objects.filter(vacationcard_id=vacation_id)
+            vacationcard_info.delete()
+            vacationtrip_info.delete()
+            if businesscardvacation_info : 
+                businesscardvacation_info.delete()
+                
+            return CustomeResponse({'msg':'Vacation card deleted successfully'},status=status.HTTP_201_CREATED)
+    
+        else:
+            return CustomeResponse({'msg':'Vacationcard_id not found'},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
+        
+        #print vacationcard_info[0][id]
+        #vacationtrip_info = VacationTrip.objects.filter(vacationcard_id)
         
         
         
