@@ -9,18 +9,25 @@ from rest_framework.permissions import IsAuthenticated
 import json
 import itertools
 from django.db.models import Count,Min, Max
-
-from apps.businesscards.models import BusinessCardVacation
+from apps.businesscards.models import BusinessCardVacation,BusinessCard
+from ohmgear.token_authentication import ExpiringTokenAuthentication
+from rest_framework.permissions import IsAuthenticated
 
 class VacationCardViewSet(viewsets.ModelViewSet):
     queryset = VacationTrip.objects.select_related().all()
     #serializer_class = VacationTripSerializer
     serializer_class = VacationCardSerializer
+    authentication_classes = (ExpiringTokenAuthentication,)
+    permission_classes = (IsAuthenticated,) 
     #--------------Method: GET-----------------------------#       
     def list(self,request):
+        
         if request.method == 'GET':
+           #-----------get all vacations of the user and no of business card attached to it------# 
            # user = user_profile.user
-            user_id =   self.request.QUERY_PARAMS.get('user_id',None)
+            user_id =  request.user.id
+            #print user_id
+            #user_id =   self.request.QUERY_PARAMS.get('user_id',None)
             Uservacationcardinfo = VacationCard.objects.filter(user_id=user_id).values()
             totalvacationcard =  Uservacationcardinfo.count()
             uservacationcard = []
@@ -28,9 +35,9 @@ class VacationCardViewSet(viewsets.ModelViewSet):
                 
                 vacationcardid =   Uservacationcardinfo[i]['id']
                 uservacationcard.append(vacationcardid)
-            userbusinessvacationcardinfo = BusinessCardVacation.objects.values('vacationcard_id').annotate(totalnoofbusinesscard=Count('businesscard_id')).filter(vacationcard_id__in = uservacationcard)
+            userbusinessvacationcardinfo = BusinessCardVacation.objects.values('vacationcard_id','businesscard_id').annotate(totalnoofbusinesscard=Count('businesscard_id')).filter(vacationcard_id__in = uservacationcard)
 
-            uservacationtripinfo = VacationTrip.objects.values('vacationcard_id','country','state').annotate(trip_start_date=Min('trip_start_date'),trip_end_date = Max('trip_end_date')).filter(vacationcard_id__in = uservacationcard)
+            uservacationtripinfo = VacationTrip.objects.values('vacationcard_id','country','state','contact_no','notes').annotate(trip_start_date=Min('trip_start_date'),trip_end_date = Max('trip_end_date')).filter(vacationcard_id__in = uservacationcard)
                 
                 
             lst = sorted(itertools.chain(userbusinessvacationcardinfo,uservacationtripinfo), key=lambda x:x['vacationcard_id'])
@@ -41,6 +48,7 @@ class VacationCardViewSet(viewsets.ModelViewSet):
                     d.update(dct)
                 list_c.append(d)
             #print list_c
+
             if list_c:
                 return CustomeResponse({'msg':list_c},status=status.HTTP_201_CREATED)
             else:
@@ -70,7 +78,6 @@ class VacationCardViewSet(viewsets.ModelViewSet):
                         #stops += data
                         tempdata["x"]['vacationcard_id'] = vacationid.id
                         #tempdata['vacationcard_id'] = vacationid.id
-                        
                         tempContainer.append(tempdata['x'])
                     
                      
@@ -85,6 +92,16 @@ class VacationCardViewSet(viewsets.ModelViewSet):
          return CustomeResponse(VacationCardserializer.errors,status=status.HTTP_401_UNAUTHORIZED,validate_errors=1)
      
      
+    def destroy(self,request,pk=None):
+        #-------For delete first have to call viewvaction API than will send trip id to delete trip--#
+        #------------Delete a single stop in Vacation-----#
+        vacation_stop = VacationTrip.objects.filter(id=pk)
+        
+        if vacation_stop:
+            vacation_stop.delete()
+            return CustomeResponse({'msg':'Trip has been deleted'},status=status.HTTP_200_OK)
+        else:
+            return CustomeResponse({'msg':'Trip_id not found'},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
 
 class BusinessCardVacationViewSet(viewsets.ModelViewSet):
     
@@ -92,9 +109,27 @@ class BusinessCardVacationViewSet(viewsets.ModelViewSet):
     serializer_class    =   BusinessCardVacationSerializer
     
     def list(self,request):
+        #-------------view vacationinfo ------------#
+        vacation_id = self.request.QUERY_PARAMS.get('vacationcard_id',None)
+        uservacationvacationinfo = dict()
+        uservacationvacationinfo['trips'] = VacationTrip.objects.filter(vacationcard_id=vacation_id).values()
+        Uservacationbusinesscardinfo = BusinessCardVacation.objects.filter(vacationcard_id=vacation_id).values()
+        #print Uservacationbusinesscardinfo
+        
+        businesscard_id = []
+        for data in Uservacationbusinesscardinfo :
+            #print data['businesscard_id_id'] 
+            bcard_id = data['businesscard_id_id'] 
+            businesscard_id.append(bcard_id)
+        
+        businesscardinfo = dict()
+        businesscardinfo['businessacard'] = BusinessCard.objects.filter(id__in=businesscard_id).values()
+        
+        uservacationinfo = dict(uservacationvacationinfo, **businesscardinfo)
+ 
         
         
-        return CustomeResponse({'msg':'Get Method not allowed'},status=status.HTTP_405_METHOD_NOT_ALLOWED,validate_errors=1)
+        return CustomeResponse(uservacationinfo,status=status.HTTP_201_CREATED)
     
     def create(self,request):
         
@@ -129,7 +164,27 @@ class BusinessCardVacationViewSet(viewsets.ModelViewSet):
                 return CustomeResponse(businessvacationcardserializer.errors,status=status.HTTP_201_CREATED,validate_errors=1)
         else:
                 return CustomeResponse(serializer.errors,status=status.HTTP_201_CREATED,validate_errors=1)
-
+            
+    
+    def destroy(self,request,pk=None):
+        #------Delete Vacation all trips and businessacrdvaction related to vaction----#
+        vacationcard_info = VacationCard.objects.filter(id=pk)
+        if vacationcard_info:
+            vacation_id =  vacationcard_info[0].id
+            vacationtrip_info = VacationTrip.objects.filter(vacationcard_id=vacation_id)
+            businesscardvacation_info = BusinessCardVacation.objects.filter(vacationcard_id=vacation_id)
+            vacationcard_info.delete()
+            vacationtrip_info.delete()
+            if businesscardvacation_info : 
+                businesscardvacation_info.delete()
+                
+            return CustomeResponse({'msg':'Vacation card deleted successfully'},status=status.HTTP_201_CREATED)
+    
+        else:
+            return CustomeResponse({'msg':'Vacationcard_id not found'},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
+        
+        #print vacationcard_info[0][id]
+        #vacationtrip_info = VacationTrip.objects.filter(vacationcard_id)
         
         
         
