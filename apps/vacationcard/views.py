@@ -37,7 +37,7 @@ class VacationCardViewSet(viewsets.ModelViewSet):
                 uservacationcard.append(vacationcardid)
             userbusinessvacationcardinfo = BusinessCardVacation.objects.values('vacationcard_id','businesscard_id').annotate(totalnoofbusinesscard=Count('businesscard_id')).filter(vacationcard_id__in = uservacationcard)
 
-            uservacationtripinfo = VacationTrip.objects.values('vacationcard_id','country','state','contact_no','notes').annotate(trip_start_date=Min('trip_start_date'),trip_end_date = Max('trip_end_date')).filter(vacationcard_id__in = uservacationcard)
+            uservacationtripinfo = VacationTrip.objects.values('vacationcard_id','country','state','contact_no','notes','user_id').annotate(trip_start_date=Min('trip_start_date'),trip_end_date = Max('trip_end_date')).filter(vacationcard_id__in = uservacationcard)
                 
                 
             lst = sorted(itertools.chain(userbusinessvacationcardinfo,uservacationtripinfo), key=lambda x:x['vacationcard_id'])
@@ -55,6 +55,39 @@ class VacationCardViewSet(viewsets.ModelViewSet):
                 return CustomeResponse({'msg':"No Data Found"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
                 
     def create(self,request):
+        
+        try:
+           op = request.data["op"]
+        except:             
+           op = None
+           
+         #---------------------------- Delete Vacation Card -------------------------------------#         
+        if op == 'delete':
+            try:
+              vcard_ids = request.data["vcard_ids"]
+            except:
+              vcard_ids = None
+            if vcard_ids:
+                try:
+                    vcard_ids = vcard_ids.split(",")
+                    vcard_ids = filter(None, vcard_ids)
+                    vacation_card = VacationCard.objects.filter(id__in=vcard_ids)
+                    vacationtrip_info = VacationTrip.objects.filter(vacationcard_id__in=vcard_ids)
+                    businesscardvacation_info = BusinessCardVacation.objects.filter(vacationcard_id__in=vcard_ids)
+                    if vacation_card:
+                        vacation_card.delete()   
+                        vacationtrip_info.delete()
+                        businesscardvacation_info.delete()
+                        return CustomeResponse({'msg':'Vacation card deleted successfully'},status=status.HTTP_201_CREATED)
+                    else:
+                        return CustomeResponse({'msg':'Vacation card id not found'},status=status.HTTP_201_CREATED)
+                except:
+                    return CustomeResponse({"msg":"some problem occured on server side during delete business cards"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)             
+#                        
+         
+         #------------------------------- End ---------------------------------------------------#
+        
+        
         
         VacationCardserializer = VacationCardSerializer(data=request.DATA,context={'request':request})
         VacationTripserializer = VacationTripSerializer(data=request.DATA,context={'request':request})
@@ -165,26 +198,4 @@ class BusinessCardVacationViewSet(viewsets.ModelViewSet):
         else:
                 return CustomeResponse(serializer.errors,status=status.HTTP_201_CREATED,validate_errors=1)
             
-    
-    def destroy(self,request,pk=None):
-        #------Delete Vacation all trips and businessacrdvaction related to vaction----#
-        vacationcard_info = VacationCard.objects.filter(id=pk)
-        if vacationcard_info:
-            vacation_id =  vacationcard_info[0].id
-            vacationtrip_info = VacationTrip.objects.filter(vacationcard_id=vacation_id)
-            businesscardvacation_info = BusinessCardVacation.objects.filter(vacationcard_id=vacation_id)
-            vacationcard_info.delete()
-            vacationtrip_info.delete()
-            if businesscardvacation_info : 
-                businesscardvacation_info.delete()
-                
-            return CustomeResponse({'msg':'Vacation card deleted successfully'},status=status.HTTP_201_CREATED)
-    
-        else:
-            return CustomeResponse({'msg':'Vacationcard_id not found'},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
-        
-        #print vacationcard_info[0][id]
-        #vacationtrip_info = VacationTrip.objects.filter(vacationcard_id)
-        
-        
         

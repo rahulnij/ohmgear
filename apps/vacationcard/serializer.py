@@ -13,6 +13,8 @@ class VacationTripSerializer(serializers.ModelSerializer):
         model = VacationTrip
         fields = (
             'id',
+            'vacation_name',
+            'vacation_type',
             'country',
             'state',
             'city',

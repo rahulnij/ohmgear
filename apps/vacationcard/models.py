@@ -20,8 +20,10 @@ class VacationCard(models.Model):
 class VacationTrip(models.Model):
     class Meta:
         db_table = 'ohmgear_vacationcard_vacationtrip'
-        
+    
+    vacation_name   =   models.CharField(_('Vacation Name'),max_length=100)    
     country         =   models.CharField(_('Country'),max_length=50,null =True)
+    vacation_type   =   models.CharField(_('Vaction Type'),max_length=100)
     state           =   models.CharField(_('State'),max_length=50)
     city            =   models.CharField(_('City'),max_length=50)
     contact_no      = models.CharField(_("Contact Number"),max_length=50,null=True,blank=True)
@@ -35,6 +37,6 @@ class VacationTrip(models.Model):
     status          =   models.IntegerField(_('Status'),default =1)
         
     def __unicode__(self):
-        return '{"id":"%s","country":"%s","state":"%s","contact_no":"%s","notes":"%s","trip_start_date":"%s","trip_end_date":"%s","vacationcard_id":"%s"}'%(self.id,self.country,self.state,self.contact_no,self.notes,self.trip_start_date,self.trip_end_date,self.vacationcard_id)
+        return '{"id":"%s","vacation_name":"%s","country":"%s","vacation_type":"%s","state":"%s","contact_no":"%s","notes":"%s","trip_start_date":"%s","trip_end_date":"%s","vacationcard_id":"%s"}'%(self.id,self.country,self.state,self.contact_no,self.notes,self.trip_start_date,self.trip_end_date,self.vacationcard_id)
         
     
