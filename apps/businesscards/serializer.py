@@ -59,7 +59,7 @@ class BusinessCardSummarySerializer(serializers.HyperlinkedModelSerializer):
     businesscard_skills = BusinessCardAddSkillSerializerReference(many=True,read_only=True)
     business_identifier = IdentifierSerializer(many=True,read_only=True)
     business_vacation = VacationCardSerializer(many=True,read_only=True)
-    business_media = serializers.CharField(source='bcard_image_frontend')
+    #business_media = serializers.CharField(source='bcard_image_frontend')
     #------------------------ End -----------------------------------------------------------#
     class Meta:
         model = BusinessCard
@@ -69,7 +69,7 @@ class BusinessCardSummarySerializer(serializers.HyperlinkedModelSerializer):
             'businesscard_skills',
             'business_identifier',
             'business_vacation',
-            'business_media',
+            #'business_media',
         )        
   
 

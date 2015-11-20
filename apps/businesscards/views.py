@@ -39,7 +39,13 @@ class CardSummary(APIView):
            queryset = self.queryset.filter(id=bcard_id) 
 
            serializer = BusinessCardSummarySerializer(queryset,many=True)
-           return CustomeResponse(serializer.data,status=status.HTTP_200_OK)
+           dt = serializer.data
+           for d in serializer.data:
+                dt = d
+                businesscard =  BusinessCard(id=bcard_id)
+                dt['business_media'] =  businesscard.bcard_image_frontend()
+                break
+           return CustomeResponse(dt,status=status.HTTP_200_OK)
         else:
            return CustomeResponse({'msg':'GET method not allowed without business card id'},status=status.HTTP_405_METHOD_NOT_ALLOWED,validate_errors=1) 
     def post(self, request, format=None):
@@ -89,13 +95,13 @@ class BusinessCardIdentifierViewSet(viewsets.ModelViewSet):
                 #print identifiers['id']
                 getidentifierid = identifiers['id']
                 identifierid.append(getidentifierid)
+
                 tempdata    =   {}
                 tempdata['identifiers'] = identifiers
                 tempdata['identifiers']['identifier_id'] = identifiers['id']
                 tempcontainer.append(tempdata)
             #print tempcontainer
             #print identifierid
-
 
 
             """
@@ -114,9 +120,6 @@ class BusinessCardIdentifierViewSet(viewsets.ModelViewSet):
                 getbusinesscardidentifierid = getbusinesscardidentifiers[i]['identifier_id_id']
                 businesscardid.append(getbusinesscardid)
                 businesscardidentifierid.append(getbusinesscardidentifierid)
-
-
-        
 
             """
             get all businesscard details which having identifiers from businesscard table
@@ -147,11 +150,7 @@ class BusinessCardIdentifierViewSet(viewsets.ModelViewSet):
             
             #print "z"
             #print z
-                
 
-
-           # if getbusinesscardidentifiersdetails:
-        
             if getbusinesscardidentifiersdetails:
 
                 return CustomeResponse({'msg':getbusinesscardidentifiersdetails},status=status.HTTP_201_CREATED)

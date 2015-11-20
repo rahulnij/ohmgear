@@ -79,3 +79,22 @@ CELERY_ACCEPT_CONTENT = ['application/json']
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
 #CELERY_TIMEZONE = 'Africa/Nairobi'
+
+
+#--------- UPLOAD URL PATHS -------------------#
+BCARDS_TEMPLATE_IMAGE_URL = DOMAIN_NAME
+#--------- End --------------------------------#
+
+# Database
+# https://docs.djangoproject.com/en/1.8/ref/settings/#databases
+
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': 'ohmgear',
+        'USER': 'ohmgear',
+        'PASSWORD': 'ohmgear',
+        'HOST': 'localhost',
+        'PORT': '',
+    }
+}

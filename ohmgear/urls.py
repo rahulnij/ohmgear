@@ -21,7 +21,7 @@ router.register(r'api/profile', users_views.ProfileViewSet)
 router.register(r'api/sociallogin',users_views.SocialLoginViewSet)
 router.register(r'api/sociallogin',users_views.SocialLoginViewSet)
 urlpatterns =patterns(
-    '',  
+    '',
    # url(r'^grappelli/', include('grappelli.urls')), 
     url(r'^jet/', include('jet.urls', 'jet')),  # Django JET URLS
     url(r'^jet/dashboard/', include('jet.dashboard.urls', 'jet-dashboard')), 
@@ -89,6 +89,12 @@ urlpatterns += format_suffix_patterns(urlpatterns)
 #-------------- End ---------------------------------------------#
 
 
+#-------------- folders app url registration ---------------------------------#
+import apps.folders.views as folder_view
+router.register(r'api/folder',folder_view.FolderViewSet)
+#-------------- End: folders app ---------------------------------------------#
+
+
 #---------------Vacation Card app url-------------------------------#
 import apps.vacationcard.views as vacationcard_views
 router.register(r'api/vacationcard',vacationcard_views.VacationCardViewSet)
@@ -96,6 +102,7 @@ router.register(r'api/vacationcard',vacationcard_views.VacationCardViewSet)
 import apps.vacationcard.views as businesscardvacation_views
 router.register(r'api/businesscardvacation',businesscardvacation_views.BusinessCardVacationViewSet)
 #-----------------End-------------------------------------------------#
+
 
 
 urlpatterns += patterns('',

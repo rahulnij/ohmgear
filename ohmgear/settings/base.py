@@ -51,6 +51,7 @@ INSTALLED_APPS = (
     'apps.vacationcard',
     'apps.email',
     'apps.promocode',
+    'apps.folders',
     'rest_framework',
     'rest_framework.authtoken',
     'simple_history',
