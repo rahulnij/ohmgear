@@ -22,7 +22,6 @@ router.register(r'api/sociallogin',users_views.SocialLoginViewSet)
 router.register(r'api/sociallogin',users_views.SocialLoginViewSet)
 urlpatterns =patterns(
     '',
-     url(r'^docs/', include('rest_framework_swagger.urls')),  
    # url(r'^grappelli/', include('grappelli.urls')), 
     url(r'^jet/', include('jet.urls', 'jet')),  # Django JET URLS
     url(r'^jet/dashboard/', include('jet.dashboard.urls', 'jet-dashboard')), 
