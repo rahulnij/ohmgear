@@ -61,8 +61,8 @@ urlpatterns += [
 #-------------- End ---------------------------------------------#
 
 #-------------- BusinessCard History  ----------------------#
-import apps.contacts.views as  contacts_views
-router.register(r'api/businesscardshistory', contacts_views.ContactsViewSet)
+import apps.businesscards.views as  businesscards_views
+router.register(r'api/businesscardshistory', businesscards_views.BusinessCardHistoryViewSet)
 #-------------- End ---------------------------------------------#
 
 
