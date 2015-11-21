@@ -4,7 +4,7 @@ from apps.contacts.serializer import ContactsSerializerWithJson
 from apps.identifiers.serializer import IdentifierSerializer
 # Serializers define the API representation.
 
-   
+
 class BusinessCardAddSkillSerializer(serializers.ModelSerializer):
     
     class Meta:
@@ -22,6 +22,9 @@ class BusinessCardMediaSerializer(serializers.ModelSerializer):
     class Meta:
         model = BusinessCardMedia
         fields = ('user_id','businesscard_id','img_url','front_back','position','status')
+        
+        
+    
 
 class BusinessCardSkillAvailableSerializer(serializers.ModelSerializer):
     
@@ -36,8 +39,12 @@ class BusinessCardHistorySerializer(serializers.ModelSerializer):
 
 #----------------- Main Business Card ----------------------------#
 class BusinessCardSerializer(serializers.ModelSerializer):
-
+            
     contact_detail = ContactsSerializerWithJson(read_only=True)
+    media_detail    = serializers.SerializerMethodField('media')
+    
+    def media(self,instance):
+        return instance.bcard_image_frontend()
     #identifier_new = serializers.ReadOnlyField(source='*')
     #------------------------ End -----------------------------------------------------------#
     class Meta:
@@ -50,6 +57,7 @@ class BusinessCardSerializer(serializers.ModelSerializer):
             'status',
             'user_id',
             'contact_detail',
+            'media_detail',
             #'identifier_new',
         )
  
