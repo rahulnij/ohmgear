@@ -360,6 +360,7 @@ class BusinessViewSet(viewsets.ModelViewSet):
         user_id = self.request.QUERY_PARAMS.get('user_id', None)
         published = self.request.QUERY_PARAMS.get('published', None)
         business_id = self.request.QUERY_PARAMS.get('business_id', None)
+        is_active   = self.request.QUERY_PARAMS.get('is_active',None)
         vacation_data_check = 0
         #---------------------- Filter ------------------------#
         if published is not None and user_id is not None:
@@ -367,6 +368,10 @@ class BusinessViewSet(viewsets.ModelViewSet):
               self.queryset = self.queryset.select_related('user_id').filter(user_id=user_id,status=0)
             elif published == '1':
               self.queryset = self.queryset.select_related('user_id').filter(user_id=user_id,status=1)
+        
+        elif is_active is not None and user_id is not None:
+            self.queryset = self.queryset.select_related('user_id').filter(user_id=user_id,is_active=0)
+        
         elif user_id is not None and business_id == 'all':
                 #----------------- All user business card -------------------------------------#
                 self.queryset = self.queryset.select_related('user_id').filter(user_id=user_id)  
