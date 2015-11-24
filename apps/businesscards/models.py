@@ -72,6 +72,17 @@ class BusinessCardIdentifier(models.Model):
     def __unicode__(self):
         return'{"id:"%s","businesscard_id":"%s","identifier_id":"%s","status":"%s"}' %(self.id,self.businesscard_id,self.identifier_id,self.status)
     
+    def bcard_data(self):
+        bcarddata = BusinessCard.objects.filter(id=self.id)
+        data =[]
+        #i = 0
+        for item in bcarddata:
+            data.append({"name":item.name,"bcard_type":item.bcard_type})
+        return data    
+    
+    
+    
+    
 class BusinessCardMedia(models.Model):
     
     class Meta:

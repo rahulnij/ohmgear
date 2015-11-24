@@ -22,7 +22,7 @@ from django.conf import settings
 from apps.users.models import User
 from apps.vacationcard.models import VacationCard 
 from apps.vacationcard.serializer import VacationCardSerializer
-
+import itertools
 from rest_framework.views import APIView
 #---------------- Business Card Summary ----------------------#
 class CardSummary(APIView):
@@ -62,33 +62,16 @@ class BusinessCardIdentifierViewSet(viewsets.ModelViewSet):
     permission_classes = (IsAuthenticated,) 
      #--------------Method: GET-----------------------------#       
     def list(self,request):
-        #return CustomeResponse({'msg':'GET method not allowed'},status=status.HTTP_405_METHOD_NOT_ALLOWED,validate_errors=1)
-        if request.method == 'GET':
+
+            user_id  =request.user
             
-            user_id =  self.request.QUERY_PARAMS.get('user_id', None)
-           # print user_id
             
             """
-
-
             get all identifiers from identifiers table
-
-
-            
             """
-            getallidentifiers = Identifier.objects.all().filter(user_id = user_id)
             
             getidentifiers = Identifier.objects.all().filter(user_id = user_id).values()
             
-            totalidentifiers =  getidentifiers.count()
-            identifierid = []
-            identifiers = []
-#            for i in range(totalidentifiers):
-#                getidentifierid = getidentifiers[i]['id']
-#                identifierid.append(getidentifierid)
-#                identifier[] z      = getidentifiers
-#                identifiers[i]['identifier_id'] = getidentifiers[i]['id']
-#            print getidentifiers
             tempcontainer = []
             identifierid = []
             for identifiers in getidentifiers:
@@ -97,18 +80,16 @@ class BusinessCardIdentifierViewSet(viewsets.ModelViewSet):
                 identifierid.append(getidentifierid)
 
                 tempdata    =   {}
-                tempdata['identifiers'] = identifiers
-                tempdata['identifiers']['identifier_id'] = identifiers['id']
+                tempdata = identifiers
+                tempdata['identifier_id_id'] = identifiers['id']
                 tempcontainer.append(tempdata)
-            #print tempcontainer
-            #print identifierid
-
+            
 
             """
-            get all businesscard idnetifiers from businesscardidentifiers table
+            get all businesscard idetifiers from businesscardidentifiers table
             
             """
-            getallbusinesscardidentifiers = BusinessCardIdentifier.objects.all().filter(identifier_id__in = identifierid)
+            
             
             getbusinesscardidentifiers = BusinessCardIdentifier.objects.all().filter(identifier_id__in = identifierid).values()
             totalbusinesscardidentifiers =  getbusinesscardidentifiers.count()
@@ -120,40 +101,54 @@ class BusinessCardIdentifierViewSet(viewsets.ModelViewSet):
                 getbusinesscardidentifierid = getbusinesscardidentifiers[i]['identifier_id_id']
                 businesscardid.append(getbusinesscardid)
                 businesscardidentifierid.append(getbusinesscardidentifierid)
-
+                
+         
+            
             """
             get all businesscard details which having identifiers from businesscard table
             
             """
-            #getbusinesscardidentifiersdetails =dict()
-            #getbusinesscardidentifiersdetails['businesscardidentifier'] = BusinessCardIdentifier.objects.filter(identifier_id__id__in=identifierid,businesscard_id__id__in = businesscardid).values()
-          
-            #print "getbusinesscardidentifiersdetails"
-            #print getbusinesscardidentifiersdetails
-            #print "----------------------------------------------------"
-           
-            #getallidentifiers = Identifier.objects.all().filter(user_id = user_id,id)
-            getallidentifierswithoutbusinesscardattached = dict()
-
-            getallidentifierswithoutbusinesscardattached['identifiers']= Identifier.objects.exclude(id__in =businesscardidentifierid).filter(user_id = user_id).values()
-
-
             
-            #print "getallidentifierswithoutbusinesscardattached"
-            #print getallidentifierswithoutbusinesscardattached
-           
             getbusinesscarddetails = BusinessCard.objects.all().filter(id__in = businesscardid).values()
-           
             
-            #z = getbusinesscardidentifiersdetails.copy()
-            #z.update(getallidentifierswithoutbusinesscardattached)
+            tempbusinessacard = []
+            identifierid = []
+            for businesscarddetail in getbusinesscarddetails:
+                tempdata    =   {}
+                tempdata = businesscarddetail
+                tempdata['businesscard_id_id'] = businesscarddetail['id']
+                tempbusinessacard.append(tempdata)
             
-            #print "z"
-            #print z
+            
+            
+            #------------------Merge Business card Identifier table and business card with common attribute businesscard_id--#
+            
+            lst = sorted(itertools.chain(getbusinesscardidentifiers,tempbusinessacard), key=lambda x:x['businesscard_id_id'])
+            allbusinesscardidentifiers = []
+            for k,v in itertools.groupby(lst, key=lambda x:x['businesscard_id_id']):
+                d = {}
+                for dct in v:
+                    d.update(dct)
+                allbusinesscardidentifiers.append(d)
+                
+                
+                
+                
+                
+            #------------------Merge Identifier and above merge detail with identifier_id--#    
+                
+            lsts = sorted(itertools.chain(tempcontainer,allbusinesscardidentifiers), key=lambda x:x['identifier_id_id'])
+            allidentifiers_withbusinesscard_identifiers = []
+            for ks,vs in itertools.groupby(lsts, key=lambda x:x['identifier_id_id']):
+                ds = {}
+                for dcts in vs:
+                    ds.update(dcts)
+                allidentifiers_withbusinesscard_identifiers.append(ds)   
+                
+            
+            if allidentifiers_withbusinesscard_identifiers:
 
-            if getbusinesscardidentifiersdetails:
-
-                return CustomeResponse({'msg':getbusinesscardidentifiersdetails},status=status.HTTP_201_CREATED)
+                return CustomeResponse(allidentifiers_withbusinesscard_identifiers,status=status.HTTP_201_CREATED)
 
             else:
                 return CustomeResponse({'msg':"No Data Found"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)

@@ -40,7 +40,7 @@ import apps.businesscards.views as  businesscards_views
 router.register(r'api/businesscard', businesscards_views.BusinessViewSet)
 #------------------BusinessCard Idnetifier-----------------------#
 import apps.businesscards.views as businesscardidentifier_views
-router.register(r'api/businesscardidentifier',businesscardidentifier_views.BusinessCardIdentifierViewSet)
+router.register(r'api/businesscardidentifier',businesscards_views.BusinessCardIdentifierViewSet)
 
 #-------------- Business card Media  ----------------------#
 router.register(r'api/businesscardmedia', businesscards_views.BusinessCardMediaViewSet)

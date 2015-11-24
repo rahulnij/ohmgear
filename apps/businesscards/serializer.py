@@ -83,10 +83,16 @@ class BusinessCardSummarySerializer(serializers.HyperlinkedModelSerializer):
 
 class BusinessCardIdentifierSerializer(serializers.ModelSerializer):
     #identifier_link_business = IdentifierSerializer(many=True,read_only=True)
+    
+    
+    bcard_detail    = serializers.SerializerMethodField('bcard_data')
+    
+    def bcard_data(self,instance):
+        return instance.bcard_data()
    
     class Meta:
         model = BusinessCardIdentifier
-        fields = ('id','identifier_id','businesscard_id','status')
+        fields = ('id','identifier_id','businesscard_id','status','bcard_detail')
           
     def validate(self, attrs):
         #print "dataattaat"
