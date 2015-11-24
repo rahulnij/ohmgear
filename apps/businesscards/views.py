@@ -11,6 +11,7 @@ from serializer import BusinessCardSerializer,BusinessCardIdentifierSerializer,B
 from apps.contacts.serializer import ContactsSerializer
 from apps.contacts.models import Contacts
 from apps.identifiers.models import Identifier
+from apps.identifiers.serializer import IdentifierSerializer
 from ohmgear.token_authentication import ExpiringTokenAuthentication
 from ohmgear.functions import CustomeResponse,handle_uploaded_file
 from ohmgear.json_default_data import BUSINESS_CARD_DATA_VALIDATION
@@ -64,92 +65,13 @@ class BusinessCardIdentifierViewSet(viewsets.ModelViewSet):
     def list(self,request):
 
             user_id  =request.user
-            
-            
+            self.queryset = Identifier.objects.all().filter(user_id=user_id)
             """
             get all identifiers from identifiers table
             """
-            
-            getidentifiers = Identifier.objects.all().filter(user_id = user_id).values()
-            
-            tempcontainer = []
-            identifierid = []
-            for identifiers in getidentifiers:
-                #print identifiers['id']
-                getidentifierid = identifiers['id']
-                identifierid.append(getidentifierid)
-
-                tempdata    =   {}
-                tempdata = identifiers
-                tempdata['identifier_id_id'] = identifiers['id']
-                tempcontainer.append(tempdata)
-            
-
-            """
-            get all businesscard idetifiers from businesscardidentifiers table
-            
-            """
-            
-            
-            getbusinesscardidentifiers = BusinessCardIdentifier.objects.all().filter(identifier_id__in = identifierid).values()
-            totalbusinesscardidentifiers =  getbusinesscardidentifiers.count()
-
-            businesscardid = []
-            businesscardidentifierid = []
-            for i in range(totalbusinesscardidentifiers):
-                getbusinesscardid = getbusinesscardidentifiers[i]['businesscard_id_id']
-                getbusinesscardidentifierid = getbusinesscardidentifiers[i]['identifier_id_id']
-                businesscardid.append(getbusinesscardid)
-                businesscardidentifierid.append(getbusinesscardidentifierid)
-                
-         
-            
-            """
-            get all businesscard details which having identifiers from businesscard table
-            
-            """
-            
-            getbusinesscarddetails = BusinessCard.objects.all().filter(id__in = businesscardid).values()
-            
-            tempbusinessacard = []
-            identifierid = []
-            for businesscarddetail in getbusinesscarddetails:
-                tempdata    =   {}
-                tempdata = businesscarddetail
-                tempdata['businesscard_id_id'] = businesscarddetail['id']
-                tempbusinessacard.append(tempdata)
-            
-            
-            
-            #------------------Merge Business card Identifier table and business card with common attribute businesscard_id--#
-            
-            lst = sorted(itertools.chain(getbusinesscardidentifiers,tempbusinessacard), key=lambda x:x['businesscard_id_id'])
-            allbusinesscardidentifiers = []
-            for k,v in itertools.groupby(lst, key=lambda x:x['businesscard_id_id']):
-                d = {}
-                for dct in v:
-                    d.update(dct)
-                allbusinesscardidentifiers.append(d)
-                
-                
-                
-                
-                
-            #------------------Merge Identifier and above merge detail with identifier_id--#    
-                
-            lsts = sorted(itertools.chain(tempcontainer,allbusinesscardidentifiers), key=lambda x:x['identifier_id_id'])
-            allidentifiers_withbusinesscard_identifiers = []
-            for ks,vs in itertools.groupby(lsts, key=lambda x:x['identifier_id_id']):
-                ds = {}
-                for dcts in vs:
-                    ds.update(dcts)
-                allidentifiers_withbusinesscard_identifiers.append(ds)   
-                
-            
-            if allidentifiers_withbusinesscard_identifiers:
-
-                return CustomeResponse(allidentifiers_withbusinesscard_identifiers,status=status.HTTP_201_CREATED)
-
+            serializer = IdentifierSerializer(self.queryset,many=True)
+            if serializer: 
+                    return CustomeResponse(serializer.data,status=status.HTTP_200_OK)
             else:
                 return CustomeResponse({'msg':"No Data Found"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
            

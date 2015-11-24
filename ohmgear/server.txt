@@ -8,3 +8,12 @@ Default Port:6379
 Command: src/redis-server
 Default Port:6379
 #-------------------------------------------#
+
+#------------ Versions Which are used in OHMGEAR --------#
+- python 2.7
+- Ubuntu 14.04
+- Django 1.8
+- Redis  2.10.3  
+- Postgres 9.4.4
+For more you can see requirment.txt file
+#--------------------------------------------------------#

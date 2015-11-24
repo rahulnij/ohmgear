@@ -5,12 +5,14 @@ from rest_framework import routers, serializers, viewsets
 from functions import validate_identifier
 from ohmgear.functions import CustomeResponse
 import rest_framework.status as status
-            
+
+from apps.businesscards.serializer import BusinessCardSerializer            
             
 class IdentifierSerializer(serializers.ModelSerializer):
+    business_identifier = BusinessCardSerializer(many=True,read_only=True)
     class Meta:
         model = Identifier
-        fields = ('id','user','identifier','identifiertype','paymentstatus','identifierlastdate')
+        fields = ('id','user','identifier','identifiertype','paymentstatus','identifierlastdate','business_identifier')
 #        read_only_fields = ('id',)
 
     def validate(self, attrs):
