@@ -35,7 +35,7 @@ class VacationCardViewSet(viewsets.ModelViewSet):
                 
                 vacationcardid =   Uservacationcardinfo[i]['id']
                 uservacationcard.append(vacationcardid)
-            userbusinessvacationcardinfo = BusinessCardVacation.objects.values('vacationcard_id','businesscard_id').annotate(totalnoofbusinesscard=Count('businesscard_id')).filter(vacationcard_id__in = uservacationcard)
+            userbusinessvacationcardinfo = BusinessCardVacation.objects.values('vacationcard_id').annotate(totalnoofbusinesscard=Count('businesscard_id')).filter(vacationcard_id__in = uservacationcard)
 
             uservacationtripinfo = VacationTrip.objects.values('vacationcard_id','country','state','contact_no','notes','user_id').annotate(trip_start_date=Min('trip_start_date'),trip_end_date = Max('trip_end_date')).filter(vacationcard_id__in = uservacationcard)
                 
