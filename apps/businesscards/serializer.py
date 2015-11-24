@@ -1,7 +1,6 @@
 from rest_framework import  serializers
 from models import BusinessCard,BusinessCardIdentifier,BusinessCardMedia ,BusinessCardSkillAvailable,BusinessCardAddSkill,BusinessCardHistory
 from apps.contacts.serializer import ContactsSerializerWithJson
-from apps.identifiers.serializer import IdentifierSerializer
 # Serializers define the API representation.
 
 
