@@ -441,28 +441,20 @@ class BusinessViewSet(viewsets.ModelViewSet):
          
          
          if op == 'Inactive':
-            print "testdataa"
             try:
-                #bcards_ids = request.data["bcards_ids"]
-               # print bcards_ids
-                
                 bcards_id = json.loads(request.DATA["bcards_ids"])
-                
-                
-                print bcards_id
-                bcard_ids  = bcards_id["data"]
-                #print bcard_ids
+                bcards_id  = bcards_id["data"]
             except:
-                bcard_ids = None
-            if bcard_ids:
-                  BusinessCard.objects.filter(id__in=bcard_ids).update(is_active=0)
+                bcards_id = None
+            if bcards_id:
+                try:
+                  businesscard = BusinessCard.objects.filter(id__in=bcards_id).update(is_active=0)
                   return CustomeResponse({"msg":"Business cards has been inactive"},status=status.HTTP_200_OK)
+                except:
+                  return CustomeResponse({"msg":"some problem occured on server side during delete business cards"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)           
             else:
-                return CustomeResponse({"msg":"some problem occured on server side."},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
-         else:
-               return CustomeResponse({"msg":"Please provide bcard_id and user_id"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)        
-                
-        
+                      return CustomeResponse({"msg":"business card does not exists."},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)  
+                  
          #------------------------------- End ---------------------------------------------------#
          
          #-------------------- First Validate the json contact data ------------------------------#
