@@ -79,12 +79,24 @@ class BusinessCardIdentifierViewSet(viewsets.ModelViewSet):
             
     def create(self,request):
        #print request.data
-       serializer = BusinessCardIdentifierSerializer(data = request.data,context={'request':request})
-       if serializer.is_valid():
+        try:
+            op  =request.DATA['op']
+        except:
+           op = None
+        if op == 'change':
+            identifier_id  = request.DATA['identifier_id']
+            print identifier_id
+            if identifier_id:
+               businesscardidentifier_detail = BusinessCardIdentifier.objects.filter(identifier_id= identifier_id)
+               businesscardidentifier_detail.delete()
+       
+       
+        serializer = BusinessCardIdentifierSerializer(data = request.data,context={'request':request})
+        if serializer.is_valid():
            serializer.save()
            BusinessCard.objects.filter(id= request.data['businesscard_id']).update(status= 1 )
            return CustomeResponse(serializer.data,status=status.HTTP_201_CREATED)
-       else:
+        else:
            return CustomeResponse(serializer.errors,status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
         
         
