@@ -84,10 +84,10 @@ class BusinessCardIdentifierViewSet(viewsets.ModelViewSet):
         except:
            op = None
         if op == 'change':
-            identifier_id  = request.DATA['identifier_id']
+            businesscard_id  = request.DATA['businesscard_id']
         
-            if identifier_id:
-               businesscardidentifier_detail = BusinessCardIdentifier.objects.filter(identifier_id= identifier_id)
+            if businesscard_id:
+               businesscardidentifier_detail = BusinessCardIdentifier.objects.filter(businesscard_id= businesscard_id)
                businesscardidentifier_detail.delete()
        
        
