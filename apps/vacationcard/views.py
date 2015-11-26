@@ -10,13 +10,15 @@ import json
 import itertools
 from django.db.models import Count,Min, Max
 from apps.businesscards.models import BusinessCardVacation,BusinessCard
+
 from rest_framework.decorators import detail_route
+from django.shortcuts import get_object_or_404
 
 
 class VacationCardViewSet(viewsets.ModelViewSet):
     queryset = VacationTrip.objects.select_related().all()
     #serializer_class = VacationTripSerializer
-    serializer_class = VacationCardSerializer
+    serializer_class = VacationTripSerializer
     authentication_classes = (ExpiringTokenAuthentication,)
     permission_classes = (IsAuthenticated,) 
     #--------------Method: GET-----------------------------#       
@@ -53,13 +55,55 @@ class VacationCardViewSet(viewsets.ModelViewSet):
                 return CustomeResponse({'msg':list_c},status=status.HTTP_201_CREATED)
             else:
                 return CustomeResponse({'msg':"No Data Found"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
+    
+    def retrieve(self,request,vacationcard_id=None,call_from_function=None):
+        queryset = self.queryset
+        vacationtrip_duplicate_data = VacationTrip.objects.filter(vacationcard_id=vacationcard_id)
+        serializer = VacationTripSerializer(vacationtrip_duplicate_data,many=True)
+        data = {}
+        data = serializer.data
+                    
+        if call_from_function:
+            return data
+        else:
+            return CustomeResponse(data,status=status.HTTP_200_OK)
+    
                 
     def create(self,request):
         
         try:
+            user_id = request.user
+        except:
+            user_id = None
+        
+        try:
+            vacation_id  = request.data['vacation_id']
+        except:
+            vacation_id =   None
+            
+            
+        try:
            op = request.data["op"]
         except:             
            op = None
+        
+        #---------------------------------Duplicate Vacation------------------------#
+        if op =='duplicate':
+            if vacation_id and user_id:
+                #----------------check vacation card belong to user----------#
+                from functions import CreateDuplicateVacationCard
+                vcard_new  =       CreateDuplicateVacationCard(vacation_id,user_id)
+                if vcard_new:
+                    print "vcard_new"
+                    print vcard_new
+                    data =  self.retrieve(request,vacationcard_id=vcard_new,call_from_function=1)
+                    print "data"
+                else:
+                   return CustomeResponse({"msg":"some problem occured on server side."},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
+                return CustomeResponse(data,status=status.HTTP_201_CREATED)
+            else:
+               return CustomeResponse({"msg":"Please provide vcard_id and user_id"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)        
+            
            
          #---------------------------- Delete Vacation Card -------------------------------------#         
         if op == 'delete':
