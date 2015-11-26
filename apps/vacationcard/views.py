@@ -10,8 +10,8 @@ import json
 import itertools
 from django.db.models import Count,Min, Max
 from apps.businesscards.models import BusinessCardVacation,BusinessCard
-from ohmgear.token_authentication import ExpiringTokenAuthentication
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.decorators import detail_route
+
 
 class VacationCardViewSet(viewsets.ModelViewSet):
     queryset = VacationTrip.objects.select_related().all()
@@ -135,6 +135,19 @@ class VacationCardViewSet(viewsets.ModelViewSet):
             return CustomeResponse({'msg':'Trip has been deleted'},status=status.HTTP_200_OK)
         else:
             return CustomeResponse({'msg':'Trip_id not found'},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
+
+    
+
+class VacationCardMerge(APIView):
+
+    def post(self, request):
+        """ 
+            merge vaction cards to one vacation card and delete all of thems once done.
+            accept from and list of arrays vacation card ids
+        """
+        print request.data
+
+
 
 class BusinessCardVacationViewSet(viewsets.ModelViewSet):
     
