@@ -79,12 +79,24 @@ class BusinessCardIdentifierViewSet(viewsets.ModelViewSet):
             
     def create(self,request):
        #print request.data
-       serializer = BusinessCardIdentifierSerializer(data = request.data,context={'request':request})
-       if serializer.is_valid():
+        try:
+            op  =request.DATA['op']
+        except:
+           op = None
+        if op == 'change':
+            businesscard_id  = request.DATA['businesscard_id']
+        
+            if businesscard_id:
+               businesscardidentifier_detail = BusinessCardIdentifier.objects.filter(businesscard_id= businesscard_id)
+               businesscardidentifier_detail.delete()
+       
+       
+        serializer = BusinessCardIdentifierSerializer(data = request.data,context={'request':request})
+        if serializer.is_valid():
            serializer.save()
            BusinessCard.objects.filter(id= request.data['businesscard_id']).update(status= 1 )
            return CustomeResponse(serializer.data,status=status.HTTP_201_CREATED)
-       else:
+        else:
            return CustomeResponse(serializer.errors,status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
         
         
@@ -446,6 +458,21 @@ class BusinessViewSet(viewsets.ModelViewSet):
                  
          
          
+         if op == 'Inactive':
+            try:
+                bcards_id = json.loads(request.DATA["bcards_ids"])
+                bcards_id  = bcards_id["data"]
+            except:
+                bcards_id = None
+            if bcards_id:
+                try:
+                  businesscard = BusinessCard.objects.filter(id__in=bcards_id).update(is_active=0)
+                  return CustomeResponse({"msg":"Business cards has been inactive"},status=status.HTTP_200_OK)
+                except:
+                  return CustomeResponse({"msg":"some problem occured on server side during delete business cards"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)           
+            else:
+                      return CustomeResponse({"msg":"business card does not exists."},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)  
+                  
          #------------------------------- End ---------------------------------------------------#
          
          #-------------------- First Validate the json contact data ------------------------------#

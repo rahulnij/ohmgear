@@ -31,7 +31,7 @@ class IdentifierViewSet(viewsets.ModelViewSet):
             
             # -----------Get all identifiers of the user--------#
             user =  self.request.QUERY_PARAMS.get('user', None)
-            userdata = Identifier.objects.filter(user=user).values()
+            userdata = Identifier.objects.filter(user=user).values().order_by('-id')
             if userdata:
                 return CustomeResponse(userdata,status=status.HTTP_201_CREATED)
             else:
