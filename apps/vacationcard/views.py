@@ -323,7 +323,6 @@ class VacationCardMerge(APIView):
         """
         try:
             serializer = VacationCardMergeSerializer(data=request.data)
-            
             if serializer.is_valid():
                 sourceVacationCardIds = request.data.get('source')
                 destVacationCardId = request.data.get('dest')
@@ -343,6 +342,6 @@ class VacationCardMerge(APIView):
                 
                 return CustomeResponse({'msg':'success'}, status=status.HTTP_200_OK)
         except:
-            return CustomeResponse({'msg':'Server Error'}, status=status.HTTP_500_SERVER_ERROR)
+            return CustomeResponse({'msg':'Server Error'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
         return CustomeResponse({'msg': 'data format error, integer required'}, status=status.HTTP_400_BAD_REQUEST)
