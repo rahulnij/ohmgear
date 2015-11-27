@@ -32,6 +32,10 @@ class VacationCardSerializer(serializers.ModelSerializer):
     class Meta:
         model = VacationCard
         fields = ('id','user_id',)
+
+class VacationCardMergeSerializer(serializers.Serializer):
+    dest = serializers.IntegerField(required=True)
+    source = serializers.ListField(child=serializers.IntegerField(required=True))
         
 class BusinessCardVacationSerializer(serializers.ModelSerializer):
     class Meta:

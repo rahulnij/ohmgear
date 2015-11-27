@@ -8,7 +8,7 @@ User = settings.AUTH_USER_MODEL
 class VacationCard(models.Model):
     class Meta:
         db_table  = 'ohmgear_vacationcard_vacationcard'
-    user_id            =   models.ForeignKey(User,db_column ="user_id",related_name='user_vacationcard')
+    user_id            =   models.ForeignKey(User,db_column ="user_id",related_name='user_vacationcard', null=True)
     created_date=models.DateTimeField(_("Created Date"),auto_now_add=True,auto_now=False)
     updated_date=models.DateTimeField(_("Updated Date"),auto_now_add=False,auto_now=True)
     status          =   models.IntegerField(_('Status'),default =1)
@@ -28,7 +28,7 @@ class VacationTrip(models.Model):
     city            =   models.CharField(_('City'),max_length=50)
     contact_no      = models.CharField(_("Contact Number"),max_length=50,null=True,blank=True)
     notes           =   models.CharField(_('Notes'),max_length = 2000,null =True,blank=True)
-    user_id         =   models.ForeignKey(User,db_column="user_id")
+    user_id         =   models.ForeignKey(User,db_column="user_id", null=True)
     trip_start_date =   models.DateField(_('Trip Start Date'))
     trip_end_date   =   models.DateField(_('Trip End Date'))
     vacationcard_id    =   models.ForeignKey(VacationCard,db_column ="vacationcard_id")

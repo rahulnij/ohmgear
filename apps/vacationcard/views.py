@@ -13,7 +13,8 @@ from apps.businesscards.models import BusinessCardVacation,BusinessCard
 
 from rest_framework.decorators import detail_route
 from django.shortcuts import get_object_or_404
-
+from rest_framework.views import APIView
+from serializer import VacationCardMergeSerializer
 
 class VacationCardViewSet(viewsets.ModelViewSet):
     queryset = VacationTrip.objects.select_related().all()
@@ -144,7 +145,7 @@ class VacationCardViewSet(viewsets.ModelViewSet):
             return CustomeResponse({'status':'fail','msg':'Please provide correct Json Format of vacation'},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
        # print stops    
         if VacationCardserializer.is_valid():
-            vacationid = VacationCardserializer.save()
+            vacationid = VacationCardserializer.save(user_id=request.user)
             if stops and vacationid.id:
                     tempContainer = []
                     for data in stops:
@@ -161,7 +162,7 @@ class VacationCardViewSet(viewsets.ModelViewSet):
                         #tempContainer =  tempContainer[0]['x   
                     serializer = VacationTripSerializer(data=tempContainer,many=True)
                     if serializer.is_valid():
-                        serializer.save()
+                        serializer.save(user_id=request.user)
                         return CustomeResponse(serializer.data,status=status.HTTP_201_CREATED)
                     else:
                      return CustomeResponse(serializer.errors,status=status.HTTP_201_CREATED)
@@ -182,14 +183,6 @@ class VacationCardViewSet(viewsets.ModelViewSet):
 
     
 
-class VacationCardMerge(APIView):
-
-    def post(self, request):
-        """ 
-            merge vaction cards to one vacation card and delete all of thems once done.
-            accept from and list of arrays vacation card ids
-        """
-        print request.data
 
 
 
@@ -310,3 +303,43 @@ class BusinessCardVacationViewSet(viewsets.ModelViewSet):
             
         #--------------------------------------End----------------------------------------------------------#
             
+
+
+
+
+class VacationCardMerge(APIView):
+    
+
+    authentication_classes = (ExpiringTokenAuthentication,)
+    permission_classes = (IsAuthenticated,) 
+    
+    def post(self, request):
+        """ 
+            merge vaction cards to one vacation card and delete all of thems once done.
+            accept from and list of arrays vacation card ids
+        """
+        try:
+            serializer = VacationCardMergeSerializer(data=request.data)
+            
+            if serializer.is_valid():
+                sourceVacationCardIds = request.data.get('source')
+                destVacationCardId = request.data.get('dest')
+                vacationCardIds = sourceVacationCardIds[:]
+                vacationCardIds.append(destVacationCardId)
+               
+                vacationCardCount = VacationCard.objects.filter(user_id=request.user, id__in=vacationCardIds).count()
+                
+                # ids must be belongs to session user and not dest id not in source
+                if vacationCardCount != len(vacationCardIds):
+                    return CustomeResponse({'msg': 'one or all of the vacation ids not exists'}, status=status.HTTP_400_BAD_REQUEST)
+                
+                VacationTrip.objects.filter(user_id=request.user, vacationcard_id__in=sourceVacationCardIds).update(vacationcard_id=destVacationCardId)
+                
+                #remove source vacation card once it trips done
+                VacationCard.objects.filter(user_id=request.user, id__in=sourceVacationCardIds).delete()
+                
+                return CustomeResponse({'msg':'success'}, status=status.HTTP_200_OK)
+        except:
+            return CustomeResponse({'msg':'Server Error'}, status=status.HTTP_500_SERVER_ERROR)
+
+        return CustomeResponse({'msg': 'data format error, integer required'}, status=status.HTTP_400_BAD_REQUEST)
