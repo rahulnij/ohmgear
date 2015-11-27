@@ -55,7 +55,7 @@ def CreateDuplicateVacationCard(vacation_id=None,user_id=None):
             return vcards_id_new
             #---------------------- End---------------------------------------------------#
             
-            #--------------- Return the new business card --------------------------------#
+            #--------------- Return the new Vacation card with trip --------------------------------#
             
             #------------------------- End -----------------------------------------------#
     
