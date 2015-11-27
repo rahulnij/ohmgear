@@ -336,6 +336,8 @@ class VacationCardMerge(APIView):
                     return CustomeResponse({'msg': 'one or all of the vacation ids not exists'}, status=status.HTTP_400_BAD_REQUEST)
                 
                 VacationTrip.objects.filter(user_id=request.user, vacationcard_id__in=sourceVacationCardIds).update(vacationcard_id=destVacationCardId)
+                VacationTrip.objects.filter(user_id=request.user, vacationcard_id__in=sourceVacationCardIds).update(vacationcard_id=destVacationCardId)
+
                 
                 #remove source vacation card once it trips done
                 VacationCard.objects.filter(user_id=request.user, id__in=sourceVacationCardIds).delete()
