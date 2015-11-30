@@ -22,11 +22,13 @@ router.register(r'api/sociallogin',users_views.SocialLoginViewSet)
 router.register(r'api/sociallogin',users_views.SocialLoginViewSet)
 urlpatterns =patterns(
     '',
+    #url(r'^docs/', include('rest_framework_swagger.urls')),
    # url(r'^grappelli/', include('grappelli.urls')), 
     url(r'^jet/', include('jet.urls', 'jet')),  # Django JET URLS
     url(r'^jet/dashboard/', include('jet.dashboard.urls', 'jet-dashboard')), 
  
     url(r'^admin/', include(admin.site.urls)),
+    url(r'^api/', include('apps.vacationcard.urls')),
     url(r'^api/useractivity/$','apps.users.views.useractivity',name='useractivity'),
     url(r'^api/cron/$','apps.cron.views.updateidentifierstatus',name='updateidentifierstatus'),
     url(r'^api/account_confirmation/(?P<activation_key>\w+)/$','apps.users.views.useractivity',name='registration_confirm'),

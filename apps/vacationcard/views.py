@@ -10,9 +10,11 @@ import json
 import itertools
 from django.db.models import Count,Min, Max
 from apps.businesscards.models import BusinessCardVacation,BusinessCard
-from ohmgear.token_authentication import ExpiringTokenAuthentication
-from rest_framework.permissions import IsAuthenticated
+
+from rest_framework.decorators import detail_route
 from django.shortcuts import get_object_or_404
+from rest_framework.views import APIView
+from serializer import VacationCardMergeSerializer
 
 class VacationCardViewSet(viewsets.ModelViewSet):
     queryset = VacationTrip.objects.select_related().all()
@@ -38,8 +40,7 @@ class VacationCardViewSet(viewsets.ModelViewSet):
                 uservacationcard.append(vacationcardid)
             userbusinessvacationcardinfo = BusinessCardVacation.objects.values('vacationcard_id').annotate(totalnoofbusinesscard=Count('businesscard_id')).filter(vacationcard_id__in = uservacationcard)
 
-            uservacationtripinfo = VacationTrip.objects.values('vacationcard_id','country','state','contact_no','notes','user_id').annotate(trip_start_date=Min('trip_start_date'),trip_end_date = Max('trip_end_date')).filter(vacationcard_id__in = uservacationcard)
-                
+            uservacationtripinfo = VacationTrip.objects.values('vacationcard_id','vacation_name').annotate(trip_start_date=Min('trip_start_date'),trip_end_date = Max('trip_end_date')).filter(vacationcard_id__in = uservacationcard)
                 
             lst = sorted(itertools.chain(userbusinessvacationcardinfo,uservacationtripinfo), key=lambda x:x['vacationcard_id'])
             list_c = []
@@ -86,49 +87,51 @@ class VacationCardViewSet(viewsets.ModelViewSet):
         except:             
            op = None
         
-        #---------------------------------Duplicate Vacation------------------------#
-        if op =='duplicate':
-            if vacation_id and user_id:
-                #----------------check vacation card belong to user----------#
-                from functions import CreateDuplicateVacationCard
-                vcard_new  =       CreateDuplicateVacationCard(vacation_id,user_id)
-                if vcard_new:
-                    print "vcard_new"
-                    print vcard_new
-                    data =  self.retrieve(request,vacationcard_id=vcard_new,call_from_function=1)
-                    print "data"
-                else:
-                   return CustomeResponse({"msg":"some problem occured on server side."},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
-                return CustomeResponse(data,status=status.HTTP_201_CREATED)
-            else:
-               return CustomeResponse({"msg":"Please provide vcard_id and user_id"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)        
-            
-           
-         #---------------------------- Delete Vacation Card -------------------------------------#         
-        if op == 'delete':
-            try:
-              vcard_ids = request.data["vcard_ids"]
-            except:
-              vcard_ids = None
-            if vcard_ids:
-                try:
-                    vcard_ids = vcard_ids.split(",")
-                    vcard_ids = filter(None, vcard_ids)
-                    vacation_card = VacationCard.objects.filter(id__in=vcard_ids)
-                    vacationtrip_info = VacationTrip.objects.filter(vacationcard_id__in=vcard_ids)
-                    businesscardvacation_info = BusinessCardVacation.objects.filter(vacationcard_id__in=vcard_ids)
-                    if vacation_card:
-                        vacation_card.delete()   
-                        vacationtrip_info.delete()
-                        businesscardvacation_info.delete()
-                        return CustomeResponse({'msg':'Vacation card deleted successfully'},status=status.HTTP_201_CREATED)
+        if op is not None: 
+        
+            #---------------------------------Duplicate Vacation------------------------#
+            if op =='duplicate':
+                if vacation_id and user_id:
+                    #----------------check vacation card belong to user----------#
+                    from functions import CreateDuplicateVacationCard
+                    vcard_new  =       CreateDuplicateVacationCard(vacation_id,user_id)
+                    if vcard_new:
+                        print "vcard_new"
+                        print vcard_new
+                        data =  self.retrieve(request,vacationcard_id=vcard_new,call_from_function=1)
+                        print "data"
                     else:
-                        return CustomeResponse({'msg':'Vacation card id not found'},status=status.HTTP_201_CREATED)
+                       return CustomeResponse({"msg":"some problem occured on server side."},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
+                    return CustomeResponse(data,status=status.HTTP_201_CREATED)
+                else:
+                   return CustomeResponse({"msg":"Please provide vcard_id and user_id"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)        
+
+
+             #---------------------------- Delete Vacation Card -------------------------------------#         
+            if op == 'delete':
+                try:
+                  vcard_ids = request.data["vcard_ids"]
                 except:
-                    return CustomeResponse({"msg":"some problem occured on server side during delete business cards"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)             
-#                        
-         
-         #------------------------------- End ---------------------------------------------------#
+                  vcard_ids = None
+                if vcard_ids:
+                    try:
+                        vcard_ids = vcard_ids.split(",")
+                        vcard_ids = filter(None, vcard_ids)
+                        vacation_card = VacationCard.objects.filter(id__in=vcard_ids)
+                        vacationtrip_info = VacationTrip.objects.filter(vacationcard_id__in=vcard_ids)
+                        businesscardvacation_info = BusinessCardVacation.objects.filter(vacationcard_id__in=vcard_ids)
+                        if vacation_card:
+                            vacation_card.delete()   
+                            vacationtrip_info.delete()
+                            businesscardvacation_info.delete()
+                            return CustomeResponse({'msg':'Vacation card deleted successfully'},status=status.HTTP_201_CREATED)
+                        else:
+                            return CustomeResponse({'msg':'Vacation card id not found'},status=status.HTTP_201_CREATED)
+                    except:
+                        return CustomeResponse({"msg":"some problem occured on server side during delete business cards"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)             
+                            
+
+             #------------------------------- End ---------------------------------------------------#
         
         
         
@@ -143,7 +146,7 @@ class VacationCardViewSet(viewsets.ModelViewSet):
             return CustomeResponse({'status':'fail','msg':'Please provide correct Json Format of vacation'},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
        # print stops    
         if VacationCardserializer.is_valid():
-            vacationid = VacationCardserializer.save()
+            vacationid = VacationCardserializer.save(user_id=request.user)
             if stops and vacationid.id:
                     tempContainer = []
                     for data in stops:
@@ -160,7 +163,7 @@ class VacationCardViewSet(viewsets.ModelViewSet):
                         #tempContainer =  tempContainer[0]['x   
                     serializer = VacationTripSerializer(data=tempContainer,many=True)
                     if serializer.is_valid():
-                        serializer.save()
+                        serializer.save(user_id=request.user)
                         return CustomeResponse(serializer.data,status=status.HTTP_201_CREATED)
                     else:
                      return CustomeResponse(serializer.errors,status=status.HTTP_201_CREATED)
@@ -179,6 +182,11 @@ class VacationCardViewSet(viewsets.ModelViewSet):
         else:
             return CustomeResponse({'msg':'Trip_id not found'},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
 
+    
+
+
+
+
 class BusinessCardVacationViewSet(viewsets.ModelViewSet):
     
     queryset = BusinessCardVacation.objects.select_related().all()
@@ -188,7 +196,7 @@ class BusinessCardVacationViewSet(viewsets.ModelViewSet):
         #-------------view vacationinfo ------------#
         vacation_id = self.request.QUERY_PARAMS.get('vacationcard_id',None)
         uservacationvacationinfo = dict()
-        uservacationvacationinfo['trips'] = VacationTrip.objects.filter(vacationcard_id=vacation_id).values()
+        uservacationvacationinfo['trips'] = VacationTrip.objects.filter(vacationcard_id=vacation_id).values().order_by('-id').reverse()
         Uservacationbusinesscardinfo = BusinessCardVacation.objects.filter(vacationcard_id=vacation_id).values()
         #print Uservacationbusinesscardinfo
         
@@ -214,18 +222,19 @@ class BusinessCardVacationViewSet(viewsets.ModelViewSet):
             op = request.DATA['op']
         except:
             op =None
-        
-        if op == 'delete':
-            vcard_id = request.DATA['vacationcard_id']
-            bcard_id = json.loads(request.DATA['businesscard_id'])
-            bcard_id = bcard_id['data']
             
-            businesscardinfo = BusinessCardVacation.objects.filter(vacationcard_id = vcard_id,businesscard_id__in=bcard_id)
-            if businesscardinfo:
-                businesscardinfo.delete()
-                return CustomeResponse({'msg': 'Business card has sucessfully unapply to vacation card'},status=status.HTTP_201_CREATED)
-            else:
-                return CustomeResponse({'msg':'Id not found Bad request'},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
+        if op is not None: 
+            if op == 'delete':
+                vcard_id = request.DATA['vacationcard_id']
+                bcard_id = json.loads(request.DATA['businesscard_id'])
+                bcard_id = bcard_id['data']
+
+                businesscardinfo = BusinessCardVacation.objects.filter(vacationcard_id = vcard_id,businesscard_id__in=bcard_id)
+                if businesscardinfo:
+                    businesscardinfo.delete()
+                    return CustomeResponse({'msg': 'Business card has sucessfully unapply to vacation card'},status=status.HTTP_201_CREATED)
+                else:
+                    return CustomeResponse({'msg':'Id not found Bad request'},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
         
         
         
@@ -296,3 +305,44 @@ class BusinessCardVacationViewSet(viewsets.ModelViewSet):
             
         #--------------------------------------End----------------------------------------------------------#
             
+
+
+
+
+class VacationCardMerge(APIView):
+    
+
+    authentication_classes = (ExpiringTokenAuthentication,)
+    permission_classes = (IsAuthenticated,) 
+    
+    def post(self, request):
+        """ 
+            merge vaction cards to one vacation card and delete all of thems once done.
+            accept from and list of arrays vacation card ids
+        """
+        try:
+            serializer = VacationCardMergeSerializer(data=request.data)
+            if serializer.is_valid():
+                sourceVacationCardIds = request.data.get('source')
+                destVacationCardId = request.data.get('dest')
+                vacationCardIds = sourceVacationCardIds[:]
+                vacationCardIds.append(destVacationCardId)
+               
+                vacationCardCount = VacationCard.objects.filter(user_id=request.user, id__in=vacationCardIds).count()
+                
+                # ids must be belongs to session user and not dest id not in source
+                if vacationCardCount != len(vacationCardIds):
+                    return CustomeResponse({'msg': 'one or all of the vacation ids not exists'}, status=status.HTTP_400_BAD_REQUEST)
+                
+                VacationTrip.objects.filter(user_id=request.user, vacationcard_id__in=sourceVacationCardIds).update(vacationcard_id=destVacationCardId)
+                VacationTrip.objects.filter(user_id=request.user, vacationcard_id__in=sourceVacationCardIds).update(vacationcard_id=destVacationCardId)
+
+                
+                #remove source vacation card once it trips done
+                VacationCard.objects.filter(user_id=request.user, id__in=sourceVacationCardIds).delete()
+                
+                return CustomeResponse({'msg':'success'}, status=status.HTTP_200_OK)
+        except:
+            return CustomeResponse({'msg':'Server Error'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+        return CustomeResponse({'msg': 'data format error, integer required'}, status=status.HTTP_400_BAD_REQUEST)

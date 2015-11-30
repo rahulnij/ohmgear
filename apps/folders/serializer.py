@@ -3,8 +3,8 @@ from models import Folder
 class FolderSerializer(serializers.ModelSerializer):
 	class Meta:
 		model = Folder
-		fields = ('id','foldername')
-	foldername = serializers.CharField(required=True)
+		fields = ('id','foldername','businesscard_id')
+	
 	
 	def validate_foldername(self, value):
 		print len(value) 

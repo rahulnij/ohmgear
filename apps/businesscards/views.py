@@ -286,7 +286,8 @@ class BusinessViewSet(viewsets.ModelViewSet):
    
     def list(self,request):
         
-        user_id = self.request.QUERY_PARAMS.get('user_id', None)
+        #user_id = self.request.QUERY_PARAMS.get('user_id', None)
+        user_id = request.user.id
         published = self.request.QUERY_PARAMS.get('published', None)
         business_id = self.request.QUERY_PARAMS.get('business_id', None)
         is_active   = self.request.QUERY_PARAMS.get('is_active',None)
@@ -294,12 +295,12 @@ class BusinessViewSet(viewsets.ModelViewSet):
         #---------------------- Filter ------------------------#
         if published is not None and user_id is not None:
             if published == '0':
-              self.queryset = self.queryset.select_related('user_id').filter(user_id=user_id,status=0)
+              self.queryset = self.queryset.select_related('user_id').filter(user_id=user_id,status=0,is_active=1)
             elif published == '1':
-              self.queryset = self.queryset.select_related('user_id').filter(user_id=user_id,status=1)
+              self.queryset = self.queryset.select_related('user_id').filter(user_id=user_id,status=1,is_active=1)
         
         elif is_active is not None and user_id is not None:
-            self.queryset = self.queryset.select_related('user_id').filter(user_id=user_id,is_active=0)
+            self.queryset = self.queryset.select_related('user_id').filter(user_id=user_id,is_active=0,status=0)
         
         elif user_id is not None and business_id == 'all':
                 #----------------- All user business card -------------------------------------#
@@ -406,7 +407,8 @@ class BusinessViewSet(viewsets.ModelViewSet):
             #---------------------------- Merge business card -------------------------------------#
             if op == 'merge':
                try:
-                  merge_bcards_ids = request.data["merge_bcards_ids"]
+                  merge_bcards_ids = json.loads(request.data["merge_bcards_ids"])
+                  merge_bcards_ids = merge_bcards_ids["data"]
                   target_bacard_id = request.data["target_bacard_id"]
                except:
                   merge_bcards_ids = None
@@ -415,11 +417,7 @@ class BusinessViewSet(viewsets.ModelViewSet):
                if merge_bcards_ids and target_bacard_id:
                     target_bacard = BusinessCard.objects.select_related().get(id=target_bacard_id,user_id= user_id)
                     first_json = json.loads(json.dumps(target_bacard.contact_detail.bcard_json_data))
-
-                    merge_bcards_ids = merge_bcards_ids.split(",")
-                    merge_bcards_ids = filter(None, merge_bcards_ids)
                     #---- make sure target_bacard_id not in merge_bcards_ids ---------------------------------------------#
-                    print merge_bcards_ids,merge_bcards_ids
                     if target_bacard_id not in merge_bcards_ids:
                     #-----------------------------------------------------------------------------------------------------#                    
                         merge_bcards = BusinessCard.objects.filter(id__in=merge_bcards_ids,user_id= user_id).all()
@@ -447,13 +445,12 @@ class BusinessViewSet(viewsets.ModelViewSet):
             #---------------------------- Delete Business Card -------------------------------------#         
             if op == 'delete':
                 try:
-                 bcard_ids = request.data["bcard_ids"]
+                 bcard_ids = json.loads(request.data["bcard_ids"])
+                 bcard_ids = bcard_ids["data"]
                 except:
                  bcard_ids = None
                 if bcard_ids and user_id:
                     try:
-                     bcard_ids = bcard_ids.split(",")
-                     bcard_ids = filter(None, bcard_ids)
                      business_card = BusinessCard.objects.filter(id__in=bcard_ids,user_id= user_id)
                      if business_card:
                        business_card.delete()   
@@ -462,10 +459,8 @@ class BusinessViewSet(viewsets.ModelViewSet):
                        return CustomeResponse({"msg":"business card does not exists."},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)  
                     except:
                      return CustomeResponse({"msg":"some problem occured on server side during delete business cards"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)           
-                 
-         
-         
-            if op == 'Inactive':
+
+            if op == 'inactive':
                try:
                    bcards_id = json.loads(request.DATA["bcards_ids"])
                    bcards_id  = bcards_id["data"]
@@ -473,12 +468,12 @@ class BusinessViewSet(viewsets.ModelViewSet):
                    bcards_id = None
                if bcards_id:
                    try:
-                     businesscard = BusinessCard.objects.filter(id__in=bcards_id).update(is_active=0)
+                     businesscard = BusinessCard.objects.filter(id__in=bcards_id,user_id=user_id).update(is_active=0,status=0)
                      return CustomeResponse({"msg":"Business cards has been inactive"},status=status.HTTP_200_OK)
                    except:
-                     return CustomeResponse({"msg":"some problem occured on server side during delete business cards"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)           
+                     return CustomeResponse({"msg":"some problem occured on server side during inactive business cards"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)           
                else:
-                         return CustomeResponse({"msg":"business card does not exists."},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)  
+                     return CustomeResponse({"msg":"please provide bcards_id for inactive businesscard"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)  
                   
          #------------------------------- End ---------------------------------------------------#
          
