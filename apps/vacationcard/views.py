@@ -197,7 +197,7 @@ class BusinessCardVacationViewSet(viewsets.ModelViewSet):
         #-------------view vacationinfo ------------#
         vacation_id = self.request.QUERY_PARAMS.get('vacationcard_id',None)
         uservacationvacationinfo = dict()
-        uservacationvacationinfo['trips'] = VacationTrip.objects.filter(vacationcard_id=vacation_id).values().order_by('-id')
+        uservacationvacationinfo['trips'] = VacationTrip.objects.filter(vacationcard_id=vacation_id).values()
         Uservacationbusinesscardinfo = BusinessCardVacation.objects.filter(vacationcard_id=vacation_id).values()
         #print Uservacationbusinesscardinfo
         
