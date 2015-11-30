@@ -286,7 +286,8 @@ class BusinessViewSet(viewsets.ModelViewSet):
    
     def list(self,request):
         
-        user_id = self.request.QUERY_PARAMS.get('user_id', None)
+        #user_id = self.request.QUERY_PARAMS.get('user_id', None)
+        user_id = request.user.id
         published = self.request.QUERY_PARAMS.get('published', None)
         business_id = self.request.QUERY_PARAMS.get('business_id', None)
         is_active   = self.request.QUERY_PARAMS.get('is_active',None)
@@ -329,8 +330,9 @@ class BusinessViewSet(viewsets.ModelViewSet):
     #--------------Method: GET retrieve single record-----------------------------#
     def retrieve(self,request,pk=None,call_from_function=None):
         queryset = self.queryset
-        user = get_object_or_404(BusinessCard,pk=pk)
-        serializer = self.serializer_class(user,context={'request':request})
+        user_id = request.user.id
+        bcard_obj = get_object_or_404(BusinessCard,pk=pk,user_id=user_id)
+        serializer = self.serializer_class(bcard_obj,context={'request':request})
         media=BusinessCardMedia.objects.filter(businesscard_id=pk,front_back__in=[1,2],status=1).values('img_url','front_back')
         data = {}
         data = serializer.data
@@ -405,7 +407,8 @@ class BusinessViewSet(viewsets.ModelViewSet):
             #---------------------------- Merge business card -------------------------------------#
             if op == 'merge':
                try:
-                  merge_bcards_ids = request.data["merge_bcards_ids"]
+                  merge_bcards_ids = json.loads(request.data["merge_bcards_ids"])
+                  merge_bcards_ids = merge_bcards_ids["data"]
                   target_bacard_id = request.data["target_bacard_id"]
                except:
                   merge_bcards_ids = None
@@ -414,25 +417,27 @@ class BusinessViewSet(viewsets.ModelViewSet):
                if merge_bcards_ids and target_bacard_id:
                     target_bacard = BusinessCard.objects.select_related().get(id=target_bacard_id,user_id= user_id)
                     first_json = json.loads(json.dumps(target_bacard.contact_detail.bcard_json_data))
+                    #---- make sure target_bacard_id not in merge_bcards_ids ---------------------------------------------#
+                    if target_bacard_id not in merge_bcards_ids:
+                    #-----------------------------------------------------------------------------------------------------#                    
+                        merge_bcards = BusinessCard.objects.filter(id__in=merge_bcards_ids,user_id= user_id).all()
 
-                    merge_bcards_ids = merge_bcards_ids.split(",")
-                    merge_bcards_ids = filter(None, merge_bcards_ids) 
-                    merge_bcards = BusinessCard.objects.filter(id__in=merge_bcards_ids,user_id= user_id).all()
+                        for temp in merge_bcards:
+                            contact_json_data = temp.contact_detail.bcard_json_data
+                            if contact_json_data:
+                               second_json = json.loads(json.dumps(contact_json_data))
+                               third_json = second_json.copy()
 
-                    for temp in merge_bcards:
-                        contact_json_data = temp.contact_detail.bcard_json_data
-                        if contact_json_data:
-                           second_json = json.loads(json.dumps(contact_json_data))
-                           third_json = second_json.copy()
-                           
-                           self.mergeDict(third_json, first_json)
-                           #------ assign the new json ----------------------------#
-                           target_bacard.contact_detail.bcard_json_data = third_json
-                           target_bacard.contact_detail.save(force_update=True)
-                           first_json = third_json
-                           #------------------- TODO Delete the  merge_bcards_ids -------------------#
-                           #----------------------- End ---------------------------------------------#
-                    return CustomeResponse({"msg":"successfully merged"},status=status.HTTP_200_OK)       
+                               self.mergeDict(third_json, first_json)
+                               #------ assign the new json ----------------------------#
+                               target_bacard.contact_detail.bcard_json_data = third_json
+                               target_bacard.contact_detail.save(force_update=True)
+                               first_json = third_json
+                               #------------------- TODO Delete the  merge_bcards_ids -------------------#
+                               #----------------------- End ---------------------------------------------#
+                        return CustomeResponse({"msg":"successfully merged"},status=status.HTTP_200_OK)
+                    else:
+                        return CustomeResponse({"msg":"Please provide correct target_bacard_id"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)        
                else:
                     return CustomeResponse({"msg":"Please provide merge_bcards_ids, target_bacard_id"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)        
             #----------------------------- End ----------------------------------------------------#
@@ -440,13 +445,12 @@ class BusinessViewSet(viewsets.ModelViewSet):
             #---------------------------- Delete Business Card -------------------------------------#         
             if op == 'delete':
                 try:
-                 bcard_ids = request.data["bcard_ids"]
+                 bcard_ids = json.loads(request.data["bcard_ids"])
+                 bcard_ids = bcard_ids["data"]
                 except:
                  bcard_ids = None
                 if bcard_ids and user_id:
                     try:
-                     bcard_ids = bcard_ids.split(",")
-                     bcard_ids = filter(None, bcard_ids)
                      business_card = BusinessCard.objects.filter(id__in=bcard_ids,user_id= user_id)
                      if business_card:
                        business_card.delete()   
@@ -455,23 +459,21 @@ class BusinessViewSet(viewsets.ModelViewSet):
                        return CustomeResponse({"msg":"business card does not exists."},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)  
                     except:
                      return CustomeResponse({"msg":"some problem occured on server side during delete business cards"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)           
-                 
-         
-         
-         if op == 'Inactive':
-            try:
-                bcards_id = json.loads(request.DATA["bcards_ids"])
-                bcards_id  = bcards_id["data"]
-            except:
-                bcards_id = None
-            if bcards_id:
-                try:
-                  businesscard = BusinessCard.objects.filter(id__in=bcards_id).update(is_active=0,status=0)
-                  return CustomeResponse({"msg":"Business cards has been inactive"},status=status.HTTP_200_OK)
-                except:
-                  return CustomeResponse({"msg":"some problem occured on server side during delete business cards"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)           
-            else:
-                      return CustomeResponse({"msg":"business card does not exists."},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)  
+
+            if op == 'inactive':
+               try:
+                   bcards_id = json.loads(request.DATA["bcards_ids"])
+                   bcards_id  = bcards_id["data"]
+               except:
+                   bcards_id = None
+               if bcards_id:
+                   try:
+                     businesscard = BusinessCard.objects.filter(id__in=bcards_id,user_id=user_id).update(is_active=0,status=0)
+                     return CustomeResponse({"msg":"Business cards has been inactive"},status=status.HTTP_200_OK)
+                   except:
+                     return CustomeResponse({"msg":"some problem occured on server side during inactive business cards"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)           
+               else:
+                     return CustomeResponse({"msg":"please provide bcards_id for inactive businesscard"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)  
                   
          #------------------------------- End ---------------------------------------------------#
          
@@ -548,19 +550,22 @@ class BusinessViewSet(viewsets.ModelViewSet):
 #         except:
 #            return CustomeResponse({'msg':"Please provide bcard_json_data in json format" },status=status.HTTP_400_BAD_REQUEST,validate_errors=1) 
          #---------------------- - End ----------------------------------------------------------- #
+         data = request.DATA.copy()
+         user_id  =request.user.id
+         data['user_id']  =request.user.id
          try:
            bcards = BusinessCard.objects.get(id=pk)
          except:
            return CustomeResponse({'msg':'record not found'},status=status.HTTP_404_NOT_FOUND,validate_errors=1)         
          
-         serializer =  BusinessCardSerializer(bcards,data=request.DATA,context={'request': request})
+         serializer =  BusinessCardSerializer(bcards,data=data,context={'request': request})
          if serializer.is_valid():
             contact = Contacts.objects.get(businesscard_id=pk) 
-            contact_serializer =  ContactsSerializer(contact,data=request.DATA,context={'request': request})
+            contact_serializer =  ContactsSerializer(contact,data=data,context={'request': request})
             if contact_serializer.is_valid():
                 business = serializer.save()
                 contact_new = contact_serializer.save()
-                user = User.objects.get(id=request.data['user_id'])
+                user = User.objects.get(id=user_id)
                 #-------------- Save Notes -------------------------------#
                 data_new = serializer.data.copy()
                 try:
