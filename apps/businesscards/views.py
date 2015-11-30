@@ -294,12 +294,12 @@ class BusinessViewSet(viewsets.ModelViewSet):
         #---------------------- Filter ------------------------#
         if published is not None and user_id is not None:
             if published == '0':
-              self.queryset = self.queryset.select_related('user_id').filter(user_id=user_id,status=0)
+              self.queryset = self.queryset.select_related('user_id').filter(user_id=user_id,status=0,is_active=1)
             elif published == '1':
-              self.queryset = self.queryset.select_related('user_id').filter(user_id=user_id,status=1)
+              self.queryset = self.queryset.select_related('user_id').filter(user_id=user_id,status=1,is_active=1)
         
         elif is_active is not None and user_id is not None:
-            self.queryset = self.queryset.select_related('user_id').filter(user_id=user_id,is_active=0)
+            self.queryset = self.queryset.select_related('user_id').filter(user_id=user_id,is_active=0,status=0)
         
         elif user_id is not None and business_id == 'all':
                 #----------------- All user business card -------------------------------------#
@@ -466,7 +466,7 @@ class BusinessViewSet(viewsets.ModelViewSet):
                 bcards_id = None
             if bcards_id:
                 try:
-                  businesscard = BusinessCard.objects.filter(id__in=bcards_id).update(is_active=0)
+                  businesscard = BusinessCard.objects.filter(id__in=bcards_id).update(is_active=0,status=0)
                   return CustomeResponse({"msg":"Business cards has been inactive"},status=status.HTTP_200_OK)
                 except:
                   return CustomeResponse({"msg":"some problem occured on server side during delete business cards"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)           
