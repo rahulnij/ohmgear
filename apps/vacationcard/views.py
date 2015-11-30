@@ -117,9 +117,6 @@ class VacationCardViewSet(viewsets.ModelViewSet):
                     try:
                         vcard_ids = json.loads(request.data['vcard_ids'])
                         vcard_ids = vcard_ids['data']
-                        print  vcard_ids
-                        #vcard_ids = vcard_ids.split(",")
-                       # vcard_ids = filter(None, vcard_ids)
                         vacation_card = VacationCard.objects.filter(id__in=vcard_ids)
                         vacationtrip_info = VacationTrip.objects.filter(vacationcard_id__in=vcard_ids)
                         businesscardvacation_info = BusinessCardVacation.objects.filter(vacationcard_id__in=vcard_ids)
