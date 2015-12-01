@@ -309,7 +309,6 @@ class BusinessViewSet(viewsets.ModelViewSet):
                 vacation_data_check = 1
         elif user_id is not None:
             self.queryset = self.queryset.select_related('user_id').filter(user_id=user_id)
-            check = 1
         
         #------------------------- End -------------------------#
         serializer = self.serializer_class(self.queryset,many=True)
@@ -407,8 +406,7 @@ class BusinessViewSet(viewsets.ModelViewSet):
             #---------------------------- Merge business card -------------------------------------#
             if op == 'merge':
                try:
-                  merge_bcards_ids = json.loads(request.data["merge_bcards_ids"])
-                  merge_bcards_ids = merge_bcards_ids["data"]
+                  merge_bcards_ids = request.data["merge_bcards_ids"]["data"]
                   target_bacard_id = request.data["target_bacard_id"]
                except:
                   merge_bcards_ids = None
@@ -425,9 +423,10 @@ class BusinessViewSet(viewsets.ModelViewSet):
                         for temp in merge_bcards:
                             contact_json_data = temp.contact_detail.bcard_json_data
                             if contact_json_data:
-                               second_json = json.loads(json.dumps(contact_json_data))
-                               third_json = second_json.copy()
-
+                               try: 
+                                third_json = contact_json_data.copy()
+                               except:
+                                third_json = {}   
                                self.mergeDict(third_json, first_json)
                                #------ assign the new json ----------------------------#
                                target_bacard.contact_detail.bcard_json_data = third_json
