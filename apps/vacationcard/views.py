@@ -122,13 +122,14 @@ class VacationCardViewSet(viewsets.ModelViewSet):
                         businesscardvacation_info = BusinessCardVacation.objects.filter(vacationcard_id__in=vcard_ids)
                         if vacation_card:
                             vacation_card.delete()   
-                            #vacationtrip_info.delete()
-                            businesscardvacation_info.delete()
+                            vacationtrip_info.delete()
+                            if businesscardvacation_info:
+                                businesscardvacation_info.delete()
                             return CustomeResponse({'msg':'Vacation card deleted successfully'},status=status.HTTP_201_CREATED)
                         else:
                             return CustomeResponse({'msg':'Vacation card id not found'},status=status.HTTP_201_CREATED)
                     except:
-                        return CustomeResponse({"msg":"some problem occured on server side during delete business cards"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)             
+                        return CustomeResponse({"msg":"some problem occured on server side during delete vacation cards"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)             
                             
 
              #------------------------------- End ---------------------------------------------------#
@@ -175,12 +176,45 @@ class VacationCardViewSet(viewsets.ModelViewSet):
         #-------For delete first have to call viewvaction API than it will send trip id to delete trip--#
         #------------Delete a single stop in Vacation-----#
         vacation_stop = VacationTrip.objects.filter(id=pk)
+        #print vacation_stop
         
         if vacation_stop:
-            vacation_stop.delete()
-            return CustomeResponse({'msg':'Trip has been deleted'},status=status.HTTP_200_OK)
+            vacationcard_id = vacation_stop[0].vacationcard_id
+            vacation_id  = vacationcard_id.id
+            vacation_data = VacationTrip.objects.filter(vacationcard_id=vacation_id)
+            vacationcard_data = VacationCard.objects.filter(id=vacation_id)
+            businesscard_vacation = BusinessCardVacation.objects.filter(vacationcard_id=vacation_id)
+            totalvacationdata =  vacation_data.count()
+
+            if totalvacationdata != 1:
+                vacation_stop.delete()
+                return CustomeResponse({'msg':'Trip has been deleted'},status=status.HTTP_200_OK)
+        
+        #------count no of trips of vacation trip if single tripthan  delete trip and vacation card and businesscard vacation---#
+        
+            if totalvacationdata == 1 :
+                vacation_stop.delete()
+                vacationcard_data.delete()
+                if businesscard_vacation:
+                    businesscard_vacation.delete()
+            return CustomeResponse({'msg':'Trip and vacation card  has been deleted as you have only one stop in yor vacation'},status=status.HTTP_200_OK)
+            
+                    
         else:
+            print "No trip"
             return CustomeResponse({'msg':'Trip_id not found'},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
+        
+        
+      
+        
+        
+        
+        
+        
+        
+        
+        
+        
 
     
 
