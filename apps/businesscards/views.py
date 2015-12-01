@@ -406,7 +406,8 @@ class BusinessViewSet(viewsets.ModelViewSet):
             #---------------------------- Merge business card -------------------------------------#
             if op == 'merge':
                try:
-                  merge_bcards_ids = request.data["merge_bcards_ids"]
+                  merge_bcards_ids = json.loads(request.data["merge_bcards_ids"])
+                  merge_bcards_ids = merge_bcards_ids["data"]
                   target_bacard_id = request.data["target_bacard_id"]
                except:
                   merge_bcards_ids = None
@@ -423,10 +424,9 @@ class BusinessViewSet(viewsets.ModelViewSet):
                         for temp in merge_bcards:
                             contact_json_data = temp.contact_detail.bcard_json_data
                             if contact_json_data:
-                               try: 
-                                third_json = contact_json_data.copy()
-                               except:
-                                third_json = {}   
+                               second_json = json.loads(json.dumps(contact_json_data))
+                               third_json = second_json.copy()
+
                                self.mergeDict(third_json, first_json)
                                #------ assign the new json ----------------------------#
                                target_bacard.contact_detail.bcard_json_data = third_json
