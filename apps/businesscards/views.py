@@ -406,7 +406,7 @@ class BusinessViewSet(viewsets.ModelViewSet):
             #---------------------------- Merge business card -------------------------------------#
             if op == 'merge':
                try:
-                  merge_bcards_ids = request.data["merge_bcards_ids"]["data"]
+                  merge_bcards_ids = request.data["merge_bcards_ids"]
                   target_bacard_id = request.data["target_bacard_id"]
                except:
                   merge_bcards_ids = None
