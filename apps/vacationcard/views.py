@@ -205,21 +205,6 @@ class VacationCardViewSet(viewsets.ModelViewSet):
             return CustomeResponse({'msg':'Trip_id not found'},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
         
         
-      
-        
-        
-        
-        
-        
-        
-        
-        
-        
-
-    
-
-
-
 
 class BusinessCardVacationViewSet(viewsets.ModelViewSet):
     
