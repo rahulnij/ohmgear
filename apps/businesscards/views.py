@@ -309,7 +309,6 @@ class BusinessViewSet(viewsets.ModelViewSet):
                 vacation_data_check = 1
         elif user_id is not None:
             self.queryset = self.queryset.select_related('user_id').filter(user_id=user_id)
-            check = 1
         
         #------------------------- End -------------------------#
         serializer = self.serializer_class(self.queryset,many=True)
