@@ -115,14 +115,14 @@ class VacationCardViewSet(viewsets.ModelViewSet):
                   vcard_ids = None
                 if vcard_ids:
                     try:
-                        vcard_ids = vcard_ids.split(",")
-                        vcard_ids = filter(None, vcard_ids)
+                        vcard_ids = json.loads(request.data['vcard_ids'])
+                        vcard_ids = vcard_ids['data']
                         vacation_card = VacationCard.objects.filter(id__in=vcard_ids)
                         vacationtrip_info = VacationTrip.objects.filter(vacationcard_id__in=vcard_ids)
                         businesscardvacation_info = BusinessCardVacation.objects.filter(vacationcard_id__in=vcard_ids)
                         if vacation_card:
                             vacation_card.delete()   
-                            vacationtrip_info.delete()
+                            #vacationtrip_info.delete()
                             businesscardvacation_info.delete()
                             return CustomeResponse({'msg':'Vacation card deleted successfully'},status=status.HTTP_201_CREATED)
                         else:
