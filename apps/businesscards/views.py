@@ -556,8 +556,7 @@ class BusinessViewSet(viewsets.ModelViewSet):
                except:
                   user_id = None            
                try:
-                  merge_bcards_ids = json.loads(request.data["merge_bcards_ids"])
-                  merge_bcards_ids = merge_bcards_ids["data"]
+                  merge_bcards_ids = request.data["merge_bcards_ids"]["data"]
                   target_bcard_id = request.data["target_bcard_id"]
                except:
                   merge_bcards_ids = None
@@ -604,8 +603,7 @@ class BusinessViewSet(viewsets.ModelViewSet):
                 except:
                   user_id = None        
                 try:
-                 bcard_ids = json.loads(request.data["bcard_ids"])
-                 bcard_ids = bcard_ids["data"]
+                 bcard_ids = request.data["bcard_ids"]["data"]
                 except:
                  bcard_ids = None
                 if bcard_ids and user_id:
@@ -630,8 +628,7 @@ class BusinessViewSet(viewsets.ModelViewSet):
                except:
                   user_id = None        
                try:
-                   bcards_id = json.loads(request.DATA["bcards_ids"])
-                   bcards_id  = bcards_id["data"]
+                   bcards_id = request.DATA["bcards_ids"]["data"]
                except:
                    bcards_id = None
                if bcards_id:
