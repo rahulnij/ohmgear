@@ -463,15 +463,17 @@ class BusinessViewSet(viewsets.ModelViewSet):
                try:
                    bcards_id = json.loads(request.DATA["bcards_ids"])
                    bcards_id  = bcards_id["data"]
+                   if bcards_id:
+                    
+                      businesscard = BusinessCard.objects.filter(id__in=bcards_id,user_id=user_id).update(is_active=0,status=0)
+                      if businesscard:
+                           return CustomeResponse({"msg":"Business cards has been inactive"},status=status.HTTP_200_OK)
+                      else:
+                           return CustomeResponse({"msg":"please provide bcards_id for inactive businesscard"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)  
+                   else:  
+                      return CustomeResponse({"msg":"some problem occured on server side during inactive business cards"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
+                          
                except:
-                   bcards_id = None
-               if bcards_id:
-                   try:
-                     businesscard = BusinessCard.objects.filter(id__in=bcards_id,user_id=user_id).update(is_active=0,status=0)
-                     return CustomeResponse({"msg":"Business cards has been inactive"},status=status.HTTP_200_OK)
-                   except:
-                     return CustomeResponse({"msg":"some problem occured on server side during inactive business cards"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)           
-               else:
                      return CustomeResponse({"msg":"please provide bcards_id for inactive businesscard"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)  
                   
          #------------------------------- End ---------------------------------------------------#
