@@ -556,7 +556,7 @@ class BusinessViewSet(viewsets.ModelViewSet):
                except:
                   user_id = None            
                try:
-                  merge_bcards_ids = request.data["merge_bcards_ids"]["data"]
+                  merge_bcards_ids = request.data["merge_bcards_ids"]
                   target_bcard_id = request.data["target_bcard_id"]
                except:
                   merge_bcards_ids = None
@@ -603,9 +603,10 @@ class BusinessViewSet(viewsets.ModelViewSet):
                 except:
                   user_id = None        
                 try:
-                 bcard_ids = request.data["bcard_ids"]["data"]
+                 bcard_ids = request.data["bcard_ids"]
                 except:
                  bcard_ids = None
+                 
                 if bcard_ids and user_id:
                     try:
                      business_card = BusinessCard.objects.filter(id__in=bcard_ids,user_id= user_id)
@@ -628,7 +629,7 @@ class BusinessViewSet(viewsets.ModelViewSet):
                except:
                   user_id = None        
                try:
-                   bcards_id = request.DATA["bcards_ids"]["data"]
+                   bcards_id = request.DATA["bcards_ids"]
                except:
                    bcards_id = None
                if bcards_id:
