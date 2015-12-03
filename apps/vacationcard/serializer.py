@@ -8,9 +8,11 @@ import rest_framework.status as status
             
             
 class VacationTripSerializer(serializers.ModelSerializer):
-
+    
+    startdate = []
+    enddate  = []
     class Meta:
-        model = VacationTrip
+        model = VacationTrip                
         fields = (
             'id',
             'vacation_name',
@@ -25,6 +27,24 @@ class VacationTripSerializer(serializers.ModelSerializer):
             'user_id',
             'vacationcard_id'
         )
+        
+    def validate(self, data):
+        """
+        Check that the start is before the stop.
+        """
+        
+        self.startdate.append(str(data['trip_start_date']))
+        
+        self.enddate.append(str(data['trip_end_date']))
+        
+        
+        format = {'start_date':self.startdate,'end_date':self.enddate}
+        #print format
+        if data['trip_start_date'] > data['trip_end_date']:
+            raise serializers.ValidationError("finish must occur after start")
+        
+    
+        return data
         
         
 
