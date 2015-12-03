@@ -383,8 +383,8 @@ class BusinessViewSet(viewsets.ModelViewSet):
          try:           
            user_id = request.user.id
          except:
-           user_id = None         
-         #-------------------- First Validate the json contact data ------------------------------#
+           user_id = None  
+    #-------------------- First Validate the json contact data ------------------------------#
 #         try:
 #            validictory.validate(json.loads(request.DATA["bcard_json_data"]), BUSINESS_CARD_DATA_VALIDATION)
 #         except validictory.ValidationError as error:
