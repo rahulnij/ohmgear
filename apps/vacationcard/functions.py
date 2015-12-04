@@ -36,7 +36,7 @@ def CreateDuplicateVacationCard(vacation_id=None,user_id=None):
 
                         tempdata =   data
                         tempdata['vacationcard_id'] = vcards_id_new
-                        tempdata['user_id']    =        user_id.id
+                        tempdata['user_id']    =        user_id
                         tempContainer.append(tempdata)
                     serializer = VacationTripSerializer(data=tempContainer,many=True)
                     if serializer.is_valid():
