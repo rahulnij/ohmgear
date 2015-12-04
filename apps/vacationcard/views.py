@@ -11,11 +11,11 @@ import itertools
 from django.db.models import Count,Min, Max
 from apps.businesscards.models import BusinessCardVacation,BusinessCard
 
-from rest_framework.decorators import detail_route
+from rest_framework.decorators import detail_route, list_route
 from django.shortcuts import get_object_or_404
 from rest_framework.views import APIView
 from serializer import VacationCardMergeSerializer
-from rest_framework.decorators import detail_route, list_route
+
 
 class VacationCardViewSet(viewsets.ModelViewSet):
     queryset = VacationTrip.objects.select_related().all()
