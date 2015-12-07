@@ -52,13 +52,10 @@ class VacationCardViewSet(viewsets.ModelViewSet):
 #            #print list_c
             queryset = VacationCard.objects.select_related().all().filter(user_id=user_id)
             serializer = VacationCardSerializer(queryset,many=True)
-            return CustomeResponse(serializer.data,status=status.HTTP_201_CREATED)
-
-
-            if list_c:
-                return CustomeResponse({'msg':list_c},status=status.HTTP_201_CREATED)
+            if serializer.data:
+               return CustomeResponse(serializer.data,status=status.HTTP_201_CREATED)
             else:
-                return CustomeResponse({'msg':"No Data Found"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
+               return CustomeResponse(serializer.errors,status=status.HTTP_400_BAD_REQUEST,validate_errors=1) 
     
     def retrieve(self,request,vacationcard_id=None,call_from_function=None):
         queryset = self.queryset
