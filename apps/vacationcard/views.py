@@ -52,7 +52,7 @@ class VacationCardViewSet(viewsets.ModelViewSet):
 #            #print list_c
             queryset = VacationCard.objects.select_related().all().filter(user_id=user_id)
             serializer = VacationCardSerializer(queryset,many=True)
-            if serializer:
+            if serializer.data:
                return CustomeResponse(serializer.data,status=status.HTTP_201_CREATED)
             else:
                return CustomeResponse({'msg':"No records found."},status=status.HTTP_400_BAD_REQUEST,validate_errors=1) 
