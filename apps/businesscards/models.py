@@ -153,7 +153,7 @@ class BusinessCardVacation(models.Model):
         db_table = 'ohmgear_vacationcard_businesscardvacation'
        # unique_together = ('user_id', 'businesscard_id')
         
-    vacationcard_id    =   models.ForeignKey(VacationCard,db_column ="vacationcard_id")
+    vacationcard_id    =   models.ForeignKey(VacationCard,db_column ="vacationcard_id",related_name="businesscardvacation")
     businesscard_id    =   models.ForeignKey(BusinessCard,db_column = "businesscard_id")
     user_id         =   models.ForeignKey(User,db_column = "user_id")
     created_date=models.DateTimeField(_("Created Date"),auto_now_add=True,auto_now=False)

@@ -30,26 +30,30 @@ class VacationCardViewSet(viewsets.ModelViewSet):
            #-----------get all vacations of the user and no of business card attached to it------# 
            # user = user_profile.user
             user_id =  request.user.id
-            #print user_id
-            #user_id =   self.request.QUERY_PARAMS.get('user_id',None)
-            Uservacationcardinfo = VacationCard.objects.filter(user_id=user_id).values()
-            totalvacationcard =  Uservacationcardinfo.count()
-            uservacationcard = []
-            for i in range(totalvacationcard):
-                
-                vacationcardid =   Uservacationcardinfo[i]['id']
-                uservacationcard.append(vacationcardid)
-            userbusinessvacationcardinfo = BusinessCardVacation.objects.values('vacationcard_id').annotate(totalnoofbusinesscard=Count('businesscard_id')).filter(vacationcard_id__in = uservacationcard)
+#            #print user_id
+#            #user_id =   self.request.QUERY_PARAMS.get('user_id',None)
+#            Uservacationcardinfo = VacationCard.objects.filter(user_id=user_id).values()
+#            totalvacationcard =  Uservacationcardinfo.count()
+#            uservacationcard = []
+#            for i in range(totalvacationcard):
+#                
+#                vacationcardid =   Uservacationcardinfo[i]['id']
+#                uservacationcard.append(vacationcardid)
+#            userbusinessvacationcardinfo = BusinessCardVacation.objects.values('vacationcard_id').annotate(totalnoofbusinesscard=Count('businesscard_id')).filter(vacationcard_id__in = uservacationcard)
+#
+#            uservacationtripinfo = VacationTrip.objects.values('vacationcard_id','vacation_name').annotate(stateName=Min('state'),countryName=Min('country'), trip_start_date=Min('trip_start_date'),trip_end_date = Max('trip_end_date')).filter(vacationcard_id__in = uservacationcard)
+#            lst = sorted(itertools.chain(userbusinessvacationcardinfo,uservacationtripinfo), key=lambda x:x['vacationcard_id'])
+#            list_c = []
+#            for k,v in itertools.groupby(lst, key=lambda x:x['vacationcard_id']):
+#                d = {}
+#                for dct in v:
+#                    d.update(dct)
+#                list_c.append(d)
+#            #print list_c
+            queryset = VacationCard.objects.select_related().all().filter(user_id=user_id)
+            serializer = VacationCardSerializer(queryset,many=True)
+            return CustomeResponse(serializer.data,status=status.HTTP_201_CREATED)
 
-            uservacationtripinfo = VacationTrip.objects.values('vacationcard_id','vacation_name').annotate(stateName=Min('state'),countryName=Min('country'), trip_start_date=Min('trip_start_date'),trip_end_date = Max('trip_end_date')).filter(vacationcard_id__in = uservacationcard)
-            lst = sorted(itertools.chain(userbusinessvacationcardinfo,uservacationtripinfo), key=lambda x:x['vacationcard_id'])
-            list_c = []
-            for k,v in itertools.groupby(lst, key=lambda x:x['vacationcard_id']):
-                d = {}
-                for dct in v:
-                    d.update(dct)
-                list_c.append(d)
-            #print list_c
 
             if list_c:
                 return CustomeResponse({'msg':list_c},status=status.HTTP_201_CREATED)
@@ -88,7 +92,7 @@ class VacationCardViewSet(viewsets.ModelViewSet):
             return CustomeResponse({'status':'fail','msg':'Please provide correct Json Format of vacation'},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
        # print stops    
         if VacationCardserializer.is_valid():
-            vacationid = VacationCardserializer.save(user_id=request.user)
+            vacationid = VacationCardserializer.save(user_id=request.user,vacation_name=request.DATA['vacation_name'])
             if stops and vacationid.id:
                     tempContainer = []
                     for data in stops:

@@ -8,6 +8,7 @@ User = settings.AUTH_USER_MODEL
 class VacationCard(models.Model):
     class Meta:
         db_table  = 'ohmgear_vacationcard_vacationcard'
+    vacation_name   =   models.CharField(_('Vacation Name'),max_length=100)     
     user_id            =   models.ForeignKey(User,db_column ="user_id",related_name='user_vacationcard', null=True)
     created_date=models.DateTimeField(_("Created Date"),auto_now_add=True,auto_now=False)
     updated_date=models.DateTimeField(_("Updated Date"),auto_now_add=False,auto_now=True)
@@ -19,9 +20,8 @@ class VacationCard(models.Model):
     
 class VacationTrip(models.Model):
     class Meta:
-        db_table = 'ohmgear_vacationcard_vacationtrip'
-    
-    vacation_name   =   models.CharField(_('Vacation Name'),max_length=100)    
+        db_table = 'ohmgear_vacationcard_vacationtrip'   
+        
     country         =   models.CharField(_('Country'),max_length=50,null =True)
     vacation_type   =   models.CharField(_('Vaction Type'),max_length=100)
     state           =   models.CharField(_('State'),max_length=50)
@@ -31,7 +31,7 @@ class VacationTrip(models.Model):
     user_id         =   models.ForeignKey(User,db_column="user_id", null=True)
     trip_start_date =   models.DateField(_('Trip Start Date'))
     trip_end_date   =   models.DateField(_('Trip End Date'))
-    vacationcard_id    =   models.ForeignKey(VacationCard,db_column ="vacationcard_id")
+    vacationcard_id    =   models.ForeignKey(VacationCard,db_column ="vacationcard_id",related_name= "vacation_trips")
     created_date=models.DateTimeField(_("Created Date"),auto_now_add=True,auto_now=False)
     updated_date=models.DateTimeField(_("Updated Date"),auto_now_add=False,auto_now=True)
     status          =   models.IntegerField(_('Status'),default =1)

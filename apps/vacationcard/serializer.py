@@ -15,7 +15,6 @@ class VacationTripSerializer(serializers.ModelSerializer):
         model = VacationTrip                
         fields = (
             'id',
-            'vacation_name',
             'vacation_type',
             'country',
             'state',
@@ -49,9 +48,11 @@ class VacationTripSerializer(serializers.ModelSerializer):
         
 
 class VacationCardSerializer(serializers.ModelSerializer):
+    attached_business_cards = serializers.IntegerField(source='businesscardvacation.count')
+    vacation_trips = VacationTripSerializer(many=True,read_only=True)
     class Meta:
         model = VacationCard
-        fields = ('id','user_id',)
+        fields = ('id','user_id','vacation_name','vacation_trips','attached_business_cards')
 
 class VacationCardMergeSerializer(serializers.Serializer):
     dest = serializers.IntegerField(required=True)
