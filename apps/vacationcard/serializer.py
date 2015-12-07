@@ -48,7 +48,7 @@ class VacationTripSerializer(serializers.ModelSerializer):
         
 
 class VacationCardSerializer(serializers.ModelSerializer):
-    attached_business_cards = serializers.IntegerField(source='businesscardvacation.count')
+    attached_business_cards = serializers.IntegerField(source='businesscardvacation.count',read_only=True)
     vacation_trips = VacationTripSerializer(many=True,read_only=True)
     class Meta:
         model = VacationCard
