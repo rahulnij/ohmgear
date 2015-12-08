@@ -37,6 +37,6 @@ class VacationTrip(models.Model):
     status          =   models.IntegerField(_('Status'),default =1)
         
     def __unicode__(self):
-        return '{"id":"%s","vacation_name":"%s","country":"%s","vacation_type":"%s","state":"%s","contact_no":"%s","notes":"%s","trip_start_date":"%s","trip_end_date":"%s","vacationcard_id":"%s"}'%(self.id,self.vacation_name,self.country,self.vacation_type,self.state,self.contact_no,self.notes,self.trip_start_date,self.trip_end_date,self.vacationcard_id)
+        return '{"id":"%s","country":"%s","vacation_type":"%s","state":"%s","contact_no":"%s","notes":"%s","trip_start_date":"%s","trip_end_date":"%s","vacationcard_id":"%s"}'%(self.id,self.country,self.vacation_type,self.state,self.contact_no,self.notes,self.trip_start_date,self.trip_end_date,self.vacationcard_id)
         
     

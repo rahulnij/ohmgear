@@ -193,10 +193,10 @@ class VacationCardViewSet(viewsets.ModelViewSet):
                             
 
              #------------------------------- End ---------------------------------------------------#
-        
-        
-        
-        
+             
+             
+
+
      
     def destroy(self,request,pk=None):
         #-------For delete first have to call viewvaction API than it will send trip id to delete trip--#
@@ -243,9 +243,11 @@ class BusinessCardVacationViewSet(viewsets.ModelViewSet):
         #-------------view vacationinfo ------------#
         vacation_id = self.request.QUERY_PARAMS.get('vacationcard_id',None)
         uservacationvacationinfo = dict()
+        vacationcard_name = VacationCard.objects.filter(id=vacation_id).values()
+        uservacationvacationinfo['vacation_name']= vacationcard_name[0]['vacation_name']
+        
         uservacationvacationinfo['trips'] = VacationTrip.objects.filter(vacationcard_id=vacation_id).values().order_by('-id').reverse()
         Uservacationbusinesscardinfo = BusinessCardVacation.objects.filter(vacationcard_id=vacation_id).values()
-        #print Uservacationbusinesscardinfo
         
         businesscard_id = []
         for data in Uservacationbusinesscardinfo :
@@ -257,8 +259,6 @@ class BusinessCardVacationViewSet(viewsets.ModelViewSet):
         businesscardinfo['businessacard'] = BusinessCard.objects.filter(id__in=businesscard_id).values()
         
         uservacationinfo = dict(uservacationvacationinfo, **businesscardinfo)
- 
-        
         
         return CustomeResponse(uservacationinfo,status=status.HTTP_201_CREATED)
     
