@@ -224,9 +224,11 @@ class BusinessCardVacationViewSet(viewsets.ModelViewSet):
         #-------------view vacationinfo ------------#
         vacation_id = self.request.QUERY_PARAMS.get('vacationcard_id',None)
         uservacationvacationinfo = dict()
+        vacationcard_name = VacationCard.objects.filter(id=vacation_id).values()
+        uservacationvacationinfo['vacation_name']= vacationcard_name[0]['vacation_name']
+        
         uservacationvacationinfo['trips'] = VacationTrip.objects.filter(vacationcard_id=vacation_id).values().order_by('-id').reverse()
         Uservacationbusinesscardinfo = BusinessCardVacation.objects.filter(vacationcard_id=vacation_id).values()
-        #print Uservacationbusinesscardinfo
         
         businesscard_id = []
         for data in Uservacationbusinesscardinfo :
@@ -237,13 +239,9 @@ class BusinessCardVacationViewSet(viewsets.ModelViewSet):
         businesscardinfo = dict()
         businesscardinfo['businessacard'] = BusinessCard.objects.filter(id__in=businesscard_id).values()
         
-        vacationcardname = dict()
-        vacationcardname['vacationcard_name'] = VacationCard.objects.filter(id=vacation_id).values()
-        
         uservacationinfo = dict(uservacationvacationinfo, **businesscardinfo)
-        userallvacationinfo = dict(uservacationinfo, **vacationcardname)
         
-        return CustomeResponse(userallvacationinfo,status=status.HTTP_201_CREATED)
+        return CustomeResponse(uservacationinfo,status=status.HTTP_201_CREATED)
     
     def create(self,request):
         
