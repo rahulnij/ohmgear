@@ -53,6 +53,7 @@ class VacationCardViewSet(viewsets.ModelViewSet):
             queryset = VacationCard.objects.select_related().all().filter(user_id=user_id)
             serializer = VacationCardSerializer(queryset,many=True)
             
+            #--------------------------- here we have iterated data to add stard and end date trip -----#
             counter = 0
             for items in serializer.data:
                 for key, value in items.items():
@@ -69,7 +70,7 @@ class VacationCardViewSet(viewsets.ModelViewSet):
                     
                 counter = counter + 1       
                     
-                           
+            #----------------------------- End ----------------------------------------------------------#               
                            
             if serializer.data:
                return CustomeResponse(serializer.data,status=status.HTTP_201_CREATED)
