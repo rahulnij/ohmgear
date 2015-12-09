@@ -30,26 +30,6 @@ class VacationCardViewSet(viewsets.ModelViewSet):
            #-----------get all vacations of the user and no of business card attached to it------# 
            # user = user_profile.user
             user_id =  request.user.id
-#            #print user_id
-#            #user_id =   self.request.QUERY_PARAMS.get('user_id',None)
-#            Uservacationcardinfo = VacationCard.objects.filter(user_id=user_id).values()
-#            totalvacationcard =  Uservacationcardinfo.count()
-#            uservacationcard = []
-#            for i in range(totalvacationcard):
-#                
-#                vacationcardid =   Uservacationcardinfo[i]['id']
-#                uservacationcard.append(vacationcardid)
-#            userbusinessvacationcardinfo = BusinessCardVacation.objects.values('vacationcard_id').annotate(totalnoofbusinesscard=Count('businesscard_id')).filter(vacationcard_id__in = uservacationcard)
-#
-#            uservacationtripinfo = VacationTrip.objects.values('vacationcard_id','vacation_name').annotate(stateName=Min('state'),countryName=Min('country'), trip_start_date=Min('trip_start_date'),trip_end_date = Max('trip_end_date')).filter(vacationcard_id__in = uservacationcard)
-#            lst = sorted(itertools.chain(userbusinessvacationcardinfo,uservacationtripinfo), key=lambda x:x['vacationcard_id'])
-#            list_c = []
-#            for k,v in itertools.groupby(lst, key=lambda x:x['vacationcard_id']):
-#                d = {}
-#                for dct in v:
-#                    d.update(dct)
-#                list_c.append(d)
-#            #print list_c
             queryset = VacationCard.objects.select_related().all().filter(user_id=user_id)
             serializer = VacationCardSerializer(queryset,many=True)
             
@@ -194,14 +174,10 @@ class VacationCardViewSet(viewsets.ModelViewSet):
                             
 
              #------------------------------- End ---------------------------------------------------#
-             
-             
-             
             
-    @list_route(methods=['post'],)                  
-    def editvacationdata(self,request):
+    def update(self,request,pk=None):
         user_id     = request.user.id
-        vacation_id = request.data['vacation_id']
+        vacation_id = pk
         
         vacationtrip = VacationTrip.objects.filter(vacationcard_id=vacation_id,user_id = user_id)
         stops = request.data['vacation']
@@ -222,7 +198,7 @@ class VacationCardViewSet(viewsets.ModelViewSet):
                         serializer.save(user_id=request.user)
                         return CustomeResponse(serializer.data,status=status.HTTP_201_CREATED)
                     else:
-                     return CustomeResponse(serializer.errors,status=status.HTTP_201_CREATED)
+                     return CustomeResponse(serializer.errors,status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
         else:
          return CustomeResponse({'msg':'trip not found'},status=status.HTTP_401_UNAUTHORIZED,validate_errors=1)
     
