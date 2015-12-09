@@ -200,10 +200,10 @@ class VacationCardViewSet(viewsets.ModelViewSet):
             
     @list_route(methods=['post'],)                  
     def editvacationdata(self,request):
-        
+        user_id     = request.user.id
         vacation_id = request.data['vacation_id']
-        vacationtrip = VacationTrip.objects.filter(vacationcard_id=vacation_id)
         
+        vacationtrip = VacationTrip.objects.filter(vacationcard_id=vacation_id,user_id = user_id)
         stops = request.data['vacation']
         if vacationtrip and vacation_id:
                     vacationtrip.delete()
@@ -224,7 +224,7 @@ class VacationCardViewSet(viewsets.ModelViewSet):
                     else:
                      return CustomeResponse(serializer.errors,status=status.HTTP_201_CREATED)
         else:
-         return CustomeResponse(VacationTripSerializer.errors,status=status.HTTP_401_UNAUTHORIZED,validate_errors=1)
+         return CustomeResponse({'msg':'trip not found'},status=status.HTTP_401_UNAUTHORIZED,validate_errors=1)
     
      
     def destroy(self,request,pk=None):
