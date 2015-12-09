@@ -52,6 +52,26 @@ class VacationCardViewSet(viewsets.ModelViewSet):
 #            #print list_c
             queryset = VacationCard.objects.select_related().all().filter(user_id=user_id)
             serializer = VacationCardSerializer(queryset,many=True)
+            
+            #--------------------------- here we have iterated data to add stard and end date trip -----#
+            counter = 0
+            for items in serializer.data:
+                for key, value in items.items():
+                    if key == 'vacation_trips': 
+                       counter1 = 1 
+                       no_of_stop = len(value)
+                       for value1 in sorted(value):
+                           if counter1 == 1:
+                               serializer.data[counter]['vacation_start_date'] = value1['trip_start_date']
+                           if no_of_stop == counter1:
+                               serializer.data[counter]['vacation_end_date'] = value1['trip_end_date']
+  
+                           counter1 = counter1 + 1 
+                    
+                counter = counter + 1       
+                    
+            #----------------------------- End ----------------------------------------------------------#               
+                           
             if serializer.data:
                return CustomeResponse(serializer.data,status=status.HTTP_201_CREATED)
             else:

@@ -234,10 +234,10 @@ class BusinessCardSkillAvailableViewSet(viewsets.ModelViewSet):
             if skill:
                self.queryset = self.queryset.filter(skill_name__istartswith=skill)
             serializer = self.serializer_class(self.queryset,many=True)
-            if serializer: 
+            if serializer and self.queryset: 
                     return CustomeResponse(serializer.data,status=status.HTTP_200_OK)
             else:
-               return CustomeResponse(serializer.errors,status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
+               return CustomeResponse({'msg':'no data found'},status=status.HTTP_200_OK,validate_errors=1)
   
     def create(self,request):
         serializer = BusinessCardSkillAvailableSerializer(data = request.data,context={'request':request})
