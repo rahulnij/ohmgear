@@ -176,8 +176,36 @@ class VacationCardViewSet(viewsets.ModelViewSet):
              #------------------------------- End ---------------------------------------------------#
              
              
-
-
+             
+            
+    @list_route(methods=['post'],)                  
+    def editvacationdata(self,request):
+        
+        vacation_id = request.data['vacation_id']
+        vacationtrip = VacationTrip.objects.filter(vacationcard_id=vacation_id)
+        
+        stops = request.data['vacation']
+        if vacationtrip and vacation_id:
+                    vacationtrip.delete()
+                    tempContainer = []
+                    
+                    for data in stops:
+                        temp_dict = u''
+                        tempdata = {}
+                        tempdata =   data
+                        tempdata['vacationcard_id'] = vacation_id
+                        tempContainer.append(tempdata)
+                    
+                        #tempContainer =  tempContainer[0]['x   
+                    serializer = VacationTripSerializer(data=tempContainer,many=True)
+                    if serializer.is_valid():
+                        serializer.save(user_id=request.user)
+                        return CustomeResponse(serializer.data,status=status.HTTP_201_CREATED)
+                    else:
+                     return CustomeResponse(serializer.errors,status=status.HTTP_201_CREATED)
+        else:
+         return CustomeResponse(VacationTripSerializer.errors,status=status.HTTP_401_UNAUTHORIZED,validate_errors=1)
+    
      
     def destroy(self,request,pk=None):
         #-------For delete first have to call viewvaction API than it will send trip id to delete trip--#
