@@ -250,7 +250,7 @@ class BusinessCardVacationViewSet(viewsets.ModelViewSet):
         user_id =  request.user.id
         queryset = VacationCard.objects.select_related().all().filter(user_id=user_id,id=vacation_id)
         serializer = SingleVacationCardSerializer(queryset,many=True)
-        return CustomeResponse(serializer.data,status=status.HTTP_201_CREATED)
+        return CustomeResponse(serializer.data,status=status.HTTP_200_OK)
     
     def create(self,request):
         

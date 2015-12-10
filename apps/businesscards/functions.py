@@ -13,6 +13,7 @@ def createDuplicateBusinessCard(bcard_id=None,user_id=None):
             except:
               return None  
             bcards.id = None
+            bcards.status=0
             bcards.save()
             bcards_id_new = bcards.id
             contact_id  = bcards.contact_detail.id
