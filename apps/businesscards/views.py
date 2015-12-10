@@ -398,6 +398,7 @@ class BusinessViewSet(viewsets.ModelViewSet):
          #---------------------------------- End ----------------------------------------------------------- #
          tempData = request.data.copy()
          tempData["user_id"] = user_id
+         
          serializer =  BusinessCardSerializer(data=tempData,context={'request': request})
          if serializer.is_valid():
             contact_serializer =  ContactsSerializer(data=tempData,context={'request': request})

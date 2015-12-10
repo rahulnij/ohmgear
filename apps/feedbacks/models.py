@@ -15,10 +15,10 @@ class Feedbacks(models.Model):
         user_id = models.ForeignKey(User,db_column="user_id")
         bug_type = models.CharField(_("Bug Type"),max_length=50)
         comment = models.CharField(_("Comment"),max_length=50)
-        status  = models.IntegerField(_("Status"),default=0)
+        status  = models.IntegerField(_("Status"),default=1)
         created_date=models.DateTimeField(_("Created Date"),auto_now_add=True,auto_now=False)
         updated_date=models.DateTimeField(_("Updated Date"),auto_now_add=False,auto_now=True)
         
         def __unicode__(self):
-            return '{"id":"%s","user_id":"%s","bug_type":"%s"}' %(self.id,self.user_id,self.bug_type)
+            return '{"id":"%s","user_id":"%s","comment":"%s",bug_type":"%s"}' %(self.id,self.user_id,self.comment,self.bug_type)
     
