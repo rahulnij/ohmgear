@@ -256,8 +256,8 @@ class BusinessCardSkillAvailableViewSet(viewsets.ModelViewSet):
 class BusinessCardAddSkillViewSet(viewsets.ModelViewSet):
     queryset  = BusinessCardAddSkill.objects.all()
     serializer_class = BusinessCardAddSkillSerializer
-    #authentication_classes = (ExpiringTokenAuthentication,)
-    #permission_classes = (IsAuthenticated,) 
+    authentication_classes = (ExpiringTokenAuthentication,)
+    permission_classes = (IsAuthenticated,) 
      #--------------Method: GET-----------------------------#       
     def list(self,request):
         return CustomeResponse({'msg':'GET method not allowed'},status=status.HTTP_405_METHOD_NOT_ALLOWED,validate_errors=1)
@@ -266,7 +266,9 @@ class BusinessCardAddSkillViewSet(viewsets.ModelViewSet):
         return CustomeResponse({'msg':'GET method not allowed'},status=status.HTTP_405_METHOD_NOT_ALLOWED,validate_errors=1)
     
     def create(self,request):
-        serializer = BusinessCardAddSkillSerializer(data = request.data,context={'request':request})
+        tempData = request.data.copy()
+        tempData['user_id'] = request.user.id
+        serializer = BusinessCardAddSkillSerializer(data = tempData,context={'request':request})
         if serializer.is_valid():
             serializer.save()
             return CustomeResponse(serializer.data,status=status.HTTP_201_CREATED)
@@ -394,16 +396,17 @@ class BusinessViewSet(viewsets.ModelViewSet):
 #         except:
 #            return CustomeResponse({'msg':"Please provide bcard_json_data in json format" },status=status.HTTP_400_BAD_REQUEST,validate_errors=1) 
          #---------------------------------- End ----------------------------------------------------------- #
-         
-         serializer =  BusinessCardSerializer(data=request.data,context={'request': request})
+         tempData = request.data.copy()
+         tempData["user_id"] = user_id
+         serializer =  BusinessCardSerializer(data=tempData,context={'request': request})
          if serializer.is_valid():
-            contact_serializer =  ContactsSerializer(data=request.DATA,context={'request': request})
+            contact_serializer =  ContactsSerializer(data=tempData,context={'request': request})
             if contact_serializer.is_valid():
                 business = serializer.save()
                 contact_serializer.validated_data['businesscard_id'] = business
                 contact_serializer.save()
                 contact = Contacts.objects.get(businesscard_id=business.id)
-                user = User.objects.get(id=request.data['user_id'])
+                user = User.objects.get(id=user_id)
                 #-------------- Save Notes -------------------------------#
                 data_new = serializer.data.copy()
                 try:

@@ -1,6 +1,6 @@
 from rest_framework import routers, serializers, viewsets
 from models import VacationTrip,VacationCard
-from serializer import VacationTripSerializer,VacationCardSerializer,BusinessCardVacationSerializer
+from serializer import VacationTripSerializer,VacationCardSerializer,BusinessCardVacationSerializer,SingleVacationCardSerializer
 from ohmgear.functions import CustomeResponse
 from rest_framework.decorators import api_view
 import rest_framework.status as status
@@ -247,25 +247,10 @@ class BusinessCardVacationViewSet(viewsets.ModelViewSet):
     def list(self,request):
         #-------------view vacationinfo ------------#
         vacation_id = self.request.QUERY_PARAMS.get('vacationcard_id',None)
-        uservacationvacationinfo = dict()
-        vacationcard_name = VacationCard.objects.filter(id=vacation_id).values()
-        uservacationvacationinfo['vacation_name']= vacationcard_name[0]['vacation_name']
-        
-        uservacationvacationinfo['trips'] = VacationTrip.objects.filter(vacationcard_id=vacation_id).values().order_by('-id').reverse()
-        Uservacationbusinesscardinfo = BusinessCardVacation.objects.filter(vacationcard_id=vacation_id).values()
-        
-        businesscard_id = []
-        for data in Uservacationbusinesscardinfo :
-            #print data['businesscard_id_id'] 
-            bcard_id = data['businesscard_id_id'] 
-            businesscard_id.append(bcard_id)
-        
-        businesscardinfo = dict()
-        businesscardinfo['businessacard'] = BusinessCard.objects.filter(id__in=businesscard_id).values()
-        
-        uservacationinfo = dict(uservacationvacationinfo, **businesscardinfo)
-        
-        return CustomeResponse(uservacationinfo,status=status.HTTP_201_CREATED)
+        user_id =  request.user.id
+        queryset = VacationCard.objects.select_related().all().filter(user_id=user_id,id=vacation_id)
+        serializer = SingleVacationCardSerializer(queryset,many=True)
+        return CustomeResponse(serializer.data,status=status.HTTP_201_CREATED)
     
     def create(self,request):
         
