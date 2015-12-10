@@ -54,6 +54,7 @@ INSTALLED_APPS = (
     'apps.folders',
     'rest_framework',
     'rest_framework.authtoken',
+    'apps.feedbacks',
     'simple_history',
 )
 
