@@ -13,7 +13,8 @@ class Feedbacks(models.Model):
         class Meta:
             db_table = 'ohmgear_feedback'
         user_id = models.ForeignKey(User,db_column="user_id")
-        bug_type = models.CharField(_("Template Content"),max_length=50)
+        bug_type = models.CharField(_("Bug Type"),max_length=50)
+        comment = models.CharField(_("Comment"),max_length=50)
         status  = models.IntegerField(_("Status"),default=0)
         created_date=models.DateTimeField(_("Created Date"),auto_now_add=True,auto_now=False)
         updated_date=models.DateTimeField(_("Updated Date"),auto_now_add=False,auto_now=True)
