@@ -31,9 +31,16 @@ class IdentifierViewSet(viewsets.ModelViewSet):
             
             # -----------Get all identifiers of the user--------#
             user =  self.request.QUERY_PARAMS.get('user', None)
-            userdata = Identifier.objects.filter(user=user).values().order_by('-id')
+            #userdata = Identifier.objects.filter(user=user).values().order_by('-id')
+            
+            userdata = Identifier.objects.select_related('businesscard_identifiers').filter(user=user)
+            
+           # queryset = VacationCard.objects.select_related().all().filter(user_id=user_id)
+            serializer = IdentifierSerializer(userdata,many=True)
+            
+            
             if userdata:
-                return CustomeResponse(userdata,status=status.HTTP_201_CREATED)
+                return CustomeResponse(serializer.data,status=status.HTTP_201_CREATED)
             else:
                 if identifier is None:
                     return CustomeResponse({'msg':'user id is not exist'},status=status.HTTP_201_CREATED)
