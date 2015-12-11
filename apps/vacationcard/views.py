@@ -340,6 +340,7 @@ class VacationCardMerge(APIView):
             accept from and list of arrays vacation card ids
         """
         try:
+            
             serializer = VacationCardMergeSerializer(data=request.data)
             if serializer.is_valid():
                 sourceVacationCardIds = request.data.get('source')
