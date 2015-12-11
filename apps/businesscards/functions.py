@@ -64,13 +64,6 @@ def createDuplicateBusinessCard(bcard_id=None,user_id=None):
             except:
                 pass
             
-            try:
-                bcard_skill = BusinessCardAddSkill.objects.get(businesscard_id=bcard_id,user_id=user_id,status=1)
-                bcard_skill.businesscard_id = BusinessCard.objects.get(id=bcards_id_new)   
-                bcard_skill.save()
-            except:
-                pass
-            
             return bcards_id_new
             #---------------------- End---------------------------------------------------#
             
