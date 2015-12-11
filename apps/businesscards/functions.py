@@ -14,7 +14,8 @@ def createDuplicateBusinessCard(bcard_id=None,user_id=None):
               return None  
             bcards.id = None
             bcards.status=0
-            bcards.name = "copy "+  bcards.name
+            if bcards.name:
+                bcards.name = "copy %s"  %(bcards.name)
             bcards.save()
             bcards_id_new = bcards.id
             contact_id  = bcards.contact_detail.id
