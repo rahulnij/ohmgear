@@ -141,6 +141,7 @@ class BusinessCardAddSkill(models.Model):
     created_date=models.DateTimeField(_("Created Date"),auto_now_add=True,auto_now=False)
     updated_date=models.DateTimeField(_("Updated Date"),auto_now_add=False,auto_now=True)
     skill_name = models.TextField("Skill Name")
+    
     status      = models.IntegerField(_("Status"),default=1)
     #history = HistoricalRecords()
     
