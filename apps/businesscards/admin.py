@@ -14,6 +14,6 @@ class BusinessCardSkillAvailableAdmin(admin.ModelAdmin):
         self.counter = self.counter + 1
         return self.counter
     
-    list_per_page = 25
+    list_per_page = 100
     
 admin.site.register(BusinessCardSkillAvailable,BusinessCardSkillAvailableAdmin)
