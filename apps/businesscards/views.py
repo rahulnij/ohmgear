@@ -267,8 +267,23 @@ class BusinessCardAddSkillViewSet(viewsets.ModelViewSet):
     
     def create(self,request):
         serializer = BusinessCardAddSkillSerializer(data = request.data,context={'request':request})
+
         if serializer.is_valid():
-            serializer.save()
+            request.POST._mutable = True
+            businesscard_id = request.POST.get('businesscard_id')
+            user_id = request.POST.get('user_id')
+            skill_name = request.POST.get('skill_name').split(',')
+    
+            #update = request.POST.get('update')
+            BusinessCardAddSkill.objects.filter(businesscard_id=businesscard_id).delete()
+            for item in skill_name:
+                data = {}
+                data['skill_name'] = item
+                data['user_id'] = user_id
+                data['businesscard_id'] = businesscard_id
+                serializer = BusinessCardAddSkillSerializer(data = data,context={'request':request})
+                serializer.is_valid()
+                serializer.save()
             return CustomeResponse(serializer.data,status=status.HTTP_201_CREATED)
         else:
             return CustomeResponse(serializer.errors,status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
