@@ -25,6 +25,8 @@ from apps.vacationcard.models import VacationCard
 from apps.vacationcard.serializer import VacationCardSerializer
 import itertools
 from rest_framework.views import APIView
+from rest_framework.decorators import detail_route, list_route
+import collections    
 #---------------- Business Card Summary ----------------------#
 class CardSummary(APIView):
     """
@@ -232,10 +234,10 @@ class BusinessCardSkillAvailableViewSet(viewsets.ModelViewSet):
             if skill:
                self.queryset = self.queryset.filter(skill_name__istartswith=skill)
             serializer = self.serializer_class(self.queryset,many=True)
-            if serializer: 
+            if serializer and self.queryset: 
                     return CustomeResponse(serializer.data,status=status.HTTP_200_OK)
             else:
-               return CustomeResponse(serializer.errors,status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
+               return CustomeResponse({'msg':'no data found'},status=status.HTTP_200_OK,validate_errors=1)
   
     def create(self,request):
         serializer = BusinessCardSkillAvailableSerializer(data = request.data,context={'request':request})
@@ -254,8 +256,8 @@ class BusinessCardSkillAvailableViewSet(viewsets.ModelViewSet):
 class BusinessCardAddSkillViewSet(viewsets.ModelViewSet):
     queryset  = BusinessCardAddSkill.objects.all()
     serializer_class = BusinessCardAddSkillSerializer
-    #authentication_classes = (ExpiringTokenAuthentication,)
-    #permission_classes = (IsAuthenticated,) 
+    authentication_classes = (ExpiringTokenAuthentication,)
+    permission_classes = (IsAuthenticated,) 
      #--------------Method: GET-----------------------------#       
     def list(self,request):
         return CustomeResponse({'msg':'GET method not allowed'},status=status.HTTP_405_METHOD_NOT_ALLOWED,validate_errors=1)
@@ -264,9 +266,26 @@ class BusinessCardAddSkillViewSet(viewsets.ModelViewSet):
         return CustomeResponse({'msg':'GET method not allowed'},status=status.HTTP_405_METHOD_NOT_ALLOWED,validate_errors=1)
     
     def create(self,request):
-        serializer = BusinessCardAddSkillSerializer(data = request.data,context={'request':request})
+        tempData = request.data.copy()
+        tempData['user_id'] = request.user.id
+        serializer = BusinessCardAddSkillSerializer(data = tempData,context={'request':request})
+
         if serializer.is_valid():
-            serializer.save()
+            request.POST._mutable = True
+            businesscard_id = request.POST.get('businesscard_id')
+            user_id = request.POST.get('user_id')
+            skill_name = request.POST.get('skill_name').split(',')
+    
+            #update = request.POST.get('update')
+            BusinessCardAddSkill.objects.filter(businesscard_id=businesscard_id).delete()
+            for item in skill_name:
+                data = {}
+                data['skill_name'] = item
+                data['user_id'] = user_id
+                data['businesscard_id'] = businesscard_id
+                serializer = BusinessCardAddSkillSerializer(data = data,context={'request':request})
+                serializer.is_valid()
+                serializer.save()
             return CustomeResponse(serializer.data,status=status.HTTP_201_CREATED)
         else:
             return CustomeResponse(serializer.errors,status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
@@ -275,7 +294,7 @@ class BusinessCardAddSkillViewSet(viewsets.ModelViewSet):
     def update(self, request, pk=None):
          return CustomeResponse({'msg':"Update method does not allow"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
                   
-import collections     
+ 
 class BusinessViewSet(viewsets.ModelViewSet):
     queryset = BusinessCard.objects.all()
     serializer_class = BusinessCardSerializer
@@ -381,102 +400,8 @@ class BusinessViewSet(viewsets.ModelViewSet):
          try:           
            user_id = request.user.id
          except:
-           user_id = None
-         
-         if op is not None: 
-            #---------------------------- Duplicate the business card ----------------------------# 
-            if op == 'duplicate':                
-               try:
-                  bcard_id = request.data["bcard_id"]     
-               except:
-                  bcard_id = None
-               if bcard_id and user_id:
-                  from functions import createDuplicateBusinessCard
-                  bcards_id_new = createDuplicateBusinessCard(bcard_id,user_id)
-                  if bcards_id_new:
-                    data =  self.retrieve(request,pk=bcards_id_new,call_from_function=1)
-                  else:
-                      return CustomeResponse({"msg":"some problem occured on server side."},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
-                  return CustomeResponse(data,status=status.HTTP_200_OK)
-               else:
-                  return CustomeResponse({"msg":"Please provide bcard_id and user_id"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)        
-
-            #----------------------------- End ----------------------------------------------------#
-
-            #---------------------------- Merge business card -------------------------------------#
-            if op == 'merge':
-               try:
-                  merge_bcards_ids = json.loads(request.data["merge_bcards_ids"])
-                  merge_bcards_ids = merge_bcards_ids["data"]
-                  target_bacard_id = request.data["target_bacard_id"]
-               except:
-                  merge_bcards_ids = None
-                  target_bacard_id = None
-               #------------------ Get the  target_bacard_id and merge_bcards_ids data ------------------------------#
-               if merge_bcards_ids and target_bacard_id:
-                    target_bacard = BusinessCard.objects.select_related().get(id=target_bacard_id,user_id= user_id)
-                    first_json = json.loads(json.dumps(target_bacard.contact_detail.bcard_json_data))
-                    #---- make sure target_bacard_id not in merge_bcards_ids ---------------------------------------------#
-                    if target_bacard_id not in merge_bcards_ids:
-                    #-----------------------------------------------------------------------------------------------------#                    
-                        merge_bcards = BusinessCard.objects.filter(id__in=merge_bcards_ids,user_id= user_id).all()
-
-                        for temp in merge_bcards:
-                            contact_json_data = temp.contact_detail.bcard_json_data
-                            if contact_json_data:
-                               second_json = json.loads(json.dumps(contact_json_data))
-                               third_json = second_json.copy()
-
-                               self.mergeDict(third_json, first_json)
-                               #------ assign the new json ----------------------------#
-                               target_bacard.contact_detail.bcard_json_data = third_json
-                               target_bacard.contact_detail.save(force_update=True)
-                               first_json = third_json
-                               #------------------- TODO Delete the  merge_bcards_ids -------------------#
-                               #----------------------- End ---------------------------------------------#
-                        return CustomeResponse({"msg":"successfully merged"},status=status.HTTP_200_OK)
-                    else:
-                        return CustomeResponse({"msg":"Please provide correct target_bacard_id"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)        
-               else:
-                    return CustomeResponse({"msg":"Please provide merge_bcards_ids, target_bacard_id"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)        
-            #----------------------------- End ----------------------------------------------------#
-
-            #---------------------------- Delete Business Card -------------------------------------#         
-            if op == 'delete':
-                try:
-                 bcard_ids = json.loads(request.data["bcard_ids"])
-                 bcard_ids = bcard_ids["data"]
-                except:
-                 bcard_ids = None
-                if bcard_ids and user_id:
-                    try:
-                     business_card = BusinessCard.objects.filter(id__in=bcard_ids,user_id= user_id)
-                     if business_card:
-                       business_card.delete()   
-                       return CustomeResponse({"msg":"business card deleted successfully."},status=status.HTTP_200_OK)
-                     else:
-                       return CustomeResponse({"msg":"business card does not exists."},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)  
-                    except:
-                     return CustomeResponse({"msg":"some problem occured on server side during delete business cards"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)           
-
-            if op == 'inactive':
-               try:
-                   bcards_id = json.loads(request.DATA["bcards_ids"])
-                   bcards_id  = bcards_id["data"]
-               except:
-                   bcards_id = None
-               if bcards_id:
-                   try:
-                     businesscard = BusinessCard.objects.filter(id__in=bcards_id,user_id=user_id).update(is_active=0,status=0)
-                     return CustomeResponse({"msg":"Business cards has been inactive"},status=status.HTTP_200_OK)
-                   except:
-                     return CustomeResponse({"msg":"some problem occured on server side during inactive business cards"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)           
-               else:
-                     return CustomeResponse({"msg":"please provide bcards_id for inactive businesscard"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)  
-                  
-         #------------------------------- End ---------------------------------------------------#
-         
-         #-------------------- First Validate the json contact data ------------------------------#
+           user_id = None  
+    #-------------------- First Validate the json contact data ------------------------------#
 #         try:
 #            validictory.validate(json.loads(request.DATA["bcard_json_data"]), BUSINESS_CARD_DATA_VALIDATION)
 #         except validictory.ValidationError as error:
@@ -486,16 +411,18 @@ class BusinessViewSet(viewsets.ModelViewSet):
 #         except:
 #            return CustomeResponse({'msg':"Please provide bcard_json_data in json format" },status=status.HTTP_400_BAD_REQUEST,validate_errors=1) 
          #---------------------------------- End ----------------------------------------------------------- #
+         tempData = request.data.copy()
+         tempData["user_id"] = user_id
          
-         serializer =  BusinessCardSerializer(data=request.data,context={'request': request})
+         serializer =  BusinessCardSerializer(data=tempData,context={'request': request})
          if serializer.is_valid():
-            contact_serializer =  ContactsSerializer(data=request.DATA,context={'request': request})
+            contact_serializer =  ContactsSerializer(data=tempData,context={'request': request})
             if contact_serializer.is_valid():
                 business = serializer.save()
                 contact_serializer.validated_data['businesscard_id'] = business
                 contact_serializer.save()
                 contact = Contacts.objects.get(businesscard_id=business.id)
-                user = User.objects.get(id=request.data['user_id'])
+                user = User.objects.get(id=user_id)
                 #-------------- Save Notes -------------------------------#
                 data_new = serializer.data.copy()
                 try:
@@ -613,6 +540,126 @@ class BusinessViewSet(viewsets.ModelViewSet):
          else:
             return CustomeResponse(serializer.errors,status=status.HTTP_400_BAD_REQUEST,validate_errors=1)        
         
+    #---------------------------- Duplicate the business card ----------------------------#
+    @list_route(methods=['post'],)   
+    def duplicate(self,request):
+            try:           
+              user_id = request.user.id
+            except:
+              user_id = None 
+              
+            try:
+                  bcard_id = request.data["bcard_id"]     
+            except:
+                  bcard_id = None
+                  
+            if bcard_id and user_id:
+                  from functions import createDuplicateBusinessCard
+                  bcards_id_new = createDuplicateBusinessCard(bcard_id,user_id)
+                  if bcards_id_new:
+                    data =  self.retrieve(request,pk=bcards_id_new,call_from_function=1)
+                  else:
+                      return CustomeResponse({"msg":"some problem occured on server side."},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
+                  return CustomeResponse(data,status=status.HTTP_200_OK)
+            else:
+                  return CustomeResponse({"msg":"Please provide bcard_id and user_id"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)        
 
+    #----------------------------- End ----------------------------------------------------#
+    
+    #---------------------------- Merge business card -------------------------------------#        
+    @list_route(methods=['post'],)   
+    def merge(self,request):
+            
+               try:           
+                  user_id = request.user.id
+               except:
+                  user_id = None            
+               try:
+                  merge_bcards_ids = request.data["merge_bcards_ids"]
+                  target_bcard_id = request.data["target_bcard_id"]
+               except:
+                  merge_bcards_ids = None
+                  target_bcard_id = None
+                  
+               #------------------ Get the  target_bcard_id and merge_bcards_ids data ------------------------------#
+               if merge_bcards_ids and target_bcard_id and user_id:
+                    target_bacard = BusinessCard.objects.select_related().get(id=target_bcard_id,user_id= user_id)
+                    first_json = json.loads(json.dumps(target_bacard.contact_detail.bcard_json_data))
+                    #---- make sure target_bcard_id not in merge_bcards_ids ---------------------------------------------#
+                    if target_bcard_id not in merge_bcards_ids:
+                    #-----------------------------------------------------------------------------------------------------#                    
+                        merge_bcards = BusinessCard.objects.filter(id__in=merge_bcards_ids,user_id= user_id).all()
+
+                        for temp in merge_bcards:
+                            contact_json_data = temp.contact_detail.bcard_json_data
+                            if contact_json_data:
+                               try: 
+                                second_json = json.loads(json.dumps(contact_json_data))
+                               except:
+                                second_json = {}   
+                               third_json = second_json.copy()
+
+                               self.mergeDict(third_json, first_json)
+                               #------ assign the new json ----------------------------#
+                               target_bacard.contact_detail.bcard_json_data = third_json
+                               target_bacard.contact_detail.save(force_update=True)
+                               first_json = third_json
+                               #------------------- TODO Delete the  merge_bcards_ids -------------------#
+                               #----------------------- End ---------------------------------------------#
+                        return CustomeResponse({"msg":"successfully merged"},status=status.HTTP_200_OK)
+                    else:
+                        return CustomeResponse({"msg":"Please provide correct target_bcard_id"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)        
+               else:
+                    return CustomeResponse({"msg":"Please provide merge_bcards_ids, target_bcard_id"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)        
+    #----------------------------- End ----------------------------------------------------#      
+    
+    #---------------------------- Delete business card -------------------------------------#    
+    @list_route(methods=['post'],)   
+    def delete(self,request):
+                
+                try:           
+                  user_id = request.user.id
+                except:
+                  user_id = None        
+                try:
+                 bcard_ids = request.data["bcard_ids"]
+                except:
+                 bcard_ids = None
+                 
+                if bcard_ids and user_id:
+                    try:
+                     business_card = BusinessCard.objects.filter(id__in=bcard_ids,user_id= user_id)
+                     if business_card:
+                       business_card.delete()   
+                       return CustomeResponse({"msg":"business card deleted successfully."},status=status.HTTP_200_OK)
+                     else:
+                       return CustomeResponse({"msg":"business card does not exists."},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)  
+                    except:
+                     return CustomeResponse({"msg":"some problem occured on server side during delete business cards"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
+            
+    #----------------------------- End ----------------------------------------------------#
+    
+    #---------------------------- Inactive Business Card -------------------------------------#        
+    @list_route(methods=['post'],)   
+    def inactive(self,request):
+               
+               try:           
+                  user_id = request.user.id
+               except:
+                  user_id = None        
+               try:
+                   bcards_id = request.DATA["bcards_ids"]
+               except:
+                   bcards_id = None
+               if bcards_id:
+                   try:
+                     businesscard = BusinessCard.objects.filter(id__in=bcards_id,user_id=user_id).update(is_active=0,status=0)
+                     return CustomeResponse({"msg":"Business cards has been inactive"},status=status.HTTP_200_OK)
+                   except:
+                     return CustomeResponse({"msg":"some problem occured on server side during inactive business cards"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)           
+               else:
+                     return CustomeResponse({"msg":"please provide bcards_ids for inactive businesscard"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1) 
+                  
+    #------------------------------- End ---------------------------------------------------#           
     def destroy(self, request, pk=None):
          return CustomeResponse({'msg':'record not found'},status=status.HTTP_404_NOT_FOUND,validate_errors=1)

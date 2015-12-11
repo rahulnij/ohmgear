@@ -5,15 +5,17 @@ from apps.businesscards.models import BusinessCardVacation
 from rest_framework import routers, serializers, viewsets
 from ohmgear.functions import CustomeResponse
 import rest_framework.status as status
+
             
             
 class VacationTripSerializer(serializers.ModelSerializer):
-
+    
+    startdate = []
+    enddate  = []
     class Meta:
-        model = VacationTrip
+        model = VacationTrip                
         fields = (
             'id',
-            'vacation_name',
             'vacation_type',
             'country',
             'state',
@@ -26,12 +28,34 @@ class VacationTripSerializer(serializers.ModelSerializer):
             'vacationcard_id'
         )
         
+    def validate(self, data):
+        """
+        Check that the start is before the stop.
+        """
+        
+        self.startdate.append(str(data['trip_start_date']))
+        
+        self.enddate.append(str(data['trip_end_date']))
+        print self.startdate
+        
+        format = {'start_date':self.startdate,'end_date':self.enddate}
+        #print format
+        if data['trip_start_date'] > data['trip_end_date']:
+            raise serializers.ValidationError("finish must occur after start")
+        
+    
+        return data
+        
         
 
 class VacationCardSerializer(serializers.ModelSerializer):
+    attached_business_cards = serializers.IntegerField(source='businesscardvacation.count',read_only=True)
+    vacation_trips = VacationTripSerializer(many=True,read_only=True)
     class Meta:
         model = VacationCard
-        fields = ('id','user_id',)
+        fields = ('id','user_id','vacation_name','vacation_trips','attached_business_cards')
+
+
 
 class VacationCardMergeSerializer(serializers.Serializer):
     dest = serializers.IntegerField(required=True)
@@ -46,3 +70,12 @@ class BusinessCardVacationSerializer(serializers.ModelSerializer):
             'businesscard_id',
             'user_id'
         )
+
+from apps.businesscards.serializer import BusinessCardSerializer        
+class SingleVacationCardSerializer(serializers.ModelSerializer):
+    #vacationbusinesscard = BusinessCardVacationSerializer(many=True,read_only=True)
+    business_vacation = BusinessCardSerializer(many=True,read_only=True)
+    vacation_trips = VacationTripSerializer(many=True,read_only=True)
+    class Meta:
+        model = VacationCard
+        fields = ('id','user_id','vacation_name','vacation_trips','business_vacation')        

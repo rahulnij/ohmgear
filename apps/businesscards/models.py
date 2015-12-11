@@ -140,7 +140,8 @@ class BusinessCardAddSkill(models.Model):
     businesscard_id = models.ForeignKey(BusinessCard,db_column='businesscard_id',related_name='businesscard_skills')
     created_date=models.DateTimeField(_("Created Date"),auto_now_add=True,auto_now=False)
     updated_date=models.DateTimeField(_("Updated Date"),auto_now_add=False,auto_now=True)
-    skill_name = models.CharField(_("Skill Name"),null=True,max_length=50)
+    skill_name = models.TextField("Skill Name")
+    
     status      = models.IntegerField(_("Status"),default=1)
     #history = HistoricalRecords()
     
@@ -153,8 +154,8 @@ class BusinessCardVacation(models.Model):
         db_table = 'ohmgear_vacationcard_businesscardvacation'
        # unique_together = ('user_id', 'businesscard_id')
         
-    vacationcard_id    =   models.ForeignKey(VacationCard,db_column ="vacationcard_id")
-    businesscard_id    =   models.ForeignKey(BusinessCard,db_column = "businesscard_id")
+    vacationcard_id    =   models.ForeignKey(VacationCard,db_column ="vacationcard_id",related_name="businesscardvacation")
+    businesscard_id    =   models.ForeignKey(BusinessCard,db_column = "businesscard_id",related_name="vacationbusinesscard")
     user_id         =   models.ForeignKey(User,db_column = "user_id")
     created_date=models.DateTimeField(_("Created Date"),auto_now_add=True,auto_now=False)
     updated_date=models.DateTimeField(_("Updated Date"),auto_now_add=False,auto_now=True)

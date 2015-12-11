@@ -100,6 +100,11 @@ router.register(r'api/folder',folder_view.FolderViewSet)
 #---------------Vacation Card app url-------------------------------#
 import apps.vacationcard.views as vacationcard_views
 router.register(r'api/vacationcard',vacationcard_views.VacationCardViewSet)
+
+#--------------Feddback App url-------------------------------------#
+import apps.feedbacks.views as feebacks_views
+router.register(r'api/feedbacks',feebacks_views.FeedbackViewSet)
+
 #----------------Businesscard Vacation url ---------------------------#
 import apps.vacationcard.views as businesscardvacation_views
 router.register(r'api/businesscardvacation',businesscardvacation_views.BusinessCardVacationViewSet)
