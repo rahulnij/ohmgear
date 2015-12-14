@@ -33,7 +33,7 @@ class IdentifierViewSet(viewsets.ModelViewSet):
             user =  self.request.QUERY_PARAMS.get('user', None)
             #userdata = Identifier.objects.filter(user=user).values().order_by('-id')
             
-            userdata = Identifier.objects.select_related('businesscard_identifiers').filter(user=user)
+            userdata = Identifier.objects.select_related('businesscard_identifiers').filter(user=user).order_by('-id')
             
            # queryset = VacationCard.objects.select_related().all().filter(user_id=user_id)
             serializer = IdentifierSerializer(userdata,many=True)
