@@ -113,7 +113,7 @@ class IdentifierViewSet(viewsets.ModelViewSet):
             getidentifier = CreateSystemIdentifier()
 
             if getidentifier:
-                return CustomeResponse({'msg':getidentifier},status=status.HTTP_200_OK)
+                return CustomeResponse({'identifier':getidentifier},status=status.HTTP_200_OK)
             else:
                 return CustomeResponse({'msg':'Identifier Not exist'},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
         else:
