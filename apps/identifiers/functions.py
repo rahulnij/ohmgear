@@ -5,6 +5,9 @@ import re
 
 def CreateSystemIdentifier():
     serial = ''.join(random.choice('0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ') for i in range(6))
+    identifier_exist = Identifier.objects.filter(identifier= serial).values()
+    if identifier_exist:
+        return CreateSystemIdentifier()
     return serial
 
 
