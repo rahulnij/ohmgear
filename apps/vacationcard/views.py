@@ -104,7 +104,7 @@ class VacationCardViewSet(viewsets.ModelViewSet):
                     
                      
                         #tempContainer =  tempContainer[0]['x   
-                    serializer = VacationTripSerializer(data=tempContainer,many=True)
+                    serializer = VacationTripSerializer(data=tempContainer,many=True,context={'local_date': 1})
                     if serializer.is_valid():
                         serializer.save(user_id=request.user)
                         return CustomeResponse(serializer.data,status=status.HTTP_201_CREATED)

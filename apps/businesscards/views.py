@@ -588,8 +588,12 @@ class BusinessViewSet(viewsets.ModelViewSet):
                                target_bacard.contact_detail.bcard_json_data = third_json
                                target_bacard.contact_detail.save(force_update=True)
                                first_json = third_json
-                               #------------------- TODO Delete the  merge_bcards_ids -------------------#
-                               #----------------------- End ---------------------------------------------#
+                        #------------------- TODO Delete the  merge_bcards_ids -------------------#
+                        if merge_bcards:
+                           merge_bcards.delete()
+                        else:
+                           return CustomeResponse({"msg":"merge_bcards_ids does not exist."},status=status.HTTP_400_BAD_REQUEST,validate_errors=1) 
+                        #----------------------- End ---------------------------------------------#
                         return CustomeResponse({"msg":"successfully merged"},status=status.HTTP_200_OK)
                     else:
                         return CustomeResponse({"msg":"Please provide correct target_bcard_id"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)        
