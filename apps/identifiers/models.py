@@ -31,3 +31,21 @@ class Identifier(models.Model):
     
     def __unicode__(self):
         return'{"id":"%s","identifier":"%s","identifiertype":"%s"}' %(self.id,self.identifier,self.identifiertype)
+    
+    
+    
+
+class LockIdentifier(models.Model):
+    """ 
+        will move to redis    
+    """
+    class Meta:
+        db_table = 'ohmgear_identifiers_lockidentifier'
+    user  = models.ForeignKey(User)
+    identifier = models.CharField(_("identifier"),max_length=12,unique=True)
+    created_date=models.DateTimeField(_("Created Date"),auto_now_add=True,auto_now=False)
+    updated_date=models.DateTimeField(_("Updated Date"),auto_now_add=False,auto_now=True)
+        
+    def __unicode__(self):
+        return '{"id":"%s","identifier":"%s"}'%(self.id,self.identifier)
+    
