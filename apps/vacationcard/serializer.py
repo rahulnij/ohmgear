@@ -39,7 +39,6 @@ class VacationTripSerializer(serializers.ModelSerializer):
            self.count = 1
         start_time = datetime.strptime(str(data['trip_start_date']),'%Y-%m-%d')
         end_date = datetime.strptime(str(data['trip_end_date']),'%Y-%m-%d')
-        
         if self.local_date:
             for tempData in self.local_date:
                 if tempData['trip_start_date'] > start_time:
