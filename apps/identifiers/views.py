@@ -1,8 +1,8 @@
 from django.shortcuts import render
 from rest_framework import routers, serializers, viewsets
-from models import Identifier
+from models import Identifier,LockIdentifier
 from apps.businesscards.models import BusinessCardIdentifier
-from serializer import IdentifierSerializer,CreateIdentifierSerializer
+from serializer import IdentifierSerializer,CreateIdentifierSerializer,LockIdentifierSerializer
 from apps.businesscards.serializer import BusinessCardIdentifierSerializer
 from ohmgear.functions import CustomeResponse
 from rest_framework.decorators import api_view
@@ -94,7 +94,10 @@ class IdentifierViewSet(viewsets.ModelViewSet):
          serializer =  CreateIdentifierSerializer(data=data,context={'request': request,'msg':'not exist'})
          
          if serializer.is_valid():
-            serializer.save()      
+            serializer.save()
+            remove_lock_data =  LockIdentifier.objects.filter(identifier= request.POST.get('identifier'))
+            if remove_lock_data:
+                remove_lock_data.delete()
             return CustomeResponse(serializer.data,status=status.HTTP_201_CREATED)        
          else:
             return CustomeResponse(serializer.errors,status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
@@ -119,5 +122,41 @@ class IdentifierViewSet(viewsets.ModelViewSet):
         else:
             return CustomeResponse({'msg':'Invalid User'},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
         
+        
+        
+        
+            
+#class   LockidentifierViewSet(viewsets.Modelsets):      
+    @list_route(methods=['post'],)
+    def lockidentifier(self,request):
+        print request.POST.get('identifier')
+        try:
+            user_id = request.user
+        except:
+            user_id = None
+        data ={}
+        #data = request.data.copy()
+        data['user'] = request.user.id
+        data['identifier'] = request.POST.get('identifier')
+    
+        serializer = LockIdentifierSerializer(data=data,context ={'request':request,'msg':'not exist'})
+        
+        if serializer.is_valid():
+            identifier_exist  = Identifier.objects.filter(identifier=data['identifier'])
+            identifier_lock_exist = LockIdentifier.objects.filter(identifier=data['identifier'])
+            if identifier_exist or identifier_lock_exist:
+                return CustomeResponse({'msg':'Identifier is already locked'})
+            else:
+                serializer.save()
+                return CustomeResponse(serializer.data,status=status.HTTP_201_CREATED)
+        else:
+            return CustomeResponse({'msg':serializer.errors},validate_errors=1)
+        
+        
+        
+            
+        
+
+
     
 
