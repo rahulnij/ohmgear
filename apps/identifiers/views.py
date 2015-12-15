@@ -2,7 +2,7 @@ from django.shortcuts import render
 from rest_framework import routers, serializers, viewsets
 from models import Identifier
 from apps.businesscards.models import BusinessCardIdentifier
-from serializer import IdentifierSerializer
+from serializer import IdentifierSerializer,CreateIdentifierSerializer
 from apps.businesscards.serializer import BusinessCardIdentifierSerializer
 from ohmgear.functions import CustomeResponse
 from rest_framework.decorators import api_view
@@ -13,6 +13,7 @@ import random
 from functions import CreateSystemIdentifier
 from ohmgear.token_authentication import ExpiringTokenAuthentication
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.decorators import detail_route,list_route
 
 # Create your views here.
 class IdentifierViewSet(viewsets.ModelViewSet):
@@ -31,9 +32,16 @@ class IdentifierViewSet(viewsets.ModelViewSet):
             
             # -----------Get all identifiers of the user--------#
             user =  self.request.QUERY_PARAMS.get('user', None)
-            userdata = Identifier.objects.filter(user=user).values().order_by('-id')
+            #userdata = Identifier.objects.filter(user=user).values().order_by('-id')
+            
+            userdata = Identifier.objects.select_related('businesscard_identifiers').filter(user=user).order_by('-id')
+            
+           # queryset = VacationCard.objects.select_related().all().filter(user_id=user_id)
+            serializer = IdentifierSerializer(userdata,many=True)
+            
+            
             if userdata:
-                return CustomeResponse(userdata,status=status.HTTP_201_CREATED)
+                return CustomeResponse(serializer.data,status=status.HTTP_201_CREATED)
             else:
                 if identifier is None:
                     return CustomeResponse({'msg':'user id is not exist'},status=status.HTTP_201_CREATED)
@@ -63,27 +71,53 @@ class IdentifierViewSet(viewsets.ModelViewSet):
     #--------------Method: POST create new Identifier -----------------------------#
     def create(self, request):
          
-         serializer =  IdentifierSerializer(data=request.DATA,context={'request': request})
+         
+         data = request.DATA.copy()
+         data['user']  =request.user.id
+         data['identifierlastdate'] =  str((datetime.date.today() + datetime.timedelta(3*365/12)).isoformat())
+         #serializer =  IdentifierSerializer(data=request.DATA,context={'request': request})
          
          #print businesscard_id
          #------ object value which can be change are mutable object value which cannot be change are immutable  -----------#
-         mutable = request.POST._mutable
-         request.POST._mutable = True
-         request.DATA['identifierlastdate'] = str((datetime.date.today() + datetime.timedelta(3*365/12)).isoformat())
+         #mutable = request.POST._mutable
+         #request.POST._mutable = True
+         #request.DATA['identifierlastdate'] = str((datetime.date.today() + datetime.timedelta(3*365/12)).isoformat())
             
         
          if request.POST.get('identifiertype') == '1':
-            request.POST['identifier'] =   CreateSystemIdentifier()
+            pass
+#------------System identifier is done on refersh in another API-----------#            
+            #request.POST['identifier'] =   CreateSystemIdentifier()
          else: 
            pass
          #request.POST._mutable = mutable
-         serializer =  IdentifierSerializer(data=request.DATA,context={'request': request,'msg':'not exist'})
+         serializer =  CreateIdentifierSerializer(data=data,context={'request': request,'msg':'not exist'})
          
          if serializer.is_valid():
-            identifier_id = serializer.save()      
+            serializer.save()      
             return CustomeResponse(serializer.data,status=status.HTTP_201_CREATED)        
          else:
             return CustomeResponse(serializer.errors,status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
-    
+        
+        
+        
+    @list_route(methods=['post'],)
+    def refreshidentifier(self,request):
+        
+        try:
+            user_id = request.user
+        except:
+            user_id = None
+        
+        if user_id:
+            getidentifier = CreateSystemIdentifier()
+
+            if getidentifier:
+                return CustomeResponse({'identifier':getidentifier},status=status.HTTP_200_OK)
+            else:
+                return CustomeResponse({'msg':'Identifier Not exist'},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
+        else:
+            return CustomeResponse({'msg':'Invalid User'},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
+        
     
 

@@ -1,6 +1,6 @@
 from django.conf import settings
 #------------------ Return token if does not exit then create -------------------#  
-from models import BusinessCard
+from models import BusinessCard,BusinessCardMedia,BusinessCardAddSkill
 from apps.contacts.models import Contacts
 from apps.notes.models import Notes
 
@@ -14,6 +14,8 @@ def createDuplicateBusinessCard(bcard_id=None,user_id=None):
               return None  
             bcards.id = None
             bcards.status=0
+            if bcards.name:
+                bcards.name = "copy %s"  %(bcards.name)
             bcards.save()
             bcards_id_new = bcards.id
             contact_id  = bcards.contact_detail.id
@@ -45,6 +47,23 @@ def createDuplicateBusinessCard(bcard_id=None,user_id=None):
                 note.save()
             except:
                 pass    
+            
+            try:
+                bcard_image = BusinessCardMedia.objects.get(businesscard_id=bcard_id,user_id=user_id,front_back=1,status=1)
+                bcard_image.businesscard_id = BusinessCard.objects.get(id=bcards_id_new)   
+                bcard_image.id =None
+                bcard_image.save()
+            except:
+                pass
+            
+            try:
+                bcard_image = BusinessCardMedia.objects.get(businesscard_id=bcard_id,user_id=user_id,front_back=2,status=1)
+                bcard_image.businesscard_id = BusinessCard.objects.get(id=bcards_id_new)   
+                bcard_image.front_back =2
+                bcard_image.id =None
+                bcard_image.save()
+            except:
+                pass
             
             return bcards_id_new
             #---------------------- End---------------------------------------------------#

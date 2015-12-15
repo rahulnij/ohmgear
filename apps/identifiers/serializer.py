@@ -13,6 +13,13 @@ class IdentifierSerializer(serializers.ModelSerializer):
     class Meta:
         model = Identifier
         fields = ('id','user','identifier','identifiertype','paymentstatus','identifierlastdate','business_identifier')
+
+class CreateIdentifierSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Identifier
+        fields = ('id','user','identifier','identifiertype','paymentstatus','identifierlastdate')
+
+
 #        read_only_fields = ('id',)
 
     def validate(self, attrs):
