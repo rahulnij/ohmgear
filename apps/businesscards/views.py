@@ -308,15 +308,18 @@ class BusinessCardAddSkillViewSet(viewsets.ModelViewSet):
         return CustomeResponse({'msg':'GET method not allowed'},status=status.HTTP_405_METHOD_NOT_ALLOWED,validate_errors=1)
     
     def create(self,request):
-        tempData = request.data.copy()
+      #  tempData = request.data.copy()]
+        tempData = {}
         tempData['user_id'] = request.user.id
+        tempData['businesscard_id'] = request.DATA['businesscard_id']
+        tempData['skill_name'] = request.DATA['skill_name'].split(',')
         serializer = BusinessCardAddSkillSerializer(data = tempData,context={'request':request})
 
         if serializer.is_valid():
-            request.POST._mutable = True
-            businesscard_id = request.POST.get('businesscard_id')
-            user_id = request.POST.get('user_id')
-            skill_name = request.POST.get('skill_name').split(',')
+            #request.POST._mutable = True
+            businesscard_id = tempData['businesscard_id']
+            user_id = tempData['user_id']
+            skill_name = tempData['skill_name']
     
             #update = request.POST.get('update')
             BusinessCardAddSkill.objects.filter(businesscard_id=businesscard_id).delete()
