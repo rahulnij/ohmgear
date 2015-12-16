@@ -6,6 +6,7 @@ from rest_framework import routers, serializers, viewsets
 from ohmgear.functions import CustomeResponse
 import rest_framework.status as status
 from datetime import datetime
+
             
             
 class VacationTripSerializer(serializers.ModelSerializer):
@@ -58,10 +59,11 @@ class VacationTripSerializer(serializers.ModelSerializer):
 
 class VacationCardSerializer(serializers.ModelSerializer):
     attached_business_cards = serializers.IntegerField(source='businesscardvacation.count',read_only=True)
+   # business_vacation = BusinessCardSerializer(many=True,read_only=True)
     vacation_trips = VacationTripSerializer(many=True,read_only=True)
     class Meta:
         model = VacationCard
-        fields = ('id','user_id','vacation_name','vacation_trips','attached_business_cards')
+        fields = ('id','user_id','vacation_name','vacation_trips','attached_business_cards','business_vacation')
 
 
 
