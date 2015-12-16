@@ -502,31 +502,7 @@ class BusinessViewSet(viewsets.ModelViewSet):
                                 data_new['note_frontend'] = request.data['note_frontend']
                 except:
                     pass                            
-                #-------------------------End-----------------------------------#  
-                
-#                #-------------- Save Image in image Gallary -------------------------------#
-#                try:
-#                 if 'bcard_image_frontend' in request.data and  request.data['bcard_image_frontend']: 
-#                   #------------------ Set previous image 0 ----------------------------------------# 
-#                   BusinessCardMedia.objects.filter(user_id=user,businesscard_id=business,front_back=1).update(status=0)
-#                   bcard_image_frontend, created = BusinessCardMedia.objects.update_or_create(user_id=user,businesscard_id=business,img_url=request.data['bcard_image_frontend'],front_back=1,status=1)
-#                   #print bcard_image_frontend.img_url
-#                   data_new['bcard_image_frontend'] = str(settings.DOMAIN_NAME)+str(settings.MEDIA_URL)+str(bcard_image_frontend.img_url)                  
-#                except:
-#                   data_new['bcard_image_frontend'] = ""
-#                
-#                try:
-#                 if 'bcard_image_backend' in request.data and  request.data['bcard_image_backend']:
-#                   BusinessCardMedia.objects.filter(user_id=user,businesscard_id=business,front_back=2).update(status=0)  
-#                   bcard_image_backend, created = BusinessCardMedia.objects.update_or_create(user_id=user,businesscard_id=business,img_url=request.data['bcard_image_backend'],front_back=2,status=1)
-#                   if bcard_image_frontend:
-#                      data_new['bcard_image_backend'] = str(settings.DOMAIN_NAME)+str(settings.MEDIA_URL)+str(bcard_image_backend.img_url)                  
-#                      pass
-#                except:
-#                    pass                
-#                
-#                #-------------------------End-----------------------------------#                  
-                
+                #-------------------------End-----------------------------------#
             else:
                 return CustomeResponse(contact_serializer.errors,status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
             
@@ -575,33 +551,7 @@ class BusinessViewSet(viewsets.ModelViewSet):
                                         data = Notes.objects.update_or_create(user_id=user,contact_id=contact,note=request.data['note_frontend'],bcard_side_no=2) 
                                         data_new['note_backend'] = request.data['note_backend']                                    
                 except:
-                    pass                            
-                #-------------------------End-----------------------------------# 
-                
-#                #-------------- Save Image in image Gallary -------------------------------#
-#                try:
-#                 if 'bcard_image_frontend' in request.data and  request.data['bcard_image_frontend']: 
-#                   #------------------ Set previous image 0 ----------------------------------------# 
-#                   BusinessCardMedia.objects.filter(businesscard_id=business,front_back=1).update(status=0)
-#                   bcard_image_frontend, created = BusinessCardMedia.objects.update_or_create(user_id=user,businesscard_id=business,img_url=request.data['bcard_image_frontend'],front_back=1,status=1)
-#                   #print bcard_image_frontend.img_url
-#                   data_new['bcard_image_frontend'] = str(settings.DOMAIN_NAME)+str(settings.MEDIA_URL)+str(bcard_image_frontend.img_url)                  
-#                except:
-#                   data_new['bcard_image_frontend'] = ""
-#                
-#                try:
-#                 if 'bcard_image_backend' in request.data and  request.data['bcard_image_backend']:
-#                   BusinessCardMedia.objects.filter(businesscard_id=business,front_back=2).update(status=0)  
-#                   bcard_image_backend, created = BusinessCardMedia.objects.update_or_create(user_id=user,businesscard_id=business,img_url=request.data['bcard_image_backend'],front_back=2,status=1)
-#                   if bcard_image_backend:
-#                      data_new['bcard_image_backend'] = str(settings.DOMAIN_NAME)+str(settings.MEDIA_URL)+str(bcard_image_backend.img_url)                  
-#                      
-#                except:
-#                    data_new['bcard_image_backend'] = ""                
-#                
-#                #-------------------------End-----------------------------------#                 
-                
-                
+                    pass
             else:
                 return CustomeResponse(contact_serializer.errors,status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
             
