@@ -183,9 +183,9 @@ class VacationCardViewSet(viewsets.ModelViewSet):
         stops = request.data['vacation']
         if request.data['vacation_name']:
             vacation_name = request.data['vacation_name']
-            messages = VacationCard.objects.get(id=pk)
-            serializer =  VacationCardSerializer(messages,data=request.DATA,partial=True,context={'request': request})
-        
+            #messages = VacationCard.objects.get(id=pk)
+            #serializer =  VacationCardSerializer(messages,data=request.DATA,partial=True,context={'request': request})
+            VacationCard.objects.filter(id= vacation_id).update(vacation_name=vacation_name  )
         
         if vacationtrip and vacation_id:
                     vacationtrip.delete()
