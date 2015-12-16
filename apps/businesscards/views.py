@@ -180,6 +180,7 @@ class BusinessCardMediaViewSet(viewsets.ModelViewSet):
             else:
               return CustomeResponse(serializer.errors,status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
     #----------------- End-------------------------------------------------------#
+    #------------- Upload image after business card created ---------------------#
     @list_route(methods=['post'],) 
     def upload(self,request):
         user_id = self.request.user.id
@@ -217,6 +218,30 @@ class BusinessCardMediaViewSet(viewsets.ModelViewSet):
         else:
            return CustomeResponse({'msg':"Please upload media bcard_image_frontend or bcard_image_backend"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)     
         #-------------------------End-----------------------------------#        
+    #-------------------- Change image of business card -----------------------#
+    @list_route(methods=['post'],) 
+    def change(self,request):
+        user_id = request.user.id
+        try:
+          bcard_id = request.data["bcard_id"]
+          gallary_image_id = request.data["gallary_image_id"]
+          image_type = request.data["image_type"] # means it is 1 frontend or 2 backend 
+        except:
+          bcard_id = None  
+          
+        if bcard_id:
+          try:  
+           get_image = BusinessCardMedia.objects.get(id=gallary_image_id,businesscard_id=bcard_id,user_id=user_id,status=0)
+           get_image.status = 1
+           get_image.front_back = image_type
+           get_image.save()
+           BusinessCardMedia.objects.filter(businesscard_id=bcard_id,front_back=image_type).exclude(id=gallary_image_id).update(status=0)
+           return CustomeResponse({"msg":"Business card image changed successfully."},status=status.HTTP_200_OK)
+          except:
+            return CustomeResponse({'msg':"provided bcard_id,gallary_image_id not valid"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)  
+        else:
+          return CustomeResponse({'msg':"Please provide bcard_id,gallary_image_id"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)  
+    #------------------------------ End ---------------------------------------#
         
     def update(self, request, pk=None):
          return CustomeResponse({'msg':"Update method does not allow"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
