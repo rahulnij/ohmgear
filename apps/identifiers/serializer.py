@@ -1,6 +1,6 @@
 from django.conf.urls import url, include
 #from apps.identifiers.models import Identifier
-from models import Identifier
+from models import Identifier,LockIdentifier
 from rest_framework import routers, serializers, viewsets
 from functions import validate_identifier
 from ohmgear.functions import CustomeResponse
@@ -13,6 +13,13 @@ class IdentifierSerializer(serializers.ModelSerializer):
     class Meta:
         model = Identifier
         fields = ('id','user','identifier','identifiertype','paymentstatus','identifierlastdate','business_identifier')
+
+class CreateIdentifierSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Identifier
+        fields = ('id','user','identifier','identifiertype','paymentstatus','identifierlastdate')
+
+
 #        read_only_fields = ('id',)
 
     def validate(self, attrs):
@@ -20,7 +27,6 @@ class IdentifierSerializer(serializers.ModelSerializer):
         value = attrs
         identifier =  value ['identifier'] 
         identifiertype = value['identifiertype']
-        
         
         if identifiertype == 2:
             identifier = validate_identifier(identifier)
@@ -34,10 +40,12 @@ class IdentifierSerializer(serializers.ModelSerializer):
             
         else :
             raise serializers.ValidationError("identifiertype can be 1 or 2 only ")
-                
-            
-            
                  
-            
         return attrs 
+            
+            
+            
+class LockIdentifierSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = LockIdentifier
             

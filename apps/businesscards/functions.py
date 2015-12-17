@@ -14,7 +14,8 @@ def createDuplicateBusinessCard(bcard_id=None,user_id=None):
               return None  
             bcards.id = None
             bcards.status=0
-            bcards.name = "copy "+  bcards.name
+            if bcards.name:
+                bcards.name = "copy %s"  %(bcards.name)
             bcards.save()
             bcards_id_new = bcards.id
             contact_id  = bcards.contact_detail.id
@@ -61,13 +62,6 @@ def createDuplicateBusinessCard(bcard_id=None,user_id=None):
                 bcard_image.front_back =2
                 bcard_image.id =None
                 bcard_image.save()
-            except:
-                pass
-            
-            try:
-                bcard_skill = BusinessCardAddSkill.objects.get(businesscard_id=bcard_id,user_id=user_id,status=1)
-                bcard_skill.businesscard_id = BusinessCard.objects.get(id=bcards_id_new)   
-                bcard_skill.save()
             except:
                 pass
             

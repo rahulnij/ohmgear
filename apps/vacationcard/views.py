@@ -1,6 +1,6 @@
 from rest_framework import routers, serializers, viewsets
 from models import VacationTrip,VacationCard
-from serializer import VacationTripSerializer,VacationCardSerializer,BusinessCardVacationSerializer,SingleVacationCardSerializer
+from serializer import VacationTripSerializer,VacationEditTripSerializer,VacationCardSerializer,BusinessCardVacationSerializer,SingleVacationCardSerializer
 from ohmgear.functions import CustomeResponse
 from rest_framework.decorators import api_view
 import rest_framework.status as status
@@ -104,7 +104,7 @@ class VacationCardViewSet(viewsets.ModelViewSet):
                     
                      
                         #tempContainer =  tempContainer[0]['x   
-                    serializer = VacationTripSerializer(data=tempContainer,many=True)
+                    serializer = VacationTripSerializer(data=tempContainer,many=True,context={'local_date': 1})
                     if serializer.is_valid():
                         serializer.save(user_id=request.user)
                         return CustomeResponse(serializer.data,status=status.HTTP_201_CREATED)
@@ -181,6 +181,12 @@ class VacationCardViewSet(viewsets.ModelViewSet):
         
         vacationtrip = VacationTrip.objects.filter(vacationcard_id=vacation_id,user_id = user_id)
         stops = request.data['vacation']
+        if request.data['vacation_name']:
+            vacation_name = request.data['vacation_name']
+            #messages = VacationCard.objects.get(id=pk)
+            #serializer =  VacationCardSerializer(messages,data=request.DATA,partial=True,context={'request': request})
+            VacationCard.objects.filter(id= vacation_id).update(vacation_name=vacation_name  )
+        
         if vacationtrip and vacation_id:
                     vacationtrip.delete()
                     tempContainer = []
@@ -193,7 +199,7 @@ class VacationCardViewSet(viewsets.ModelViewSet):
                         tempContainer.append(tempdata)
                     
                         #tempContainer =  tempContainer[0]['x   
-                    serializer = VacationTripSerializer(data=tempContainer,many=True)
+                    serializer = VacationEditTripSerializer(data=tempContainer,many=True)
                     if serializer.is_valid():
                         serializer.save(user_id=request.user)
                         return CustomeResponse(serializer.data,status=status.HTTP_201_CREATED)

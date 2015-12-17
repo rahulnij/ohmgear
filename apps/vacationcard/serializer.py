@@ -5,13 +5,15 @@ from apps.businesscards.models import BusinessCardVacation
 from rest_framework import routers, serializers, viewsets
 from ohmgear.functions import CustomeResponse
 import rest_framework.status as status
+from datetime import datetime
 
             
             
 class VacationTripSerializer(serializers.ModelSerializer):
     
-    startdate = []
-    enddate  = []
+    local_date = []
+    count = 0
+    
     class Meta:
         model = VacationTrip                
         fields = (
@@ -32,28 +34,54 @@ class VacationTripSerializer(serializers.ModelSerializer):
         """
         Check that the start is before the stop.
         """
+        check = self.context.get("local_date")
+        if check and self.count == 0:
+           self.local_date = []
+           self.count = 1
+        start_time = datetime.strptime(str(data['trip_start_date']),'%Y-%m-%d')
+        end_date = datetime.strptime(str(data['trip_end_date']),'%Y-%m-%d')
+        if self.local_date:
+            for tempData in self.local_date:
+                if tempData['trip_start_date'] > start_time:
+                    raise serializers.ValidationError("Start date must be greater than other stop start date")
+                if tempData['trip_end_date'] > start_time:
+                    raise serializers.ValidationError("Start date must be greater than other stop end date")
         
-        self.startdate.append(str(data['trip_start_date']))
-        
-        self.enddate.append(str(data['trip_end_date']))
-        print self.startdate
-        
-        format = {'start_date':self.startdate,'end_date':self.enddate}
-        #print format
         if data['trip_start_date'] > data['trip_end_date']:
-            raise serializers.ValidationError("finish must occur after start")
+            raise serializers.ValidationError("End date must be greater then start date")
         
-    
+        format = {'trip_start_date':datetime.strptime(str(data['trip_start_date']),'%Y-%m-%d'),'trip_end_date':datetime.strptime(str(data['trip_end_date']),'%Y-%m-%d')}
+        self.local_date.append(format)
+        
         return data
         
         
+class VacationEditTripSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = VacationTrip                
+        fields = (
+            'id',
+            'vacation_type',
+            'country',
+            'state',
+            'city',
+            'contact_no',
+            'notes',
+            'trip_start_date',
+            'trip_end_date',
+            'user_id',
+            'vacationcard_id'
+        )
+
 
 class VacationCardSerializer(serializers.ModelSerializer):
     attached_business_cards = serializers.IntegerField(source='businesscardvacation.count',read_only=True)
+   # business_vacation = BusinessCardSerializer(many=True,read_only=True)
     vacation_trips = VacationTripSerializer(many=True,read_only=True)
     class Meta:
         model = VacationCard
-        fields = ('id','user_id','vacation_name','vacation_trips','attached_business_cards')
+        fields = ('id','user_id','vacation_name','vacation_trips','attached_business_cards','business_vacation')
 
 
 

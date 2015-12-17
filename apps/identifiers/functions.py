@@ -1,10 +1,14 @@
 import string
 import random
-from models import Identifier
+from models import Identifier,LockIdentifier
 import re
 
 def CreateSystemIdentifier():
     serial = ''.join(random.choice('0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ') for i in range(6))
+    identifier_exist = Identifier.objects.filter(identifier= serial).values()
+    identifier_lock = LockIdentifier.objects.filter(identifier= serial).values()
+    if identifier_exist or identifier_lock:
+        return CreateSystemIdentifier()
     return serial
 
 
