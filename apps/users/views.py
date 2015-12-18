@@ -148,7 +148,7 @@ class ProfileViewSet(viewsets.ModelViewSet):
            return CustomeResponse({'msg':'record not found'},status=status.HTTP_404_NOT_FOUND,validate_errors=1)
          serializer =  ProfileSerializer(messages,data=request.DATA,partial=True,context={'request': request})
          if serializer.is_valid():
-            serializer.save(first_time_login  = False)
+            serializer.save(first_time_login  = False,profile_image= request.data['profile_image'])
             return CustomeResponse(serializer.data,status=status.HTTP_200_OK)
          else:
             return CustomeResponse(serializer.errors,status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
