@@ -205,7 +205,7 @@ class BusinessCardMediaViewSet(viewsets.ModelViewSet):
            pass
 
         try:
-         if 'bcard_image_frontend' in request.data and  request.data['bcard_image_backend']:
+         if 'bcard_image_backend' in request.data and  request.data['bcard_image_backend']:
            BusinessCardMedia.objects.filter(businesscard_id=business,front_back=2).update(status=0)  
            bcard_image_backend, created = BusinessCardMedia.objects.update_or_create(user_id=self.request.user,businesscard_id=business,img_url=request.data['bcard_image_backend'],front_back=2,status=1)
            if bcard_image_backend:
@@ -567,7 +567,7 @@ class BusinessViewSet(viewsets.ModelViewSet):
     #----------------------------- End ----------------------------------------------------#
     
     #---------------------------- Merge business card -------------------------------------#
-    
+    expected_keys = {'dd':""}
     def mergeDict(self,s, f):
         for k, v in f.iteritems():
             if isinstance(v, collections.Mapping):
@@ -575,7 +575,11 @@ class BusinessViewSet(viewsets.ModelViewSet):
                 s[k] = r
             elif isinstance(v, list):
                 result = []
-                v.extend(s.get(k, {}))
+                #v.extend(s.get(k, {}))
+                print v
+                print s.get(k, {})[0]
+                v = dict(s.get(k, {})[0].items() + v[0].items())
+                print v
                 for myDict in v:
                     if myDict not in result:
                         result.append(myDict)
