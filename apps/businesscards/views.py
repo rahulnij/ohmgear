@@ -152,8 +152,8 @@ class BusinessCardMediaViewSet(viewsets.ModelViewSet):
                     i = 0 
                     for items in self.queryset:
                         if items.status == 1:
-                           data['top'].append({"front_back":items.front_back,"img_url":str(settings.DOMAIN_NAME)+str(settings.MEDIA_URL)+str(items.img_url)})
-                        data['all'].append({"front_back":items.front_back,"img_url":str(settings.DOMAIN_NAME)+str(settings.MEDIA_URL)+str(items.img_url)})
+                           data['top'].append({"image_id":items.id,"front_back":items.front_back,"img_url":str(settings.DOMAIN_NAME)+str(settings.MEDIA_URL)+str(items.img_url)})
+                        data['all'].append({"image_id":items.id,"front_back":items.front_back,"img_url":str(settings.DOMAIN_NAME)+str(settings.MEDIA_URL)+str(items.img_url)})
                     return CustomeResponse(data,status=status.HTTP_200_OK)
                 else:
                    return CustomeResponse({'msg':"Data not exist"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
