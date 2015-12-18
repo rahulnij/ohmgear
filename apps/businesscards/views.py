@@ -134,7 +134,7 @@ class BusinessCardIdentifierViewSet(viewsets.ModelViewSet):
          
 # BusinessCard Gallery 
 class BusinessCardMediaViewSet(viewsets.ModelViewSet):
-    queryset  = BusinessCardMedia.objects.all()
+    queryset  = BusinessCardMedia.objects.all().order_by('front_back')
     serializer_class = BusinessCardMediaSerializer
     authentication_classes = (ExpiringTokenAuthentication,)
     permission_classes = (IsAuthenticated,) 
@@ -151,6 +151,7 @@ class BusinessCardMediaViewSet(viewsets.ModelViewSet):
                     data['top'] = []
                     i = 0 
                     for items in self.queryset:
+                        print items
                         if items.status == 1:
                            data['top'].append({"image_id":items.id,"front_back":items.front_back,"img_url":str(settings.DOMAIN_NAME)+str(settings.MEDIA_URL)+str(items.img_url)})
                         data['all'].append({"image_id":items.id,"front_back":items.front_back,"img_url":str(settings.DOMAIN_NAME)+str(settings.MEDIA_URL)+str(items.img_url)})
