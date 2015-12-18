@@ -231,7 +231,7 @@ class BusinessCardMediaViewSet(viewsets.ModelViewSet):
           
         if bcard_id:
           try:  
-           get_image = BusinessCardMedia.objects.get(id=gallary_image_id,businesscard_id=bcard_id,user_id=user_id,status=0)
+           get_image = BusinessCardMedia.objects.get(id=gallary_image_id,businesscard_id=bcard_id,user_id=user_id)
            get_image.status = 1
            get_image.front_back = image_type
            get_image.save()
@@ -439,29 +439,8 @@ class BusinessViewSet(viewsets.ModelViewSet):
         else:
             return CustomeResponse(data,status=status.HTTP_200_OK)
     
-    #--------------Method: POST create new business card and other operation -----------------------------#
-                
-    def mergeDict(self,s, f):
-        for k, v in f.iteritems():
-            if isinstance(v, collections.Mapping):
-                r = self.mergeDict(s.get(k, {}), v)
-                s[k] = r
-            else:
-                #------------- If the key is blank in first business card then second business card value assign to it -----#
-                if not v and s.get(k, {}):
-                    #f[k] = s.get(k, {})
-                    pass
-                else:    
-                    s[k] = f[k]
-        return s                
-                          
-    def create(self, request):        
-#         first_json = {"phone": {"home": "(234) 442-4424"},"address":""}
-#         second_json = {"phone": {"home": "(234) 442-5555","home1": "(234) 442-4424"},"address":"xyz"}
-#         third_json = second_json.copy()
-#         self.mergeDict(third_json, first_json)
-#         print third_json
-#         return CustomeResponse({"msg":"Please provide bcard_id and user_id"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)       
+    #--------------Method: POST create new business card and other operation -----------------------------# 
+    def create(self, request): 
          try:
            op = request.data["op"]
          except:             
@@ -586,10 +565,39 @@ class BusinessViewSet(viewsets.ModelViewSet):
 
     #----------------------------- End ----------------------------------------------------#
     
-    #---------------------------- Merge business card -------------------------------------#        
+    #---------------------------- Merge business card -------------------------------------#
+    
+    def mergeDict(self,s, f):
+        for k, v in f.iteritems():
+            if isinstance(v, collections.Mapping):
+                r = self.mergeDict(s.get(k, {}), v)
+                s[k] = r
+            elif isinstance(v, list):
+                result = []
+                v.extend(s.get(k, {}))
+                for myDict in v:
+                    if myDict not in result:
+                        result.append(myDict)
+                        
+                s[k] = result    
+            else:
+                #------------- If the key is blank in first business card then second business card value assign to it -----#
+                if not v and s.get(k, {}):
+                    #f[k] = s.get(k, {})
+                    pass
+                else:    
+                    s[k] = f[k]
+        return s
+    
     @list_route(methods=['post'],)   
     def merge(self,request):
-            
+               first_json = {"phone": {"home": "(234) 442-4424"},"address":[{"home":""}]}
+               second_json = {"phone": {"home": "(234) 442-5555","home1": "(234) 442-4424"},"address":[{"home":"dfsdfd","sdf":""},{"office":""}]}
+               third_json = second_json.copy()
+               self.mergeDict(third_json, first_json)
+               print third_json
+               return CustomeResponse({"msg":"Please provide bcard_id and user_id"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)            
+              
                try:           
                   user_id = request.user.id
                except:
@@ -626,7 +634,8 @@ class BusinessViewSet(viewsets.ModelViewSet):
                                first_json = third_json
                         #------------------- TODO Delete the  merge_bcards_ids -------------------#
                         if merge_bcards:
-                           merge_bcards.delete()
+                            pass
+                           #merge_bcards.delete()
                         else:
                            return CustomeResponse({"msg":"merge_bcards_ids does not exist."},status=status.HTTP_400_BAD_REQUEST,validate_errors=1) 
                         #----------------------- End ---------------------------------------------#
