@@ -567,7 +567,7 @@ class BusinessViewSet(viewsets.ModelViewSet):
     #----------------------------- End ----------------------------------------------------#
     
     #---------------------------- Merge business card -------------------------------------#
-    expected_keys = {'dd':""}
+    expected_keys = ['CardName','FirstName','LastName','NickName','DEPTName','CompName']
     def mergeDict(self,s, f):
         for k, v in f.iteritems():
             if isinstance(v, collections.Mapping):
@@ -575,15 +575,32 @@ class BusinessViewSet(viewsets.ModelViewSet):
                 s[k] = r
             elif isinstance(v, list):
                 result = []
-                #v.extend(s.get(k, {}))
-                print v
-                print s.get(k, {})[0]
-                v = dict(s.get(k, {})[0].items() + v[0].items())
-                print v
-                for myDict in v:
-                    if myDict not in result:
-                        result.append(myDict)
-                        
+#               result = v.extend(s.get(k, {}))
+                if k == 'basic_info':
+                    for key in self.expected_keys:
+                        """ In this loop we check keys in  target value"""
+                        """ TODO : optimization """
+                        for  valf in v:
+                             if key in valf.values():
+                                 for vals in s.get(k, {}):
+                                     if key in vals.values() and vals['value'] !="" and valf['value'] == "":
+                                          valf['value'] = vals['value']       
+                                 result.append(valf)  
+                        """ Reverse loop is for check  extra data in second business card """                  
+                        for vals1 in s.get(k, {}):
+                            if key in vals1.values():
+                              check = 0  
+                              for valf1 in v:
+                                  if key in valf1.values():
+                                     check = 1
+                              if not check:
+                                  result.append(vals1)
+                else:
+                   v.extend(s.get(k, {})) 
+                   for myDict in v:
+                        if myDict not in result:
+                            result.append(myDict)
+                                  
                 s[k] = result    
             else:
                 #------------- If the key is blank in first business card then second business card value assign to it -----#
@@ -596,13 +613,13 @@ class BusinessViewSet(viewsets.ModelViewSet):
     
     @list_route(methods=['post'],)   
     def merge(self,request):
-               first_json = {"phone": {"home": "(234) 442-4424"},"address":[{"home":""}]}
-               second_json = {"phone": {"home": "(234) 442-5555","home1": "(234) 442-4424"},"address":[{"home":"dfsdfd","sdf":""},{"office":""}]}
-               third_json = second_json.copy()
-               self.mergeDict(third_json, first_json)
-               print third_json
-               return CustomeResponse({"msg":"Please provide bcard_id and user_id"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)            
-              
+#               first_json = {"basic_info":[{"indexPos": "0", "isUpper": "1", "placeHolder": "NAME THIS CARD (Required)", "value": "", "keyName": "CardName"}]}
+#               second_json = {"basic_info": [{"indexPos": "0", "isUpper": "1", "placeHolder": "NAME THIS CARD (Required)sddd", "value": "wwwwwwwwww", "keyName": "CardName"}]}
+#               third_json = second_json.copy()
+#               self.mergeDict(third_json, first_json)
+#               print third_json
+#               return CustomeResponse({"msg":"Please provide bcard_id and user_id"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)            
+#              
                try:           
                   user_id = request.user.id
                except:
