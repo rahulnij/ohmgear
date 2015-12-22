@@ -653,8 +653,8 @@ class BusinessViewSet(viewsets.ModelViewSet):
                                first_json = third_json
                         #------------------- TODO Delete the  merge_bcards_ids -------------------#
                         if merge_bcards:
-                            pass
-                           #merge_bcards.delete()
+                            #pass
+                            merge_bcards.delete()
                         else:
                            return CustomeResponse({"msg":"merge_bcards_ids does not exist."},status=status.HTTP_400_BAD_REQUEST,validate_errors=1) 
                         #----------------------- End ---------------------------------------------#
