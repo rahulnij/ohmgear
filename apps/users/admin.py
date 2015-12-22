@@ -23,15 +23,15 @@ def export_csv(modeladmin, request, queryset):
     writer = csv.writer(response, csv.excel)
     response.write(u'\ufeff'.encode('utf8')) # BOM (optional...Excel needs it to open UTF-8 file properly)
     writer.writerow([
-        smart_str(u"First Name"),
-        smart_str(u"Last Name"),
+#        smart_str(u"First Name"),
+#        smart_str(u"Last Name"),
         smart_str(u"Email"),
         smart_str(u"Created Date"),
     ])
     for obj in queryset:
         writer.writerow([
-            smart_str(obj.first_name),
-            smart_str(obj.last_name),
+#            smart_str(obj.first_name),
+#            smart_str(obj.last_name),
             smart_str(obj.email),
             smart_str(obj.created_date)      
         ])
@@ -40,7 +40,7 @@ export_csv.short_description = u"Export selected objects to CSV"
 
 class UserAdmin(admin.ModelAdmin):
     # code to display selected fields from the database
-    list_display = ('serial_number', 'first_name','email','created_date','get_status')
+    list_display = ('serial_number','email','created_date','get_status')
     # search field criterion
     search_fields = ['email']
     # custom drop down option in the admin 

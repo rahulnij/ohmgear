@@ -9,7 +9,7 @@ class UserSerializer(serializers.ModelSerializer):
     email = serializers.EmailField(validators=[UniqueValidator(queryset=get_user_model().objects.all(),message='Email id is already registered with ohmgear')])
     class Meta:
         model = get_user_model()
-        fields = ('id','account_number','first_name','last_name','email','email_verification_code','user_type','pin_number','status','password')
+        fields = ('id','account_number','email','email_verification_code','user_type','pin_number','status','password')
 #        read_only_fields = ('id',)
 
     def validate_user_type(self, attrs):
