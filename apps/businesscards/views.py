@@ -217,7 +217,7 @@ class BusinessCardMediaViewSet(viewsets.ModelViewSet):
         if data_new['bcard_image_frontend'] or data_new['bcard_image_backend']:
            return CustomeResponse({"bcard_id":bcard_id,"bcard_image_frontend":data_new['bcard_image_frontend'],"bcard_image_backend":data_new['bcard_image_backend']},status=status.HTTP_201_CREATED)
         else:
-           return CustomeResponse({'msg':"Please upload media bcard_image_frontend or bcard_image_backend"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)     
+           return CustomeResponse({'msg':"Please upload media bcard_image_frontend or bcard_image_backend"},status=status.HTTP_200_OK)     
         #-------------------------End-----------------------------------#        
     #-------------------- Change image of business card -----------------------#
     @list_route(methods=['post'],) 
@@ -246,7 +246,16 @@ class BusinessCardMediaViewSet(viewsets.ModelViewSet):
         
     def update(self, request, pk=None):
          return CustomeResponse({'msg':"Update method does not allow"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
-
+    
+    def destroy(self, request, pk=None):
+        try:
+            user_id = request.user.id
+            bcard_id = request.data["bcard_id"]
+            get_image = BusinessCardMedia.objects.get(id=pk,businesscard_id=bcard_id,user_id=user_id,status=1)
+            get_image.delete()
+            return CustomeResponse({'msg':"Media deleted successfully"},status=status.HTTP_200_OK)
+        except:
+            return CustomeResponse({'msg':"Please provide correct bcard_id,media id"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)  
 
 #BusinessCard History
 
