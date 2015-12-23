@@ -252,15 +252,17 @@ class BusinessCardMediaViewSet(viewsets.ModelViewSet):
     def update(self, request, pk=None):
          return CustomeResponse({'msg':"Update method does not allow"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
     
-    def destroy(self, request, pk=None):
-        #try:
+    @list_route(methods=['post'],) 
+    def delete(self, request):
+        try:
             user_id = request.user.id
             bcard_id = request.data["bcard_id"]
+            pk = request.data["media_id"]
             get_image = BusinessCardMedia.objects.get(id=pk,businesscard_id=bcard_id,user_id=user_id,status=1)
             #get_image.delete()
             return CustomeResponse({'msg':"Media deleted successfully"},status=status.HTTP_200_OK)
-        #except:
-            #return CustomeResponse({'msg':"Please provide correct bcard_id,media id"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)  
+        except:
+            return CustomeResponse({'msg':"Please provide correct bcard_id,media id"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)  
 
 #BusinessCard History
 
