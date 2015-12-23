@@ -44,9 +44,9 @@ class IdentifierViewSet(viewsets.ModelViewSet):
                 return CustomeResponse(serializer.data,status=status.HTTP_201_CREATED)
             else:
                 if identifier is None:
-                    return CustomeResponse({'msg':'user id is not exist'},status=status.HTTP_201_CREATED)
+                    return CustomeResponse({'msg':'user id is not exist'},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
                 if not identifierdata and identifier is not None:
-                    return CustomeResponse({'msg':'Identifier available'},status=status.HTTP_201_CREATED)
+                    return CustomeResponse({'msg':'Identifier available'},status=status.HTTP_200_OK)
                 
                 else:
                     list = []
@@ -56,7 +56,7 @@ class IdentifierViewSet(viewsets.ModelViewSet):
                         matchidentifier = Identifier.objects.filter(identifier=newidentifier).values()
                         if not matchidentifier:
                            list.append(newidentifier)
-                    return CustomeResponse({'msg':list},status=status.HTTP_200_OK,validate_errors=1)
+                    return CustomeResponse({'msg':list},status=status.HTTP_200_OK)
     
                 
             
