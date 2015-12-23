@@ -101,30 +101,36 @@ class BusinessCardIdentifierViewSet(viewsets.ModelViewSet):
         else:
            return CustomeResponse(serializer.errors,status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
         
-        
-    def update(self, request, pk=None):
-        
-           getidentifierid = BusinessCardIdentifier.objects.filter(id=pk).values()
-           identifierid =  getidentifierid[0]['identifier_id_id']
-          
-           #------Unlink Identifier status 0 in identifier table--------#
-           #Identifier.objects.filter(id=identifierid).update(status=0 )
-           #------Unlink Businesscard Identifier status 0 in Bsuinesscardidentifier table--------#
-           BusinessCardIdentifier.objects.filter(id=pk).update(status=0 )
-           return CustomeResponse({'msg':"Business card has been unlinked with identifiers "},status=status.HTTP_200_OK)
-       
+    @list_route(methods=['post'],)     
+    def unlinkIdentifier(self, request):
+            
+            
+        identifier_id = request.data['identifier_id']
+        print identifier_id
+        businesscard_id = request.data['bcard_id'] 
+        getbusinessacard_identifier_data = BusinessCardIdentifier.objects.filter(identifier_id=identifier_id,businesscard_id=businesscard_id)
+         
+        #------Unlink Businesscard Identifier status 0 in Bsuinesscardidentifier table--------#
+        if getbusinessacard_identifier_data:
+            getbusinessacard_identifier_data.delete()
+            return CustomeResponse({'msg':"Business card has been unlinked with identifiers "},status=status.HTTP_200_OK)
+        else:
+            return CustomeResponse({'msg':"Card is not attached"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
      
     #-------Delete Identifiers it will first inactive the businesscard than delete the linking of identifier with businesscard in businesscard_identifier table
      #than delete the identifeirs in identifier table ------------# 
     def destroy(self, request, pk=None):
-        businesscard_identifier = BusinessCardIdentifier.objects.filter(id=pk)
-
-        if businesscard_identifier:
-            businesscard_id = businesscard_identifier[0].businesscard_id.id
-            identifier_id   = businesscard_identifier[0].identifier_id_id
-            BusinessCard.objects.filter(id=businesscard_id).update(status=0 )
-            Identifier.objects.filter(id=identifier_id).delete()
-            businesscard_identifier.delete()   
+        
+        identifier_data = Identifier.objects.filter(id=pk)
+    
+        if identifier_data:
+            businesscard_identifier_data = BusinessCardIdentifier.objects.filter(identifier_id=identifier_data)
+            if businesscard_identifier_data:
+                
+                businesscard_id =  businesscard_identifier_data[0].businesscard_id.id
+                BusinessCard.objects.filter(id=businesscard_id).update(status=0,is_active=0 )
+                businesscard_identifier_data.delete()   
+            identifier_data.delete()
             return CustomeResponse({'msg':"Business card has been Inactive and identifiers has been deleted "},status=status.HTTP_200_OK)
         else:
              return CustomeResponse({'msg':"Businesscard Identifier Id not found"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
