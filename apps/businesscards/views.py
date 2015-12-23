@@ -106,7 +106,6 @@ class BusinessCardIdentifierViewSet(viewsets.ModelViewSet):
             
             
         identifier_id = request.data['identifier_id']
-        print identifier_id
         businesscard_id = request.data['bcard_id'] 
         getbusinessacard_identifier_data = BusinessCardIdentifier.objects.filter(identifier_id=identifier_id,businesscard_id=businesscard_id)
          
