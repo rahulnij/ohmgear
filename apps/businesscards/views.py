@@ -252,7 +252,7 @@ class BusinessCardMediaViewSet(viewsets.ModelViewSet):
             user_id = request.user.id
             bcard_id = request.data["bcard_id"]
             get_image = BusinessCardMedia.objects.get(id=pk,businesscard_id=bcard_id,user_id=user_id,status=1)
-            get_image.delete()
+            #get_image.delete()
             return CustomeResponse({'msg':"Media deleted successfully"},status=status.HTTP_200_OK)
         except:
             return CustomeResponse({'msg':"Please provide correct bcard_id,media id"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)  
