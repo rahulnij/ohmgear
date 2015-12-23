@@ -174,7 +174,7 @@ class Profile(models.Model):
     #------------- End -------------------------------------------#
 
     def __unicode__(self):
-        return '{"id":"%s","dob":"%s","gender":"%s","address":"%s","mobile_number":"%s","user":"%s","income_group":"%s","business_type":"%s","first_time_login":"%s","first_name":"%s","last_name":"%s","nick_name":"%s","headline":"%s"}' %(self.id,self.dob,self.gender,self.address,self.mobile_number,self.user,self.income_group,self.business_type,self.first_time_login,self.first_name,self.last_name,self.nick_name,self.headline)
+        return '{"id":"%s","dob":"%s","gender":"%s","address":"%s","mobile_number":"%s","user":"%s","income_group":"%s","business_type":"%s","first_time_login":"%s","first_name":"%s","last_name":"%s","nick_name":"%s","headline":"%s","profile_image":"%s"}' %(self.id,self.dob,self.gender,self.address,self.mobile_number,self.user,self.income_group,self.business_type,self.first_time_login,self.first_name,self.last_name,self.nick_name,self.headline,self.profile_image)
 
 
 
