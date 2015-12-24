@@ -401,12 +401,12 @@ class BusinessViewSet(viewsets.ModelViewSet):
         #---------------------- Filter ------------------------#
         if published is not None and user_id is not None:
             if published == '0':
-              self.queryset = self.queryset.select_related('user_id').filter(user_id=user_id,status=0,is_active=0)
+              self.queryset = self.queryset.select_related('user_id').filter(user_id=user_id,status=0,is_active=1)
             elif published == '1':
               self.queryset = self.queryset.select_related('user_id').filter(user_id=user_id,status=1,is_active=1)
         
         elif is_active is not None and user_id is not None:
-            self.queryset = self.queryset.select_related('user_id').filter(user_id=user_id,is_active=1,status=0)
+            self.queryset = self.queryset.select_related('user_id').filter(user_id=user_id,is_active=0,status=0)
         
         elif user_id is not None and business_id == 'all':
                 #----------------- All user business card -------------------------------------#
