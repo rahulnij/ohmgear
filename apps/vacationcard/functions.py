@@ -1,7 +1,7 @@
 from django.conf import settings
 #------------------ Return token if does not exit then create -------------------#  
 from models import VacationCard,VacationTrip
-from serializer import VacationTripSerializer
+from serializer import VacationTripSerializer,VacationEditTripSerializer
 from ohmgear.functions import CustomeResponse
 import rest_framework.status as status
 
@@ -38,7 +38,7 @@ def CreateDuplicateVacationCard(vacation_id=None,user_id=None):
                         tempdata['vacationcard_id'] = vcards_id_new
                         tempdata['user_id']    =        user_id
                         tempContainer.append(tempdata)
-                    serializer = VacationTripSerializer(data=tempContainer,many=True)
+                    serializer = VacationEditTripSerializer(data=tempContainer,many=True)
                     if serializer.is_valid():
                         serializer.save()
                         return vcards_id_new
