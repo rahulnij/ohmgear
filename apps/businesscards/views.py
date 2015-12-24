@@ -96,7 +96,7 @@ class BusinessCardIdentifierViewSet(viewsets.ModelViewSet):
         serializer = BusinessCardIdentifierSerializer(data = request.data,context={'request':request})
         if serializer.is_valid():
            serializer.save()
-           BusinessCard.objects.filter(id= request.data['businesscard_id']).update(status= 1 )
+           BusinessCard.objects.filter(id= request.data['businesscard_id']).update(status= 1 ,is_active=1)
            return CustomeResponse(serializer.data,status=status.HTTP_201_CREATED)
         else:
            return CustomeResponse(serializer.errors,status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
