@@ -729,5 +729,39 @@ class BusinessViewSet(viewsets.ModelViewSet):
                      return CustomeResponse({"msg":"please provide bcards_ids for inactive businesscard"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1) 
                   
     #------------------------------- End ---------------------------------------------------#           
+    
+    #----------------------------------Reactive Business Card--------------------------------#
+    @list_route(methods=['post'],)
+    def reactive(self,request):
+        
+        try:
+            user_id =request.user.id
+        except:
+            user_id = None
+        try:
+            bcard_id  = request.DATA['bcard_id']
+        except:
+            bcard_id =None
+        if bcard_id:
+            try:
+                bcard_identifier = BusinessCardIdentifier.objects.filter(businesscard_id=bcard_id,status=1)
+                
+                if bcard_identifier:
+                    businesscardcard_data = BusinessCard.objects.filter(id=bcard_id).update(status=1,is_active=1)
+                    
+                    if businesscardcard_data:
+                        return CustomeResponse({"msg":"Card has been Reactive successfully"},status=status.HTTP_200_OK)
+                    else:
+                        return CustomeResponse({"msg":"Card not found"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
+    
+                else:
+                    return CustomeResponse({"msg":"Card can't be Reactive as your Business card is not attached with any identifiers  "},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
+                        
+            except:
+                return CustomeResponse({"msg":"some problem occured during server side during Reactibe business card "},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
+        else:
+            return CustomeResponse({"msg":"Business Card not found"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
+            
+    
     def destroy(self, request, pk=None):
          return CustomeResponse({'msg':'record not found'},status=status.HTTP_404_NOT_FOUND,validate_errors=1)
