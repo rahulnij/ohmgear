@@ -152,7 +152,7 @@ class BusinessCardAddSkill(models.Model):
 class BusinessCardVacation(models.Model):
     class Meta:
         db_table = 'ohmgear_vacationcard_businesscardvacation'
-       # unique_together = ('user_id', 'businesscard_id')
+        unique_together = ('vacationcard_id', 'businesscard_id')
         
     vacationcard_id    =   models.ForeignKey(VacationCard,db_column ="vacationcard_id",related_name="businesscardvacation")
     businesscard_id    =   models.ForeignKey(BusinessCard,db_column = "businesscard_id")

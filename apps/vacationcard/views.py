@@ -265,46 +265,81 @@ class BusinessCardVacationViewSet(viewsets.ModelViewSet):
         #-----------------------------Apply Multiple Business Card to Multiple Vacation Card------------------#
         
         serializer =    BusinessCardVacationSerializer(data=request.data,context ={'request':request})
-        mutable = request.POST._mutable
-        request.POST._mutable = True 
+        #mutable = request.POST._mutable
+        #request.POST._mutable = True 
         
-        try:
-            bcard_id =  request.data['businesscard_id']
-           # bcard_id = json.loads(request.DATA['businesscard_id'])
-            vcard_id =request.DATA['vacationcard_id']
-            #vcard_id =  vcard_id['data']
-            #bcard_id =  bcard_id['data']
+        #try:
+        bcard_id =  request.data['businesscard_id']
+       # bcard_id = json.loads(request.DATA['businesscard_id'])
+        vcard_id =request.DATA['vacationcard_id']
+        #vcard_id =  vcard_id['data']
+        #bcard_id =  bcard_id['data']
+
+
+        business_id = request.DATA['businesscard_id'].split(',')
+        vacation_id = request.DATA['vacationcard_id'].split(',')
+        
+        #print vacation_id
+        count = 0
+        for b_id in business_id:
+           # print count
             
-            request.DATA['businesscard_id'] = bcard_id[0]  
-            request.DATA['vacationcard_id'] = vcard_id[0] 
-            request.DATA['user_id']         = user_id
-        except:
-            return CustomeResponse({'status':'fail','msg':'Please provide businesscard_id'},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
+            i= 0
+            for v_id in vacation_id:
+                #vacationcard_id = vacation_id[i]
+                #business_id     = business_id[count]
+                business_id[count]
+                businesscard_vacation = BusinessCardVacation.objects.filter(businesscard_id = business_id[count],vacationcard_id=vacation_id[i])
+                if businesscard_vacation:
+                    pass
+                else:
+                     user_id = request.user.id
+                     businessvacationcardserializer = BusinessCardVacationSerializer(data=request.DATA,context={'request':request})
+                     request.DATA['user_id']         = user_id
+                     request.DATA['businesscard_id'] = business_id[count]
+                     request.DATA['vacationcard_id'] = vacation_id[i]
+                     if businessvacationcardserializer.is_valid():
+                        businessvacationcardserializer.save()
+                     else:
+                        return CustomeResponse(businessvacationcardserializer.errors,status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
+                
+                i=i+1
+                
+            count =count + 1
+            
+            
+        return CustomeResponse({"msg":"Vacation Card has been applied successfully"},status=status.HTTP_201_CREATED)
+            
+#        request.DATA['businesscard_id'] = bcard_id[0]  
+#        request.DATA['vacationcard_id'] = vcard_id[0] 
+#        request.DATA['user_id']         = user_id
+        #except:
+          #  return CustomeResponse({'status':'fail','msg':'Please provide businesscard_id'},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
 
 
         
-        if serializer.is_valid(): 
+#        if serializer.is_valid(): 
             #vacationcard_id =  request.data['vacationcard_id'] 
            # user_id =  request.user.id
-            tempContainer = []
-            count = 0
-          
-            for data in vcard_id:
-                countbcard = 0
-                for datavcard in bcard_id:
-                    tempdata= {"vacationcard_id":vcard_id[count],"businesscard_id":bcard_id[countbcard],"user_id":user_id}
-                    tempContainer.append(tempdata)
-                    countbcard = countbcard+1
-                count = count +1
-        
-            businessvacationcardserializer = BusinessCardVacationSerializer(data=tempContainer,many=True)
-            if businessvacationcardserializer.is_valid():
-                businessvacationcardserializer.save()
-                return CustomeResponse(businessvacationcardserializer.data,status=status.HTTP_201_CREATED)
-            else:
-                return CustomeResponse(businessvacationcardserializer.errors,status=status.HTTP_201_CREATED,validate_errors=1)
-        else:
-                return CustomeResponse(serializer.errors,status=status.HTTP_201_CREATED,validate_errors=1)
+#            tempContainer = []
+#            count = 0
+#          
+#            for data in vcard_id:
+#                countbcard = 0
+#                for datavcard in bcard_id:
+#                    tempdata= {"vacationcard_id":vcard_id[count],"businesscard_id":bcard_id[countbcard],"user_id":user_id}
+#                    tempContainer.append(tempdata)
+#                    countbcard = countbcard+1
+#                count = count +1
+#        
+#            businessvacationcardserializer = BusinessCardVacationSerializer(data=tempContainer,many=True)
+#            if businessvacationcardserializer.is_valid():
+#                businessvacationcardserializer.save()
+#                return CustomeResponse(businessvacationcardserializer.data,status=status.HTTP_201_CREATED)
+#            else:
+#                return CustomeResponse(businessvacationcardserializer.errors,status=status.HTTP_201_CREATED,validate_errors=1)
+#        else:
+#                return CustomeResponse(serializer.errors,status=status.HTTP_201_CREATED,validate_errors=1)
             
             
     @list_route(methods=['post'],)              
