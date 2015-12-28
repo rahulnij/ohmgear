@@ -4,12 +4,14 @@ from models import Identifier,LockIdentifier
 import re
 
 def CreateSystemIdentifier():
-    serial = ''.join(random.choice('0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ') for i in range(6))
-    identifier_exist = Identifier.objects.filter(identifier= serial).values()
-    identifier_lock = LockIdentifier.objects.filter(identifier= serial).values()
+    serial = ''.join(random.choice('0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ') for i in range(5))
+    region = "I"
+    serialregion =  region+serial
+    identifier_exist = Identifier.objects.filter(identifier= serialregion).values()
+    identifier_lock = LockIdentifier.objects.filter(identifier= serialregion).values()
     if identifier_exist or identifier_lock:
         return CreateSystemIdentifier()
-    return serial
+    return serialregion
 
 
 # To Insert  Bulk Identifiers in database # 
