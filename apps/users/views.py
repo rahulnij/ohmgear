@@ -143,12 +143,12 @@ class ProfileViewSet(viewsets.ModelViewSet):
      #--------------Method: PUT update the record-----------------------------#
     def create(self, request, pk=None):
         try:
-           user_id = request.user.id
-           messages = Profile.objects.get(user_id=user_id) 
-           if request.data.has_key('profile_image'):
-                 profile_image   = data['profile_image']
-           else:
-                profile_image = messages.profile_image
+            user_id = request.user.id
+            messages = Profile.objects.get(user_id=user_id) 
+            if request.data.has_key('profile_image'):
+                  profile_image   = request.data['profile_image']
+            else:
+                 profile_image = messages.profile_image
         except:
            return CustomeResponse({'msg':'record not found'},status=status.HTTP_404_NOT_FOUND,validate_errors=1)
         serializer =  ProfileSerializer(messages,data=request.DATA,partial=True,context={'request': request})
