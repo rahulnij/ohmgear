@@ -71,7 +71,7 @@ class BusinessCardIdentifierViewSet(viewsets.ModelViewSet):
             """
             get all identifiers from identifiers table
             """
-            serializer = IdentifierSerializer(self.queryset,many=True)
+            serializer = BusinessIdentifierSerializer(self.queryset,many=True)
             if serializer: 
                     return CustomeResponse(serializer.data,status=status.HTTP_200_OK)
             else:

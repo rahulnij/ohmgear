@@ -12,12 +12,14 @@ class IdentifierSerializer(serializers.ModelSerializer):
     business_identifier = BusinessCardSerializer(many=True,read_only=True)
     class Meta:
         model = Identifier
-        fields = ('id','user','identifier','identifiertype','paymentstatus','identifierlastdate','business_identifier')
+        fields = ('id','user','identifier','identifiertype','paymentstatus','identifierlastdate')
 
-class CreateIdentifierSerializer(serializers.ModelSerializer):
+
+class BusinessIdentifierSerializer(serializers.ModelSerializer):
+    business_identifier = BusinessCardSerializer(many=True,read_only=True)
     class Meta:
         model = Identifier
-        fields = ('id','user','identifier','identifiertype','paymentstatus','identifierlastdate')
+        fields = ('id','user','identifier','identifiertype','paymentstatus','identifierlastdate','business_identifier')
 
 
 #        read_only_fields = ('id',)

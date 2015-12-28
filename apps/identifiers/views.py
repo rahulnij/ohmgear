@@ -2,7 +2,7 @@ from django.shortcuts import render
 from rest_framework import routers, serializers, viewsets
 from models import Identifier,LockIdentifier
 from apps.businesscards.models import BusinessCardIdentifier
-from serializer import IdentifierSerializer,CreateIdentifierSerializer,LockIdentifierSerializer
+from serializer import IdentifierSerializer,LockIdentifierSerializer
 from apps.businesscards.serializer import BusinessCardIdentifierSerializer
 from ohmgear.functions import CustomeResponse
 from rest_framework.decorators import api_view
@@ -91,7 +91,7 @@ class IdentifierViewSet(viewsets.ModelViewSet):
          else: 
            pass
          #request.POST._mutable = mutable
-         serializer =  CreateIdentifierSerializer(data=data,context={'request': request,'msg':'not exist'})
+         serializer =  IdentifierSerializer(data=data,context={'request': request,'msg':'not exist'})
          
          if serializer.is_valid():
             serializer.save()
