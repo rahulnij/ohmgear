@@ -56,7 +56,7 @@ class IdentifierViewSet(viewsets.ModelViewSet):
                         matchidentifier = Identifier.objects.filter(identifier=newidentifier).values()
                         if not matchidentifier:
                            list.append(newidentifier)
-                    return CustomeResponse({'msg':list},status=status.HTTP_200_OK)
+                    return CustomeResponse({"msg":list},status=status.HTTP_200_OK,validate_errors=True)
     
                 
             
