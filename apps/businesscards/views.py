@@ -11,7 +11,7 @@ from serializer import BusinessCardSerializer,BusinessCardIdentifierSerializer,B
 from apps.contacts.serializer import ContactsSerializer
 from apps.contacts.models import Contacts
 from apps.identifiers.models import Identifier
-from apps.identifiers.serializer import IdentifierSerializer
+from apps.identifiers.serializer import IdentifierSerializer,BusinessIdentifierSerializer
 from ohmgear.token_authentication import ExpiringTokenAuthentication
 from ohmgear.functions import CustomeResponse,handle_uploaded_file
 from ohmgear.json_default_data import BUSINESS_CARD_DATA_VALIDATION
