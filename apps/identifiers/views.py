@@ -2,7 +2,7 @@ from django.shortcuts import render
 from rest_framework import routers, serializers, viewsets
 from models import Identifier,LockIdentifier
 from apps.businesscards.models import BusinessCardIdentifier
-from serializer import IdentifierSerializer,LockIdentifierSerializer
+from serializer import IdentifierSerializer,LockIdentifierSerializer,BusinessIdentifierSerializer
 from apps.businesscards.serializer import BusinessCardIdentifierSerializer
 from ohmgear.functions import CustomeResponse
 from rest_framework.decorators import api_view
@@ -37,7 +37,7 @@ class IdentifierViewSet(viewsets.ModelViewSet):
             userdata = Identifier.objects.select_related('businesscard_identifiers').filter(user=user).order_by('-id')
             
            # queryset = VacationCard.objects.select_related().all().filter(user_id=user_id)
-            serializer = IdentifierSerializer(userdata,many=True)
+            serializer = BusinessIdentifierSerializer(userdata,many=True)
             
             
             if userdata:
