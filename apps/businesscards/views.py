@@ -582,6 +582,14 @@ class BusinessViewSet(viewsets.ModelViewSet):
 
     #----------------------------- End ----------------------------------------------------#
     
+    
+    def mergeSkills(self,m,t,u):
+        target_bcard = BusinessCardAddSkill.objects.filter(businesscard_id__in=m,user_id= u)
+        if target_bcard:
+            target_bcard.update(businesscard_id=t)
+        return target_bcard
+    
+    
     #---------------------------- Merge business card -------------------------------------#
     def mergeDict(self,s, f):
         for k, v in f.iteritems():
@@ -646,13 +654,14 @@ class BusinessViewSet(viewsets.ModelViewSet):
                   
                #------------------ Get the  target_bcard_id and merge_bcards_ids data ------------------------------#
                if merge_bcards_ids and target_bcard_id and user_id:
+                    self.mergeSkills(merge_bcards_ids, target_bcard_id,user_id)
                     target_bacard = BusinessCard.objects.select_related().get(id=target_bcard_id,user_id= user_id)
                     first_json = json.loads(json.dumps(target_bacard.contact_detail.bcard_json_data))
                     #---- make sure target_bcard_id not in merge_bcards_ids ---------------------------------------------#
                     if target_bcard_id not in merge_bcards_ids:
                     #-----------------------------------------------------------------------------------------------------#                    
                         merge_bcards = BusinessCard.objects.filter(id__in=merge_bcards_ids,user_id= user_id).all()
-
+                        
                         for temp in merge_bcards:
                             contact_json_data = temp.contact_detail.bcard_json_data
                             if contact_json_data:
@@ -663,6 +672,7 @@ class BusinessViewSet(viewsets.ModelViewSet):
                                third_json = second_json.copy()
 
                                self.mergeDict(third_json, first_json)
+                               
                                #------ assign the new json ----------------------------#
                                target_bacard.contact_detail.bcard_json_data = third_json
                                target_bacard.contact_detail.save(force_update=True)
