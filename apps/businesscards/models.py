@@ -49,7 +49,6 @@ class BusinessCard(models.Model):
         return'{"id":"%s","name":"%s","user_id":"%s"}' %(self.id,self.name,self.user_id.id)
   
     def bcard_image_frontend(self):
-        return []    
         media = BusinessCardMedia.objects.filter(businesscard_id=self.id,status=1).order_by('front_back')
         data =[]
         #i = 0
