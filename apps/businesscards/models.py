@@ -53,7 +53,6 @@ class BusinessCard(models.Model):
         data =[]
         #i = 0
         for item in media:
-            print item
             data.append({"img_url":str(settings.DOMAIN_NAME)+str(settings.MEDIA_URL)+str(item.img_url),"front_back":item.front_back})
             #i = i + 1
         return data    
