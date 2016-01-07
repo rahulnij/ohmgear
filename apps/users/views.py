@@ -139,7 +139,7 @@ class UserViewSet(viewsets.ModelViewSet):
                         user.set_password(password)
                         user.update_password = False
                         user.save()
-                        return CustomeResponse({'msg':"password is changed"},status=status.HTTP_200_OK)
+                        return CustomeResponse({'msg':"Password changed successfully"},status=status.HTTP_200_OK)
                     else:
                         return CustomeResponse({'msg':"password and confirm password are not same"},status=status.HTTP_401_UNAUTHORIZED,validate_errors=1)
             else:
