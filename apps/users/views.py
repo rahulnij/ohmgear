@@ -30,6 +30,7 @@ from functions import getToken,checkEmail
 import json
 from django.shortcuts import redirect
 import hashlib, datetime, random
+from rest_framework.decorators import detail_route, list_route
 #class UserPermissionsObj(permissions.BasePermission):
 #    """
 #    Object-level permission to only allow owners of an object to edit it.
@@ -116,6 +117,38 @@ class UserViewSet(viewsets.ModelViewSet):
          else:
             return CustomeResponse(serializer.errors,status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
 
+    
+    @list_route(methods=['post'],)   
+    def changepassword(self,request):
+        try:
+            user_id =request.user.id
+            old_password    =  request.DATA['old_password']
+            password        =  request.DATA['password']
+            confirmpassword =  request.DATA['confirm_password']
+        except:
+            return CustomeResponse({'msg':'Old_password,password and confirm_password are missing'},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)   
+        
+        userdata        = User.objects.filter(id=request.user.id).values()
+        email            = userdata[0]['email']
+        
+        if old_password:
+            user = authenticate_frontend(username=email, password=old_password)
+            if user and not None:
+                    if password == confirmpassword :
+                        user = User.objects.get(id=user_id)
+                        user.set_password(password)
+                        user.update_password = False
+                        user.save()
+                        return CustomeResponse({'msg':"password is changed"},status=status.HTTP_200_OK)
+                    else:
+                        return CustomeResponse({'msg':"password and confirm password are not same"},status=status.HTTP_401_UNAUTHORIZED,validate_errors=1)
+            else:
+                msg = 'Old Password is wrong'
+                return CustomeResponse({'msg':msg},status=status.HTTP_401_UNAUTHORIZED,validate_errors=1)
+        else:
+            msg = 'Must include "old_Password".'
+            return CustomeResponse({'msg':msg},status=status.HTTP_401_UNAUTHORIZED,validate_errors=1)
+        
     
     def partial_update(self, request, pk=None):
         pass
