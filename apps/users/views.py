@@ -102,7 +102,7 @@ class UserViewSet(viewsets.ModelViewSet):
                 profile.first_name = request.data['first_name']
                 
             if request.data.has_key('last_name'):
-                profile.first_name = request.data['last_name']
+                profile.last_name = request.data['last_name']
                 
             profile.save()
             #---------------- End ------------------------#
