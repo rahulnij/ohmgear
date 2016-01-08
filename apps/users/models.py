@@ -161,7 +161,7 @@ class Profile(models.Model):
     custom_data = JsonField(null=True)
     created_date=models.DateTimeField(_("Created Date"),auto_now_add=True,auto_now=False)
     updated_date=models.DateTimeField(_("Updated Date"),auto_now_add=False,auto_now=True)    
-    user = models.OneToOneField(User,null=True)
+    user = models.OneToOneField(User,null=True,related_name="user_profile")
     income_group = models.ForeignKey(IncomeGroup, null=True, blank=True)
     business_type = models.ForeignKey(BusinessType,null= True)
     profile_image = models.ImageField(_("Profile Image"),upload_to='uploads/profile_img/', max_length=254,blank=True,null=True)

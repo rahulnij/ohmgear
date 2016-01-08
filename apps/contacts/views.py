@@ -10,6 +10,17 @@ import validictory
 # Create your views here.
 
 #--------------------- Storing Contacts as a Bulk -----------------------#
+from rest_framework import viewsets
+
+class storeContactsViewSet(viewsets.ModelViewSet):
+      queryset = None
+      serializer_class = None
+      def create(self, request):
+          return CustomeResponse({'msg':'GET method not allowed'},status=status.HTTP_405_METHOD_NOT_ALLOWED,validate_errors=1)
+
+
+
+
 @api_view(['GET','POST'])       
 def storeContacts(request,**kwargs):
     if request.method == 'GET':

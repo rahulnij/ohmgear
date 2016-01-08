@@ -87,10 +87,25 @@ class UserViewSet(viewsets.ModelViewSet):
                 self._disable_signals = True
             #------------ End -----------------------------------#
             user_id=serializer.save() 
-#            #---------------- Set the password -----------#
-#            if 'password' in request.DATA and request.DATA['password'] is not None:
-#               self.set_password(request,user_id.id)
-#            #---------------- End ------------------------#
+            
+            #---------------- create the profile -----------#
+            salt = hashlib.sha1(str(random.random())).hexdigest()[:5]            
+            activation_key = hashlib.sha1(salt+user_id.email).hexdigest()            
+            key_expires = datetime.datetime.today() + datetime.timedelta(2)
+            profile = Profile()
+            profile.activation_key = activation_key
+            profile.key_expires = key_expires
+            profile.user_id = user_id.id
+            
+            if request.data.has_key('first_name'):
+                profile.first_name = request.data['first_name']
+                
+            if request.data.has_key('last_name'):
+                profile.first_name = request.data['last_name']
+                
+            profile.save()
+            #---------------- End ------------------------#
+            
             if not fromsocial:
              return CustomeResponse(serializer.data,status=status.HTTP_201_CREATED)
             else:
