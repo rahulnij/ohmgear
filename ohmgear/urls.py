@@ -105,6 +105,17 @@ router.register(r'api/vacationcard',vacationcard_views.VacationCardViewSet)
 import apps.feedbacks.views as feebacks_views
 router.register(r'api/feedbacks',feebacks_views.FeedbackViewSet)
 
+
+import apps.feedbacks.views as feebackcategory_views
+router.register(r'api/feedbackcategory',feebackcategory_views.FeedbackCategoryViewSet)
+
+import apps.feedbacks.views as feebackcategorysubject_views
+router.register(r'api/feedbackcategorysubject',feebackcategorysubject_views.FeedbackCategorySubjectViewSet)
+
+import apps.feedbacks.views as contactus_views
+router.register(r'api/contactus',contactus_views.ContactusViewSet)
+
+
 #----------------Businesscard Vacation url ---------------------------#
 import apps.vacationcard.views as businesscardvacation_views
 router.register(r'api/businesscardvacation',businesscardvacation_views.BusinessCardVacationViewSet)
