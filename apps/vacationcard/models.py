@@ -22,10 +22,10 @@ class VacationTrip(models.Model):
     class Meta:
         db_table = 'ohmgear_vacationcard_vacationtrip'   
         
-    country         =   models.CharField(_('Country'),max_length=50,null =True)
+    country         =   models.CharField(_('Country'),max_length=50,null =True,blank=True)
     vacation_type   =   models.CharField(_('Vaction Type'),max_length=100)
-    state           =   models.CharField(_('State'),max_length=50)
-    city            =   models.CharField(_('City'),max_length=50)
+    state           =   models.CharField(_('State'),max_length=50,null=True,blank=True)
+    city            =   models.CharField(_('City'),max_length=50,null=True,blank=True)
     contact_no      = models.CharField(_("Contact Number"),max_length=50,null=True,blank=True)
     notes           =   models.CharField(_('Notes'),max_length = 2000,null =True,blank=True)
     user_id         =   models.ForeignKey(User,db_column="user_id", null=True)
