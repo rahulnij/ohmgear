@@ -7,46 +7,40 @@ from ohmgear.functions import CustomeResponse
 from serializer import ContactsSerializer,ContactsSerializerWithJson
 from ohmgear.json_default_data import BUSINESS_CARD_DATA_VALIDATION
 import validictory
+from models import Contacts
 # Create your views here.
 
 #--------------------- Storing Contacts as a Bulk -----------------------#
 from rest_framework import viewsets
 
 class storeContactsViewSet(viewsets.ModelViewSet):
-      queryset = None
-      serializer_class = None
-      def create(self, request):
+    
+      queryset = Contacts.objects.all()
+      serializer_class = ContactsSerializer
+      
+      def list(self,request):
           return CustomeResponse({'msg':'GET method not allowed'},status=status.HTTP_405_METHOD_NOT_ALLOWED,validate_errors=1)
+      
+      def create(self, request):
 
-
-
-
-@api_view(['GET','POST'])       
-def storeContacts(request,**kwargs):
-    if request.method == 'GET':
-        return CustomeResponse({'msg':'GET method not allowed'},status=status.HTTP_405_METHOD_NOT_ALLOWED,validate_errors=1)
-    if request.method == 'POST':
-        # ----------- Login ------------------#
-        op = request.POST.get('op','')
-        if op == 'save_contact':
              NUMBER_OF_CONTACT = 100
              try:
-              contact = json.loads(request.DATA['contact'])
+              contact = request.DATA['contact']
              except:
-               return CustomeResponse({'status':'fail','msg':'Please provide correct Json Format'},status=status.HTTP_400_BAD_REQUEST)
+               return CustomeResponse({'msg':'Please provide correct Json Format'},status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
             
              if contact:
                counter = 0  
                for contact_temp in contact:
-                    print contact_temp
-                    #--------------------  Validate the json data ------------------------------#
-                    try:
-                       validictory.validate(contact_temp["bcard_json_data"], BUSINESS_CARD_DATA_VALIDATION)
-                    except validictory.ValidationError as error:
-                       return CustomeResponse({'msg':error.message },status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
-                    except validictory.SchemaError as error:
-                       return CustomeResponse({'msg':error.message },status=status.HTTP_400_BAD_REQUEST,validate_errors=1)        
-                    #---------------------- - End ----------------------------------------------------------- #
+#                    print contact_temp
+#                    #--------------------  Validate the json data ------------------------------#
+#                    try:
+#                       validictory.validate(contact_temp["bcard_json_data"], BUSINESS_CARD_DATA_VALIDATION)
+#                    except validictory.ValidationError as error:
+#                       return CustomeResponse({'msg':error.message },status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
+#                    except validictory.SchemaError as error:
+#                       return CustomeResponse({'msg':error.message },status=status.HTTP_400_BAD_REQUEST,validate_errors=1)        
+#                    ---------------------- - End ----------------------------------------------------------- #
                     counter = counter + 1
                     
                if counter > NUMBER_OF_CONTACT:
@@ -57,5 +51,57 @@ def storeContacts(request,**kwargs):
                 return CustomeResponse(serializer.data,status=status.HTTP_201_CREATED)
                else:
                 return CustomeResponse(serializer.errors,status=status.HTTP_201_CREATED)   
-        else:
-             return CustomeResponse({'msg':'Please provide operation parameter op'},status=status.HTTP_401_UNAUTHORIZED,validate_errors=1)            
+      
+      def update(self, request, pk=None):
+         return CustomeResponse({'msg':"Update method does not allow"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)      
+      
+      def destroy(self, request, pk=None):
+          return CustomeResponse({'msg':'DELETE method not allowed'},status=status.HTTP_405_METHOD_NOT_ALLOWED,validate_errors=1)
+      
+      
+      
+      
+      
+      
+
+
+
+
+#@api_view(['GET','POST'])       
+#def storeContacts(request,**kwargs):
+#    if request.method == 'GET':
+#        return CustomeResponse({'msg':'GET method not allowed'},status=status.HTTP_405_METHOD_NOT_ALLOWED,validate_errors=1)
+#    if request.method == 'POST':
+#        # ----------- Login ------------------#
+#        op = request.POST.get('op','')
+#        if op == 'save_contact':
+#             NUMBER_OF_CONTACT = 100
+#             try:
+#              contact = json.loads(request.DATA['contact'])
+#             except:
+#               return CustomeResponse({'status':'fail','msg':'Please provide correct Json Format'},status=status.HTTP_400_BAD_REQUEST)
+#            
+#             if contact:
+#               counter = 0  
+#               for contact_temp in contact:
+##                    print contact_temp
+##                    #--------------------  Validate the json data ------------------------------#
+##                    try:
+##                       validictory.validate(contact_temp["bcard_json_data"], BUSINESS_CARD_DATA_VALIDATION)
+##                    except validictory.ValidationError as error:
+##                       return CustomeResponse({'msg':error.message },status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
+##                    except validictory.SchemaError as error:
+##                       return CustomeResponse({'msg':error.message },status=status.HTTP_400_BAD_REQUEST,validate_errors=1)        
+##                    ---------------------- - End ----------------------------------------------------------- #
+#                    counter = counter + 1
+#                    
+#               if counter > NUMBER_OF_CONTACT:
+#                    return CustomeResponse({'msg':"Max "+str(NUMBER_OF_CONTACT)+" allowed to upload"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
+#               serializer = ContactsSerializer(data=contact,many=True)
+#               if serializer.is_valid():
+#                serializer.save()
+#                return CustomeResponse(serializer.data,status=status.HTTP_201_CREATED)
+#               else:
+#                return CustomeResponse(serializer.errors,status=status.HTTP_201_CREATED)   
+#        else:
+#             return CustomeResponse({'msg':'Please provide operation parameter op'},status=status.HTTP_401_UNAUTHORIZED,validate_errors=1)            
