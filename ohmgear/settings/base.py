@@ -56,6 +56,7 @@ INSTALLED_APPS = (
     'rest_framework.authtoken',
     'apps.feedbacks',
     'simple_history',
+    'apps.about',
 )
 
 MIDDLEWARE_CLASSES = (
