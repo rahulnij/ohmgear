@@ -17,11 +17,11 @@ class StaticPagesViewSet(viewsets.ModelViewSet):
         page_name =  self.request.QUERY_PARAMS.get('page_name', None)
         
         if page_name is not None:
-            queryset    =   StaticPages.objects.filter(page_name=page_name)
+            queryset    =   StaticPages.objects.get(page_name=page_name)
             
         
         if queryset:
-            serializer = StaticPagesSerializer(queryset,many=True)
+            serializer = StaticPagesSerializer(queryset)
             return CustomeResponse(serializer.data,status=status.HTTP_200_OK)
         else:
             return CustomeResponse({"msg":"data not found"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
