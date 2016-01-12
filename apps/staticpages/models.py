@@ -5,13 +5,13 @@ from django_pgjson.fields import JsonField
 
 # Create your models here.
 
-class About(models.Model):
+class StaticPages(models.Model):
     
         class Meta:
-            db_table = 'ohmgear_about'
+            db_table = 'ohmgear_staticpages'
         headline = models.CharField(_("Headline"),max_length=50)
         content = models.TextField("Content")
-        page_type = models.IntegerField(_("Page Type"),default=1)
+        page_name = models.CharField(_("Page Name"),unique=True,max_length=20)
         status  = models.IntegerField(_("Status"),default=1)
         created_date=models.DateTimeField(_("Created Date"),auto_now_add=True,auto_now=False)
         updated_date=models.DateTimeField(_("Updated Date"),auto_now_add=False,auto_now=True)

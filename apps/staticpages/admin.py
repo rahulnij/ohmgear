@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import About
+from .models import StaticPages
 # Register your models here.
 
 
@@ -16,4 +16,4 @@ class AboutAdmin(admin.ModelAdmin):
     
     list_per_page = 100
     
-admin.site.register(About,AboutAdmin)
+admin.site.register(StaticPages,AboutAdmin)

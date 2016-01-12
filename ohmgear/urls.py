@@ -121,6 +121,10 @@ import apps.vacationcard.views as businesscardvacation_views
 router.register(r'api/businesscardvacation',businesscardvacation_views.BusinessCardVacationViewSet)
 #-----------------End-------------------------------------------------#
 
+#-------------- Static pages url--- ---------------------------------#
+import apps.staticpages.views as staticpages_view
+router.register(r'api/staticpages',staticpages_view.StaticPagesViewSet)
+#-------------- End: Stattic pages app ---------------------------------------------#
 
 
 urlpatterns += patterns('',
