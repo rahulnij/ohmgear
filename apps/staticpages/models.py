@@ -17,6 +17,6 @@ class StaticPages(models.Model):
         updated_date=models.DateTimeField(_("Updated Date"),auto_now_add=False,auto_now=True)
         
         def __unicode__(self):
-            return '{"id":"%s","content":"%s","page_type":"%s",status":"%s"}' %(self.id,self.content,self.page_type,self.status)
+            return '{"id":"%s","content":"%s","page_name":"%s",status":"%s"}' %(self.id,self.content,self.page_name,self.status)
         
         
