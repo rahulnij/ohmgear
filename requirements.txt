@@ -26,3 +26,4 @@ validictory==1.0.1
 wsgiref==0.1.2
 django-simple-history==1.6.3
 django-admin-bootstrapped==2.5.7
+django-ckeditor==5.0.2
