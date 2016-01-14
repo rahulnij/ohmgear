@@ -86,7 +86,7 @@ import apps.contacts.views as  contacts_views
 #urlpatterns += [
 #    url(r'api/upload_contacs', contacts_views.storeContactsViewSet),    
 #]
-router.register(r'api/upload_contacs',contacts_views.storeContactsViewSet)
+router.register(r'api/contacts',contacts_views.storeContactsViewSet)
 #urlpatterns += format_suffix_patterns(urlpatterns)
 #-------------- End ---------------------------------------------#
 
