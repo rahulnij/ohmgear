@@ -5,5 +5,5 @@ src
 static
 media
 *.*~
-local.py
+*local.py*
 **/migrations
