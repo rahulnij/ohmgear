@@ -30,6 +30,7 @@ from functions import getToken,checkEmail
 import json
 from django.shortcuts import redirect
 import hashlib, datetime, random
+from rest_framework.decorators import detail_route, list_route
 #class UserPermissionsObj(permissions.BasePermission):
 #    """
 #    Object-level permission to only allow owners of an object to edit it.
@@ -87,10 +88,25 @@ class UserViewSet(viewsets.ModelViewSet):
                 self._disable_signals = True
             #------------ End -----------------------------------#
             user_id=serializer.save() 
-#            #---------------- Set the password -----------#
-#            if 'password' in request.DATA and request.DATA['password'] is not None:
-#               self.set_password(request,user_id.id)
-#            #---------------- End ------------------------#
+            
+            #---------------- create the profile -----------#
+            salt = hashlib.sha1(str(random.random())).hexdigest()[:5]            
+            activation_key = hashlib.sha1(salt+user_id.email).hexdigest()            
+            key_expires = datetime.datetime.today() + datetime.timedelta(2)
+            profile = Profile()
+            profile.activation_key = activation_key
+            profile.key_expires = key_expires
+            profile.user_id = user_id.id
+            
+            if request.data.has_key('first_name'):
+                profile.first_name = request.data['first_name']
+                
+            if request.data.has_key('last_name'):
+                profile.last_name = request.data['last_name']
+                
+            profile.save()
+            #---------------- End ------------------------#
+            
             if not fromsocial:
              return CustomeResponse(serializer.data,status=status.HTTP_201_CREATED)
             else:
@@ -117,6 +133,38 @@ class UserViewSet(viewsets.ModelViewSet):
             return CustomeResponse(serializer.errors,status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
 
     
+    @list_route(methods=['post'],)   
+    def changepassword(self,request):
+        try:
+            user_id =request.user.id
+            old_password    =  request.DATA['old_password']
+            password        =  request.DATA['password']
+            confirmpassword =  request.DATA['confirm_password']
+        except:
+            return CustomeResponse({'msg':'Old_password,password and confirm_password are missing'},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)   
+        
+        userdata        = User.objects.filter(id=request.user.id).values()
+        email            = userdata[0]['email']
+        
+        if old_password:
+            user = authenticate_frontend(username=email, password=old_password)
+            if user and not None:
+                    if password == confirmpassword :
+                        user = User.objects.get(id=user_id)
+                        user.set_password(password)
+                        user.update_password = False
+                        user.save()
+                        return CustomeResponse({'msg':"Password changed successfully"},status=status.HTTP_200_OK)
+                    else:
+                        return CustomeResponse({'msg':"password and confirm password are not same"},status=status.HTTP_401_UNAUTHORIZED,validate_errors=1)
+            else:
+                msg = 'Old Password is wrong'
+                return CustomeResponse({'msg':msg},status=status.HTTP_401_UNAUTHORIZED,validate_errors=1)
+        else:
+            msg = 'Must include "old_Password".'
+            return CustomeResponse({'msg':msg},status=status.HTTP_401_UNAUTHORIZED,validate_errors=1)
+        
+    
     def partial_update(self, request, pk=None):
         pass
 
@@ -142,17 +190,22 @@ class ProfileViewSet(viewsets.ModelViewSet):
     
      #--------------Method: PUT update the record-----------------------------#
     def create(self, request, pk=None):
-         try:
-           messages = Profile.objects.get(user_id=request.DATA['user_id'])
-         except:
+        try:
+            user_id = request.user.id
+            messages = Profile.objects.get(user_id=user_id) 
+            if request.data.has_key('profile_image'):
+                  profile_image   = request.data['profile_image']
+            else:
+                 profile_image = messages.profile_image
+        except:
            return CustomeResponse({'msg':'record not found'},status=status.HTTP_404_NOT_FOUND,validate_errors=1)
-         serializer =  ProfileSerializer(messages,data=request.DATA,partial=True,context={'request': request})
-         if serializer.is_valid():
-            serializer.save(first_time_login  = False)
+        serializer =  ProfileSerializer(messages,data=request.DATA,partial=True,context={'request': request})
+        if serializer.is_valid():
+            serializer.save(first_time_login  = False,profile_image= profile_image)
             return CustomeResponse(serializer.data,status=status.HTTP_200_OK)
-         else:
+        else:
             return CustomeResponse(serializer.errors,status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
-
+    
     
     def partial_update(self, request, pk=None):
         pass

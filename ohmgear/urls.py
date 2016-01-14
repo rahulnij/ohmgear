@@ -24,8 +24,8 @@ urlpatterns =patterns(
     '',
     #url(r'^docs/', include('rest_framework_swagger.urls')),
    # url(r'^grappelli/', include('grappelli.urls')), 
-    url(r'^jet/', include('jet.urls', 'jet')),  # Django JET URLS
-    url(r'^jet/dashboard/', include('jet.dashboard.urls', 'jet-dashboard')), 
+    #url(r'^jet/', include('jet.urls', 'jet')),  # Django JET URLS
+    #url(r'^jet/dashboard/', include('jet.dashboard.urls', 'jet-dashboard')), 
  
     url(r'^admin/', include(admin.site.urls)),
     url(r'^api/', include('apps.vacationcard.urls')),
@@ -82,12 +82,12 @@ router.register(r'api/notes', notes_views.NotesViewSet)
 
 #-------------- Contacts app url registration ----------------------#
 import apps.contacts.views as  contacts_views
-
-urlpatterns += [
-    url(r'^api/upload_contacs/$', contacts_views.storeContacts),    
-]
-
-urlpatterns += format_suffix_patterns(urlpatterns)
+#
+#urlpatterns += [
+#    url(r'api/upload_contacs', contacts_views.storeContactsViewSet),    
+#]
+router.register(r'api/contacts',contacts_views.storeContactsViewSet)
+#urlpatterns += format_suffix_patterns(urlpatterns)
 #-------------- End ---------------------------------------------#
 
 
@@ -105,11 +105,26 @@ router.register(r'api/vacationcard',vacationcard_views.VacationCardViewSet)
 import apps.feedbacks.views as feebacks_views
 router.register(r'api/feedbacks',feebacks_views.FeedbackViewSet)
 
+
+import apps.feedbacks.views as feebackcategory_views
+router.register(r'api/feedbackcategory',feebackcategory_views.FeedbackCategoryViewSet)
+
+import apps.feedbacks.views as feebackcategorysubject_views
+router.register(r'api/feedbackcategorysubject',feebackcategorysubject_views.FeedbackCategorySubjectViewSet)
+
+import apps.feedbacks.views as contactus_views
+router.register(r'api/contactus',contactus_views.ContactusViewSet)
+
+
 #----------------Businesscard Vacation url ---------------------------#
 import apps.vacationcard.views as businesscardvacation_views
 router.register(r'api/businesscardvacation',businesscardvacation_views.BusinessCardVacationViewSet)
 #-----------------End-------------------------------------------------#
 
+#-------------- Static pages url--- ---------------------------------#
+import apps.staticpages.views as staticpages_view
+router.register(r'api/staticpages',staticpages_view.StaticPagesViewSet)
+#-------------- End: Stattic pages app ---------------------------------------------#
 
 
 urlpatterns += patterns('',

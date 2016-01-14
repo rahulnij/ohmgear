@@ -11,27 +11,27 @@ from django.utils.html import format_html
 
 class CustomUserManager(BaseUserManager):
 
-    def _create_user(self, email,first_name, password=None,**extra_fields):
+    def _create_user(self, email, password=None,**extra_fields):
         """
         Creates and saves a User with the given email and password.
         """
         now = timezone.now()
         if not email:
             raise ValueError('The given email must be set')
-        if not first_name:
-            raise ValueError('first_name required')        
+#        if not first_name:
+#            raise ValueError('first_name required')        
         email = self.normalize_email(email)
-        user = self.model(email=email,first_name=first_name, **extra_fields)
+        user = self.model(email=email, **extra_fields)
         user.user_type = UserType.objects.get(id=1)
         user.set_password(password)
         user.save(using=self._db)
         return user
 
-    def create_user(self, email,first_name, password=None,**extra_fields):
-        return self._create_user(email,first_name, password,**extra_fields)
+    def create_user(self, email, password=None,**extra_fields):
+        return self._create_user(email, password,**extra_fields)
 
-    def create_superuser(self, email,first_name, password=None,**extra_fields):
-        return self._create_user(email,first_name, password,**extra_fields)
+    def create_superuser(self, email, password=None,**extra_fields):
+        return self._create_user(email, password,**extra_fields)
 
 #------------------ Look up Table -------------------#          
 
@@ -83,8 +83,8 @@ class User(AbstractBaseUser):
         db_table = 'ohmgear_users_user'
         unique_together = ('email', 'user_type',)
     account_number = models.CharField(_("Account Number"),max_length=45,null=True)
-    first_name = models.CharField(_("First Name"),max_length=45)
-    last_name = models.CharField(_("Last Name"),max_length=45,null=True)    
+#    first_name = models.CharField(_("First Name"),max_length=45)
+#    last_name = models.CharField(_("Last Name"),max_length=45,null=True)    
     email = models.EmailField(
                         verbose_name='email address',
                         max_length=255,
@@ -102,7 +102,7 @@ class User(AbstractBaseUser):
     update_password =  True
 
     USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = ['first_name']
+    #REQUIRED_FIELDS = ['first_name']
 
     def get_full_name(self):
         # The user is identified by their email address
@@ -149,6 +149,11 @@ class User(AbstractBaseUser):
 class Profile(models.Model):
     class Meta:
         db_table = 'ohmgear_users_profile'
+    
+    first_name = models.CharField(_("First Name"),max_length=45)
+    last_name = models.CharField(_("Last Name"),max_length=45,null=True)
+    nick_name = models.CharField(_("Nick Name"),max_length=45,null=True)
+    headline  = models.CharField(_("Headline"),max_length=80,null=True)
     dob = models.DateField(_("DOB"),null=True)
     gender = models.CharField(_("Gender"),null =True,max_length= 10) 
     address = models.CharField(_("Address"),max_length=80,null=True)
@@ -156,7 +161,7 @@ class Profile(models.Model):
     custom_data = JsonField(null=True)
     created_date=models.DateTimeField(_("Created Date"),auto_now_add=True,auto_now=False)
     updated_date=models.DateTimeField(_("Updated Date"),auto_now_add=False,auto_now=True)    
-    user = models.OneToOneField(User,null=True)
+    user = models.OneToOneField(User,null=True,related_name="user_profile")
     income_group = models.ForeignKey(IncomeGroup, null=True, blank=True)
     business_type = models.ForeignKey(BusinessType,null= True)
     profile_image = models.ImageField(_("Profile Image"),upload_to='uploads/profile_img/', max_length=254,blank=True,null=True)
@@ -169,7 +174,7 @@ class Profile(models.Model):
     #------------- End -------------------------------------------#
 
     def __unicode__(self):
-        return '{"id":"%s","dob":"%s","gender":"%s","address":"%s","mobile_number":"%s","user":"%s","income_group":"%s","business_type":"%s","first_time_login":"%s"}' %(self.id,self.dob,self.gender,self.address,self.mobile_number,self.user,self.income_group,self.business_type,self.first_time_login)
+        return '{"id":"%s","dob":"%s","gender":"%s","address":"%s","mobile_number":"%s","user":"%s","income_group":"%s","business_type":"%s","first_time_login":"%s","first_name":"%s","last_name":"%s","nick_name":"%s","headline":"%s","profile_image":"%s"}' %(self.id,self.dob,self.gender,self.address,self.mobile_number,self.user,self.income_group,self.business_type,self.first_time_login,self.first_name,self.last_name,self.nick_name,self.headline,self.profile_image)
 
 
 

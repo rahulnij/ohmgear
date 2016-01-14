@@ -36,7 +36,7 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = (
-    'jet',
+    'django_admin_bootstrapped',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -56,6 +56,8 @@ INSTALLED_APPS = (
     'rest_framework.authtoken',
     'apps.feedbacks',
     'simple_history',
+    'apps.staticpages',
+    'ckeditor',
 )
 
 MIDDLEWARE_CLASSES = (
@@ -176,3 +178,4 @@ STATICFILES_DIRS = ()
 
 
 BCARDS_TEMPLATE_IMAGE = os.path.join(MEDIA_ROOT, 'bcards_template_image')
+CKEDITOR_JQUERY_URL = '//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js'

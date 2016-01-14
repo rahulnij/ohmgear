@@ -9,15 +9,16 @@ import rest_framework.status as status
 from apps.businesscards.serializer import BusinessCardSerializer            
             
 class IdentifierSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Identifier
+        fields = ('id','user','identifier','identifiertype','paymentstatus','identifierlastdate')
+
+
+class BusinessIdentifierSerializer(serializers.ModelSerializer):
     business_identifier = BusinessCardSerializer(many=True,read_only=True)
     class Meta:
         model = Identifier
         fields = ('id','user','identifier','identifiertype','paymentstatus','identifierlastdate','business_identifier')
-
-class CreateIdentifierSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Identifier
-        fields = ('id','user','identifier','identifiertype','paymentstatus','identifierlastdate')
 
 
 #        read_only_fields = ('id',)

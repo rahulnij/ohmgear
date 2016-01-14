@@ -2,7 +2,7 @@ from django.shortcuts import render
 from rest_framework import routers, serializers, viewsets
 from models import Identifier,LockIdentifier
 from apps.businesscards.models import BusinessCardIdentifier
-from serializer import IdentifierSerializer,CreateIdentifierSerializer,LockIdentifierSerializer
+from serializer import IdentifierSerializer,LockIdentifierSerializer,BusinessIdentifierSerializer
 from apps.businesscards.serializer import BusinessCardIdentifierSerializer
 from ohmgear.functions import CustomeResponse
 from rest_framework.decorators import api_view
@@ -37,16 +37,16 @@ class IdentifierViewSet(viewsets.ModelViewSet):
             userdata = Identifier.objects.select_related('businesscard_identifiers').filter(user=user).order_by('-id')
             
            # queryset = VacationCard.objects.select_related().all().filter(user_id=user_id)
-            serializer = IdentifierSerializer(userdata,many=True)
+            serializer = BusinessIdentifierSerializer(userdata,many=True)
             
             
             if userdata:
                 return CustomeResponse(serializer.data,status=status.HTTP_201_CREATED)
             else:
                 if identifier is None:
-                    return CustomeResponse({'msg':'user id is not exist'},status=status.HTTP_201_CREATED)
+                    return CustomeResponse({'msg':'user id is not exist'},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
                 if not identifierdata and identifier is not None:
-                    return CustomeResponse({'msg':'Identifier available'},status=status.HTTP_201_CREATED)
+                    return CustomeResponse({'msg':'Identifier available'},status=status.HTTP_200_OK)
                 
                 else:
                     list = []
@@ -56,7 +56,7 @@ class IdentifierViewSet(viewsets.ModelViewSet):
                         matchidentifier = Identifier.objects.filter(identifier=newidentifier).values()
                         if not matchidentifier:
                            list.append(newidentifier)
-                    return CustomeResponse({'msg':list},status=status.HTTP_200_OK,validate_errors=1)
+                    return CustomeResponse({"msg":list},status=status.HTTP_200_OK,validate_errors=True)
     
                 
             
@@ -91,7 +91,7 @@ class IdentifierViewSet(viewsets.ModelViewSet):
          else: 
            pass
          #request.POST._mutable = mutable
-         serializer =  CreateIdentifierSerializer(data=data,context={'request': request,'msg':'not exist'})
+         serializer =  IdentifierSerializer(data=data,context={'request': request,'msg':'not exist'})
          
          if serializer.is_valid():
             serializer.save()

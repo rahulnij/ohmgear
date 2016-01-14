@@ -49,11 +49,10 @@ class BusinessCard(models.Model):
         return'{"id":"%s","name":"%s","user_id":"%s"}' %(self.id,self.name,self.user_id.id)
   
     def bcard_image_frontend(self):
-        media = BusinessCardMedia.objects.filter(businesscard_id=self.id,status=1)
+        media = BusinessCardMedia.objects.filter(businesscard_id=self.id,status=1).order_by('front_back')
         data =[]
         #i = 0
         for item in media:
-            print item
             data.append({"img_url":str(settings.DOMAIN_NAME)+str(settings.MEDIA_URL)+str(item.img_url),"front_back":item.front_back})
             #i = i + 1
         return data    
@@ -152,7 +151,7 @@ class BusinessCardAddSkill(models.Model):
 class BusinessCardVacation(models.Model):
     class Meta:
         db_table = 'ohmgear_vacationcard_businesscardvacation'
-       # unique_together = ('user_id', 'businesscard_id')
+        unique_together = ('vacationcard_id', 'businesscard_id')
         
     vacationcard_id    =   models.ForeignKey(VacationCard,db_column ="vacationcard_id",related_name="businesscardvacation")
     businesscard_id    =   models.ForeignKey(BusinessCard,db_column = "businesscard_id")
