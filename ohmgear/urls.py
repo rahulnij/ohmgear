@@ -24,8 +24,8 @@ urlpatterns =patterns(
     '',
     #url(r'^docs/', include('rest_framework_swagger.urls')),
    # url(r'^grappelli/', include('grappelli.urls')), 
-    url(r'^jet/', include('jet.urls', 'jet')),  # Django JET URLS
-    url(r'^jet/dashboard/', include('jet.dashboard.urls', 'jet-dashboard')), 
+    #url(r'^jet/', include('jet.urls', 'jet')),  # Django JET URLS
+    #url(r'^jet/dashboard/', include('jet.dashboard.urls', 'jet-dashboard')), 
  
     url(r'^admin/', include(admin.site.urls)),
     url(r'^api/', include('apps.vacationcard.urls')),
@@ -121,6 +121,10 @@ import apps.vacationcard.views as businesscardvacation_views
 router.register(r'api/businesscardvacation',businesscardvacation_views.BusinessCardVacationViewSet)
 #-----------------End-------------------------------------------------#
 
+#-------------- Static pages url--- ---------------------------------#
+import apps.staticpages.views as staticpages_view
+router.register(r'api/staticpages',staticpages_view.StaticPagesViewSet)
+#-------------- End: Stattic pages app ---------------------------------------------#
 
 
 urlpatterns += patterns('',

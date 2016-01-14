@@ -1,12 +1,5 @@
 {% load i18n %}
-
-<select class="changelist-filter-select">
-    {% for choice in choices %}
-        {% if forloop.first %}
-            <option data-url="{{ choice.query_string|iriencode }}">{% blocktrans with filter_title=title %}{{ filter_title }}{% endblocktrans %}</option>
-            <option disabled>---</option>
-        {% else %}
-            <option{% if choice.selected %} selected{% endif %} data-url="{{ choice.query_string|iriencode }}">{{ choice.display }}</option>
-        {% endif %}
-    {% endfor %}
-</select>
+    <li class="dropdown-header">{% blocktrans with filter_title=title %} By {{ filter_title }} {% endblocktrans %}</li>
+{% for choice in choices %}
+    <li class="{% if choice.selected %}active{% endif %}"><a href="{{ choice.query_string|iriencode }}">{{ choice.display }}</a></li>
+{% endfor %}

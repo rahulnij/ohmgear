@@ -59,9 +59,8 @@ LOGGING = {
         'MYAPP': {
             'handlers': ['file'],
             'level': 'DEBUG',
-        },
-    }
-}
+        }
+}}
 
 # CELERY STUFF
 INSTALLED_APPS += ("djcelery","apps.test_purposes", )

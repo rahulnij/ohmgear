@@ -5,4 +5,5 @@ src
 static
 media
 *.*~
-ohmgear/settings/local.py
+local.py
+**/migrations

@@ -36,7 +36,7 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = (
-    'jet',
+    'django_admin_bootstrapped',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -56,7 +56,8 @@ INSTALLED_APPS = (
     'rest_framework.authtoken',
     'apps.feedbacks',
     'simple_history',
-    'apps.about',
+    'apps.staticpages',
+    'ckeditor',
 )
 
 MIDDLEWARE_CLASSES = (
