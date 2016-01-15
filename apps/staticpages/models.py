@@ -2,7 +2,7 @@ from django.db import models
 from django.utils.translation import ugettext_lazy as _
 from django.conf import settings
 from django_pgjson.fields import JsonField
-
+from ckeditor.fields import RichTextField
 # Create your models here.
 
 class StaticPages(models.Model):
@@ -10,7 +10,7 @@ class StaticPages(models.Model):
         class Meta:
             db_table = 'ohmgear_staticpages'
         headline = models.CharField(_("Headline"),max_length=50)
-        content = models.TextField("Content")
+        content = RichTextField()
         page_name = models.CharField(_("Page Name"),unique=True,max_length=20)
         status  = models.IntegerField(_("Status"),default=1)
         created_date=models.DateTimeField(_("Created Date"),auto_now_add=True,auto_now=False)

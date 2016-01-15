@@ -58,6 +58,7 @@ INSTALLED_APPS = (
     'simple_history',
     'apps.staticpages',
     'apps.usersetting',
+    'ckeditor',
 )
 
 MIDDLEWARE_CLASSES = (
@@ -178,3 +179,4 @@ STATICFILES_DIRS = ()
 
 
 BCARDS_TEMPLATE_IMAGE = os.path.join(MEDIA_ROOT, 'bcards_template_image')
+CKEDITOR_JQUERY_URL = '//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js'
