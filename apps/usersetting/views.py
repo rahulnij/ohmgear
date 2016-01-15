@@ -31,7 +31,10 @@ class UserSettingViewSet(viewsets.ModelViewSet):
             getkey =    request.DATA['key']
         except:
             return CustomeResponse({"msg":"Key not found"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
-        usersettingvalue = UserSetting.objects.get(setting_id__key=getkey,user_id=request.user.id)
+        try:
+            usersettingvalue = UserSetting.objects.get(setting_id__key=getkey,user_id=request.user.id)
+        except:
+            return CustomeResponse({"msg":"DATA not found"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
         if usersettingvalue:
             serializer      =   UserSettingSerializer(usersettingvalue)
             return CustomeResponse(serializer.data,status=status.HTTP_200_OK)
