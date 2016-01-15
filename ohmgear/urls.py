@@ -101,7 +101,7 @@ router.register(r'api/folder',folder_view.FolderViewSet)
 import apps.vacationcard.views as vacationcard_views
 router.register(r'api/vacationcard',vacationcard_views.VacationCardViewSet)
 
-#--------------Feddback App url-------------------------------------#
+#--------------Feedback App url-------------------------------------#
 import apps.feedbacks.views as feebacks_views
 router.register(r'api/feedbacks',feebacks_views.FeedbackViewSet)
 
@@ -114,6 +114,18 @@ router.register(r'api/feedbackcategorysubject',feebackcategorysubject_views.Feed
 
 import apps.feedbacks.views as contactus_views
 router.register(r'api/contactus',contactus_views.ContactusViewSet)
+
+#-----------------End-------------------------------------------------#
+
+#---------------------userSetting------------------------------------#
+import apps.usersetting.views as setting_views
+router.register(r'api/usersetting',setting_views.UserSettingViewSet)
+
+import apps.usersetting.views as languagesetting_views
+router.register(r'api/languagesetting',languagesetting_views.LanguageSettingViewSet)
+
+import apps.usersetting.views as displaycontactsetting_views
+router.register(r'api/displaycontactsetting',displaycontactsetting_views.DisplayContactNameAsViewSet)
 
 
 #----------------Businesscard Vacation url ---------------------------#

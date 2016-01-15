@@ -57,6 +57,7 @@ INSTALLED_APPS = (
     'apps.feedbacks',
     'simple_history',
     'apps.staticpages',
+    'apps.usersetting',
 )
 
 MIDDLEWARE_CLASSES = (
