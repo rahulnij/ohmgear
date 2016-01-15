@@ -7,6 +7,7 @@ import rest_framework.status as status
 from ohmgear.token_authentication import ExpiringTokenAuthentication
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import list_route
+from functions import get_all_usersetting,get_setting_value_by_key,update_user_setting
 
 
 # Create your views here.
@@ -19,20 +20,25 @@ class UserSettingViewSet(viewsets.ModelViewSet):
     #---------------------Get all user-setting of a user-----------#
     def list(self,request):
         user_id =request.user.id
-        queryset  = UserSetting.objects.filter(user_id=user_id)
-        serializer = UserSettingSerializer(queryset, many=True)                        
-        data= { keydata['key']:keydata['value'] for keydata in serializer.data}
-        return CustomeResponse(data,status=status.HTTP_200_OK)
-    
+        queryset = get_all_usersetting(user_id)
+        if queryset:
+            serializer = UserSettingSerializer(queryset, many=True)                        
+            data= { keydata['key']:keydata['value'] for keydata in serializer.data}
+            return CustomeResponse(data,status=status.HTTP_200_OK)
+        else:
+            return CustomeResponse({"msg":"data not found"},status=status.HTTP_200_OK)
+        
     @list_route(methods=["post"],)
     #-----------------get particular setting value of user by key--------#
     def getsettingvalue(self,request):
         try:
             getkey =    request.DATA['key']
+            user_id       =     request.user.id
         except:
             return CustomeResponse({"msg":"Key not found"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
         try:
-            usersettingvalue = UserSetting.objects.get(setting_id__key=getkey,user_id=request.user.id)
+           usersettingvalue= get_setting_value_by_key(getkey,user_id)
+            
         except:
             return CustomeResponse({"msg":"DATA not found"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
         if usersettingvalue:
@@ -48,9 +54,10 @@ class UserSettingViewSet(viewsets.ModelViewSet):
 
         try:
             getkey      =   request.DATA['key']
-            getvalue       =   request.DATA['value']
-            getkeydata  =   UserSetting.objects.filter(setting_id__key=getkey,user_id=request.user.id).update(value=getvalue)
-            
+            getvalue    =   request.DATA['value']
+            user_id     =   request.user.id
+            getkeydata  =   update_user_setting(getkey,getvalue,user_id)
+                
         except:
             return CustomeResponse({"msg":"Data not found"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
         if getkeydata:
