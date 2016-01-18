@@ -373,6 +373,7 @@ class VacationCardMerge(APIView):
             accept from and list of arrays vacation card ids
         """
         try:
+            
             serializer = VacationCardMergeSerializer(data=request.data)
             if serializer.is_valid():
                 sourceVacationCardIds = request.data.get('source')
@@ -386,8 +387,9 @@ class VacationCardMerge(APIView):
                 if vacationCardCount != len(vacationCardIds):
                     return CustomeResponse({'msg': 'one or all of the vacation ids not exists'}, status=status.HTTP_400_BAD_REQUEST)
                 
+                #update source vacation card ids to destination vacation card id
                 VacationTrip.objects.filter(user_id=request.user, vacationcard_id__in=sourceVacationCardIds).update(vacationcard_id=destVacationCardId)
-                VacationTrip.objects.filter(user_id=request.user, vacationcard_id__in=sourceVacationCardIds).update(vacationcard_id=destVacationCardId)
+                BusinessCardVacation.objects.filter(user_id=request.user, vacationcard_id__in=sourceVacationCardIds).update(vacationcard_id=destVacationCardId)
 
                 
                 #remove source vacation card once it trips done

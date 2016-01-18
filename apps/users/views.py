@@ -31,6 +31,8 @@ import json
 from django.shortcuts import redirect
 import hashlib, datetime, random
 from rest_framework.decorators import detail_route, list_route
+from apps.usersetting.models import Setting
+from apps.usersetting.serializer import UserSignupSettingSerializer
 #class UserPermissionsObj(permissions.BasePermission):
 #    """
 #    Object-level permission to only allow owners of an object to edit it.
@@ -164,6 +166,30 @@ class UserViewSet(viewsets.ModelViewSet):
             msg = 'Must include "old_Password".'
             return CustomeResponse({'msg':msg},status=status.HTTP_401_UNAUTHORIZED,validate_errors=1)
         
+    def usersetting(self,request,user_id):
+        try:
+            settingvalue = Setting.objects.all()
+            
+            if settingvalue:
+                    tempContainer = []
+                    for data in settingvalue:
+                        tempdata = {}
+                        tempdata['user_id']= user_id
+                        tempdata['setting_id'] = data.id
+                        tempdata['value'] = data.value_type
+                        tempContainer.append(tempdata)
+                    print tempContainer
+                    serializer = UserSignupSettingSerializer(data=tempContainer,many=True)
+                    if serializer.is_valid():
+                        serializer.save()
+                        return CustomeResponse(serializer.data,status=status.HTTP_201_CREATED)
+                    else:
+                        return CustomeResponse(serializer.errors,status=status.HTTP_201_CREATED)
+                        
+        except:
+            return CustomeResponse({'msg':'provide status active'},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)   
+
+
     
     def partial_update(self, request, pk=None):
         pass
@@ -275,12 +301,14 @@ def useractivity(request,**kwargs):
        
        #------------- get the activation key and activate the account : Process after registration ----------------------#
        if activation_key:
-          try: 
+          #try: 
             user_profile = get_object_or_404(Profile, activation_key=activation_key)
             user = user_profile.user
             user.status = 1
             user.update_password = False
             user.save()
+            user_setting = UserViewSet()
+            user_setting.usersetting(request,user.id)
             if request.device:
                 from django.http import HttpResponse
                 #----------- token value and user_id for direct login into app ----------------------#
@@ -290,8 +318,8 @@ def useractivity(request,**kwargs):
                 return response 
             else:
                return CustomeResponse('Account has been activated',status=status.HTTP_200_OK) 
-          except:
-            return CustomeResponse({'msg':'Incorrect activation key'},status=status.HTTP_401_UNAUTHORIZED,validate_errors=1) 
+         # except:
+          #  return CustomeResponse({'msg':'Incorrect activation key'},status=status.HTTP_401_UNAUTHORIZED,validate_errors=1) 
        #------------------------------------ End --------------------------------------------------#
        
        #--------------------  Get the reset password key and redirect to mobile : Processed when forgot password mail link clicked----------------------#
@@ -399,3 +427,4 @@ def useractivity(request,**kwargs):
             
         else:
              return CustomeResponse({'msg':'Please provide operation parameter op'},status=status.HTTP_401_UNAUTHORIZED,validate_errors=1)            
+
