@@ -13,8 +13,7 @@ def get_setting_value_by_key(getkey,user_id):
     return usersettingvalue
     
     
-def update_user_setting(request,getkey,getvalue,user_id):
-    print request.user.id
+def update_user_setting(getkey,getvalue,user_id):
     getkeydata  =   UserSetting.objects.filter(setting_id__key=getkey,user_id=user_id).update(value=getvalue)
     return getkeydata
 
