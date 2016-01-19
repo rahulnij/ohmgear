@@ -59,11 +59,10 @@ class IncomeGroup(models.Model):
 class SocialType(models.Model):
     class Meta:
          db_table = 'ohmgear_users_socialtype'
-    social_type_id = models.AutoField(primary_key =True)
     social_type    = models.CharField(_('Social Type'), max_length=50,null=True)
     
     def __unicode__(self):
-        return'{"social_type_id":"%s","social_type":"%s"}'%(self.social_type_id,self.social_type)
+        return'{"id":"%s","social_type":"%s"}'%(self.id,self.social_type)
     
 class UserType(models.Model):
     class Meta:
@@ -187,7 +186,22 @@ class SocialLogin(models.Model):
     user = models.OneToOneField(User,null=True)
     
     def __unicode__(self):
-        return'{"id:"%s","social_media_login_id":"%s","social_type":"%s","status":""}'%(self.id,self.social_media_login_id,self.social_type)
+        return '{"id":"%s","social_media_login_id":"%s","social_type":"%s"}' %(self.id,self.social_media_login_id,self.social_type)
+    
+    
+    
+class ConnectedAccount(models.Model):
+    class Meta:
+        db_table    =   "ohmgear_users_connectedaccount"
+    user            = models.ForeignKey("User")
+    #user = models.ForeignKey("User",null=True)
+    social_type     =   models.ForeignKey(SocialType)
+    created_date    =   models.DateTimeField(_("Created Date"),auto_now_add=True,auto_now=False)
+    updated_date    =   models.DateTimeField(_("Updated Date"),auto_now_add=False,auto_now=True)
+    
+    def __unicode__(self):
+        return '{"id":"%s","social_type":"%r", "user":"%r"}' %(self.id,self.social_type, self.user)
+    
     
     
 
