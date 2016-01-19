@@ -72,38 +72,97 @@ class storeContactsViewSet(viewsets.ModelViewSet):
           pass
       
       def find_duplicate(self,first_json,second_json):
-               
+          
+               first_name = []
+               last_name = []               
                email = []
                phone = []
+               
+               try:
+                  first_name=[value['value'] for  value in first_json["side_first"]["basic_info"] if value['keyName'] == 'FirstName']
+               except:
+                  pass
+              
+               try:
+                  last_name=[value['value'] for  value in first_json["side_first"]["basic_info"] if value['keyName'] == 'LastName']
+               except:
+                  pass              
+              
                try:
                   email = first_json["side_first"]["contact_info"]["email"].values()
+               except:
+                  pass 
+                
+               try:    
                   phone = first_json["side_first"]["contact_info"]["phone"].values()
-                  email.append(first_json["side_second"]["contact_info"]["email"].values())
-                  phone.append(first_json["side_second"]["contact_info"]["phone"].values())                  
                except:
                   pass
                
+               try:
+                  email.append(first_json["side_second"]["contact_info"]["email"].values())
+               except:
+                  pass
+              
+               try:
+                  phone.append(first_json["side_second"]["contact_info"]["phone"].values())                  
+               except:
+                  pass
+              
+
+               first_name_target = []
+               last_name_target = [] 
                email_target = []
                phone_target = []
+               
+               try:
+                  first_name_target=[value['value'] for  value in second_json["side_first"]["basic_info"] if value['keyName'] == 'FirstName']
+               except:
+                  pass
+              
+               try:
+                  last_name_target=[value['value'] for  value in second_json["side_first"]["basic_info"] if value['keyName'] == 'LastName']
+               except:
+                  pass                
+               
                try:
                    email_target = second_json["side_first"]["contact_info"]["email"].values()
+               except:
+                   pass
+               
+               try:
                    phone_target = second_json["side_first"]["contact_info"]["phone"].values()
+               except:
+                   pass
+               try:
                    email_target.append(second_json["side_second"]["contact_info"]["email"].values())
+               except:
+                   pass
+               try:
                    phone_target.append(second_json["side_second"]["contact_info"]["phone"].values())                  
                except:
                    pass                
 
-               check_duplicate = 0
+               check_duplicate_1 = 0
+               for first_name_val in first_name:
+                   if first_name_val in first_name_target and first_name_val != []:
+                        check_duplicate_1 = 1 
+               
+               if not check_duplicate_1:         
+                for last_name_val in last_name:
+                    if last_name_val in last_name_target and last_name_val != []:
+                         check_duplicate_1 = 1                
+
+               check_duplicate_2 = 0
                for email_val in email:
                    if email_val in email_target and email_val != []:
-                        check_duplicate = 1
+                        check_duplicate_2 = 1
                         
-               if not check_duplicate:
+               if not check_duplicate_2:
                 for phone_val in phone:
                     if phone_val in phone_target and phone_val != []:
-                         check_duplicate = 1 
+                         check_duplicate_2 = 1 
 
-               if check_duplicate:
+               if check_duplicate_1 and check_duplicate_2:
                   return 1
                else:
                   return 0 
