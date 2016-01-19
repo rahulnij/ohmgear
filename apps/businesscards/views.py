@@ -381,10 +381,10 @@ class BusinessCardAddSkillViewSet(viewsets.ModelViewSet):
     def update(self, request, pk=None):
          return CustomeResponse({'msg':"Update method does not allow"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
                   
- 
+from serializer import BusinessCardWithIdentifierSerializer 
 class BusinessViewSet(viewsets.ModelViewSet):
     queryset = BusinessCard.objects.all()
-    serializer_class = BusinessCardSerializer
+    serializer_class = BusinessCardWithIdentifierSerializer
     authentication_classes = (ExpiringTokenAuthentication,)
     permission_classes = (IsAuthenticated,)    
     vacation_data = ''

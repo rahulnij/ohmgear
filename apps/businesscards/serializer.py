@@ -59,8 +59,35 @@ class BusinessCardSerializer(serializers.ModelSerializer):
             'media_detail',
             #'identifier_new',
         )
- 
+
+#--------------- Business card serializer wit Identifier : reason : circular error in identifier error --#
 from apps.identifiers.serializer import IdentifierSerializer
+class BusinessCardWithIdentifierSerializer(serializers.ModelSerializer):
+            
+    contact_detail = ContactsSerializerWithJson(read_only=True)
+    media_detail    = serializers.SerializerMethodField('media')
+    business_identifier = IdentifierSerializer(many=True,read_only=True)
+    def media(self,instance):
+        return instance.bcard_image_frontend()
+    #identifier_new = serializers.ReadOnlyField(source='*')
+    #------------------------ End -----------------------------------------------------------#
+    class Meta:
+        model = BusinessCard
+        fields = (
+            'id',
+            'name',
+            'bcard_type',
+            'is_active',
+            'status',
+            'user_id',
+            'contact_detail',
+            'media_detail',
+            'business_identifier',
+            #'identifier_new',
+        )
+
+ 
+
 from apps.vacationcard.serializer import VacationCardSerializer
 class BusinessCardSummarySerializer(serializers.HyperlinkedModelSerializer):
     businesscard_skills = BusinessCardAddSkillSerializerReference(many=True,read_only=True)

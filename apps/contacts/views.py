@@ -140,65 +140,62 @@ class storeContactsViewSet(viewsets.ModelViewSet):
                except StopIteration, e :
                       if count == inner_loop-1: 
                          finalContacts[inner_loop-1]["duplicate"]=duplicateContacts
-                      
-                      
-               
-               count = count + 1
-                          
+                         count = count + 1
                
           return CustomeResponse(finalContacts,status=status.HTTP_200_OK)
       
       
       @list_route(methods=['post'],)
       def merge(self,request):
-                pass
-#               try:           
-#                  user_id = request.user.id
-#               except:
-#                  user_id = None            
-#               try:
-#                  merge_bcards_ids = request.data["merge_contact_ids"]
-#                  target_bcard_id = request.data["target_contact_id"]
-#               except:
-#                  merge_bcards_ids = None
-#                  target_bcard_id = None
-#                  
-#               #------------------ Get the  target_bcard_id and merge_bcards_ids data ------------------------------#
-#               if merge_bcards_ids and target_bcard_id and user_id:
-#                    target_bacard = BusinessCard.objects.select_related().get(id=target_bcard_id,user_id= user_id)
-#                    first_json = json.loads(json.dumps(target_bacard.contact_detail.bcard_json_data))
-#                    #---- make sure target_bcard_id not in merge_bcards_ids ---------------------------------------------#
-#                    if target_bcard_id not in merge_bcards_ids:
-#                    #-----------------------------------------------------------------------------------------------------#                    
-#                        merge_bcards = BusinessCard.objects.filter(id__in=merge_bcards_ids,user_id= user_id).all()
-#                        
-#                        for temp in merge_bcards:
-#                            contact_json_data = temp.contact_detail.bcard_json_data
-#                            if contact_json_data:
-#                               try: 
-#                                second_json = json.loads(json.dumps(contact_json_data))
-#                               except:
-#                                second_json = {}   
-#                               third_json = second_json.copy()
-#
-#                               self.mergeDict(third_json, first_json)
-#                               
-#                               #------ assign the new json ----------------------------#
-#                               target_bacard.contact_detail.bcard_json_data = third_json
-#                               target_bacard.contact_detail.save(force_update=True)
-#                               first_json = third_json
-#                        #------------------- TODO Delete the  merge_bcards_ids -------------------#
-#                        if merge_bcards:
-#                            #pass
-#                            merge_bcards.delete()
-#                        else:
-#                           return CustomeResponse({"msg":"merge_bcards_ids does not exist."},status=status.HTTP_400_BAD_REQUEST,validate_errors=1) 
-#                        #----------------------- End ---------------------------------------------#
-#                        return CustomeResponse({"msg":"successfully merged"},status=status.HTTP_200_OK)
-#                    else:
-#                        return CustomeResponse({"msg":"Please provide correct target_bcard_id"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)        
-#               else:
-#                    return CustomeResponse({"msg":"Please provide merge_bcards_ids, target_bcard_id"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
+           
+               try:           
+                  user_id = request.user.id
+               except:
+                  user_id = None            
+               try:
+                  merge_contact_ids = request.data["merge_contact_ids"]
+                  target_contact_id = request.data["target_contact_id"]
+               except:
+                  merge_contact_ids = None
+                  target_contact_id = None
+                  
+               #------------------ Get the  target_bcard_id and merge_bcards_ids data ------------------------------#
+               if merge_contact_ids and target_contact_id and user_id:
+                    
+                    target_bacard = BusinessCard.objects.select_related().get(id=target_contact_id,user_id= user_id)
+                    first_json = json.loads(json.dumps(target_bacard.contact_detail.bcard_json_data))
+                    #---- make sure target_bcard_id not in merge_bcards_ids ---------------------------------------------#
+                    if target_bcard_id not in merge_bcards_ids:
+                    #-----------------------------------------------------------------------------------------------------#                    
+                        merge_bcards = BusinessCard.objects.filter(id__in=merge_bcards_ids,user_id= user_id).all()
+                        
+                        for temp in merge_bcards:
+                            contact_json_data = temp.contact_detail.bcard_json_data
+                            if contact_json_data:
+                               try: 
+                                second_json = json.loads(json.dumps(contact_json_data))
+                               except:
+                                second_json = {}   
+                               third_json = second_json.copy()
+
+                               self.mergeDict(third_json, first_json)
+                               
+                               #------ assign the new json ----------------------------#
+                               target_bacard.contact_detail.bcard_json_data = third_json
+                               target_bacard.contact_detail.save(force_update=True)
+                               first_json = third_json
+                        #------------------- TODO Delete the  merge_bcards_ids -------------------#
+                        if merge_bcards:
+                            #pass
+                            merge_bcards.delete()
+                        else:
+                           return CustomeResponse({"msg":"merge_bcards_ids does not exist."},status=status.HTTP_400_BAD_REQUEST,validate_errors=1) 
+                        #----------------------- End ---------------------------------------------#
+                        return CustomeResponse({"msg":"successfully merged"},status=status.HTTP_200_OK)
+                    else:
+                        return CustomeResponse({"msg":"Please provide correct target_bcard_id"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)        
+               else:
+                    return CustomeResponse({"msg":"Please provide merge_bcards_ids, target_bcard_id"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
           
               
           
