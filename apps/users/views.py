@@ -3,8 +3,8 @@
 # Creation Date: 2015/08/04
 # Notes: View File
 #----------------------------------------------#
-from models import User,Profile,SocialLogin
-from serializer import UserSerializer,ProfileSerializer,SocialLoginSerializer
+from models import User,Profile,SocialLogin, SocialType,ConnectedAccount
+from serializer import UserSerializer,ProfileSerializer,SocialLoginSerializer,ConnectedAccountsSerializer
 
 from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated
@@ -166,6 +166,35 @@ class UserViewSet(viewsets.ModelViewSet):
             msg = 'Must include "old_Password".'
             return CustomeResponse({'msg':msg},status=status.HTTP_401_UNAUTHORIZED,validate_errors=1)
         
+    #------------------------Connects account of user i.e FB or Linkedin#---------    
+    @list_route(methods=['post'],)
+    def connectedaccounts(self,request):
+        try:
+            #print request.user.id
+            data    =   {}
+            #data    =   request.data
+            
+            data['social_type'] = SocialType.objects.get(id=request.DATA['social_type_id'])
+            data['user']  =   User.objects.get(id=request.user.id)
+            #social_type =  request.DATA['social_type_id']
+            #print data
+            
+            serializer  =   ConnectedAccountsSerializer(data=data,many=True)
+            print serializer
+            
+            if serializer.is_valid():
+                #print serializer.save()
+                c = ConnectedAccount(user=request.user, social_type= SocialType.objects.get(id=request.DATA['social_type_id']))
+                c.save()
+                return CustomeResponse(serializer.data,status=status.HTTP_201_CREATED)
+            else:
+                return CustomeResponse(serializer.data,status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
+        except Exception,e:
+            print repr(e)
+            return CustomeResponse({"msg":"Data not found"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
+        
+        
+            
     def usersetting(self,request,user_id):
         try:
             settingvalue = Setting.objects.all()
@@ -428,3 +457,37 @@ def useractivity(request,**kwargs):
         else:
              return CustomeResponse({'msg':'Please provide operation parameter op'},status=status.HTTP_401_UNAUTHORIZED,validate_errors=1)            
 
+
+
+class Connected(viewsets.ModelViewSet):
+    queryset = ConnectedAccount.objects.all()
+    serializer_class = ConnectedAccountsSerializer
+    
+    authentication_classes = (ExpiringTokenAuthentication,)
+    permission_classes = (IsAuthenticated,)
+    
+    def create(self,request):
+        try:
+            #print request.user.id
+            data    =   {}
+            #data    =   request.data
+            
+            data['social_type'] = SocialType.objects.get(id=request.DATA['social_type_id'])
+            data['user']  =   User.objects.get(id=request.user.id)
+            #social_type =  request.DATA['social_type_id']
+            #print data
+            
+            serializer  =   ConnectedAccountsSerializer(data=data,many=True)
+            print serializer
+            
+            if serializer.is_valid():
+                print serializer.save()
+                #c = ConnectedAccount(user=request.user, social_type= SocialType.objects.get(id=request.DATA['social_type_id']))
+                #c.save()
+                return CustomeResponse(serializer.data,status=status.HTTP_201_CREATED)
+            else:
+                return CustomeResponse(serializer.data,status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
+        except Exception,e:
+            print repr(e)
+            return CustomeResponse({"msg":"Data not found"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
+    

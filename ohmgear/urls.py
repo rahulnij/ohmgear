@@ -17,6 +17,9 @@ router.register(r'api/test_purposes', FtestViewSet)
 import apps.users.views as  users_views
 
 router.register(r'api/users', users_views.UserViewSet)
+
+router.register(r'api/connected', users_views.Connected)
+
 router.register(r'api/profile', users_views.ProfileViewSet)
 router.register(r'api/sociallogin',users_views.SocialLoginViewSet)
 router.register(r'api/sociallogin',users_views.SocialLoginViewSet)
