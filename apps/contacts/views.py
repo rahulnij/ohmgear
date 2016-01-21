@@ -1,21 +1,26 @@
+#--------- Import Python Modules -----------#
+import json,jsonschema
+import validictory
+#-------------------------------------------#
+#------------ Third Party Imports ----------#
 from django.shortcuts import render
 import rest_framework.status as status
-import json,jsonschema
 from rest_framework.decorators import api_view
+from rest_framework.decorators import detail_route, list_route
+from rest_framework import viewsets
+from rest_framework.permissions import IsAuthenticated
+#-------------------------------------------#
+#------------------ Local app imports ------#
 from ohmgear.functions import CustomeResponse
-
 from serializer import ContactsSerializer,ContactsSerializerWithJson
 from ohmgear.json_default_data import BUSINESS_CARD_DATA_VALIDATION
-import validictory
 from models import Contacts
-from rest_framework.decorators import detail_route, list_route
-# Create your views here.
+from ohmgear.token_authentication import ExpiringTokenAuthentication
+from apps.businesscards.views import BusinessViewSet
+#---------------------------End------------------------------------#
+
 
 #--------------------- Storing Contacts as a Bulk -----------------------#
-from rest_framework import viewsets
-from ohmgear.token_authentication import ExpiringTokenAuthentication
-from rest_framework.permissions import IsAuthenticated
-
 class storeContactsViewSet(viewsets.ModelViewSet):
     
       queryset = Contacts.objects.all()
@@ -206,7 +211,7 @@ class storeContactsViewSet(viewsets.ModelViewSet):
       
       @list_route(methods=['post'],)
       def merge(self,request):
-           
+               
                try:           
                   user_id = request.user.id
                except:
@@ -221,40 +226,42 @@ class storeContactsViewSet(viewsets.ModelViewSet):
                #------------------ Get the  target_bcard_id and merge_bcards_ids data ------------------------------#
                if merge_contact_ids and target_contact_id and user_id:
                     
-                    target_bacard = BusinessCard.objects.select_related().get(id=target_contact_id,user_id= user_id)
-                    first_json = json.loads(json.dumps(target_bacard.contact_detail.bcard_json_data))
+                    try:
+                       target_contact = Contacts.objects.get(id=target_contact_id,user_id= user_id)
+                    except:
+                       return CustomeResponse({"msg":"target_contact_id does not exist"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
+                   
+                    first_json = json.loads(json.dumps(target_contact.bcard_json_data))
                     #---- make sure target_bcard_id not in merge_bcards_ids ---------------------------------------------#
-                    if target_bcard_id not in merge_bcards_ids:
+                    if target_contact_id not in merge_contact_ids:
                     #-----------------------------------------------------------------------------------------------------#                    
-                        merge_bcards = BusinessCard.objects.filter(id__in=merge_bcards_ids,user_id= user_id).all()
-                        
-                        for temp in merge_bcards:
-                            contact_json_data = temp.contact_detail.bcard_json_data
+                        merge_contacts = Contacts.objects.filter(id__in=merge_contact_ids,user_id= user_id).exclude(businesscard_id__isnull=False).all()
+                        for temp in merge_contacts:
+                            contact_json_data = temp.bcard_json_data
                             if contact_json_data:
                                try: 
                                 second_json = json.loads(json.dumps(contact_json_data))
                                except:
                                 second_json = {}   
                                third_json = second_json.copy()
-
-                               self.mergeDict(third_json, first_json)
+                               card_object = BusinessViewSet()
+                               card_object.mergeDict(third_json, first_json)
                                
                                #------ assign the new json ----------------------------#
-                               target_bacard.contact_detail.bcard_json_data = third_json
-                               target_bacard.contact_detail.save(force_update=True)
+                               target_contact.bcard_json_data = third_json
+                               target_contact.save(force_update=True)
                                first_json = third_json
-                        #------------------- TODO Delete the  merge_bcards_ids -------------------#
-                        if merge_bcards:
+                        if merge_contacts:
                             #pass
-                            merge_bcards.delete()
+                            merge_contacts.delete()
                         else:
-                           return CustomeResponse({"msg":"merge_bcards_ids does not exist."},status=status.HTTP_400_BAD_REQUEST,validate_errors=1) 
+                           return CustomeResponse({"msg":"merge_contact_ids does not exist OR merge contact links with business card"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1) 
                         #----------------------- End ---------------------------------------------#
                         return CustomeResponse({"msg":"successfully merged"},status=status.HTTP_200_OK)
                     else:
-                        return CustomeResponse({"msg":"Please provide correct target_bcard_id"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)        
+                        return CustomeResponse({"msg":"Please provide correct target_contact_id"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)        
                else:
-                    return CustomeResponse({"msg":"Please provide merge_bcards_ids, target_bcard_id"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
+                    return CustomeResponse({"msg":"Please provide merge_contact_ids, target_contact_id"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
           
               
           

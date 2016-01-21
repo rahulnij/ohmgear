@@ -1,13 +1,20 @@
+#--------- Import Python Modules -----------#
+import json,validictory,itertools,collections
+#-------------------------------------------#
+#------------ Third Party Imports ----------#
 from django.shortcuts import render
-
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import viewsets
 import rest_framework.status as status
-
+from django.core.exceptions import ValidationError
+from django.shortcuts import get_object_or_404
+from django.conf import settings
+from rest_framework.views import APIView
+from rest_framework.decorators import detail_route, list_route
+#-------------------------------------------#
+#------------------ Local app imports ------#
 from models import BusinessCard,BusinessCardTemplate,BusinessCardIdentifier,Identifier,BusinessCardMedia,BusinessCardSkillAvailable,BusinessCardAddSkill,BusinessCardHistory
-
 from serializer import BusinessCardSerializer,BusinessCardIdentifierSerializer,BusinessCardMediaSerializer,BusinessCardSkillAvailableSerializer,BusinessCardAddSkillSerializer,BusinessCardSummarySerializer,BusinessCardHistorySerializer
-
 from apps.contacts.serializer import ContactsSerializer
 from apps.contacts.models import Contacts
 from apps.identifiers.models import Identifier
@@ -15,18 +22,12 @@ from apps.identifiers.serializer import IdentifierSerializer,BusinessIdentifierS
 from ohmgear.token_authentication import ExpiringTokenAuthentication
 from ohmgear.functions import CustomeResponse,handle_uploaded_file
 from ohmgear.json_default_data import BUSINESS_CARD_DATA_VALIDATION
-
-from django.core.exceptions import ValidationError
-import json,validictory
-from django.shortcuts import get_object_or_404
-from django.conf import settings
 from apps.users.models import User
 from apps.vacationcard.models import VacationCard 
 from apps.vacationcard.serializer import VacationCardSerializer
-import itertools
-from rest_framework.views import APIView
-from rest_framework.decorators import detail_route, list_route
-import collections    
+#---------------------------End-------------#
+
+
 #---------------- Business Card Summary ----------------------#
 class CardSummary(APIView):
     """
