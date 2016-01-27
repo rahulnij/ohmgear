@@ -1,5 +1,5 @@
 from django.conf.urls import url, include
-from apps.users.models import User,Profile,SocialLogin,ConnectedAccount
+from apps.users.models import User,Profile,SocialLogin,ConnectedAccount,UsersEmail
 from rest_framework import routers, serializers, viewsets
 from django.contrib.auth import get_user_model
 from rest_framework.validators import UniqueValidator
@@ -37,3 +37,7 @@ class SocialLoginSerializer(serializers.ModelSerializer):
 class ConnectedAccountsSerializer(serializers.ModelSerializer):
     class Meta:
         model   =   ConnectedAccount
+        
+class UserEmailsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model   =   UsersEmail
