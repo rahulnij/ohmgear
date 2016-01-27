@@ -175,8 +175,8 @@ class UserViewSet(viewsets.ModelViewSet):
         except:
             user_id = None
         data ={}
-        user_id  = request.user
-        social_type_id =  SocialType.objects.get(id=request.POST['social_type_id'])
+        user_id  = request.user.id
+        social_type_id =  request.POST['social_type_id']
         datas = createConnectedAccount(user_id,social_type_id)
         if datas:
                 return CustomeResponse({"msg":"user is connected"},status=status.HTTP_201_CREATED)
@@ -184,21 +184,28 @@ class UserViewSet(viewsets.ModelViewSet):
             return CustomeResponse({'msg':"user is already connected"},validate_errors=1)
         
       
-        
-    def deleteconnectedaccounts(self,request):
+    @list_route(methods=['post'],)
+    def deleteConnectedAccounts(self,request):
         try:
              user_id = request.user
         except:
             user_id  = None
-        sociallogin = SocialLogin.objects.get(user=user_id)
-        if sociallogin:
-            return CustomeResponse({"msg":"This account is cannot be deleted "})
+        
+        try:
+            sociallogin = SocialLogin.objects.get(user=user_id)
+        except:
+            sociallogin =None
+            
+        if sociallogin is not None:
+            return CustomeResponse({"msg":"This account is cannot be deleted because you have sign up with this email"})
+        
         connecteddata  =  ConnectedAccount.objects.filter(user_id=user_id,social_type_id=request.DATA['social_type_id'])
+        
         if connecteddata:
             connecteddata.delete()
             return CustomeResponse({"msg":"connected account is deleted"})
         else:
-            return CustomeResponse({"msg":"data cannot be  deleted"})
+            return CustomeResponse({"msg":"There is no connected account"})
         
         
         
@@ -332,11 +339,8 @@ class SocialLoginViewSet(viewsets.ModelViewSet):
                             #----------- End ------------------------------------------------#
                             social_id = request.POST.get('social_id','')
                             social_type = request.POST.get('social_type_id','')
-                            sociallogin = SocialLogin(user_id=data['id'],social_media_login_id = social_id,social_type_id=social_type)                            
-                            social_type_id = SocialType.objects.get(id=social_type)
-                            
-                            c= createConnectedAccount(user_id=request.user,social_type_id=social_type_id)
-                            print c
+                            sociallogin = SocialLogin(user_id=data['id'],social_media_login_id = social_id,social_type_id=social_type)
+                            createConnectedAccount(data['id'],social_type)
                             sociallogin.save()
                             #--------------- Create the token ------------------------#
                             try:                                
