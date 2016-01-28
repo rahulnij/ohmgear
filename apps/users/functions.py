@@ -44,11 +44,9 @@ def checkEmail(email_id):
     
     
 def createConnectedAccount(user_id,social_type_id):
-    #try:
-        connecteddata = ConnectedAccount.objects.filter(user_id=user_id,social_type_id=social_type_id)
-        print connecteddata
+    try:
+        connecteddata = ConnectedAccount.objects.filter(user_id=user_id,social_type_id=social_type_id) 
         if not connecteddata:
-            
             user_id        = User.objects.get(id=user_id)
             social_type_id = SocialType.objects.get(id=social_type_id)
             connectedaccount =  ConnectedAccount()
@@ -57,10 +55,8 @@ def createConnectedAccount(user_id,social_type_id):
             connectedaccount.save()
             return connectedaccount
         else:
-            print "1st none"
             return None
-    #except:
-        print "last none"
+    except:
         return None
     
     
