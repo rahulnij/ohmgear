@@ -215,7 +215,7 @@ class UserViewSet(viewsets.ModelViewSet):
             sociallogin =None
             
         if sociallogin is not None:
-            return CustomeResponse({"msg":"This account is cannot be deleted because you have sign up with this email"})
+            return CustomeResponse({"msg":"This account is cannot be deleted because you have sign up with this account"})
         
         connecteddata  =  ConnectedAccount.objects.filter(user_id=user_id,social_type_id=request.DATA['social_type_id'])
         
