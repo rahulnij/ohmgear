@@ -1,1 +1,2 @@
-social_type =  {'FB':1, "QQ":2,'LINKED_IN':3};
+SOCIAL_TYPE =  {'FB':1, "QQ":2,'LINKED_IN':3}; 
+    

@@ -44,8 +44,10 @@ def checkEmail(email_id):
     
     
 def createConnectedAccount(user_id,social_type_id):
+    
     try:
-        connecteddata = ConnectedAccount.objects.filter(user_id=user_id,social_type_id=social_type_id) 
+        connecteddata = ConnectedAccount.objects.filter(user_id=user_id,social_type_id=social_type_id)
+        
         if not connecteddata:
             user_id        = User.objects.get(id=user_id)
             social_type_id = SocialType.objects.get(id=social_type_id)

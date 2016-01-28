@@ -14,6 +14,7 @@ import rest_framework.status as status
 
 from ohmgear.token_authentication import ExpiringTokenAuthentication
 from ohmgear.functions import CustomeResponse
+import ohmgear.settings.constant as constant
 from ohmgear.auth_frontend import authenticate_frontend
 
 from django.shortcuts import get_object_or_404
@@ -188,18 +189,28 @@ class UserViewSet(viewsets.ModelViewSet):
     
     @list_route(methods=['post'],)
     def connectedaccounts(self,request):
+        social_type =  constant.SOCIAL_TYPE
+        social_type_exist =social_type.has_key(request.POST['social_type_id'])
+        if not social_type_exist:
+            return CustomeResponse({"msg":"social_type is not there"},status=status.HTTP_400_BAD_REQUEST,validate_erros=1)
+        
         try:
-            user_id = request.user
+            for key, social_id in social_type.iteritems():
+                if key == request.POST['social_type_id']:            
+                    user_id = request.user
+                    social_type_id =  social_id
+                    data ={}
+                    user_id  = request.user.id
+                    datas = createConnectedAccount(user_id,social_type_id)
+                    if datas:
+                            return CustomeResponse({"msg":"user is connected"},status=status.HTTP_201_CREATED)
+                    else:
+                        return CustomeResponse({'msg':"user is already connected"},validate_errors=1)
         except:
             user_id = None
-        data ={}
-        user_id  = request.user.id
-        social_type_id =  request.POST['social_type_id']
-        datas = createConnectedAccount(user_id,social_type_id)
-        if datas:
-                return CustomeResponse({"msg":"user is connected"},status=status.HTTP_201_CREATED)
-        else:
-            return CustomeResponse({'msg':"user is already connected"},validate_errors=1)
+            return CustomeResponse({"msg":"social_type_id is not there"},status=status.HTTP_400_BAD_REQUEST,validate_erros=1)
+            
+        
         
       
     @list_route(methods=['post'],)
@@ -356,6 +367,7 @@ class SocialLoginViewSet(viewsets.ModelViewSet):
                             data = user_view_obj.create(request,1)
                             #----------- End ------------------------------------------------#
                             social_id = request.POST.get('social_id','')
+                            # social_type_id for fb its 2---------------#
                             social_type = request.POST.get('social_type_id','')
                             sociallogin = SocialLogin(user_id=data['id'],social_media_login_id = social_id,social_type_id=social_type)
                             createConnectedAccount(data['id'],social_type)
