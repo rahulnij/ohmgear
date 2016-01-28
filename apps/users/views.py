@@ -168,6 +168,24 @@ class UserViewSet(viewsets.ModelViewSet):
             return CustomeResponse({'msg':msg},status=status.HTTP_401_UNAUTHORIZED,validate_errors=1)
         
     #------------------------Connects account of user i.e FB or Linkedin#---------    
+    
+    @list_route(methods=['get'],)
+    def getConnectedAccounts(self,request):
+        try:
+            user_id = request.user
+        except:
+            user_id = None
+        data ={}
+        user_id  = request.user.id
+        print user_id
+        userConnectedData = ConnectedAccount.objects.select_related("social_type_id").filter(user_id=user_id)
+        
+        if userConnectedData:
+                serializer = ConnectedAccountsSerializer(userConnectedData,many=True)
+                return CustomeResponse(serializer.data,status=status.HTTP_201_CREATED)
+        else:
+            return CustomeResponse({'msg':"Data not found"},validate_errors=1)
+    
     @list_route(methods=['post'],)
     def connectedaccounts(self,request):
         try:

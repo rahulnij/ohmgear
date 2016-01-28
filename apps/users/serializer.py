@@ -1,5 +1,5 @@
 from django.conf.urls import url, include
-from apps.users.models import User,Profile,SocialLogin,ConnectedAccount,UsersEmail
+from apps.users.models import User,Profile,SocialLogin,ConnectedAccount,UsersEmail,SocialType
 from rest_framework import routers, serializers, viewsets
 from django.contrib.auth import get_user_model
 from rest_framework.validators import UniqueValidator
@@ -35,9 +35,16 @@ class SocialLoginSerializer(serializers.ModelSerializer):
         model = SocialLogin
         
 class ConnectedAccountsSerializer(serializers.ModelSerializer):
+    social_type = serializers.ReadOnlyField(source='social_type_id.social_type')
     class Meta:
         model   =   ConnectedAccount
+        fields = ('user_id','social_type_id','social_type')
         
 class UserEmailsSerializer(serializers.ModelSerializer):
     class Meta:
         model   =   UsersEmail
+        
+        
+class SocialTypeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model   =   SocialType
