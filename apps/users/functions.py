@@ -44,7 +44,7 @@ def checkEmail(email_id):
     
     
 def createConnectedAccount(user_id,social_type_id):
-    try:
+    #try:
         connecteddata = ConnectedAccount.objects.filter(user_id=user_id,social_type_id=social_type_id)
         print connecteddata
         if not connecteddata:
@@ -59,7 +59,7 @@ def createConnectedAccount(user_id,social_type_id):
         else:
             print "1st none"
             return None
-    except:
+    #except:
         print "last none"
         return None
     
