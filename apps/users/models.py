@@ -201,7 +201,7 @@ class ConnectedAccount(models.Model):
     updated_date    =   models.DateTimeField(_("Updated Date"),auto_now_add=False,auto_now=True)
     
     def __unicode__(self):
-        return '{"id":"%d","social_type_id":"%d"}' %(self.id,self.social_type_id)
+        return '{"social_type_id":"%d"}' %(self.social_type_id)
     
 
 #class UsersEmail(models.Model):
