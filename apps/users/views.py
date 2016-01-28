@@ -358,7 +358,7 @@ class SocialLoginViewSet(viewsets.ModelViewSet):
                             social_id = request.POST.get('social_id','')
                             social_type = request.POST.get('social_type_id','')
                             sociallogin = SocialLogin(user_id=data['id'],social_media_login_id = social_id,social_type_id=social_type)
-                            createConnectedAccount(data['id'],social_type)
+                            c=createConnectedAccount(data['id'],social_type)
                             sociallogin.save()
                             #--------------- Create the token ------------------------#
                             try:                                
@@ -367,7 +367,8 @@ class SocialLoginViewSet(viewsets.ModelViewSet):
                             except:
                                 data['token'] = ''
                             #---------------- End ------------------------------------#
-                            return CustomeResponse(data,status=status.HTTP_201_CREATED)
+                            return CustomeResponse(c,status=status.HTTP_201_CREATED)
+                            #return CustomeResponse(data,status=status.HTTP_201_CREATED)
                         #except:
                             return CustomeResponse({'msg':'provide required parameters'},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
                     else:
