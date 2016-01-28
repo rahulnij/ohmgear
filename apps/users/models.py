@@ -194,7 +194,7 @@ class ConnectedAccount(models.Model):
     class Meta:
         
         db_table    =   "ohmgear_users_connectedaccount"
-        unique_together = ('user_id', 'social_type_id',)
+        #unique_together = ('user_id', 'social_type_id',)
     #user_id            = models.ForeignKey(User,db_column ="user_id")
     social_type_id     =   models.ForeignKey(SocialType,db_column ="social_type_id",related_name="social_type_id")
     created_date    =   models.DateTimeField(_("Created Date"),auto_now_add=True,auto_now=False)
