@@ -178,7 +178,6 @@ class UserViewSet(viewsets.ModelViewSet):
             user_id = None
         data ={}
         user_id  = request.user.id
-        print user_id
         userConnectedData = ConnectedAccount.objects.select_related("social_type_id").filter(user_id=user_id)
         
         if userConnectedData:
@@ -192,7 +191,7 @@ class UserViewSet(viewsets.ModelViewSet):
         social_type =  constant.SOCIAL_TYPE
         social_type_exist =social_type.has_key(request.POST['social_type_id'])
         if not social_type_exist:
-            return CustomeResponse({"msg":"social_type is not there"},status=status.HTTP_400_BAD_REQUEST,validate_erros=1)
+            return CustomeResponse({"msg":"social_type is not there"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
         
         try:
             for key, social_id in social_type.iteritems():
@@ -215,10 +214,16 @@ class UserViewSet(viewsets.ModelViewSet):
       
     @list_route(methods=['post'],)
     def deleteConnectedAccounts(self,request):
+        
         try:
-             user_id = request.user
+            user_id = request.user
+            social_type =  constant.SOCIAL_TYPE
+            social_type_exist =social_type.has_key(request.POST['social_type_id'])
+            if not social_type_exist:
+                return CustomeResponse({"msg":"social_type is not there"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
         except:
             user_id  = None
+            return CustomeResponse({"msg":"social_type_id is mandatory"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
         
         try:
             sociallogin = SocialLogin.objects.get(user=user_id)
@@ -228,7 +233,11 @@ class UserViewSet(viewsets.ModelViewSet):
         if sociallogin is not None:
             return CustomeResponse({"msg":"This account is cannot be deleted because you have sign up with this account"})
         
-        connecteddata  =  ConnectedAccount.objects.filter(user_id=user_id,social_type_id=request.DATA['social_type_id'])
+        for key, social_id in social_type.iteritems():
+                if key == request.POST['social_type_id']:            
+                    social_type_id =  social_id
+        
+        connecteddata  =  ConnectedAccount.objects.filter(user_id=user_id,social_type_id=social_type_id)
         
         if connecteddata:
             connecteddata.delete()
