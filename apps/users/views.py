@@ -189,13 +189,13 @@ class UserViewSet(viewsets.ModelViewSet):
     @list_route(methods=['post'],)
     def connectedaccounts(self,request):
         social_type =  constant.SOCIAL_TYPE
-        social_type_exist =social_type.has_key(request.POST['social_type_id'])
+        social_type_exist =social_type.has_key(request.DATA['social_type_id'])
         if not social_type_exist:
             return CustomeResponse({"msg":"social_type is not there"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
         
         try:
             for key, social_id in social_type.iteritems():
-                if key == request.POST['social_type_id']:            
+                if key == request.DATA['social_type_id']:            
                     user_id = request.user
                     social_type_id =  social_id
                     data ={}
@@ -218,7 +218,7 @@ class UserViewSet(viewsets.ModelViewSet):
         try:
             user_id = request.user
             social_type =  constant.SOCIAL_TYPE
-            social_type_exist =social_type.has_key(request.POST['social_type_id'])
+            social_type_exist =social_type.has_key(request.DATA['social_type_id'])
             if not social_type_exist:
                 return CustomeResponse({"msg":"social_type is not there"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
         except:
@@ -227,7 +227,7 @@ class UserViewSet(viewsets.ModelViewSet):
         
         try:
             for key, social_id in social_type.iteritems():
-                if key == request.POST['social_type_id']:            
+                if key == request.DATA['social_type_id']:            
                     social_type_id =  social_id
                     sociallogin = SocialLogin.objects.get(user=user_id,social_type=social_type_id)
         except:
