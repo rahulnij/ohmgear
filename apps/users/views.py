@@ -229,7 +229,7 @@ class UserViewSet(viewsets.ModelViewSet):
             for key, social_id in social_type.iteritems():
                 if key == request.POST['social_type_id']:            
                     social_type_id =  social_id
-                    sociallogin = SocialLogin.objects.get(user=user_id,social_type=social_type)
+                    sociallogin = SocialLogin.objects.get(user=user_id,social_type_id=social_type)
         except:
             sociallogin =None
             
