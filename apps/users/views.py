@@ -229,22 +229,19 @@ class UserViewSet(viewsets.ModelViewSet):
             for key, social_id in social_type.iteritems():
                 if key == request.POST['social_type_id']:            
                     social_type_id =  social_id
-                    sociallogin = SocialLogin.objects.get(user=user_id,social_type_id=social_type)
+                    sociallogin = SocialLogin.objects.get(user=user_id,social_type=social_type_id)
         except:
             sociallogin =None
             
         if sociallogin is not None:
             return CustomeResponse({"msg":"This account is cannot be deleted because you have sign up with this account"})
         
-        
-        
         connecteddata  =  ConnectedAccount.objects.filter(user_id=user_id,social_type_id=social_type_id)
-        
         if connecteddata:
             connecteddata.delete()
             return CustomeResponse({"msg":"connected account is deleted"})
         else:
-            return CustomeResponse({"msg":"There is no connected account"})
+            return CustomeResponse({"msg":"There is no connected account for this user"})
         
         
         
