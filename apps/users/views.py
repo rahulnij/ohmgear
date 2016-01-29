@@ -226,16 +226,17 @@ class UserViewSet(viewsets.ModelViewSet):
             return CustomeResponse({"msg":"social_type_id is mandatory"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
         
         try:
-            sociallogin = SocialLogin.objects.get(user=user_id)
+            for key, social_id in social_type.iteritems():
+                if key == request.POST['social_type_id']:            
+                    social_type_id =  social_id
+                    sociallogin = SocialLogin.objects.get(user=user_id,social_type=social_type)
         except:
             sociallogin =None
             
         if sociallogin is not None:
             return CustomeResponse({"msg":"This account is cannot be deleted because you have sign up with this account"})
         
-        for key, social_id in social_type.iteritems():
-                if key == request.POST['social_type_id']:            
-                    social_type_id =  social_id
+        
         
         connecteddata  =  ConnectedAccount.objects.filter(user_id=user_id,social_type_id=social_type_id)
         
