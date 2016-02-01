@@ -192,15 +192,27 @@ class SocialLogin(models.Model):
     
 class ConnectedAccount(models.Model):
     class Meta:
+        
         db_table    =   "ohmgear_users_connectedaccount"
-    user            = models.ForeignKey("User")
-    #user = models.ForeignKey("User",null=True)
-    social_type     =   models.ForeignKey(SocialType)
+        unique_together = ('user_id', 'social_type_id',)
+    user_id            = models.ForeignKey(User,db_column ="user_id")
+    social_type_id     =   models.ForeignKey(SocialType,db_column ="social_type_id",related_name="social_type_id")
     created_date    =   models.DateTimeField(_("Created Date"),auto_now_add=True,auto_now=False)
     updated_date    =   models.DateTimeField(_("Updated Date"),auto_now_add=False,auto_now=True)
     
     def __unicode__(self):
-        return '{"id":"%s","social_type":"%r", "user":"%r"}' %(self.id,self.social_type, self.user)
+        return '{"id":"%s","social_type_id":"%r", "user_id":"%r"}' %(self.id,self.social_type_id, self.user_id)
+    
+
+class UsersEmail(models.Model):
+    class Meta:
+        db_table    =   'ohmgear_users_usersemails'
+    user_id            =   models.ForeignKey(User,db_column ="user_id")
+    email           =   models.CharField(_("Email"),max_length=50)
+    request_for_default=   models.IntegerField(_("Request For Default"),default=0,null=True)
+    verification_code   =   models.CharField(_("Verification Code"),max_length=40,blank=True)
+    created_date        =   models.DateTimeField(_("Created Date"),auto_now_add=True,auto_now=False)
+    updated_date        =   models.DateTimeField(_("Updated Date"),auto_now_add=False,auto_now=True)
     
     
     

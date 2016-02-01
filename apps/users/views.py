@@ -4,7 +4,7 @@
 # Notes: View File
 #----------------------------------------------#
 from models import User,Profile,SocialLogin, SocialType,ConnectedAccount
-from serializer import UserSerializer,ProfileSerializer,SocialLoginSerializer,ConnectedAccountsSerializer
+from serializer import UserSerializer,ProfileSerializer,SocialLoginSerializer,ConnectedAccountsSerializer,UserEmailsSerializer
 
 from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated
@@ -14,6 +14,7 @@ import rest_framework.status as status
 
 from ohmgear.token_authentication import ExpiringTokenAuthentication
 from ohmgear.functions import CustomeResponse
+import ohmgear.settings.constant as constant
 from ohmgear.auth_frontend import authenticate_frontend
 
 from django.shortcuts import get_object_or_404
@@ -26,13 +27,14 @@ from django.utils.timezone import utc
 from rest_framework import permissions 
 from rest_framework.decorators import api_view, permission_classes, authentication_classes
 from rest_framework.authtoken.models import Token
-from functions import getToken,checkEmail
+from functions import getToken,checkEmail,createConnectedAccount
 import json
 from django.shortcuts import redirect
 import hashlib, datetime, random
 from rest_framework.decorators import detail_route, list_route
 from apps.usersetting.models import Setting
 from apps.usersetting.serializer import UserSignupSettingSerializer
+
 #class UserPermissionsObj(permissions.BasePermission):
 #    """
 #    Object-level permission to only allow owners of an object to edit it.
@@ -167,31 +169,101 @@ class UserViewSet(viewsets.ModelViewSet):
             return CustomeResponse({'msg':msg},status=status.HTTP_401_UNAUTHORIZED,validate_errors=1)
         
     #------------------------Connects account of user i.e FB or Linkedin#---------    
+    
+    @list_route(methods=['get'],)
+    def getConnectedAccounts(self,request):
+        try:
+            user_id = request.user
+        except:
+            user_id = None
+        data ={}
+        user_id  = request.user.id
+        userConnectedData = ConnectedAccount.objects.select_related("social_type_id").filter(user_id=user_id)
+        
+        if userConnectedData:
+                serializer = ConnectedAccountsSerializer(userConnectedData,many=True)
+                return CustomeResponse(serializer.data,status=status.HTTP_201_CREATED)
+        else:
+            return CustomeResponse({'msg':"Data not found"},validate_errors=1)
+    
     @list_route(methods=['post'],)
     def connectedaccounts(self,request):
+        social_type =  constant.SOCIAL_TYPE
+        social_type_exist =social_type.has_key(request.DATA['social_type_id'])
+        if not social_type_exist:
+            return CustomeResponse({"msg":"social_type is not there"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
+        
         try:
-            #print request.user.id
-            data    =   {}
-            #data    =   request.data
+            for key, social_id in social_type.iteritems():
+                if key == request.DATA['social_type_id']:            
+                    user_id = request.user
+                    social_type_id =  social_id
+                    data ={}
+                    user_id  = request.user.id
+                    datas = createConnectedAccount(user_id,social_type_id)
+                    if datas:
+                            return CustomeResponse({"msg":"user is connected"},status=status.HTTP_201_CREATED)
+                    else:
+                        return CustomeResponse({'msg':"user is already connected"},validate_errors=1)
+        except:
+            user_id = None
+            return CustomeResponse({"msg":"social_type_id is not there"},status=status.HTTP_400_BAD_REQUEST,validate_erros=1)
             
-            data['social_type'] = SocialType.objects.get(id=request.DATA['social_type_id'])
-            data['user']  =   User.objects.get(id=request.user.id)
-            #social_type =  request.DATA['social_type_id']
-            #print data
+        
+        
+      
+    @list_route(methods=['post'],)
+    def deleteConnectedAccounts(self,request):
+        
+        try:
+            user_id = request.user
+            social_type =  constant.SOCIAL_TYPE
+            social_type_exist =social_type.has_key(request.DATA['social_type_id'])
+            if not social_type_exist:
+                return CustomeResponse({"msg":"social_type is not there"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
+        except:
+            user_id  = None
+            return CustomeResponse({"msg":"social_type_id is mandatory"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
+        
+        try:
+            for key, social_id in social_type.iteritems():
+                if key == request.DATA['social_type_id']:            
+                    social_type_id =  social_id
+                    sociallogin = SocialLogin.objects.get(user=user_id,social_type=social_type_id)
+        except:
+            sociallogin =None
             
-            serializer  =   ConnectedAccountsSerializer(data=data,many=True)
-            print serializer
-            
-            if serializer.is_valid():
-                #print serializer.save()
-                c = ConnectedAccount(user=request.user, social_type= SocialType.objects.get(id=request.DATA['social_type_id']))
-                c.save()
+        if sociallogin is not None:
+            return CustomeResponse({"msg":"This account is cannot be deleted because you have sign up with this account"})
+        
+        connecteddata  =  ConnectedAccount.objects.filter(user_id=user_id,social_type_id=social_type_id)
+        if connecteddata:
+            connecteddata.delete()
+            return CustomeResponse({"msg":"connected account is deleted"})
+        else:
+            return CustomeResponse({"msg":"There is no connected account for this user"})
+        
+        
+        
+       
+    @list_route(methods=['post'],)
+    def usersemails(self,request):
+       
+        try:
+            user_id = request.user
+        except:
+            user_id = None
+        data ={}
+        data['user_id'] = request.user.id
+        data['email'] = request.POST.get('email')
+    
+        serializer = UserEmailsSerializer(data=data,context ={'request':request,'msg':'not exist'})
+        
+        if serializer.is_valid():
+                serializer.save()
                 return CustomeResponse(serializer.data,status=status.HTTP_201_CREATED)
-            else:
-                return CustomeResponse(serializer.data,status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
-        except Exception,e:
-            print repr(e)
-            return CustomeResponse({"msg":"Data not found"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
+        else:
+            return CustomeResponse({'msg':serializer.errors},validate_errors=1)
         
         
             
@@ -302,7 +374,10 @@ class SocialLoginViewSet(viewsets.ModelViewSet):
                             data = user_view_obj.create(request,1)
                             #----------- End ------------------------------------------------#
                             social_id = request.POST.get('social_id','')
-                            sociallogin = SocialLogin(user_id=data['id'],social_media_login_id = social_id)                            
+                            # social_type_id for fb its 2---------------#
+                            social_type = request.POST.get('social_type_id','')
+                            sociallogin = SocialLogin(user_id=data['id'],social_media_login_id = social_id,social_type_id=social_type)
+                            createConnectedAccount(data['id'],social_type)
                             sociallogin.save()
                             #--------------- Create the token ------------------------#
                             try:                                
@@ -457,37 +532,3 @@ def useractivity(request,**kwargs):
         else:
              return CustomeResponse({'msg':'Please provide operation parameter op'},status=status.HTTP_401_UNAUTHORIZED,validate_errors=1)            
 
-
-
-class Connected(viewsets.ModelViewSet):
-    queryset = ConnectedAccount.objects.all()
-    serializer_class = ConnectedAccountsSerializer
-    
-    authentication_classes = (ExpiringTokenAuthentication,)
-    permission_classes = (IsAuthenticated,)
-    
-    def create(self,request):
-        try:
-            #print request.user.id
-            data    =   {}
-            #data    =   request.data
-            
-            data['social_type'] = SocialType.objects.get(id=request.DATA['social_type_id'])
-            data['user']  =   User.objects.get(id=request.user.id)
-            #social_type =  request.DATA['social_type_id']
-            #print data
-            
-            serializer  =   ConnectedAccountsSerializer(data=data,many=True)
-            print serializer
-            
-            if serializer.is_valid():
-                print serializer.save()
-                #c = ConnectedAccount(user=request.user, social_type= SocialType.objects.get(id=request.DATA['social_type_id']))
-                #c.save()
-                return CustomeResponse(serializer.data,status=status.HTTP_201_CREATED)
-            else:
-                return CustomeResponse(serializer.data,status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
-        except Exception,e:
-            print repr(e)
-            return CustomeResponse({"msg":"Data not found"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
-    

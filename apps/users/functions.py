@@ -3,6 +3,9 @@ from datetime import timedelta
 from django.utils.timezone import utc
 from django.contrib.auth import get_user_model
 from rest_framework.authtoken.models import Token
+from serializer import ConnectedAccountsSerializer
+from models import ConnectedAccount,SocialType,User
+
 #------------------ Return token if does not exit then create -------------------#  
 def getToken(user_id):
     
@@ -37,6 +40,25 @@ def checkEmail(email_id):
         except:
             return None
     else:
-        return None    
+        return None
+    
+    
+def createConnectedAccount(user_id,social_type_id):
+    
+    try:
+        connecteddata = ConnectedAccount.objects.filter(user_id=user_id,social_type_id=social_type_id)
+        
+        if not connecteddata:
+            user_id        = User.objects.get(id=user_id)
+            social_type_id = SocialType.objects.get(id=social_type_id)
+            connectedaccount =  ConnectedAccount()
+            connectedaccount.user_id =  user_id
+            connectedaccount.social_type_id = social_type_id
+            connectedaccount.save()
+            return connectedaccount
+        else:
+            return None
+    except:
+        return None
     
     

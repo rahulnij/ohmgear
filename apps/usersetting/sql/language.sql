@@ -1,4 +1,5 @@
 INSERT INTO ohmgear_user_setting_language(language,created_date,updated_date) VALUES ('ENGLISH',CURRENT_TIMESTAMP ,CURRENT_TIMESTAMP);
+INSERT INTO ohmgear_user_setting_language(language,created_date,updated_date) VALUES ('CHINESE',CURRENT_TIMESTAMP ,CURRENT_TIMESTAMP);
 INSERT INTO ohmgear_user_setting_language(language,created_date,updated_date) VALUES ('BAHASA_INDONESIA',CURRENT_TIMESTAMP ,CURRENT_TIMESTAMP);
 INSERT INTO ohmgear_user_setting_language(language,created_date,updated_date) VALUES ('DANSK',CURRENT_TIMESTAMP ,CURRENT_TIMESTAMP);
 INSERT INTO ohmgear_user_setting_language(language,created_date,updated_date) VALUES ('DEUTSCH',CURRENT_TIMESTAMP ,CURRENT_TIMESTAMP);
