@@ -44,17 +44,25 @@ class OfflineSendReceiveDataViewSet(viewsets.ModelViewSet):
           except:
              businesscard = ''
           
+          final_return_data = {}
           if businesscard:
               business_card_class = BusinessViewSet() 
               for raw_data in businesscard:
                   if raw_data["operation"] == 'add':
                      #-----------------  Create the business card ---------------------------# 
-                     data = {}
-                     data['user_id'] = user_id
-                     data['bcard_json_data'] = {"sssss":"sss"}
-                     business_card_response = business_card_class.create(request,1,data)
-                     print business_card_response
-                     return CustomeResponse(business_card_response,status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
+                    business_data = []
+                    if raw_data["json_data"]:
+                      #------------- execute all business card-----------------------#  
+                      for items in raw_data["json_data"]:  
+                        data = {}
+                        data['user_id'] = user_id
+                        data['bcard_json_data'] = raw_data['bcard_json_data']
+                        business_card_response = business_card_class.create(request,1,data)
+                        if business_card_response["status"]:
+                           return CustomeResponse(business_card_response["data"],status=status.HTTP_201_CREATED)
+                        else:
+                           return CustomeResponse(business_card_response["data"],status=status.HTTP_400_BAD_REQUEST, validate_errors=1) 
+                    
                      #------------------- End -----------------------------------------------#
                   if raw_data["operation"] == 'edit':
                      #-----------------  Edit the business card ---------------------------#

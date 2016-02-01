@@ -120,7 +120,7 @@ class BusinessCardHistory(models.Model):
     businesscard= models.ForeignKey(BusinessCard,db_column='businesscard_id')
     created_date=models.DateTimeField(_("Created Date"),auto_now_add=True,auto_now=False)
     updated_date=models.DateField(_("Updated Date"),auto_now_add=False,auto_now=True)
-    template_id = models.IntegerField(_("Template Id"),null=True)
+#    template_id = models.IntegerField(_("Template Id"),null=True)
     history_id = models.IntegerField(_("History Id"),null=True)
     history_date = models.DateTimeField(_("History Date"),auto_now_add=False,auto_now=True)
     history_user_id =  models.IntegerField(_("History User Id"),null=True)

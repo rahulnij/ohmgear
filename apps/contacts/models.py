@@ -15,7 +15,7 @@ class Contacts(models.Model):
         db_table = 'ohmgear_contacts_contact'
     businesscard_id = models.OneToOneField(BusinessCard,null=True, blank=True,related_name='contact_detail',db_column="businesscard_id")
     bcard_json_data = JsonField(null=True)
-    template_id = models.ForeignKey(BusinessCardTemplate,db_column="template_id")
+#    template_id = models.ForeignKey(BusinessCardTemplate,db_column="template_id")
     user_id = models.ForeignKey(User,db_column="user_id")
     created_date=models.DateTimeField(_("Created Date"),auto_now_add=True,auto_now=False)
     updated_date=models.DateField(_("Updated Date"),auto_now_add=False,auto_now=True)

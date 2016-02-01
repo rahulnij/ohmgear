@@ -20,7 +20,7 @@ from apps.contacts.models import Contacts
 from apps.identifiers.models import Identifier
 from apps.identifiers.serializer import IdentifierSerializer,BusinessIdentifierSerializer
 from ohmgear.token_authentication import ExpiringTokenAuthentication
-from ohmgear.functions import CustomeResponse,handle_uploaded_file
+from ohmgear.functions import CustomeResponse,handle_uploaded_file,rawResponse
 from ohmgear.json_default_data import BUSINESS_CARD_DATA_VALIDATION
 from apps.users.models import User
 from apps.vacationcard.models import VacationCard 
@@ -503,18 +503,18 @@ class BusinessViewSet(viewsets.ModelViewSet):
                 #-------------------------End-----------------------------------#
             else:
                 if call_from_func:
-                    return contact_serializer.errors
+                    return rawResponse(contact_serializer.errors)
                 else:
                     return CustomeResponse(contact_serializer.errors,status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
             
             if call_from_func:
-                return data_new
+                return rawResponse(data_new,status=True,status_code=status.HTTP_201_CREATED)
             else:            
                 return CustomeResponse(data_new,status=status.HTTP_201_CREATED)
  
          else:
             if call_from_func:
-                return serializer.errors
+                return rawResponse(serializer.errors)
             else:                
                 return CustomeResponse(serializer.errors,status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
         
