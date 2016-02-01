@@ -458,11 +458,7 @@ class BusinessViewSet(viewsets.ModelViewSet):
             return CustomeResponse(data,status=status.HTTP_200_OK)
     
     #--------------Method: POST create new business card and other operation -----------------------------# 
-    def create(self, request): 
-         try:
-           op = request.data["op"]
-         except:             
-           op = None
+    def create(self, request, call_from_func=None,offline_data=None): 
            
          try:           
            user_id = request.user.id
@@ -478,10 +474,15 @@ class BusinessViewSet(viewsets.ModelViewSet):
 #         except:
 #            return CustomeResponse({'msg':"Please provide bcard_json_data in json format" },status=status.HTTP_400_BAD_REQUEST,validate_errors=1) 
          #---------------------------------- End ----------------------------------------------------------- #
-         tempData = request.data.copy()
-         tempData["user_id"] = user_id
+         if call_from_func:
+            #-------------- Call from offline app ------------------------------# 
+            tempData = offline_data
+         else:
+            tempData = request.data.copy()
+            tempData["user_id"] = user_id
          
          serializer =  BusinessCardSerializer(data=tempData,context={'request': request})
+         
          if serializer.is_valid():
             contact_serializer =  ContactsSerializer(data=tempData,context={'request': request})
             if contact_serializer.is_valid():
@@ -489,7 +490,7 @@ class BusinessViewSet(viewsets.ModelViewSet):
                 contact_serializer.validated_data['businesscard_id'] = business
                 contact_serializer.save()
                 contact = Contacts.objects.get(businesscard_id=business.id)
-                user = User.objects.get(id=user_id)
+                user = request.user
                 #-------------- Save Notes -------------------------------#
                 data_new = serializer.data.copy()
                 try:
@@ -501,12 +502,21 @@ class BusinessViewSet(viewsets.ModelViewSet):
                     pass                            
                 #-------------------------End-----------------------------------#
             else:
-                return CustomeResponse(contact_serializer.errors,status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
+                if call_from_func:
+                    return contact_serializer.errors
+                else:
+                    return CustomeResponse(contact_serializer.errors,status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
             
-            return CustomeResponse(data_new,status=status.HTTP_201_CREATED)
+            if call_from_func:
+                return data_new
+            else:            
+                return CustomeResponse(data_new,status=status.HTTP_201_CREATED)
  
          else:
-            return CustomeResponse(serializer.errors,status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
+            if call_from_func:
+                return serializer.errors
+            else:                
+                return CustomeResponse(serializer.errors,status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
         
     def update(self, request, pk=None):  
          #-------------------- First Validate the json contact data ------------------------------#

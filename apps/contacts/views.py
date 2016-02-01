@@ -78,6 +78,7 @@ class storeContactsViewSet(viewsets.ModelViewSet):
       
       def find_duplicate(self,first_json,second_json):
           
+               """ TODO : check optimization """
                first_name = []
                last_name = []               
                email = []
@@ -167,6 +168,7 @@ class storeContactsViewSet(viewsets.ModelViewSet):
                     if phone_val in phone_target and phone_val != []:
                          check_duplicate_2 = 1 
 
+               # Condition {First_Name OR Last_Name} AND {email OR phone OR instant_message}
                if check_duplicate_1 and check_duplicate_2:
                   return 1
                else:

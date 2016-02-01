@@ -141,6 +141,10 @@ import apps.staticpages.views as staticpages_view
 router.register(r'api/staticpages',staticpages_view.StaticPagesViewSet)
 #-------------- End: Stattic pages app ---------------------------------------------#
 
+#--------------------- OFFLINE --------------------------------------#
+import apps.offline.views as offline_view
+router.register(r'api/offline',offline_view.OfflineSendReceiveDataViewSet)
+#_-------------------------------------------------------------------#
 
 urlpatterns += patterns('',
     url(r'^admin/', include(admin.site.urls)),
