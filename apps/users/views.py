@@ -3,8 +3,8 @@
 # Creation Date: 2015/08/04
 # Notes: View File
 #----------------------------------------------#
-from models import User,Profile,SocialLogin, SocialType,ConnectedAccount
-from serializer import UserSerializer,ProfileSerializer,SocialLoginSerializer,ConnectedAccountsSerializer,UserEmailsSerializer
+from models import User,Profile,SocialLogin, SocialType,ConnectedAccount,UserEmail
+from serializer import UserSerializer,ProfileSerializer,SocialLoginSerializer,ConnectedAccountsSerializer,UserEmailSerializer
 
 from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated
@@ -246,24 +246,7 @@ class UserViewSet(viewsets.ModelViewSet):
         
         
        
-    @list_route(methods=['post'],)
-    def usersemails(self,request):
-       
-        try:
-            user_id = request.user
-        except:
-            user_id = None
-        data ={}
-        data['user_id'] = request.user.id
-        data['email'] = request.POST.get('email')
     
-        serializer = UserEmailsSerializer(data=data,context ={'request':request,'msg':'not exist'})
-        
-        if serializer.is_valid():
-                serializer.save()
-                return CustomeResponse(serializer.data,status=status.HTTP_201_CREATED)
-        else:
-            return CustomeResponse({'msg':serializer.errors},validate_errors=1)
         
         
             
@@ -532,3 +515,37 @@ def useractivity(request,**kwargs):
         else:
              return CustomeResponse({'msg':'Please provide operation parameter op'},status=status.HTTP_401_UNAUTHORIZED,validate_errors=1)            
 
+
+class UserEmailViewSet(viewsets.ModelViewSet):
+    queryset = UserEmail.objects.all()
+    serializer_class = UserEmailSerializer
+    authentication_classes = (ExpiringTokenAuthentication,)
+    permission_classes = (IsAuthenticated,)
+
+    def list(self, request):
+        
+        userEmails = self.queryset.filter(user_id=request.user)
+        userEmailSerializer = UserEmailSerializer(userEmails, many=True)
+        return CustomeResponse(userEmailSerializer.data,status=status.HTTP_200_OK)                    
+
+    def create(self,request):
+        try:
+            user_id = request.user
+        except:
+            user_id = None
+        data ={}
+        data['user_id'] = request.user.id
+        data['email'] = request.POST.get('email')
+        #todo email validation in serializer 
+        serializer = UserEmailSerializer(data=data,context ={'request':request,'msg':'not exist'})
+        
+        if serializer.is_valid():
+                serializer.save()
+                return CustomeResponse(serializer.data,status=status.HTTP_201_CREATED)
+        else:
+            return CustomeResponse({'msg':serializer.errors},validate_errors=1)
+
+    def verified(self, pk):
+
+
+    def setdefault(self, pk):
