@@ -15,7 +15,7 @@ class Setting(models.Model):
     updated_date    =   models.DateTimeField(_("Updated Date"),auto_now_add=False,auto_now=True)
     
     def __unicode__(self):
-        return'{"id":"%s","key":"%s","default_value":"%s"}' %(self.id,self.key,self.default_value)
+        return'{"id":"%s","key":"%s","value_type":"%s"}' %(self.id,self.key,self.value_type)
     
     
     
