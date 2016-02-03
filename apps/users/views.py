@@ -34,6 +34,8 @@ import hashlib, datetime, random
 from rest_framework.decorators import detail_route, list_route
 from apps.usersetting.models import Setting
 from apps.usersetting.serializer import UserSignupSettingSerializer
+import os
+from django.conf import settings
 
 #class UserPermissionsObj(permissions.BasePermission):
 #    """
@@ -315,14 +317,24 @@ class ProfileViewSet(viewsets.ModelViewSet):
             return CustomeResponse(serializer.data,status=status.HTTP_200_OK)
         else:
             return CustomeResponse(serializer.errors,status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
-    
+        
     
     def partial_update(self, request, pk=None):
         pass
 
-    def destroy(self, request, pk=None):
-        return CustomeResponse({'msg':'GET method not allowed'},status=status.HTTP_405_METHOD_NOT_ALLOWED,flag=1)
-
+    @list_route(methods=['post'],)
+    def deleteprofileimage(self, request, pk=None):
+        try:
+            user_id = request.user.id
+        except:
+            user_id = None
+        
+        profiledata = Profile.objects.get(user_id=user_id)
+        profiledata.profile_image.delete()
+        if profiledata:
+            return CustomeResponse({'msg':'Image is deleted'},status=status.HTTP_200_OK)
+        else:
+            return CustomeResponse({'msg':'server error'},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
     
 class SocialLoginViewSet(viewsets.ModelViewSet):     
     queryset = SocialLogin.objects.all()
