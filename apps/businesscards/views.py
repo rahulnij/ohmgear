@@ -518,7 +518,7 @@ class BusinessViewSet(viewsets.ModelViewSet):
             else:                
                 return CustomeResponse(serializer.errors,status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
         
-    def update(self, request, pk=None):  
+    def update(self, request, pk=None,call_from_func=None,offline_data=None):  
          #-------------------- First Validate the json contact data ------------------------------#
 #         try:
 #            validictory.validate(json.loads(request.DATA["bcard_json_data"]), BUSINESS_CARD_DATA_VALIDATION)
@@ -529,9 +529,13 @@ class BusinessViewSet(viewsets.ModelViewSet):
 #         except:
 #            return CustomeResponse({'msg':"Please provide bcard_json_data in json format" },status=status.HTTP_400_BAD_REQUEST,validate_errors=1) 
          #---------------------- - End ----------------------------------------------------------- #
-         data = request.DATA.copy()
-         user_id  =request.user.id
-         data['user_id']  =request.user.id
+         if call_from_func:
+            data = offline_data
+            pk = offline_data["bcard_id"]
+         else:
+            data = request.DATA.copy()
+            user_id  =request.user.id
+            data['user_id']  =request.user.id             
          try:
            bcards = BusinessCard.objects.get(id=pk)
          except:
@@ -560,12 +564,20 @@ class BusinessViewSet(viewsets.ModelViewSet):
                 except:
                     pass
             else:
-                return CustomeResponse(contact_serializer.errors,status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
-            
-            return CustomeResponse(data_new,status=status.HTTP_200_OK)
+                if call_from_func:
+                 return rawResponse(serializer.errors)
+                else:
+                 return CustomeResponse(contact_serializer.errors,status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
+            if call_from_func:
+               return rawResponse(data_new,status=True,status_code=status.HTTP_200_OK)
+            else:
+               return CustomeResponse(data_new,status=status.HTTP_200_OK)
  
          else:
-            return CustomeResponse(serializer.errors,status=status.HTTP_400_BAD_REQUEST,validate_errors=1)        
+            if call_from_func:
+              return rawResponse(serializer.errors)
+            else:
+              return CustomeResponse(serializer.errors,status=status.HTTP_400_BAD_REQUEST,validate_errors=1)        
         
     #---------------------------- Duplicate the business card ----------------------------#
     @list_route(methods=['post'],)   
