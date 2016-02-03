@@ -10,7 +10,6 @@ class ContactsSerializer(serializers.ModelSerializer):
             'id',
             'businesscard_id',
             'bcard_json_data',
-            'template_id',
             'user_id'
         )
 
@@ -27,7 +26,6 @@ class ContactsSerializerWithJson(serializers.ModelSerializer):
             'id',
             'businesscard_id',
             'bcard_json_data',
-            'template_id',
             'user_id'
         )        
         

@@ -44,26 +44,79 @@ class OfflineSendReceiveDataViewSet(viewsets.ModelViewSet):
            
           try:
              businesscard = request.data['businesscard']
+             businesscard_copy = request.data.copy()
           except:
              businesscard = ''
           
+          final_return_data = {}
           if businesscard:
               business_card_class = BusinessViewSet() 
+              position = 0
               for raw_data in businesscard:
-                  if raw_data["operation"] == 'add':
-                     #-----------------  Create the business card ---------------------------# 
-                     data = {}
-                     data['user_id'] = user_id
-                     data['bcard_json_data'] = {"sssss":"sss"}
-                     business_card_response = business_card_class.create(request,1,data)
-                     print business_card_response
-                     return CustomeResponse(business_card_response,status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
+                  if raw_data["operation"] == 'add':                    
+                    #-----------------  Create the business card ---------------------------# 
+                    business_data = []
+                    if raw_data["json_data"]:
+                      #------------- execute all business card-----------------------#  
+                      for items in raw_data["json_data"]:  
+                            data = {}
+                            data['user_id'] = user_id
+                            try:
+                              data['bcard_json_data'] = items['bcard_json_data']
+                            except:
+                              data['bcard_json_data'] =''
+                            
+                            #------------- Local business card id --------------#
+                            try:
+                              local_business_id = items['local_business_id']
+                            except:
+                              local_business_id =''  
+                            #-------------------- End --------------------------#
+                            
+                            business_card_response = business_card_class.create(request,1,data)
+                            if business_card_response["status"]:
+                               try:
+                                 bcard_id = business_card_response["data"]["id"]
+                               except:
+                                 bcard_id = business_card_response["data"]  
+                               business_data.append({"local_business_id":local_business_id,"bcard_id":bcard_id})
+                            else:
+                               business_data.append({"local_business_id":local_business_id,"bcard_id":business_card_response["data"]})
+                      businesscard_copy['businesscard'][position]['json_data']=business_data
+                   
                      #------------------- End -----------------------------------------------#
                   if raw_data["operation"] == 'edit':
-                     #-----------------  Edit the business card ---------------------------#
-                     pass
-                     #------------------- End -----------------------------------------------#    
-              return CustomeResponse({'msg':"NOT ALLOWED"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)     
+                    #-----------------  Update the business card ---------------------------# 
+                    business_data = []
+                    if raw_data["json_data"]:
+                      #------------- execute all business card-----------------------#  
+                      for items in raw_data["json_data"]:  
+                            data = {}
+                            data['user_id'] = user_id
+                            try:
+                              data['bcard_json_data'] = items['bcard_json_data']
+                            except:
+                              data['bcard_json_data'] =''
+                            
+                            #------------- Local business card id --------------#
+                            try:
+                              local_business_id = items['local_business_id']
+                            except:
+                              local_business_id =''  
+                            #-------------------- End --------------------------#
+                            
+                            business_card_response = business_card_class.update(request,1,data)
+                            if business_card_response["status"]:
+                               try:
+                                 bcard_id = business_card_response["data"]["id"]
+                               except:
+                                 bcard_id = business_card_response["data"]  
+                               business_data.append({"local_business_id":local_business_id,"bcard_id":bcard_id})
+                            else:
+                               business_data.append({"local_business_id":local_business_id,"bcard_id":business_card_response["data"]})
+                      businesscard_copy['businesscard'][position]['json_data']=business_data    
+                  position = position + 1   
+              return CustomeResponse(businesscard_copy,status=status.HTTP_200_OK)     
       @list_route(methods=['get'],)
       def receive(self, request):
           pass      

@@ -75,6 +75,15 @@ class CustomeResponse(Response):
         if headers:
             for name, value in six.iteritems(headers):
                 self[name] = value
+                
+def rawResponse(msg=None,status=False,status_code=404):
+        data = {}
+        if msg:
+           data['data'] =  msg
+           data['status']= status
+           data['status_code'] = status_code    
+        return  data  
+        
 #------------------ End ----------------------------------#
 
 #---------------------------- File Uploads ---------------#
