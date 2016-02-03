@@ -53,8 +53,9 @@ class OfflineSendReceiveDataViewSet(viewsets.ModelViewSet):
               business_card_class = BusinessViewSet() 
               position = 0
               for raw_data in businesscard:
-                  if raw_data["operation"] == 'add':                    
-                    #-----------------  Create the business card ---------------------------# 
+                  
+                  #-----------------  Create the business card ---------------------------#
+                  if raw_data["operation"] == 'add': 
                     business_data = []
                     if raw_data["json_data"]:
                       #------------- execute all business card-----------------------#  
@@ -83,10 +84,10 @@ class OfflineSendReceiveDataViewSet(viewsets.ModelViewSet):
                             else:
                                business_data.append({"local_business_id":local_business_id,"bcard_id":business_card_response["data"]})
                       businesscard_copy['businesscard'][position]['json_data']=business_data
-                   
-                     #------------------- End -----------------------------------------------#
-                  if raw_data["operation"] == 'edit':
-                    #-----------------  Update the business card ---------------------------# 
+                  #------------------- End -----------------------------------------------#
+                     
+                  #-----------------  Update the business card ---------------------------# 
+                  if raw_data["operation"] == 'update':                    
                     business_data = []
                     if raw_data["json_data"]:
                       #------------- execute all business card-----------------------#  
@@ -105,18 +106,30 @@ class OfflineSendReceiveDataViewSet(viewsets.ModelViewSet):
                               local_business_id =''  
                             #-------------------- End --------------------------#
                             
-                            business_card_response = business_card_class.update(request,1,data)
-                            if business_card_response["status"]:
-                               try:
-                                 bcard_id = business_card_response["data"]["id"]
-                               except:
-                                 bcard_id = business_card_response["data"]  
-                               business_data.append({"local_business_id":local_business_id,"bcard_id":bcard_id})
+                            #------------- Local business card id --------------#
+                            try:
+                              data['bcard_id'] = items['bcard_id']
+                            except:
+                              data['bcard_id'] =''  
+                            #-------------------- End --------------------------#                            
+                            if data['bcard_id']:
+                                business_card_response = business_card_class.update(request,None,1,data)
+                                if business_card_response["status"]:
+                                   try:
+                                     bcard_id = business_card_response["data"]["id"]
+                                   except:
+                                     bcard_id = business_card_response["data"]  
+                                   business_data.append({"local_business_id":local_business_id,"bcard_id":bcard_id})
+                                else:
+                                   business_data.append({"local_business_id":local_business_id,"bcard_id":business_card_response["data"]})
                             else:
-                               business_data.append({"local_business_id":local_business_id,"bcard_id":business_card_response["data"]})
+                                business_data.append({"local_business_id":local_business_id,"bcard_id":'provide business card id to update'})
                       businesscard_copy['businesscard'][position]['json_data']=business_data    
-                  position = position + 1   
-              return CustomeResponse(businesscard_copy,status=status.HTTP_200_OK)     
+                  position = position + 1
+                  
+              return CustomeResponse(businesscard_copy,status=status.HTTP_200_OK)
+          
+          
       @list_route(methods=['get'],)
       def receive(self, request):
           pass      
@@ -125,60 +138,70 @@ class OfflineSendReceiveDataViewSet(viewsets.ModelViewSet):
       @list_route(methods=["post"],)
       # update multiple settings in case of offline----------#
       def updatemultiplerecord(self,request):
-          #data format {"DISPLAY_CONTACT_NAME_AS":"1","LANGUAGE":"1"} -------#                                                                                                                                                                                                                                                                                                                          
-        try:
-            getkey  =request.DATA
-
-            settingdata = Setting.objects.all()
-            usersettingdata = UserSetting.objects.all()
-            
-            usersettingexist = UserSetting.objects.filter(user_id=request.user.id)
-            if usersettingexist:
-            
-           # get corresponding key and setting id from setting table-----------#
-                tempContainer = []
-                count = 0
-                for i in getkey: 
-                    innerloop= 0
-                    for j in settingdata:
-                        data   = {}
-                        if i==j.key:
-                            data = {"key":j.key,"setting_id":j.id}
-                            datas = tempContainer.append(data)                        
-                            count=count+1
-            
-            # make dictionary for setting_id corresponding to key and its value to be update in usersetting table-------#
-            
-                newtempContainer = []
-                counter=0
-                for getdata in getkey:
-                    existingdata    =   0   
-                    for i in tempContainer:
-                        data    =   {}
-                        if getdata in i['key']:
-                            value   =  getkey[i['key']]
-                            data    =   {"setting_id":i['setting_id'],"value":value,"user_id":request.user.id}
-                            datas = newtempContainer.append(data)                        
-                            counter=counter+1
-
-            # update usersetting records corresponding to setting_id in usersetting table--------#
-                    j=0         
-                    for i in usersettingdata:
-                        for k in newtempContainer :
-                            if i.setting_id.id == k['setting_id'] and k['user_id']==i.user_id.id:
-                                UserSetting.objects.filter(user_id=request.user.id,setting_id=k['setting_id']).update(value=k['value'])
-                                j=j+1
-                                
-                if newtempContainer:
-                    return CustomeResponse({"msg":"Data has been updated"},status=status.HTTP_200_OK)
-                else:
-                    return CustomeResponse({"msg":" No Data found"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
-                        
-            else:
-                return CustomeResponse({"msg":" No Data found for this user"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
-                                                                                     
-        except:
-            return CustomeResponse({"msg":"Data not found"},validate_errors=1)
+          #data format {"DISPLAY_CONTACT_NAME_AS":"1","LANGUAGE":"1"} -------# 
+         getkey  =request.DATA 
+         updated_settings = []
+         non_updated_settings = []
+         for key,value in getkey.items(): 
+                try:
+                  UserSetting.objects.filter(user_id=request.user.id,setting_id__key=key).update(value=value)
+                  updated_settings.append(key)
+                except:
+                  non_updated_settings.append(key)  
+         return CustomeResponse({"updated_settings":updated_settings,"non_updated_settings":non_updated_settings}, status=status.HTTP_200_OK)
+#        try:
+#            getkey  =request.DATA
+#
+#            settingdata = Setting.objects.all()
+#            usersettingdata = UserSetting.objects.all()
+#            
+#            usersettingexist = UserSetting.objects.filter(user_id=request.user.id)
+#            if usersettingexist:
+#            
+#           # get corresponding key and setting id from setting table-----------#
+#                tempContainer = []
+#                count = 0
+#                for i in getkey: 
+#                    innerloop= 0
+#                    for j in settingdata:
+#                        data   = {}
+#                        if i==j.key:
+#                            data = {"key":j.key,"setting_id":j.id}
+#                            datas = tempContainer.append(data)                        
+#                            count=count+1
+#            
+#            # make dictionary for setting_id corresponding to key and its value to be update in usersetting table-------#
+#            
+#                newtempContainer = []
+#                counter=0
+#                for getdata in getkey:
+#                    existingdata    =   0   
+#                    for i in tempContainer:
+#                        data    =   {}
+#                        if getdata in i['key']:
+#                            value   =  getkey[i['key']]
+#                            data    =   {"setting_id":i['setting_id'],"value":value,"user_id":request.user.id}
+#                            datas = newtempContainer.append(data)                        
+#                            counter=counter+1
+#
+#            # update usersetting records corresponding to setting_id in usersetting table--------#
+#                    j=0         
+#                    for i in usersettingdata:
+#                        for k in newtempContainer :
+#                            if i.setting_id.id == k['setting_id'] and k['user_id']==i.user_id.id:
+#                                UserSetting.objects.filter(user_id=request.user.id,setting_id=k['setting_id']).update(value=k['value'])
+#                                j=j+1
+#                                
+#                if newtempContainer:
+#                    return CustomeResponse({"msg":"Data has been updated"},status=status.HTTP_200_OK)
+#                else:
+#                    return CustomeResponse({"msg":" No Data found"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
+#                        
+#            else:
+#                return CustomeResponse({"msg":" No Data found for this user"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
+#                                                                                     
+#        except:
+#            return CustomeResponse({"msg":"Data not found"},validate_errors=1)
           
 
 #      @list_route(methods=['post'],)

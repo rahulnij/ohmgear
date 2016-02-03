@@ -532,6 +532,7 @@ class BusinessViewSet(viewsets.ModelViewSet):
          if call_from_func:
             data = offline_data
             pk = offline_data["bcard_id"]
+            user_id  =offline_data["user_id"]
          else:
             data = request.DATA.copy()
             user_id  =request.user.id
@@ -539,7 +540,10 @@ class BusinessViewSet(viewsets.ModelViewSet):
          try:
            bcards = BusinessCard.objects.get(id=pk)
          except:
-           return CustomeResponse({'msg':'record not found'},status=status.HTTP_404_NOT_FOUND,validate_errors=1)         
+           if call_from_func:  
+              return rawResponse('record not found')
+           else:
+              return CustomeResponse({'msg':'record not found'},status=status.HTTP_404_NOT_FOUND,validate_errors=1)  
          
          serializer =  BusinessCardSerializer(bcards,data=data,context={'request': request})
          if serializer.is_valid():
@@ -565,9 +569,10 @@ class BusinessViewSet(viewsets.ModelViewSet):
                     pass
             else:
                 if call_from_func:
-                 return rawResponse(serializer.errors)
+                    return rawResponse(serializer.errors)
                 else:
-                 return CustomeResponse(contact_serializer.errors,status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
+                    return CustomeResponse(contact_serializer.errors,status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
+            
             if call_from_func:
                return rawResponse(data_new,status=True,status_code=status.HTTP_200_OK)
             else:
