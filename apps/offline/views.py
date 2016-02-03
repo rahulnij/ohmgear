@@ -12,6 +12,7 @@ import rest_framework.status as status
 
 #------------ Local app imports ------#
 from apps.businesscards.views import BusinessViewSet
+from apps.vacationcard.views  import VacationCardViewSet
 from apps.businesscards.models import BusinessCard
 from apps.usersetting.models import Setting,UserSetting
 from apps.usersetting.serializer import UserSignupSettingSerializer
@@ -127,8 +128,33 @@ class OfflineSendReceiveDataViewSet(viewsets.ModelViewSet):
             return CustomeResponse({"msg":"Data not found"},validate_errors=1)
           
 
-
-
+    @list_route(methods=['post'],)
+    def sendVactioncard(self,request):
+        try:
+            user_id    =   request.user
+        
+        except:
+            user_id     =   None
+        
+        try:
+            vacation_card   =  request.DATA['vacationcard']
+            
+        except:
+            vacation_card   =   None
+        
+        if vacation_card:
+            vacation_card_class = VacationCardViewSet()
+            for raw_data in vacation_card:
+                  if raw_data["operation"] == 'add':
+                     #-----------------  Create the vacation card ---------------------------# 
+                     data = {}
+                     data['user_id'] = user_id
+                     data['bcard_json_data'] = {"sssss":"sss"}
+                     business_card_response = vacation_card_class.create(request,1,data)
+                     print business_card_response
+                     return CustomeResponse(business_card_response,status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
+            
+            
 #---------------------------- End ----------------------------------------------#
 
 #---------------------------  Fetch data from server ---------------------------#

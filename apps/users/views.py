@@ -545,7 +545,4 @@ class UserEmailViewSet(viewsets.ModelViewSet):
         else:
             return CustomeResponse({'msg':serializer.errors},validate_errors=1)
 
-    def verified(self, pk):
 
-
-    def setdefault(self, pk):
