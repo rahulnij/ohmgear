@@ -16,6 +16,7 @@ router.register(r'api/test_purposes', FtestViewSet)
 #-------------- Users app url registration ----------------------#
 import apps.users.views as  users_views
 
+
 router.register(r'api/users', users_views.UserViewSet)
 router.register(r'api/profile', users_views.ProfileViewSet)
 router.register(r'api/sociallogin',users_views.SocialLoginViewSet)
@@ -26,7 +27,7 @@ urlpatterns =patterns(
    # url(r'^grappelli/', include('grappelli.urls')), 
     #url(r'^jet/', include('jet.urls', 'jet')),  # Django JET URLS
     #url(r'^jet/dashboard/', include('jet.dashboard.urls', 'jet-dashboard')), 
- 
+    url(r'^api/', include('apps.users.urls')),
     url(r'^admin/', include(admin.site.urls)),
     url(r'^api/', include('apps.vacationcard.urls')),
     url(r'^api/useractivity/$','apps.users.views.useractivity',name='useractivity'),

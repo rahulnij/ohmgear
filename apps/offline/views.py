@@ -124,6 +124,7 @@ class OfflineSendReceiveDataViewSet(viewsets.ModelViewSet):
       @list_route(methods=["post"],)
       # update multiple settings in case of offline----------#
       def updatemultiplerecord(self,request):
+          #data format {"DISPLAY_CONTACT_NAME_AS":"1","LANGUAGE":"1"} -------#                                                                                                                                                                                                                                                                                                                          
         try:
             getkey  =request.DATA
 

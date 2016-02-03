@@ -204,15 +204,24 @@ class ConnectedAccount(models.Model):
         return '{"id":"%s","social_type_id":"%r", "user_id":"%r"}' %(self.id,self.social_type_id, self.user_id)
     
 
-class UsersEmail(models.Model):
+class UserEmail(models.Model):
     class Meta:
-        db_table    =   'ohmgear_users_usersemails'
-    user_id            =   models.ForeignKey(User,db_column ="user_id")
-    email           =   models.CharField(_("Email"),max_length=50)
-    request_for_default=   models.IntegerField(_("Request For Default"),default=0,null=True)
-    verification_code   =   models.CharField(_("Verification Code"),max_length=40,blank=True)
-    created_date        =   models.DateTimeField(_("Created Date"),auto_now_add=True,auto_now=False)
-    updated_date        =   models.DateTimeField(_("Updated Date"),auto_now_add=False,auto_now=True)
+        db_table    =   'ohmgear_users_useremail'
+    
+    user_id = models.ForeignKey(User,db_column ="user_id")
+    email = models.EmailField()
+    # default=0, email not verified
+    isVerified = models.BooleanField(_("Email Verified"), default=False)
+    verification_code = models.CharField(_("Verification Code"),max_length=40,blank=True, null=True)
+    created_date = models.DateTimeField(_("Created Date"),auto_now_add=True,auto_now=False)
+    updated_date = models.DateTimeField(_("Updated Date"),auto_now=True)
+
+    def __unicode__(self):
+        import json
+        userEmail = {'user_id': self.user_id.id, "email":self.email,"isVerified":self.isVerified,"request_for_default":self.request_for_default,"verification_code":self.verification_code}
+        #"created_date":self.created_date,"updated_date":self.updated_date
+        return json.dumps(userEmail)
+        #'{"id":"%s","email":"%r"}' %(self.id, self.e_mail)
     
     
     
