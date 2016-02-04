@@ -36,6 +36,7 @@ from apps.usersetting.models import Setting
 from apps.usersetting.serializer import UserSignupSettingSerializer
 import os
 from django.conf import settings
+from apps.email.views import BaseSendMail
 
 #class UserPermissionsObj(permissions.BasePermission):
 #    """
@@ -491,8 +492,7 @@ def useractivity(request,**kwargs):
                     if profile and not None:
                         salt = hashlib.sha1(str(random.random())).hexdigest()[:5]            
                         reset_password_key = hashlib.sha1(salt+profile.user.email).hexdigest()
-                        
-                        from apps.email.views import BaseSendMail  
+                         
                         user = model_to_dict(profile.user)
                         BaseSendMail.delay(user,type='forgot_password',key = reset_password_key)                        
                         profile.reset_password_key = reset_password_key
@@ -517,7 +517,6 @@ def useractivity(request,**kwargs):
                  profile = ''
                 
                 if profile:
-                   from apps.email.views import BaseSendMail
                    user = model_to_dict(profile.user)
                    BaseSendMail.delay(user,type='account_confirmation',key = profile.activation_key)
                    return CustomeResponse({'msg':"email sent"},status=status.HTTP_200_OK)
@@ -559,4 +558,51 @@ class UserEmailViewSet(viewsets.ModelViewSet):
         else:
             return CustomeResponse({'msg':serializer.errors},validate_errors=1)
 
+                 
+    @list_route(methods=['post'],)
+    def verifiedcode(self,request):
+        
+        #try:
+            user_id = request.user
+            salt = hashlib.sha1(str(random.random())).hexdigest()[:5] 
+            data ={}
+            data['email'] = request.POST.get('email')
+            data['user_id'] = request.POST.get('id')
+            data['id'] = request.user.id
+            
+            activation_key = hashlib.sha1(salt+data['email']).hexdigest()[:5] 
+            #data['user_id'] = request.user.id
+            #data['verification_code'] = activation_key
+            
+            if user_id:
+                UserEmail.objects.filter(id=request.POST.get('id')).update(verification_code=activation_key)
+                BaseSendMail.delay(data,type='verify_email',key = activation_key)
+                return CustomeResponse({'msg':'verification code sent'})
+            else:
+                return CustomeResponse({'msg':'server error'},validate_errors=1)
+            
+            if not data['email']:
+                return CustomeResponse({"msg":"email is not there"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
+#        except:
+#            data['email']  = None
+#            return CustomeResponse({"msg":"email is mandatory"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
+   
+    @list_route(methods=['get'],)
+    def isverified(self,request):
+        
+        #try:
+            user_id = request.user
+            data ={}
+            data['id'] = self.request.QUERY_PARAMS.get('id')
+            print data['id']
+            if user_id:
+                UserEmail.objects.filter(id=data['id']).update(isVerified="TRUE")
+                return CustomeResponse({'msg':'email verified'})
+            else:
+                return CustomeResponse({'msg':'server error'},validate_errors=1)
+            
+            if not data['email']:
+                return CustomeResponse({"msg":"email is not there"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)  
+            
+    #def setdefault(self, pk):
 

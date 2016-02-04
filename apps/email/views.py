@@ -27,6 +27,16 @@ class BaseSendMail(Task):
                 email_body = email.content.replace('%user_name%',getdata.first_name)
                 url = reverse('registration_confirm', args=[activation_key])
                 email_body = email_body.replace('%url%',"<a href='"+settings.DOMAIN_NAME+url+"'>Link</a>")
+            
+                
+           if type == 'verify_email':
+               
+                activation_key = kwargs.get("key")
+                print activation_key
+                #email_body = email.content.replace('%user_name%',userObj['first_name'])
+                email_body = "hi"#email.content.replace('%user_name%',getdata.first_name)
+                url = "hell"#reverse('registration_confirm', args=[activation_key])
+                email_body = "out of here" #email_body.replace('%url%',"<a href='"+settings.DOMAIN_NAME+url+"'>Link</a>")
 
            elif type == 'forgot_password': 
                
