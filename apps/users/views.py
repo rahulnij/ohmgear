@@ -603,6 +603,29 @@ class UserEmailViewSet(viewsets.ModelViewSet):
             
             if not data['email']:
                 return CustomeResponse({"msg":"email is not there"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)  
+     
+    @list_route(methods=['post'],)
+    def setdefault(self, request):
+        
+        user_id = request.user
+        data ={}
+        data['id'] = request.user.id
+        data['ueid'] = request.POST.get('useremail_id')
+        userEmail = User.objects.values_list('email', flat=True).filter(id=data['id'])
+        userEmailAdded = UserEmail.objects.values_list('email', flat=True).filter(id=data['ueid'])
+        checkUserEmail=User.objects.filter(email=userEmailAdded[0]) # check email user table if exist
+        tempUser = userEmail[0]
+        tempUserEmail= userEmailAdded[0] 
+        
+        if user_id: 
+            if not checkUserEmail: 
+                UserEmail.objects.filter(id=data['ueid']).update(email= tempUser)
+                User.objects.filter(id=data['id']).update(email=tempUserEmail)    
+                return CustomeResponse({'msg':'email verified'})
+        else:
+            return CustomeResponse({'msg':'server error'},validate_errors=1)
             
-    #def setdefault(self, pk):
+        if not data['email']:
+            return CustomeResponse({"msg":"email is not there"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)  
+        
 

@@ -99,7 +99,7 @@ class User(AbstractBaseUser):
     objects = CustomUserManager()
 
     update_password =  True
-
+    update_email = True
     USERNAME_FIELD = 'email'
     #REQUIRED_FIELDS = ['first_name']
 
@@ -112,7 +112,7 @@ class User(AbstractBaseUser):
         return self.email
 
     def __unicode__(self):
-        return '{"id":"%s","email":"%s","user_type":"%s","status":"%s","pin_number"}' %(self.id,self.email,self.user_type,self.status,self.pin_number)
+        return '{"id":"%s","email":"%s","user_type":"%s","status":"%s","pin_number":"%s"}' %(self.id,self.email,self.user_type,self.status,self.pin_number)
 
     def has_perm(self, perm, obj=None):
         "Does the user have a specific permission?"
