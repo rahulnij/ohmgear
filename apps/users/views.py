@@ -27,7 +27,7 @@ from django.utils.timezone import utc
 from rest_framework import permissions 
 from rest_framework.decorators import api_view, permission_classes, authentication_classes
 from rest_framework.authtoken.models import Token
-from functions import getToken,checkEmail,createConnectedAccount
+from functions import getToken,checkEmail,createConnectedAccount,CreatePinNumber
 import json
 from django.shortcuts import redirect
 import hashlib, datetime, random
@@ -87,6 +87,10 @@ class UserViewSet(viewsets.ModelViewSet):
     def create(self, request,fromsocial=None):
          
          serializer =  UserSerializer(data=request.DATA,context={'request': request})
+         mutable = request.POST._mutable
+         request.POST._mutable = True
+         pin_no   =    CreatePinNumber()
+         request.DATA['pin_number']  = pin_no
          if serializer.is_valid():
              
             #------------ enable/desable signal -----------------#
@@ -275,8 +279,6 @@ class UserViewSet(viewsets.ModelViewSet):
         except:
             return CustomeResponse({'msg':'provide status active'},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)   
 
-
-    
     def partial_update(self, request, pk=None):
         pass
 

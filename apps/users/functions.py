@@ -5,6 +5,7 @@ from django.contrib.auth import get_user_model
 from rest_framework.authtoken.models import Token
 from serializer import ConnectedAccountsSerializer
 from models import ConnectedAccount,SocialType,User
+import random
 
 #------------------ Return token if does not exit then create -------------------#  
 def getToken(user_id):
@@ -61,4 +62,16 @@ def createConnectedAccount(user_id,social_type_id):
     except:
         return None
     
+    
+def CreatePinNumber():
+    pin_no = ''.join(random.choice('0123456789') for i in range(4))
+    try:
+        pin_no_exist = User.objects.get(pin_number= pin_no)
+    except:
+        pin_no_exist = ''
+        
+    if pin_no_exist:
+        return CreatePinNumber()
+    print pin_no
+    return pin_no
     

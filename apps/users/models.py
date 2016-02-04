@@ -112,7 +112,7 @@ class User(AbstractBaseUser):
         return self.email
 
     def __unicode__(self):
-        return '{"id":"%s","email":"%s","user_type":"%s","status":"%s"}' %(self.id,self.email,self.user_type,self.status)
+        return '{"id":"%s","email":"%s","user_type":"%s","status":"%s","pin_number"}' %(self.id,self.email,self.user_type,self.status,self.pin_number)
 
     def has_perm(self, perm, obj=None):
         "Does the user have a specific permission?"
