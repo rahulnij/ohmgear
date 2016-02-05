@@ -204,56 +204,57 @@ class OfflineSendReceiveDataViewSet(viewsets.ModelViewSet):
 #            return CustomeResponse({"msg":"Data not found"},validate_errors=1)
           
 
-#      @list_route(methods=['post'],)
-#      def sendVactioncard(self,request):
-#        try:
-#            user_id    =   request.user
-#        
-#        except:
-#            user_id     =   None
-#        
-#        
-#        try:
-#            vacation_card = request.data['vacationcard']
-#            vacationcard_copy = request.data.copy()
-#        except:
-#            vacation_card = ''
-#          
-#        final_return_data = {}
-#        
-#        if vacation_card:  
-#            vacation_card_class = VacationCardViewSet()
-#            position = 0
-#            for raw_data in vacation_card:
-#                  if raw_data["operation"] == 'add':
-#                    vacation_data = []
-#                     #-----------------  Create the vacation card ---------------------------# 
-#                    data = {}
-#                    try:
-#                        data['vacation_name'] = raw_data['vacation_name']
-#                    except:
-#                        data['vacation_name'] =''
-#                    
-#                    try:
-#                        data['vacation'] =      raw_data['vacation']
-#                    except:
-#                        data['vacation'] =''
-#                        
-#                     
-#                    vacation_card_response = vacation_card_class.create(request,1,data)
-#                    print vacation_card_response
-#                     
-#                    if vacation_card_response["status"]:
-#                            try:
-#                                 vcard_id = vacation_card_response["data"]["id"]
-#                            except:
-#                                 vcard_id = vacation_card_response["data"]  
-#                            vacation_data.append({"local_vacation_id":local_business_id,"bcard_id":bcard_id})
-#                    else:
-#                        vacation_data.append({"local_vacation_id":local_vacation_id,"vcard_id":vacation_card_response["data"]})
-#            vacationcard_copy['vacationcard'][position]['vacation']=vacation_data    
-#        position = position + 1   
-#        return CustomeResponse(vacationcard_copy,status=status.HTTP_200_OK)    
+      @list_route(methods=['post'],)
+      def sendVactioncard(self,request):
+        try:
+            user_id    =   request.user
+        
+        except:
+            user_id     =   None
+        
+        
+        try:
+            vacation_card = request.data['vacationcard']
+            vacationcard_copy = request.data.copy()
+        except:
+            vacation_card = ''
+          
+        final_return_data = {}
+        
+        if vacation_card:  
+            vacation_card_class = VacationCardViewSet()
+            position = 0
+            for raw_data in vacation_card:
+                  if raw_data["operation"] == 'add':
+                    vacation_data = []
+                     #-----------------  Create the vacation card ---------------------------# 
+                    data = {}
+                    try:
+                        data['vacation_name'] = raw_data['vacation_name']
+                        print data['vacation_name']
+                    except:
+                        data['vacation_name'] =''
+                    
+                    try:
+                        data['vacation'] =      raw_data['vacation']
+                    except:
+                        data['vacation'] =''
+                        
+                     
+                    vacation_card_response = vacation_card_class.create(request,1,data)
+                    print vacation_card_response
+                     
+                    if vacation_card_response["status"]:
+                            try:
+                                 vcard_id = vacation_card_response["data"]["id"]
+                            except:
+                                 vcard_id = vacation_card_response["data"]  
+                            vacation_data.append({"local_vacation_id":local_business_id,"bcard_id":bcard_id})
+                    else:
+                        vacation_data.append({"local_vacation_id":local_vacation_id,"vcard_id":vacation_card_response["data"]})
+            vacationcard_copy['vacationcard'][position]['vacation']=vacation_data    
+        position = position + 1   
+        return CustomeResponse(vacationcard_copy,status=status.HTTP_200_OK)    
             
 #---------------------------- End ----------------------------------------------#
 
