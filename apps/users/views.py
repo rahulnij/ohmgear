@@ -27,13 +27,16 @@ from django.utils.timezone import utc
 from rest_framework import permissions 
 from rest_framework.decorators import api_view, permission_classes, authentication_classes
 from rest_framework.authtoken.models import Token
-from functions import getToken,checkEmail,createConnectedAccount
+from functions import getToken,checkEmail,createConnectedAccount,CreatePinNumber
 import json
 from django.shortcuts import redirect
 import hashlib, datetime, random
 from rest_framework.decorators import detail_route, list_route
 from apps.usersetting.models import Setting
 from apps.usersetting.serializer import UserSignupSettingSerializer
+import os
+from django.conf import settings
+from apps.email.views import BaseSendMail
 
 #class UserPermissionsObj(permissions.BasePermission):
 #    """
@@ -85,6 +88,10 @@ class UserViewSet(viewsets.ModelViewSet):
     def create(self, request,fromsocial=None):
          
          serializer =  UserSerializer(data=request.DATA,context={'request': request})
+         mutable = request.POST._mutable
+         request.POST._mutable = True
+         pin_no   =    CreatePinNumber()
+         request.DATA['pin_number']  = pin_no
          if serializer.is_valid():
              
             #------------ enable/desable signal -----------------#
@@ -273,8 +280,6 @@ class UserViewSet(viewsets.ModelViewSet):
         except:
             return CustomeResponse({'msg':'provide status active'},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)   
 
-
-    
     def partial_update(self, request, pk=None):
         pass
 
@@ -315,14 +320,24 @@ class ProfileViewSet(viewsets.ModelViewSet):
             return CustomeResponse(serializer.data,status=status.HTTP_200_OK)
         else:
             return CustomeResponse(serializer.errors,status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
-    
+        
     
     def partial_update(self, request, pk=None):
         pass
 
-    def destroy(self, request, pk=None):
-        return CustomeResponse({'msg':'GET method not allowed'},status=status.HTTP_405_METHOD_NOT_ALLOWED,flag=1)
-
+    @list_route(methods=['post'],)
+    def deleteprofileimage(self, request, pk=None):
+        try:
+            user_id = request.user.id
+        except:
+            user_id = None
+        
+        profiledata = Profile.objects.get(user_id=user_id)
+        profiledata.profile_image.delete()
+        if profiledata:
+            return CustomeResponse({'msg':'Image is deleted'},status=status.HTTP_200_OK)
+        else:
+            return CustomeResponse({'msg':'server error'},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
     
 class SocialLoginViewSet(viewsets.ModelViewSet):     
     queryset = SocialLogin.objects.all()
@@ -477,8 +492,7 @@ def useractivity(request,**kwargs):
                     if profile and not None:
                         salt = hashlib.sha1(str(random.random())).hexdigest()[:5]            
                         reset_password_key = hashlib.sha1(salt+profile.user.email).hexdigest()
-                        
-                        from apps.email.views import BaseSendMail  
+                         
                         user = model_to_dict(profile.user)
                         BaseSendMail.delay(user,type='forgot_password',key = reset_password_key)                        
                         profile.reset_password_key = reset_password_key
@@ -503,7 +517,6 @@ def useractivity(request,**kwargs):
                  profile = ''
                 
                 if profile:
-                   from apps.email.views import BaseSendMail
                    user = model_to_dict(profile.user)
                    BaseSendMail.delay(user,type='account_confirmation',key = profile.activation_key)
                    return CustomeResponse({'msg':"email sent"},status=status.HTTP_200_OK)
@@ -545,4 +558,74 @@ class UserEmailViewSet(viewsets.ModelViewSet):
         else:
             return CustomeResponse({'msg':serializer.errors},validate_errors=1)
 
+                 
+    @list_route(methods=['post'],)
+    def verifiedcode(self,request):
+        
+        #try:
+            user_id = request.user
+            salt = hashlib.sha1(str(random.random())).hexdigest()[:5] 
+            data ={}
+            data['email'] = request.POST.get('email')
+            data['user_id'] = request.POST.get('id')
+            data['id'] = request.user.id
+            
+            activation_key = hashlib.sha1(salt+data['email']).hexdigest()[:5] 
+            #data['user_id'] = request.user.id
+            #data['verification_code'] = activation_key
+            
+            if user_id:
+                UserEmail.objects.filter(id=request.POST.get('id')).update(verification_code=activation_key)
+                BaseSendMail.delay(data,type='verify_email',key = activation_key)
+                return CustomeResponse({'msg':'verification code sent'})
+            else:
+                return CustomeResponse({'msg':'server error'},validate_errors=1)
+            
+            if not data['email']:
+                return CustomeResponse({"msg":"email is not there"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
+#        except:
+#            data['email']  = None
+#            return CustomeResponse({"msg":"email is mandatory"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
+   
+    @list_route(methods=['get'],)
+    def isverified(self,request):
+        
+        #try:
+            user_id = request.user
+            data ={}
+            data['id'] = self.request.QUERY_PARAMS.get('id')
+            print data['id']
+            if user_id:
+                UserEmail.objects.filter(id=data['id']).update(isVerified="TRUE")
+                return CustomeResponse({'msg':'email verified'})
+            else:
+                return CustomeResponse({'msg':'server error'},validate_errors=1)
+            
+            if not data['email']:
+                return CustomeResponse({"msg":"email is not there"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)  
+     
+    @list_route(methods=['post'],)
+    def setdefault(self, request):
+        
+        user_id = request.user
+        data ={}
+        data['id'] = request.user.id
+        data['ueid'] = request.POST.get('useremail_id')
+        userEmail = User.objects.values_list('email', flat=True).filter(id=data['id'])
+        userEmailAdded = UserEmail.objects.values_list('email', flat=True).filter(id=data['ueid'])
+        checkUserEmail=User.objects.filter(email=userEmailAdded[0]) # check email user table if exist
+        tempUser = userEmail[0]
+        tempUserEmail= userEmailAdded[0] 
+        
+        if user_id: 
+            if not checkUserEmail: 
+                UserEmail.objects.filter(id=data['ueid']).update(email= tempUser)
+                User.objects.filter(id=data['id']).update(email=tempUserEmail)    
+                return CustomeResponse({'msg':'email verified'})
+        else:
+            return CustomeResponse({'msg':'server error'},validate_errors=1)
+            
+        if not data['email']:
+            return CustomeResponse({"msg":"email is not there"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)  
+        
 

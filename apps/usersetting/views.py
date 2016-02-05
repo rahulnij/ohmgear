@@ -8,7 +8,8 @@ from ohmgear.token_authentication import ExpiringTokenAuthentication
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import list_route
 from functions import get_all_usersetting,get_setting_value_by_key,update_user_setting
-
+from apps.users.models import User
+import re
 
 # Create your views here.
 class UserSettingViewSet(viewsets.ModelViewSet):
@@ -62,6 +63,34 @@ class UserSettingViewSet(viewsets.ModelViewSet):
             return CustomeResponse({"msg":"Data not found"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
         if getkeydata:
             return CustomeResponse({"msg":"settings has been updated"},status=status.HTTP_200_OK)
+        else:
+            return CustomeResponse({"msg":"Server error try again"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
+        
+        
+    @list_route(methods=['post'],)
+    def update_pinnumber(self,request):
+        try:
+            user_id =   request.user.id
+        except:
+            user_id = ''
+            
+        try:
+            pin_number = request.DATA['pin_number']
+
+            if re.match(r'^[0-9]{4}$', pin_number):
+                pass        
+            else:
+                return CustomeResponse({"msg":"Pin number can be numeric with 4 digits only "},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
+        except:
+            pin_number  =   ''
+        
+        try:
+            userdata  =  User.objects.filter(id=user_id).update(pin_number=pin_number)
+        except:
+            userdata    =   None
+        
+        if userdata:
+            return CustomeResponse({'msg':'Pin number is updated'},status=status.HTTP_201_CREATED)
         else:
             return CustomeResponse({"msg":"Server error try again"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
         

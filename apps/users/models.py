@@ -99,7 +99,7 @@ class User(AbstractBaseUser):
     objects = CustomUserManager()
 
     update_password =  True
-
+    update_email = True
     USERNAME_FIELD = 'email'
     #REQUIRED_FIELDS = ['first_name']
 
@@ -112,7 +112,7 @@ class User(AbstractBaseUser):
         return self.email
 
     def __unicode__(self):
-        return '{"id":"%s","email":"%s","user_type":"%s","status":"%s"}' %(self.id,self.email,self.user_type,self.status)
+        return '{"id":"%s","email":"%s","user_type":"%s","status":"%s","pin_number":"%s"}' %(self.id,self.email,self.user_type,self.status,self.pin_number)
 
     def has_perm(self, perm, obj=None):
         "Does the user have a specific permission?"
@@ -171,7 +171,6 @@ class Profile(models.Model):
     #------------ field for first time login ---------------------#
     first_time_login  = models.BooleanField(default=True)
     #------------- End -------------------------------------------#
-
     def __unicode__(self):
         return '{"id":"%s","dob":"%s","gender":"%s","address":"%s","mobile_number":"%s","user":"%s","income_group":"%s","business_type":"%s","first_time_login":"%s","first_name":"%s","last_name":"%s","nick_name":"%s","headline":"%s","profile_image":"%s"}' %(self.id,self.dob,self.gender,self.address,self.mobile_number,self.user,self.income_group,self.business_type,self.first_time_login,self.first_name,self.last_name,self.nick_name,self.headline,self.profile_image)
 

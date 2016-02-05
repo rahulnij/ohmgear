@@ -27,6 +27,7 @@ class UserSerializer(serializers.ModelSerializer):
        
 class ProfileSerializer(serializers.ModelSerializer):
     #profile_image = serializers.ImageField(max_length=None, use_url=True,required=False)
+    pin_number = serializers.ReadOnlyField(source='user.pin_number')
     class Meta:
         model = Profile
         
