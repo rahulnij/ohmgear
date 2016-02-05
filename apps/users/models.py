@@ -156,7 +156,7 @@ class Profile(models.Model):
     dob = models.DateField(_("DOB"),null=True)
     gender = models.CharField(_("Gender"),null =True,max_length= 10) 
     address = models.CharField(_("Address"),max_length=80,null=True)
-    mobile_number = models.CharField(_("Mobile Number"),max_length=10,null=True)   
+    mobile_number = models.CharField(_("Mobile Number"),max_length=20)   
     custom_data = JsonField(null=True)
     created_date=models.DateTimeField(_("Created Date"),auto_now_add=True,auto_now=False)
     updated_date=models.DateTimeField(_("Updated Date"),auto_now_add=False,auto_now=True)    
