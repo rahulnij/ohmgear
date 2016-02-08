@@ -11,7 +11,7 @@ import rest_framework.status as status
 #-------------------------------------------#
 
 #------------ Local app imports ------#
-from apps.businesscards.views import BusinessViewSet
+from apps.businesscards.views import BusinessViewSet,BusinessCardIdentifierViewSet
 from apps.vacationcard.views  import VacationCardViewSet
 from apps.businesscards.models import BusinessCard
 from apps.usersetting.models import Setting,UserSetting
@@ -41,21 +41,13 @@ class OfflineSendReceiveDataViewSet(viewsets.ModelViewSet):
            user_id = request.user.id
           except:
            user_id = None
-           
-          try:
-             businesscard = request.data['businesscard']
-             businesscard_copy = request.data.copy()
-          except:
-             businesscard = ''
-             businesscard_copy = request.data.copy()
+
              
-          try:
-             link_bcard_to_identifier = request.data['link_bcard_to_identifier']
-          except:
-             link_bcard_to_identifier = ''             
-          
-          
-          if businesscard:
+          businesscard_copy = request.data.copy()    
+          if 'businesscard' in request.data:
+              
+              businesscard = request.data['businesscard']
+              
               business_card_class = BusinessViewSet() 
               position = 0
               for raw_data in businesscard:
@@ -133,10 +125,25 @@ class OfflineSendReceiveDataViewSet(viewsets.ModelViewSet):
                       businesscard_copy['businesscard'][position]['json_data']=business_data    
                   
                   position = position + 1
-                  
-          if link_bcard_to_identifier:
-              pass
+          
+          # Link identifier to business card
+          # data format {"link_bcard_to_identifier":[{},{}]}
+          if 'link_bcard_to_identifier' in request.data:
               
+             link_bcard_to_identifier = request.data['link_bcard_to_identifier'] 
+             link_bcard_to_identifier_class =  BusinessCardIdentifierViewSet()
+             bcard_link_data = []
+             for items in  link_bcard_to_identifier:
+                 #data = {}
+                 items['user_id'] = user_id
+                 
+                 response = link_bcard_to_identifier_class.create(request,1,items)
+                 if response["status"]:
+                    bcard_link_data.append({"msg":"atached"})
+                 else:
+                    bcard_link_data.append({"item":items,"msg":response}) 
+                    
+             businesscard_copy['link_bcard_to_identifier']=bcard_link_data  
                   
           return CustomeResponse(businesscard_copy,status=status.HTTP_200_OK)
           
