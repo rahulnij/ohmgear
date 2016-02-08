@@ -1,7 +1,7 @@
 from rest_framework import routers, serializers, viewsets
 from models import VacationTrip,VacationCard
 from serializer import VacationTripSerializer,VacationEditTripSerializer,VacationCardSerializer,BusinessCardVacationSerializer,SingleVacationCardSerializer
-from ohmgear.functions import CustomeResponse
+from ohmgear.functions import CustomeResponse,handle_uploaded_file,rawResponse
 from rest_framework.decorators import api_view
 import rest_framework.status as status
 from ohmgear.token_authentication import ExpiringTokenAuthentication
@@ -70,26 +70,41 @@ class VacationCardViewSet(viewsets.ModelViewSet):
             return CustomeResponse(data,status=status.HTTP_200_OK)
     
                 
-    def create(self,request):
+    def create(self,request,call_from_func=None,offline_data=None):
         
         try:
             user_id = request.user
         except:
             user_id = None
-    
+            
+        if call_from_func:
+            #-------------- Call from offline app ------------------------------# 
+            try:
+                stops =  offline_data['vacation']
+                vacation_name =   offline_data['vacation_name']
+                data    = offline_data
+                
+                
+            except:
+                
+                return CustomeResponse({'status':'fail','msg':'Please provide correct Json Format of vacation'},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
+        else:
+            try:
+                stops = request.DATA['vacation']
+                vacation_name =       request.DATA['vacation_name']
+                data    = request.DATA
+                #stops = json.loads(request.DATA['vacation'])
+                #stops =  stops["data"]
+            except:
+                return CustomeResponse({'status':'fail','msg':'Please provide correct Json Format of vacation'},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
         
-        VacationCardserializer = VacationCardSerializer(data=request.DATA,context={'request':request})
-        VacationTripserializer = VacationTripSerializer(data=request.DATA,context={'request':request})
+        VacationCardserializer = VacationCardSerializer(data=data,context={'request':request})
+        VacationTripserializer = VacationTripSerializer(data=data,context={'request':request})
       
-        try:
-            stops = request.DATA['vacation']
-            #stops = json.loads(request.DATA['vacation'])
-            #stops =  stops["data"]
-        except:
-            return CustomeResponse({'status':'fail','msg':'Please provide correct Json Format of vacation'},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
-       # print stops    
+        
+
         if VacationCardserializer.is_valid():
-            vacationid = VacationCardserializer.save(user_id=request.user,vacation_name=request.DATA['vacation_name'])
+            vacationid = VacationCardserializer.save(user_id=request.user,vacation_name=vacation_name)
             if stops and vacationid.id:
                     tempContainer = []
                     for data in stops:
@@ -107,11 +122,25 @@ class VacationCardViewSet(viewsets.ModelViewSet):
                     serializer = VacationTripSerializer(data=tempContainer,many=True,context={'local_date': 1})
                     if serializer.is_valid():
                         serializer.save(user_id=request.user)
-                        return CustomeResponse(serializer.data,status=status.HTTP_201_CREATED)
+                        #data_new = serializer.data.copy()
+                        if call_from_func:
+                            return rawResponse(serializer.data,status=True,status_code=status.HTTP_201_CREATED)
+                        else:            
+                            return CustomeResponse(serializer.data,status=status.HTTP_201_CREATED)
+                         
                     else:
-                     return CustomeResponse(serializer.errors,status=status.HTTP_201_CREATED)
+                        if call_from_func:
+                            return rawResponse(serializer.errors)
+                        else:
+                            return CustomeResponse(serializer.errors,status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
         else:
-         return CustomeResponse(VacationCardserializer.errors,status=status.HTTP_401_UNAUTHORIZED,validate_errors=1)
+            if call_from_func:
+                    return rawResponse(VacationCardserializer.errors)
+            else:
+                    return CustomeResponse(VacationCardserializer.errors,status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
+            
+            
+        # return CustomeResponse(VacationCardserializer.errors,status=status.HTTP_401_UNAUTHORIZED,validate_errors=1)
     
     
     @list_route(methods=['post'],)   

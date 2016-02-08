@@ -158,9 +158,11 @@ class OfflineSendReceiveDataViewSet(viewsets.ModelViewSet):
 
 
       @list_route(methods=['post'],)
+
       def sendVactioncard(self,request):
+      # data format {"vacationcard": [{"operation": "add","json_data": [{"vacation_name":"Us vacation123","vacation": [{"country":"ankurgumber","vacation_type":"confrence","contact_no":"8800362589","state":"Haryana","city":"gzb","notes":"hsfdjdfjfsed","trip_start_date":"2015-08-10","trip_end_date":"2015-11-28"}]}, {}]}, {	"operation": "update","json_data": [{}, {}]}] }  
         try:
-            user_id    =   request.user
+            user_id    =   request.user.id
         
         except:
             user_id     =   None
@@ -171,44 +173,73 @@ class OfflineSendReceiveDataViewSet(viewsets.ModelViewSet):
             vacationcard_copy = request.data.copy()
         except:
             vacation_card = ''
+            vacationcard_copy = ''
           
         final_return_data = {}
+#{"vacationcard": [{"operation": "add","json_data": [{"vacation_name":"Us vacation123",
+#"vacation": [{"country":"ankurgumber","vacation_type":"confrence","contact_no":"8800362589","state":"Haryana","city":"gzb","notes":"hsfdjdfjfsed","trip_start_date":"2015-08-10","trip_end_date":"2015-09-28"}]},
+#{"vacation_name":"Us vacation123","vacation": [{"country":"ankurgumber","vacation_type":"confrence","contact_no":"8800362589","state":"Haryana","city":"gzb","notes":"hsfdjdfjfsed","trip_start_date":"2015-08-10","trip_end_date":"2015-09-28"}]}]}, {	"operation": "update","json_data": [{}, {}]}] }
         
-        if vacation_card:  
-            vacation_card_class = VacationCardViewSet()
-            position = 0
-            for raw_data in vacation_card:
-                  if raw_data["operation"] == 'add':
+        
+        if vacation_card:
+              vacation_card_class = VacationCardViewSet() 
+              position = 0
+              for raw_data in vacation_card:
+                  
+                  #-----------------  Create the Vacation card ---------------------------#
+                  if raw_data["operation"] == 'add': 
                     vacation_data = []
-                     #-----------------  Create the vacation card ---------------------------# 
-                    data = {}
-                    try:
-                        data['vacation_name'] = raw_data['vacation_name']
-                        print data['vacation_name']
-                    except:
-                        data['vacation_name'] =''
-                    
-                    try:
-                        data['vacation'] =      raw_data['vacation']
-                    except:
-                        data['vacation'] =''
-                        
-                     
-                    vacation_card_response = vacation_card_class.create(request,1,data)
-                    print vacation_card_response
-                     
-                    if vacation_card_response["status"]:
+                    if raw_data["json_data"]:
+                      #------------- execute all vacation card-----------------------#  
+                      for items in raw_data["json_data"]:  
+                            data = {}
+                            data['user_id'] = user_id
                             try:
-                                 vcard_id = vacation_card_response["data"]["id"]
+                              data['vacation_name'] = items['vacation_name']
                             except:
+                              data['vacation_name'] =''
+                            
+                            #------------- Local vacation card id --------------#
+                            try:
+                                    data['vacation'] =      items['vacation']
+                            except:
+                                    data['vacation'] =''
+                            #-------------------- End --------------------------#
+                            try:
+                              local_vacation_id = items['local_vacation_id']
+                            except:
+                              local_vacation_id ='' 
+                            
+                            
+                            vacation_card_response = vacation_card_class.create(request,1,data)    
+                            if vacation_card_response["status"]:
+                               print "status true"
+                               try:
+                                 print "vacation id"
+                                 vcard_id = vacation_card_response["data"]["id"]
+                               except:
+                                 print "vacation data"  
                                  vcard_id = vacation_card_response["data"]  
-                            vacation_data.append({"local_vacation_id":local_business_id,"bcard_id":bcard_id})
-                    else:
-                        vacation_data.append({"local_vacation_id":local_vacation_id,"vcard_id":vacation_card_response["data"]})
-            vacationcard_copy['vacationcard'][position]['vacation']=vacation_data    
-        position = position + 1   
-        return CustomeResponse(vacationcard_copy,status=status.HTTP_200_OK)    
-            
+                               vacation_data.append({"local_vacation_id":local_vacation_id,"vcard_id":vcard_id})
+                            else:
+                               print "status false"
+                               vacation_data.append({"local_vacation_id":local_vacation_id,"vcard_id":vacation_card_response["data"]})
+                      vacationcard_copy['vacationcard'][position]['vacation']=vacation_data
+                  #------------------- End -----------------------------------------------#
+                     
+                      
+                  
+                  position = position + 1
+                  
+          
+              
+                  
+        return CustomeResponse(vacationcard_copy,status=status.HTTP_200_OK)
+        
+        
+        
+        
+        
 #---------------------------- End ----------------------------------------------#
 
 
