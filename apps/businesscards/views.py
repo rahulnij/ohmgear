@@ -80,7 +80,7 @@ class BusinessCardIdentifierViewSet(viewsets.ModelViewSet):
            
            
             
-    def create(self,request):
+    def create(self,request,call_from_function=None,offline_data=None):
        #print request.data
         try:
             op  =request.DATA['op']
@@ -93,14 +93,26 @@ class BusinessCardIdentifierViewSet(viewsets.ModelViewSet):
                businesscardidentifier_detail = BusinessCardIdentifier.objects.filter(businesscard_id= businesscard_id)
                businesscardidentifier_detail.delete()
        
-       
-        serializer = BusinessCardIdentifierSerializer(data = request.data,context={'request':request})
+        #--- TODO check business card and identifier belongs to authentic user ---#
+        #------------------- END -------------------------------------------------#
+        data = {}
+        if call_from_function:
+             data = offline_data
+        else:
+            data = request.data
+        serializer = BusinessCardIdentifierSerializer(data = data,context={'request':request})
         if serializer.is_valid():
            serializer.save()
-           BusinessCard.objects.filter(id= request.data['businesscard_id']).update(status= 1 ,is_active=1)
-           return CustomeResponse(serializer.data,status=status.HTTP_201_CREATED)
+           BusinessCard.objects.filter(id= data['businesscard_id']).update(status= 1 ,is_active=1)
+           if call_from_function:
+              return rawResponse(serializer.data,status=True,status_code=status.HTTP_201_CREATED)
+           else:
+              return CustomeResponse(serializer.data,status=status.HTTP_201_CREATED) 
         else:
-           return CustomeResponse(serializer.errors,status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
+           if call_from_function: 
+              return rawResponse(serializer.errors)
+           else:
+              return CustomeResponse(serializer.errors,status=status.HTTP_400_BAD_REQUEST,validate_errors=1) 
         
     @list_route(methods=['post'],)     
     def unlinkIdentifier(self, request):
