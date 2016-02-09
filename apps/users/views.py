@@ -556,7 +556,6 @@ class UserEmailViewSet(viewsets.ModelViewSet):
         data ={}
         data['user_id'] = request.user.id
         data['email'] = request.DATA.get('email')
-        print data
         #todo email validation in serializer 
         serializer = UserEmailSerializer(data=data,context ={'request':request,'msg':'not exist'})
         
