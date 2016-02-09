@@ -537,16 +537,31 @@ class UserEmailViewSet(viewsets.ModelViewSet):
 
     def list(self, request):
         default_email = {}
-        default_email['default_email'] = request.user.email
+        default_email['email'] = request.user.email
+        default_email['is_default'] = 1
         userEmails = self.queryset.filter(user_id=request.user)
         #userEmails  = list(set(userEmails + newthing)) 
         #print newthing
         userEmailSerializer = UserEmailSerializer(userEmails, many=True)
         data = []
-        data.append(userEmailSerializer.data)
-        data.append(default_email)
-        #userEmailSerializer.append(newthing)  
-        return CustomeResponse(data,status=status.HTTP_200_OK)                    
+#        data.append(userEmailSerializer.data)
+#        data.append(default_email)
+        i = 0 
+        if userEmailSerializer:
+           for items in userEmailSerializer.data:
+               if i == 0:
+                   data.append(default_email)
+                   items['is_default'] = 0
+                   data.append(items)
+               else:
+                   items['is_default'] = 0 
+                   data.append(items)
+               i = i +1 
+        #userEmailSerializer.append(newthing) 
+        if userEmailSerializer :
+            return CustomeResponse(data,status=status.HTTP_200_OK)  
+        else :
+            return CustomeResponse(default_email,status=status.HTTP_200_OK)
 
     def create(self,request):
         try:
