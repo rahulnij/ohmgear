@@ -216,11 +216,7 @@ class UserEmail(models.Model):
     updated_date = models.DateTimeField(_("Updated Date"),auto_now=True)
 
     def __unicode__(self):
-        import json
-        userEmail = {'user_id': self.user_id.id, "email":self.email,"isVerified":self.isVerified,"request_for_default":self.request_for_default,"verification_code":self.verification_code}
-        #"created_date":self.created_date,"updated_date":self.updated_date
-        return json.dumps(userEmail)
-        #'{"id":"%s","email":"%r"}' %(self.id, self.e_mail)
+        return '{"id":"%s","user_id":"%d","email":"%s","isVerified":"%d","verification_code":"%s" }' %(self.id,self.user_id.id,self.email,self.isVerified,self.verification_code)
     
     
     
