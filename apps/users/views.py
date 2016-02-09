@@ -555,7 +555,7 @@ class UserEmailViewSet(viewsets.ModelViewSet):
             user_id = None
         data ={}
         data['user_id'] = request.user.id
-        data['email'] = request.POST.get('email')
+        data['email'] = request.DATA.get('email')
         #todo email validation in serializer 
         serializer = UserEmailSerializer(data=data,context ={'request':request,'msg':'not exist'})
         
