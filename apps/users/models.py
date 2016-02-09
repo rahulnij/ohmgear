@@ -205,6 +205,7 @@ class ConnectedAccount(models.Model):
 
 class UserEmail(models.Model):
     class Meta:
+        unique_together = ('email', 'user_id',)
         db_table    =   'ohmgear_users_useremail'
     
     user_id = models.ForeignKey(User,db_column ="user_id")
