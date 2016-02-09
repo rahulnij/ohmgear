@@ -1,6 +1,6 @@
 from rest_framework import routers, serializers, viewsets
 from models import VacationTrip,VacationCard
-from serializer import VacationTripSerializer,VacationEditTripSerializer,VacationCardSerializer,BusinessCardVacationSerializer,SingleVacationCardSerializer
+from serializer import VacationTripSerializer,OfflineVacationTripSerializer,VacationEditTripSerializer,VacationCardSerializer,BusinessCardVacationSerializer,SingleVacationCardSerializer
 from ohmgear.functions import CustomeResponse,handle_uploaded_file,rawResponse
 from rest_framework.decorators import api_view
 import rest_framework.status as status
@@ -118,8 +118,12 @@ class VacationCardViewSet(viewsets.ModelViewSet):
                         tempContainer.append(tempdata['x'])
                     
                      
-                        #tempContainer =  tempContainer[0]['x   
-                    serializer = VacationTripSerializer(data=tempContainer,many=True,context={'local_date': 1})
+                        #tempContainer =  tempContainer[0]['x
+                    if call_from_func:
+                        
+                        serializer = OfflineVacationTripSerializer(data=tempContainer,many=True,context={'local_date': 1})
+                    else:
+                        serializer = VacationTripSerializer(data=tempContainer,many=True,context={'local_date': 1})
                     if serializer.is_valid():
                         serializer.save(user_id=request.user)
                         #data_new = serializer.data.copy()

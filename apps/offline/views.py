@@ -112,7 +112,9 @@ class OfflineSendReceiveDataViewSet(viewsets.ModelViewSet):
                             #-------------------- End --------------------------#                            
                             if data['bcard_id']:
                                 business_card_response = business_card_class.update(request,None,1,data)
+                                print business_card_response
                                 if business_card_response["status"]:
+                                    
                                    try:
                                      bcard_id = business_card_response["data"]["id"]
                                    except:
@@ -174,7 +176,6 @@ class OfflineSendReceiveDataViewSet(viewsets.ModelViewSet):
         except:
             user_id     =   None
         
-        
         try:
             vacation_card = request.data['vacationcard']
             vacationcard_copy = request.data.copy()
@@ -183,22 +184,20 @@ class OfflineSendReceiveDataViewSet(viewsets.ModelViewSet):
             vacationcard_copy = ''
           
         final_return_data = {}
-#{"vacationcard": [{"operation": "add","json_data": [{"vacation_name":"Us vacation123",
-#"vacation": [{"country":"ankurgumber","vacation_type":"confrence","contact_no":"8800362589","state":"Haryana","city":"gzb","notes":"hsfdjdfjfsed","trip_start_date":"2015-08-10","trip_end_date":"2015-09-28"}]},
-#{"vacation_name":"Us vacation123","vacation": [{"country":"ankurgumber","vacation_type":"confrence","contact_no":"8800362589","state":"Haryana","city":"gzb","notes":"hsfdjdfjfsed","trip_start_date":"2015-08-10","trip_end_date":"2015-09-28"}]}]}, {	"operation": "update","json_data": [{}, {}]}] }
-        
         
         if vacation_card:
               vacation_card_class = VacationCardViewSet() 
               position = 0
               for raw_data in vacation_card:
-                  
+                  #i=0
                   #-----------------  Create the Vacation card ---------------------------#
                   if raw_data["operation"] == 'add': 
                     vacation_data = []
                     if raw_data["json_data"]:
                       #------------- execute all vacation card-----------------------#  
-                      for items in raw_data["json_data"]:  
+                      vcard_data=[]
+                      stop_data = []
+                      for items in raw_data["json_data"]:
                             data = {}
                             data['user_id'] = user_id
                             try:
@@ -218,29 +217,33 @@ class OfflineSendReceiveDataViewSet(viewsets.ModelViewSet):
                               local_vacation_id ='' 
                             
                             
-                            vacation_card_response = vacation_card_class.create(request,1,data)    
+                            vacation_card_response = vacation_card_class.create(request,1,data)
+                            #print vacation_card_response
                             if vacation_card_response["status"]:
-                               print "status true"
                                try:
-                                 print "vacation id"
-                                 vcard_id = vacation_card_response["data"]["id"]
-                               except:
-                                 print "vacation data"  
-                                 vcard_id = vacation_card_response["data"]  
+                                 
+                                 #stop ={}
+                                 stop_id = vacation_card_response["data"][0]["id"]
+                                 #stop = stop_id
+                                 #stop_data.append(stop)
+                                 vcard ={}
+                                 vcard_id = vacation_card_response["data"][0]["vacationcard_id"]
+                                 #vcard= vcard_id
+                                 #vcard_data.append(vcard)
+                                 vcard.append(vcard_id)
+                               except:         
+                                 vcard_id = vacation_card_response["data"]
+                                         
                                vacation_data.append({"local_vacation_id":local_vacation_id,"vcard_id":vcard_id})
                             else:
-                               print "status false"
+                               
                                vacation_data.append({"local_vacation_id":local_vacation_id,"vcard_id":vacation_card_response["data"]})
-                      vacationcard_copy['vacationcard'][position]['vacation']=vacation_data
+                            #i=i+1
+                      vacationcard_copy['vacationcard'][position]['json_data']=vacation_data
                   #------------------- End -----------------------------------------------#
                      
-                      
-                  
-                  position = position + 1
-                  
-          
-              
-                  
+
+                  position = position + 1                  
         return CustomeResponse(vacationcard_copy,status=status.HTTP_200_OK)
         
         
