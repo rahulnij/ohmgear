@@ -536,10 +536,17 @@ class UserEmailViewSet(viewsets.ModelViewSet):
     permission_classes = (IsAuthenticated,)
 
     def list(self, request):
-        
+        default_email = {}
+        default_email['default_email'] = request.user.email
         userEmails = self.queryset.filter(user_id=request.user)
+        #userEmails  = list(set(userEmails + newthing)) 
+        #print newthing
         userEmailSerializer = UserEmailSerializer(userEmails, many=True)
-        return CustomeResponse(userEmailSerializer.data,status=status.HTTP_200_OK)                    
+        data = []
+        data.append(userEmailSerializer.data)
+        data.append(default_email)
+        #userEmailSerializer.append(newthing)  
+        return CustomeResponse(data,status=status.HTTP_200_OK)                    
 
     def create(self,request):
         try:
