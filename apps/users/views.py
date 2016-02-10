@@ -658,7 +658,6 @@ class UserEmailViewSet(viewsets.ModelViewSet):
             user_id = request.user.id
             #userEmailId = self.request.QUERY_PARAMS.get('id')
             userEmailId = request.DATA['userEmailId']
-            print userEmailId
         except:
             userEmailId = ''
         try:
