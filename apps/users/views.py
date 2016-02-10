@@ -661,7 +661,7 @@ class UserEmailViewSet(viewsets.ModelViewSet):
         except:
             userEmailId = ''
         #try:
-            userEmail=UserEmail.objects.filter(id=request.POST['userEmailId'])   
+            userEmail=UserEmail.objects.filter(id=request.DATA['userEmailId'])   
         
         #except:
             #return CustomeResponse({'msg':'Email not found'},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
