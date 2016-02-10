@@ -205,6 +205,7 @@ class ConnectedAccount(models.Model):
 
 class UserEmail(models.Model):
     class Meta:
+        unique_together = ('email', 'user_id',)
         db_table    =   'ohmgear_users_useremail'
     
     user_id = models.ForeignKey(User,db_column ="user_id")
@@ -216,8 +217,8 @@ class UserEmail(models.Model):
     updated_date = models.DateTimeField(_("Updated Date"),auto_now=True)
 
     def __unicode__(self):
-        return '{"id":"%s","user_id":"%d","email":"%s","isVerified":"%d","verification_code":"%s" }' %(self.id,self.user_id.id,self.email,self.isVerified,self.verification_code)
-    
+        #return '{"id":"%s","user_id":"%d","email":"%s","isVerified":"%d","verification_code":"%s","verification_code":"%s" }' %(self.id,self.user_id.id,self.email,self.isVerified,self.verification_code)
+        return '{"id":"%s","user_id":"%s","email":"%s","isVerified":"%s","verification_code":"%s"}' %(self.id,self.user_id,self.email,self.isVerified,self.verification_code)
     
     
 

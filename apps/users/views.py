@@ -537,16 +537,31 @@ class UserEmailViewSet(viewsets.ModelViewSet):
 
     def list(self, request):
         default_email = {}
-        default_email['default_email'] = request.user.email
+        default_email['email'] = request.user.email
+        default_email['is_default'] = 1
         userEmails = self.queryset.filter(user_id=request.user)
         #userEmails  = list(set(userEmails + newthing)) 
         #print newthing
         userEmailSerializer = UserEmailSerializer(userEmails, many=True)
         data = []
-        data.append(userEmailSerializer.data)
-        data.append(default_email)
-        #userEmailSerializer.append(newthing)  
-        return CustomeResponse(data,status=status.HTTP_200_OK)                    
+#        data.append(userEmailSerializer.data)
+#        data.append(default_email)
+        i = 0 
+        if userEmailSerializer:
+           for items in userEmailSerializer.data:
+               if i == 0:
+                   data.append(default_email)
+                   items['is_default'] = 0
+                   data.append(items)
+               else:
+                   items['is_default'] = 0 
+                   data.append(items)
+               i = i +1 
+        #userEmailSerializer.append(newthing) 
+        if userEmailSerializer :
+            return CustomeResponse(data,status=status.HTTP_200_OK)  
+        else :
+            return CustomeResponse(default_email,status=status.HTTP_200_OK)
 
     def create(self,request):
         try:
@@ -555,7 +570,8 @@ class UserEmailViewSet(viewsets.ModelViewSet):
             user_id = None
         data ={}
         data['user_id'] = request.user.id
-        data['email'] = request.POST.get('email')
+        data['email'] = request.DATA.get('email')
+        data['is_default'] = 0
         #todo email validation in serializer 
         serializer = UserEmailSerializer(data=data,context ={'request':request,'msg':'not exist'})
         
@@ -569,12 +585,12 @@ class UserEmailViewSet(viewsets.ModelViewSet):
     @list_route(methods=['post'],)
     def verifiedcode(self,request):
         
-        #try:
+        try:
             user_id = request.user
             salt = hashlib.sha1(str(random.random())).hexdigest()[:5] 
             data ={}
-            data['email'] = request.POST.get('email')
-            data['user_id'] = request.POST.get('id')
+            data['email'] = request.DATA.get('email')
+            data['user_id'] = request.DATA.get('id')
             data['id'] = request.user.id
             
             activation_key = hashlib.sha1(salt+data['email']).hexdigest()[:5] 
@@ -582,17 +598,17 @@ class UserEmailViewSet(viewsets.ModelViewSet):
             #data['verification_code'] = activation_key
             
             if user_id:
-                UserEmail.objects.filter(id=request.POST.get('id')).update(verification_code=activation_key)
+                UserEmail.objects.filter(id=request.DATA.get('id')).update(verification_code=activation_key)
                 BaseSendMail.delay(data,type='verify_email',key = activation_key)
-                return CustomeResponse({'msg':'verification code sent'})
+                return CustomeResponse({'msg':'verification code sent'},status=status.HTTP_200_OK)
             else:
                 return CustomeResponse({'msg':'server error'},validate_errors=1)
             
             if not data['email']:
                 return CustomeResponse({"msg":"email is not there"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
-#        except:
-#            data['email']  = None
-#            return CustomeResponse({"msg":"email is mandatory"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
+        except:
+            data['email']  = None
+            return CustomeResponse({"msg":"email is mandatory"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
    
     @list_route(methods=['get'],)
     def isverified(self,request):
@@ -604,7 +620,7 @@ class UserEmailViewSet(viewsets.ModelViewSet):
             print data['id']
             if user_id:
                 UserEmail.objects.filter(id=data['id']).update(isVerified="TRUE")
-                return CustomeResponse({'msg':'email verified'})
+                return CustomeResponse({'msg':'email verified'},status=status.HTTP_200_OK)
             else:
                 return CustomeResponse({'msg':'server error'},validate_errors=1)
             
@@ -617,22 +633,43 @@ class UserEmailViewSet(viewsets.ModelViewSet):
         user_id = request.user
         data ={}
         data['id'] = request.user.id
-        data['ueid'] = request.POST.get('useremail_id')
+        data['ueid'] = request.DATA.get('useremail_id')
         userEmail = User.objects.values_list('email', flat=True).filter(id=data['id'])
-        userEmailAdded = UserEmail.objects.values_list('email', flat=True).filter(id=data['ueid'])
-        checkUserEmail=User.objects.filter(email=userEmailAdded[0]) # check email user table if exist
-        tempUser = userEmail[0]
-        tempUserEmail= userEmailAdded[0] 
+        userEmailAdded = UserEmail.objects.filter(id=data['ueid']).values('isVerified','email')
+        checkUserEmail=User.objects.filter(email=userEmailAdded[0]['email']) # check email user table if exist
         
-        if user_id: 
+        tempUser = userEmail[0]
+        tempUserEmail= userEmailAdded[0]['email'] 
+       
+        if  userEmailAdded[0]['isVerified'] == True:
             if not checkUserEmail: 
                 UserEmail.objects.filter(id=data['ueid']).update(email= tempUser)
                 User.objects.filter(id=data['id']).update(email=tempUserEmail)    
-                return CustomeResponse({'msg':'email verified'})
+                return CustomeResponse({'msg':'email set to default'},status=status.HTTP_200_OK)
         else:
             return CustomeResponse({'msg':'server error'},validate_errors=1)
             
         if not data['email']:
             return CustomeResponse({"msg":"email is not there"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)  
+    
+    @list_route(methods=['post'],)
+    def deleteEmail(self, request, pk=None):
+        try:
+            user_id = request.user.id
+            #userEmailId = self.request.QUERY_PARAMS.get('id')
+            userEmailId = request.DATA['userEmailId']
+        except:
+            userEmailId = ''
+        try:
+            userEmail=UserEmail.objects.filter(id=request.POST['userEmailId'])   
+        
+        except:
+            return CustomeResponse({'msg':'Email not found'},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
+
+        if userEmail:
+            userEmail.delete()
+            return CustomeResponse({'msg':'Email is deleted'},status=status.HTTP_200_OK)
+        else:
+            return CustomeResponse({'msg':'server error'},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
         
 
