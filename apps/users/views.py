@@ -571,6 +571,7 @@ class UserEmailViewSet(viewsets.ModelViewSet):
         data ={}
         data['user_id'] = request.user.id
         data['email'] = request.DATA.get('email')
+        data['is_default'] = 0
         #todo email validation in serializer 
         serializer = UserEmailSerializer(data=data,context ={'request':request,'msg':'not exist'})
         
@@ -588,8 +589,8 @@ class UserEmailViewSet(viewsets.ModelViewSet):
             user_id = request.user
             salt = hashlib.sha1(str(random.random())).hexdigest()[:5] 
             data ={}
-            data['email'] = request.POST.get('email')
-            data['user_id'] = request.POST.get('id')
+            data['email'] = request.DATA.get('email')
+            data['user_id'] = request.DATA.get('id')
             data['id'] = request.user.id
             
             activation_key = hashlib.sha1(salt+data['email']).hexdigest()[:5] 
@@ -597,7 +598,7 @@ class UserEmailViewSet(viewsets.ModelViewSet):
             #data['verification_code'] = activation_key
             
             if user_id:
-                UserEmail.objects.filter(id=request.POST.get('id')).update(verification_code=activation_key)
+                UserEmail.objects.filter(id=request.DATA.get('id')).update(verification_code=activation_key)
                 BaseSendMail.delay(data,type='verify_email',key = activation_key)
                 return CustomeResponse({'msg':'verification code sent'})
             else:
@@ -632,7 +633,7 @@ class UserEmailViewSet(viewsets.ModelViewSet):
         user_id = request.user
         data ={}
         data['id'] = request.user.id
-        data['ueid'] = request.POST.get('useremail_id')
+        data['ueid'] = request.DATA.get('useremail_id')
         userEmail = User.objects.values_list('email', flat=True).filter(id=data['id'])
         userEmailAdded = UserEmail.objects.values_list('email', flat=True).filter(id=data['ueid'])
         checkUserEmail=User.objects.filter(email=userEmailAdded[0]) # check email user table if exist

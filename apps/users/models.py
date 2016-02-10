@@ -217,7 +217,7 @@ class UserEmail(models.Model):
     updated_date = models.DateTimeField(_("Updated Date"),auto_now=True)
 
     def __unicode__(self):
-        return '{"id":"%s","user_id":"%d","email":"%s","isVerified":"%d","verification_code":"%s" }' %(self.id,self.user_id.id,self.email,self.isVerified,self.verification_code)
+        return '{"id":"%s","user_id":"%d","email":"%s","isVerified":"%d","verification_code":"%s","verification_code":"%s" }' %(self.id,self.user_id.id,self.email,self.isVerified,self.verification_code)
     
     
     
