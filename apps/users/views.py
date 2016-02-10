@@ -660,11 +660,11 @@ class UserEmailViewSet(viewsets.ModelViewSet):
             userEmailId = request.DATA['userEmailId']
         except:
             userEmailId = ''
-        try:
+        #try:
             userEmail=UserEmail.objects.filter(id=request.POST['userEmailId'])   
         
-        except:
-            return CustomeResponse({'msg':'Email not found'},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
+        #except:
+            #return CustomeResponse({'msg':'Email not found'},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
 
         if userEmail:
             userEmail.delete()
