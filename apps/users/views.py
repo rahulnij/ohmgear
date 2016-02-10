@@ -651,5 +651,26 @@ class UserEmailViewSet(viewsets.ModelViewSet):
             
         if not data['email']:
             return CustomeResponse({"msg":"email is not there"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)  
+    
+    @list_route(methods=['post'],)
+    def deleteEmail(self, request, pk=None):
+        try:
+            user_id = request.user.id
+            #userEmailId = self.request.QUERY_PARAMS.get('id')
+            userEmailId = request.DATA['userEmailId']
+            print userEmailId
+        except:
+            userEmailId = ''
+        try:
+            userEmail=UserEmail.objects.filter(id=request.POST['userEmailId'])   
+        
+        except:
+            return CustomeResponse({'msg':'Email not found'},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
+
+        if userEmail:
+            userEmail.delete()
+            return CustomeResponse({'msg':'Email is deleted'},status=status.HTTP_200_OK)
+        else:
+            return CustomeResponse({'msg':'server error'},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
         
 
