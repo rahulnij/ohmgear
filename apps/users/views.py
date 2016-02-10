@@ -585,7 +585,7 @@ class UserEmailViewSet(viewsets.ModelViewSet):
     @list_route(methods=['post'],)
     def verifiedcode(self,request):
         
-        #try:
+        try:
             user_id = request.user
             salt = hashlib.sha1(str(random.random())).hexdigest()[:5] 
             data ={}
@@ -600,15 +600,15 @@ class UserEmailViewSet(viewsets.ModelViewSet):
             if user_id:
                 UserEmail.objects.filter(id=request.DATA.get('id')).update(verification_code=activation_key)
                 BaseSendMail.delay(data,type='verify_email',key = activation_key)
-                return CustomeResponse({'msg':'verification code sent'})
+                return CustomeResponse({'msg':'verification code sent'},status=status.HTTP_200_OK)
             else:
                 return CustomeResponse({'msg':'server error'},validate_errors=1)
             
             if not data['email']:
                 return CustomeResponse({"msg":"email is not there"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
-#        except:
-#            data['email']  = None
-#            return CustomeResponse({"msg":"email is mandatory"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
+        except:
+            data['email']  = None
+            return CustomeResponse({"msg":"email is mandatory"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
    
     @list_route(methods=['get'],)
     def isverified(self,request):
@@ -620,7 +620,7 @@ class UserEmailViewSet(viewsets.ModelViewSet):
             print data['id']
             if user_id:
                 UserEmail.objects.filter(id=data['id']).update(isVerified="TRUE")
-                return CustomeResponse({'msg':'email verified'})
+                return CustomeResponse({'msg':'email verified'},status=status.HTTP_200_OK)
             else:
                 return CustomeResponse({'msg':'server error'},validate_errors=1)
             
@@ -644,7 +644,7 @@ class UserEmailViewSet(viewsets.ModelViewSet):
             if not checkUserEmail: 
                 UserEmail.objects.filter(id=data['ueid']).update(email= tempUser)
                 User.objects.filter(id=data['id']).update(email=tempUserEmail)    
-                return CustomeResponse({'msg':'email verified'})
+                return CustomeResponse({'msg':'email set to default'},status=status.HTTP_200_OK)
         else:
             return CustomeResponse({'msg':'server error'},validate_errors=1)
             
