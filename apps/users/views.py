@@ -635,12 +635,13 @@ class UserEmailViewSet(viewsets.ModelViewSet):
         data['id'] = request.user.id
         data['ueid'] = request.DATA.get('useremail_id')
         userEmail = User.objects.values_list('email', flat=True).filter(id=data['id'])
-        userEmailAdded = UserEmail.objects.values_list('email', flat=True).filter(id=data['ueid'])
-        checkUserEmail=User.objects.filter(email=userEmailAdded[0]) # check email user table if exist
-        tempUser = userEmail[0]
-        tempUserEmail= userEmailAdded[0] 
+        userEmailAdded = UserEmail.objects.filter(id=data['ueid']).values('isVerified','email')
+        checkUserEmail=User.objects.filter(email=userEmailAdded[0]['email']) # check email user table if exist
         
-        if user_id: 
+        tempUser = userEmail[0]
+        tempUserEmail= userEmailAdded[0]['email'] 
+       
+        if  userEmailAdded[0]['isVerified'] == True:
             if not checkUserEmail: 
                 UserEmail.objects.filter(id=data['ueid']).update(email= tempUser)
                 User.objects.filter(id=data['id']).update(email=tempUserEmail)    
