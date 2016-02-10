@@ -1,6 +1,6 @@
 from rest_framework import routers, serializers, viewsets
 from models import VacationTrip,VacationCard
-from serializer import VacationTripSerializer,OfflineVacationTripSerializer,VacationEditTripSerializer,VacationCardSerializer,BusinessCardVacationSerializer,SingleVacationCardSerializer
+from serializer import VacationTripSerializer,VacationEditTripSerializer,VacationCardSerializer,BusinessCardVacationSerializer,SingleVacationCardSerializer
 from ohmgear.functions import CustomeResponse,handle_uploaded_file,rawResponse
 from rest_framework.decorators import api_view
 import rest_framework.status as status
@@ -121,7 +121,7 @@ class VacationCardViewSet(viewsets.ModelViewSet):
                         #tempContainer =  tempContainer[0]['x
                     if call_from_func:
                         
-                        serializer = OfflineVacationTripSerializer(data=tempContainer,many=True,context={'local_date': 1})
+                        serializer = VacationTripSerializer(data=tempContainer,many=True,context={'local_date': 1})
                     else:
                         serializer = VacationTripSerializer(data=tempContainer,many=True,context={'local_date': 1})
                     if serializer.is_valid():
@@ -208,19 +208,47 @@ class VacationCardViewSet(viewsets.ModelViewSet):
 
              #------------------------------- End ---------------------------------------------------#
             
-    def update(self,request,pk=None):
-        user_id     = request.user.id
-        vacation_id = pk
+    def update(self,request,pk=None,call_from_func=None,offline_data=None):
         
-        vacationtrip = VacationTrip.objects.filter(vacationcard_id=vacation_id,user_id = user_id)
-        stops = request.data['vacation']
-        if request.data['vacation_name']:
-            vacation_name = request.data['vacation_name']
+        try:
+            user_id = request.user
+        except:
+            user_id = None
+            
+        if call_from_func:
+            #-------------- Call from offline app ------------------------------# 
+            try:
+                vacation_id =  offline_data['vcard_id']
+                stops =  offline_data['vacation']
+                vacation_name =   offline_data['vacation_name']
+                data    = offline_data
+                
+            except:
+                
+                return CustomeResponse({'status':'fail','msg':'Vacation id not found'},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
+        else:
+            try:
+                vacation_id = pk
+                stops = request.data['vacation']
+                vacation_name =       request.DATA['vacation_name']
+                data    = request.DATA
+            except:
+                return CustomeResponse({'status':'fail','msg':'Vacation id not found'},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
+        
+        
+        
+        #
+        try:
+            vacationtrip = VacationTrip.objects.filter(vacationcard_id=vacation_id,user_id = user_id)
+        except:
+            return CustomeResponse({'status':'fail','msg':'Vacation not found'},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
+        
             #messages = VacationCard.objects.get(id=pk)
             #serializer =  VacationCardSerializer(messages,data=request.DATA,partial=True,context={'request': request})
-            VacationCard.objects.filter(id= vacation_id).update(vacation_name=vacation_name  )
+            
         
-        if vacationtrip and vacation_id:
+        if vacationtrip  and vacation_name:
+                    VacationCard.objects.filter(id= vacation_id).update(vacation_name=vacation_name  )
                     vacationtrip.delete()
                     tempContainer = []
                     
@@ -231,15 +259,33 @@ class VacationCardViewSet(viewsets.ModelViewSet):
                         tempdata['vacationcard_id'] = vacation_id
                         tempContainer.append(tempdata)
                     
-                        #tempContainer =  tempContainer[0]['x   
-                    serializer = VacationEditTripSerializer(data=tempContainer,many=True)
+                        #tempContainer =  tempContainer[0]['x  
+                    if call_from_func:
+                        
+                        serializer = VacationEditTripSerializer(data=tempContainer,many=True,context={'local_date': 1})
+                    else:
+                        serializer = VacationEditTripSerializer(data=tempContainer,many=True)
+                    
                     if serializer.is_valid():
                         serializer.save(user_id=request.user)
-                        return CustomeResponse(serializer.data,status=status.HTTP_201_CREATED)
+                        #data_new = serializer.data.copy()
+                        if call_from_func:
+                            return rawResponse(serializer.data,status=True,status_code=status.HTTP_201_CREATED)
+                        else:            
+                            return CustomeResponse(serializer.data,status=status.HTTP_201_CREATED)
+                         
                     else:
-                     return CustomeResponse(serializer.errors,status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
+                        if call_from_func:
+                            return rawResponse(serializer.errors)
+                        else:
+                            return CustomeResponse(serializer.errors,status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
         else:
-         return CustomeResponse({'msg':'trip not found'},status=status.HTTP_401_UNAUTHORIZED,validate_errors=1)
+            if call_from_func:
+                    return rawResponse({'msg':'trip not found'})
+            else:
+                    return CustomeResponse({'msg':'trip not found'},status=status.HTTP_401_UNAUTHORIZED,validate_errors=1)
+                    
+                    
     
      
     def destroy(self,request,pk=None):
