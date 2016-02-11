@@ -168,7 +168,7 @@ class OfflineSendReceiveDataViewSet(viewsets.ModelViewSet):
 
       @list_route(methods=['post'],)
 
-      def sendVactioncard(self,request):
+      def sendVactionCard(self,request):
       # data format {"vacationcard": [{"operation": "add","json_data": [{"vacation_name":"Us vacation123","vacation": [{"country":"ankurgumber","vacation_type":"confrence","contact_no":"8800362589","state":"Haryana","city":"gzb","notes":"hsfdjdfjfsed","trip_start_date":"2015-08-10","trip_end_date":"2015-11-28"}]}, {}]}, {	"operation": "update","json_data": [{}, {}]}] }  
         try:
             user_id    =   request.user.id
