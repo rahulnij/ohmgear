@@ -623,6 +623,15 @@ class UserEmailViewSet(viewsets.ModelViewSet):
             user_email = UserEmail.objects.filter(verification_code=activation_code)
             if user_email:
                 user_email.update(isVerified="TRUE",verification_code='')
+    def isverified(self,request):
+        
+        #try:
+            user_id = request.user
+            data ={}
+            data['id'] = self.request.QUERY_PARAMS.get('id')
+    
+            if user_id:
+                UserEmail.objects.filter(id=data['id']).update(isVerified="TRUE")
                 return CustomeResponse({'msg':'email verified'},status=status.HTTP_200_OK)
             else:
                 return CustomeResponse({'msg':'activation_code does not exist.'},validate_errors=1)            
