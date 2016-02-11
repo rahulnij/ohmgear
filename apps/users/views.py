@@ -618,14 +618,12 @@ class UserEmailViewSet(viewsets.ModelViewSet):
             return CustomeResponse({"msg":"email is mandatory"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
    
     @list_route(methods=['get'],)
-<<<<<<< HEAD
     def verify_email(self,request):
 
             activation_code = self.request.QUERY_PARAMS.get('activation_code','')
             user_email = UserEmail.objects.filter(verification_code=activation_code)
             if user_email:
                 user_email.update(isVerified="TRUE",verification_code='')
-=======
     def isverified(self,request):
         
         #try:
@@ -635,7 +633,6 @@ class UserEmailViewSet(viewsets.ModelViewSet):
     
             if user_id:
                 UserEmail.objects.filter(id=data['id']).update(isVerified="TRUE")
->>>>>>> d
                 return CustomeResponse({'msg':'email verified'},status=status.HTTP_200_OK)
             else:
                 return CustomeResponse({'msg':'activation_code does not exist.'},validate_errors=1)            
