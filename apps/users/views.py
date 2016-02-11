@@ -539,7 +539,6 @@ class UserEmailViewSet(viewsets.ModelViewSet):
         # Your logic should be all here
         if self.request.method == 'GET':
             activation_code = self.request.QUERY_PARAMS.get('activation_code','')
-            print ">>>>>>>>>>>>>>"+str(activation_code)
             if activation_code:
                 self.authentication_classes = []
                 self.permission_classes = []
