@@ -534,7 +534,18 @@ class UserEmailViewSet(viewsets.ModelViewSet):
     serializer_class = UserEmailSerializer
     authentication_classes = (ExpiringTokenAuthentication,)
     permission_classes = (IsAuthenticated,)
-
+    
+    def get_permissions(self):
+        # Your logic should be all here
+        if self.request.method == 'GET':
+            activation_code = self.request.QUERY_PARAMS.get('activation_code','')
+            print ">>>>>>>>>>>>>>"+str(activation_code)
+            if activation_code:
+                self.authentication_classes = []
+                self.permission_classes = []
+        else:            
+            pass
+        return super(viewsets.ModelViewSet, self).get_permissions() 
     def list(self, request):
         default_email = {}
         default_email['email'] = request.user.email
@@ -583,22 +594,18 @@ class UserEmailViewSet(viewsets.ModelViewSet):
 
                  
     @list_route(methods=['post'],)
-    def verifiedcode(self,request):
+    def send_verification_code(self,request):
         
         try:
             user_id = request.user
             salt = hashlib.sha1(str(random.random())).hexdigest()[:5] 
             data ={}
             data['email'] = request.DATA.get('email')
-            data['user_id'] = request.DATA.get('id')
             data['id'] = request.user.id
             
-            activation_key = hashlib.sha1(salt+data['email']).hexdigest()[:5] 
-            #data['user_id'] = request.user.id
-            #data['verification_code'] = activation_key
-            
+            activation_key = hashlib.sha1(salt+data['email']).hexdigest()[:10] 
             if user_id:
-                UserEmail.objects.filter(id=request.DATA.get('id')).update(verification_code=activation_key)
+                UserEmail.objects.filter(user_id=request.user.id,email=request.DATA.get('email')).update(verification_code=activation_key)
                 BaseSendMail.delay(data,type='verify_email',key = activation_key)
                 return CustomeResponse({'msg':'verification code sent'},status=status.HTTP_200_OK)
             else:
@@ -611,21 +618,28 @@ class UserEmailViewSet(viewsets.ModelViewSet):
             return CustomeResponse({"msg":"email is mandatory"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
    
     @list_route(methods=['get'],)
+<<<<<<< HEAD
+    def verify_email(self,request):
+
+            activation_code = self.request.QUERY_PARAMS.get('activation_code','')
+            user_email = UserEmail.objects.filter(verification_code=activation_code)
+            if user_email:
+                user_email.update(isVerified="TRUE",verification_code='')
+=======
     def isverified(self,request):
         
         #try:
             user_id = request.user
             data ={}
             data['id'] = self.request.QUERY_PARAMS.get('id')
-            print data['id']
+    
             if user_id:
                 UserEmail.objects.filter(id=data['id']).update(isVerified="TRUE")
+>>>>>>> d
                 return CustomeResponse({'msg':'email verified'},status=status.HTTP_200_OK)
             else:
-                return CustomeResponse({'msg':'server error'},validate_errors=1)
+                return CustomeResponse({'msg':'activation_code does not exist.'},validate_errors=1)            
             
-            if not data['email']:
-                return CustomeResponse({"msg":"email is not there"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)  
      
     @list_route(methods=['post'],)
     def setdefault(self, request):

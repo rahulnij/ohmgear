@@ -34,6 +34,7 @@ urlpatterns =patterns(
     url(r'^api/cron/$','apps.cron.views.updateidentifierstatus',name='updateidentifierstatus'),
     url(r'^api/account_confirmation/(?P<activation_key>\w+)/$','apps.users.views.useractivity',name='registration_confirm'),
     url(r'^api/forgot_password/(?P<reset_password_key>\w+)/$','apps.users.views.useractivity',name='forgot_password'),
+    #url(r'^users/emails/verify_email/(?P<activation_code>\w+)/$', 'apps.users.views.UserEmailViewSet',name='verify_email')
 )
 from apps.users.signals import *
 import apps.businesscards.views as  businesscards_views
@@ -138,6 +139,11 @@ router.register(r'api/businesscardvacation',businesscardvacation_views.BusinessC
 import apps.staticpages.views as staticpages_view
 router.register(r'api/staticpages',staticpages_view.StaticPagesViewSet)
 #-------------- End: Stattic pages app ---------------------------------------------#
+
+#----------------- Verification email -------------------------#
+
+router.register(r'api/emails', users_views.UserEmailViewSet,base_name='verify_email')
+#router.register(r'api/emails/verify_email/(?P<activation_code>\w+)', users_views.UserEmailViewSet,'verify_email')
 
 #--------------------- OFFLINE --------------------------------------#
 import apps.offline.views as offline_view

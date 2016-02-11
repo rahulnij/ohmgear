@@ -41,3 +41,7 @@ class Groups(models.Model):
 class ContactGroupReference():
       group_id = models.ForeignKey(Groups,db_column="group_id")
       contact_id = models.ForeignKey(Contacts,db_column="contact_id")
+      
+
+      
+      
