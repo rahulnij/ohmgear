@@ -56,47 +56,7 @@ class VacationTripSerializer(serializers.ModelSerializer):
         return data
     
     
-class OfflineVacationTripSerializer(serializers.ModelSerializer):
-    
-        local_date = []
-        count = 0
-    
-        class Meta:
-            model = VacationTrip                
-            fields = (
-                'id',
-                'trip_start_date',
-                'trip_end_date',
-                'vacationcard_id'
-            )
-        
-        def validate(self, data):
-            """
-            Check that the start is before the stop.
-            """
-            check = self.context.get("local_date")
-            if check and self.count == 0:
-               self.local_date = []
-               self.count = 1
-            start_time = datetime.strptime(str(data['trip_start_date']),'%Y-%m-%d')
-            end_date = datetime.strptime(str(data['trip_end_date']),'%Y-%m-%d')
-            if self.local_date:
-                for tempData in self.local_date:
-                    if tempData['trip_start_date'] > start_time:
-                        raise serializers.ValidationError("Start date must be greater than other stop start date")
-                    if tempData['trip_end_date'] > start_time:
-                        raise serializers.ValidationError("Start date must be greater than other stop end date")
 
-            if data['trip_start_date'] > data['trip_end_date']:
-                raise serializers.ValidationError("End date must be greater then start date")
-
-            format = {'trip_start_date':datetime.strptime(str(data['trip_start_date']),'%Y-%m-%d'),'trip_end_date':datetime.strptime(str(data['trip_end_date']),'%Y-%m-%d')}
-            self.local_date.append(format)
-
-            return data
-    
-    
-    
         
         
 class VacationEditTripSerializer(serializers.ModelSerializer):
@@ -116,6 +76,7 @@ class VacationEditTripSerializer(serializers.ModelSerializer):
             'user_id',
             'vacationcard_id'
         )
+        
 
 
 class VacationCardSerializer(serializers.ModelSerializer):

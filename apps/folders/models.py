@@ -2,6 +2,7 @@ from django.db import models
 from django.conf import settings
 from django.utils.translation import ugettext_lazy as _
 from apps.businesscards.models import BusinessCard
+from apps.contacts.models import Contacts
 from datetime import datetime
 
 User = settings.AUTH_USER_MODEL
@@ -30,3 +31,29 @@ class Folder(models.Model):
 
 	def __unicode__(self):
 		return '{"foldername":%s,"foldertype":%s }' %(self.foldername,self.foldertype)
+            
+
+class FolderContact(models.Model):
+	class Meta:
+		db_table = 'ohmgear_folders_folder_contact'
+               
+        linkStatus = (
+			(0,"White"),
+                        (1,"Green"),
+                        (2,"Blue"),
+                        (3,"Orange"),
+		     )        
+
+        user_id = models.ForeignKey(User, null=False, db_column='user_id')
+        
+        folder_id = models.ForeignKey(Folder, db_column='folder_id')
+	contact_id = models.ForeignKey(Contacts,db_column='contact_id')
+	
+        link_status =  models.IntegerField(_('link_status'), default=0,choices=linkStatus)
+	is_linked = models.IntegerField(_('status'), default=0)
+        
+        created_date = models.DateTimeField(_('created date'),auto_now_add=True,auto_now=False)
+	updated_date =  models.DateTimeField(_('updated date'),auto_now_add=False,auto_now=True)
+
+	def __unicode__(self):
+		return '{"folder_id":%d,"contact_id":%d,"link_status":%d,"is_linked":%d}' %(self.folder_id.id,self.contact_id.id,self.link_status,self.is_linked)            
