@@ -248,8 +248,7 @@ class VacationCardViewSet(viewsets.ModelViewSet):
             
         
         if vacationtrip  and vacation_name:
-                    VacationCard.objects.filter(id= vacation_id).update(vacation_name=vacation_name  )
-                    vacationtrip.delete()
+                    
                     tempContainer = []
                     
                     for data in stops:
@@ -260,13 +259,12 @@ class VacationCardViewSet(viewsets.ModelViewSet):
                         tempContainer.append(tempdata)
                     
                         #tempContainer =  tempContainer[0]['x  
-                    if call_from_func:
-                        
-                        serializer = VacationEditTripSerializer(data=tempContainer,many=True,context={'local_date': 1})
-                    else:
-                        serializer = VacationEditTripSerializer(data=tempContainer,many=True)
+                    
+                    serializer = VacationEditTripSerializer(data=tempContainer,many=True,context={'local_date': 1})
                     
                     if serializer.is_valid():
+                        VacationCard.objects.filter(id= vacation_id).update(vacation_name=vacation_name  )
+                        vacationtrip.delete()
                         serializer.save(user_id=request.user)
                         #data_new = serializer.data.copy()
                         if call_from_func:
@@ -278,7 +276,7 @@ class VacationCardViewSet(viewsets.ModelViewSet):
                         if call_from_func:
                             return rawResponse(serializer.errors)
                         else:
-                            return CustomeResponse(serializer.errors,status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
+                            return CustomeResponse({"msg":"data is in wrong format check details once again"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
         else:
             if call_from_func:
                     return rawResponse({'msg':'trip not found'})
