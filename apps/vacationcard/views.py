@@ -276,7 +276,7 @@ class VacationCardViewSet(viewsets.ModelViewSet):
                         if call_from_func:
                             return rawResponse(serializer.errors)
                         else:
-                            return CustomeResponse(serializer.errors,status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
+                            return CustomeResponse({"msg":"data is in wrong format check details once again"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
         else:
             if call_from_func:
                     return rawResponse({'msg':'trip not found'})
