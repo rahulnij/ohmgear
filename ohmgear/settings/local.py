@@ -62,7 +62,6 @@ LOGGING = {
         }
 }}
 
-
 # CELERY STUFF
 INSTALLED_APPS += ("djcelery","apps.test_purposes", )
 import djcelery
@@ -79,6 +78,7 @@ CELERY_ACCEPT_CONTENT = ['application/json']
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
 #CELERY_TIMEZONE = 'Africa/Nairobi'
+CELERY_IMPORTS=("apps.email.views")
 
 
 #--------- UPLOAD URL PATHS -------------------#
