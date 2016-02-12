@@ -642,9 +642,12 @@ class UserEmailViewSet(viewsets.ModelViewSet):
         data ={}
         data['id'] = request.user.id
         data['ueid'] = request.DATA.get('useremail_id')
-        userEmail = User.objects.values_list('email', flat=True).filter(id=data['id'])
-        userEmailAdded = UserEmail.objects.filter(id=data['ueid']).values('isVerified','email')
-        checkUserEmail=User.objects.filter(email=userEmailAdded[0]['email']) # check email user table if exist
+        try:
+            userEmail = User.objects.values_list('email', flat=True).filter(id=data['id'])
+            userEmailAdded = UserEmail.objects.filter(id=data['ueid']).values('isVerified','email')
+            checkUserEmail=User.objects.filter(email=userEmailAdded[0]['email']) # check email user table if exist
+        except:
+            return CustomeResponse({"msg":"email is not there"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
         
         tempUser = userEmail[0]
         tempUserEmail= userEmailAdded[0]['email'] 
