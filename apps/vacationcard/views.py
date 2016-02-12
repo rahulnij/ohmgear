@@ -134,9 +134,15 @@ class VacationCardViewSet(viewsets.ModelViewSet):
                          
                     else:
                         if call_from_func:
+                            #return rawResponse(serializer.errors)
+                            vacationcard_id = VacationCard.objects.filter(id=vacationid.id)
+                            vacationcard_id.delete()
                             return rawResponse(serializer.errors)
+                            #return rawResponse({"msg":"check the required and trip dates"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
                         else:
-                            return CustomeResponse(serializer.errors,status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
+                            vacationcard_id = VacationCard.objects.filter(id=vacationid.id)
+                            vacationcard_id.delete()
+                            return CustomeResponse({"msg":"check the required and trip dates"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
         else:
             if call_from_func:
                     return rawResponse(VacationCardserializer.errors)
