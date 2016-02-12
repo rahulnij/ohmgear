@@ -142,7 +142,7 @@ class VacationCardViewSet(viewsets.ModelViewSet):
                         else:
                             vacationcard_id = VacationCard.objects.filter(id=vacationid.id)
                             vacationcard_id.delete()
-                            return CustomeResponse({"msg":"check the required and trip dates"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
+                            return CustomeResponse({"msg":"check the required fields and trip dates"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
         else:
             if call_from_func:
                     return rawResponse(VacationCardserializer.errors)
