@@ -142,7 +142,7 @@ router.register(r'api/staticpages',staticpages_view.StaticPagesViewSet)
 
 #----------------- Verification email -------------------------#
 
-router.register(r'api/emails', users_views.UserEmailViewSet,base_name='verify_email')
+#router.register(r'api/emails', users_views.UserEmailViewSet,base_name='verify_email')
 #router.register(r'api/emails/verify_email/(?P<activation_code>\w+)', users_views.UserEmailViewSet,'verify_email')
 
 #--------------------- OFFLINE --------------------------------------#
