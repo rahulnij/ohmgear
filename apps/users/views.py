@@ -550,9 +550,12 @@ class UserEmailViewSet(viewsets.ModelViewSet):
         default_email['email'] = request.user.email
         default_email['is_default'] = 1
         userEmails = self.queryset.filter(user_id=request.user)
+        user_id = request.user.id
         #userEmails  = list(set(userEmails + newthing)) 
         #print newthing
         userEmailSerializer = UserEmailSerializer(userEmails, many=True)
+        count = UserEmail.objects.filter(user_id=user_id).count()
+        print count
         data = []
 #        data.append(userEmailSerializer.data)
 #        data.append(default_email)
@@ -569,7 +572,12 @@ class UserEmailViewSet(viewsets.ModelViewSet):
                i = i +1 
         #userEmailSerializer.append(newthing) 
         if userEmailSerializer :
-            return CustomeResponse(data,status=status.HTTP_200_OK)  
+            if count > 0:
+                return CustomeResponse(data,status=status.HTTP_200_OK) 
+            else:
+                defaultEmail=User.objects.filter(id=user_id)
+                serializer = UserSerializer(defaultEmail,many=True)
+                return CustomeResponse(data=serializer.data,status=status.HTTP_200_OK)
         else :
             return CustomeResponse(default_email,status=status.HTTP_200_OK)
 
