@@ -415,8 +415,8 @@ def useractivity(request,**kwargs):
                 from django.http import HttpResponse
                 #----------- token value and user_id for direct login into app ----------------------#
                 token_value = getToken(user.id)
-                response = HttpResponse("ohmgear://?token="+str(token_value), status=302)
-                response['Location'] = "ohmgear://?token="+str(token_value)
+                response = HttpResponse("kinbow://?token="+str(token_value), status=302)
+                response['Location'] = "kinbow://?token="+str(token_value)
                 return response 
             else:
                return CustomeResponse('Account has been activated',status=status.HTTP_200_OK) 
@@ -428,8 +428,8 @@ def useractivity(request,**kwargs):
        elif reset_password_key: 
             if request.device:
                 from django.http import HttpResponse
-                response = HttpResponse("ohmgear://?resetPasswordKey="+reset_password_key, status=302)
-                response['Location'] = "ohmgear://?resetPasswordKey="+reset_password_key
+                response = HttpResponse("kinbow://?resetPasswordKey="+reset_password_key, status=302)
+                response['Location'] = "kinbow://?resetPasswordKey="+reset_password_key
                 return response 
             else:                         
                return CustomeResponse({'msg':'This url is used in app only'},status=status.HTTP_401_UNAUTHORIZED,validate_errors=1)               
@@ -623,7 +623,14 @@ class UserEmailViewSet(viewsets.ModelViewSet):
             user_email = UserEmail.objects.filter(verification_code=activation_code)
             if user_email:
                 user_email.update(isVerified="TRUE",verification_code='')
-                return CustomeResponse({'msg':'email verified'},status=status.HTTP_200_OK)
+                
+                if request.device:
+                    from django.http import HttpResponse
+                    response = HttpResponse("kinbow://verify_email=1", status=302)
+                    response['Location'] = "kinbow://?verify_email=1"
+                    return response 
+                else:                 
+                    return CustomeResponse({'msg':'email verified'},status=status.HTTP_200_OK)
             else:
                 return CustomeResponse({'msg':'activation_code does not exist.'},validate_errors=1)              
             
@@ -635,9 +642,12 @@ class UserEmailViewSet(viewsets.ModelViewSet):
         data ={}
         data['id'] = request.user.id
         data['ueid'] = request.DATA.get('useremail_id')
-        userEmail = User.objects.values_list('email', flat=True).filter(id=data['id'])
-        userEmailAdded = UserEmail.objects.filter(id=data['ueid']).values('isVerified','email')
-        checkUserEmail=User.objects.filter(email=userEmailAdded[0]['email']) # check email user table if exist
+        try:
+            userEmail = User.objects.values_list('email', flat=True).filter(id=data['id'])
+            userEmailAdded = UserEmail.objects.filter(id=data['ueid']).values('isVerified','email')
+            checkUserEmail=User.objects.filter(email=userEmailAdded[0]['email']) # check email user table if exist
+        except:
+            return CustomeResponse({"msg":"email is not there"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
         
         tempUser = userEmail[0]
         tempUserEmail= userEmailAdded[0]['email'] 

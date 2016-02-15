@@ -32,7 +32,7 @@ class BaseSendMail(Task):
                
                 activation_key = kwargs.get("key")
                 email_body = email.content.replace('%user_name%',str(getdata.first_name))
-                url = '/api/emails/verify_email/?activation_code='+str(activation_key)
+                url = '/api/users/emails/verify_email/?activation_code='+str(activation_key)
                 email_body = email_body.replace('%url%',"<a href='"+settings.DOMAIN_NAME+url+"'>Link</a>")
 
            elif type == 'forgot_password': 
