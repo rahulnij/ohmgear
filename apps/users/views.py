@@ -650,6 +650,7 @@ class UserEmailViewSet(viewsets.ModelViewSet):
         data ={}
         data['id'] = request.user.id
         data['ueid'] = request.DATA.get('useremail_id')
+        
         try:
             userEmail = User.objects.values_list('email', flat=True).filter(id=data['id'])
             userEmailAdded = UserEmail.objects.filter(id=data['ueid']).values('isVerified','email')
@@ -668,7 +669,7 @@ class UserEmailViewSet(viewsets.ModelViewSet):
         else:
             return CustomeResponse({'msg':'server error'},validate_errors=1)
             
-        if not data['email']:
+        if not tempUser:
             return CustomeResponse({"msg":"email is not there"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)  
     
     @list_route(methods=['post'],)
