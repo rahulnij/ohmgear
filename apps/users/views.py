@@ -666,6 +666,9 @@ class UserEmailViewSet(viewsets.ModelViewSet):
                 UserEmail.objects.filter(id=data['ueid']).update(email= tempUser)
                 User.objects.filter(id=data['id']).update(email=tempUserEmail)    
                 return CustomeResponse({'msg':'email set to default'},status=status.HTTP_200_OK)
+            else:
+                return CustomeResponse({'msg':'email cannot be replaced'},validate_errors=1)
+                
         else:
             return CustomeResponse({'msg':'server error'},validate_errors=1)
             
