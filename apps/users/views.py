@@ -667,19 +667,27 @@ class UserEmailViewSet(viewsets.ModelViewSet):
     def deleteEmail(self, request, pk=None):
         try:
             user_id = request.user.id
+            
             #userEmailId = self.request.QUERY_PARAMS.get('id')
             userEmailId = request.DATA['userEmailId']
         except:
             userEmailId = ''
         try:
-            userEmail=UserEmail.objects.filter(id=request.DATA['userEmailId'])   
+            checkEmail=UserEmail.objects.filter(user_id=user_id)
+            userEmail=UserEmail.objects.filter(id=request.DATA['userEmailId'])  
         
         except:
             return CustomeResponse({'msg':'Email not found'},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
-
-        if userEmail:
-            userEmail.delete()
-            return CustomeResponse({'msg':'Email is deleted'},status=status.HTTP_200_OK)
+        
+        if checkEmail:
+            if userEmail:
+                userEmail.delete()
+                return CustomeResponse({'msg':'Email is deleted'},status=status.HTTP_200_OK)
+        if not checkEmail:
+            checkEmail=User.objects.filter(id=user_id)
+            serializer = UserSerializer(checkEmail,many=True)
+            return CustomeResponse(data=serializer.data,status=status.HTTP_200_OK)
+        
         else:
             return CustomeResponse({'msg':'server error'},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
         
