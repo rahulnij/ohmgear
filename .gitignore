@@ -3,7 +3,7 @@ nbproject
 mysite.log
 src
 static
-ohmgear/settings/local.py
+**/**/local.py
 media
 *.*~
 **/migrations
