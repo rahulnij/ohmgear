@@ -90,3 +90,15 @@ BCARDS_TEMPLATE_IMAGE_URL = DOMAIN_NAME
 
 ####
 
+
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': 'ohmgear',
+        'USER': 'ohmgear',
+        'PASSWORD': 'ohmgear@123',
+        'HOST': 'localhost',
+        'PORT': '',
+    }
+}
+
