@@ -1,1 +1,9 @@
-ohmgear/settings/local.py
+*.pyc
+nbproject
+mysite.log
+src
+static
+ohmgear/**/local.py
+media
+*.*~
+**/migrations
