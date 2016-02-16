@@ -1,9 +1,0 @@
-*.pyc
-nbproject
-mysite.log
-src
-static
-ohmgear/**/local.py
-media
-*.*~
-**/migrations
