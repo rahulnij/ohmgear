@@ -7,7 +7,6 @@ class FolderSerializer(serializers.ModelSerializer):
 	
 	
 	def validate_foldername(self, value):
-		print len(value) 
 		if len(value) > 30:
 			raise serializers.ValidationError("Folder name length not more than 2")
 

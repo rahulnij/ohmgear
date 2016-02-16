@@ -59,6 +59,8 @@ class storeContactsViewSet(viewsets.ModelViewSet):
                     
                if counter > NUMBER_OF_CONTACT:
                     return CustomeResponse({'msg':"Max "+str(NUMBER_OF_CONTACT)+" allowed to upload"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
+               
+               
                serializer = ContactsSerializer(data=contact,many=True)
                if serializer.is_valid():
                 serializer.save()

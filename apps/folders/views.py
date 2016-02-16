@@ -12,6 +12,7 @@ from rest_framework.permissions import IsAuthenticated
 from ohmgear.token_authentication import ExpiringTokenAuthentication
 from permissions import IsUserData
 
+from ohmgear.functions import CustomeResponse
 # create user and admin viewset or model
 class CheckAccess(viewsets.ModelViewSet):
 	permission_classes = (IsUserData, IsAuthenticated, )
@@ -27,8 +28,8 @@ class CheckAccess(viewsets.ModelViewSet):
 
 class FolderViewSet(CheckAccess):
 
-	#authentication_classes = (ExpiringTokenAuthentication,)
-	#permission_classes = (IsUserData, IsAuthenticated, )
+	authentication_classes = (ExpiringTokenAuthentication,)
+	permission_classes = (IsUserData, IsAuthenticated, )
 	queryset = Folder.objects.all()
 	serializer_class = FolderSerializer
 
@@ -37,38 +38,35 @@ class FolderViewSet(CheckAccess):
 	    #user = self.request.user
 	    return queryset
 
-	# def create(self, request):
-			
-	# 	#request.data['user_id'] = 1
-	# 	#request.data['businesscard_id'] = 1
-		
+        def create(self, request,offline_data=None):
+                if offline_data:
+         	    folderSerializer = FolderSerializer(data=offline_data, context={'request':request})
+                else:
+                    folderSerializer = FolderSerializer(data=request.data, context={'request':request}) 
+         	if folderSerializer.is_valid():
+         		folderSerializer.save(user_id=request.user)
+         		return CustomeResponse(folderSerializer.data,status=status.HTTP_201_CREATED)
+         	else:
+         		return CustomeResponse(folderSerializer.errors,status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
 
-	# 	folderSerializer = FolderSerializer(data=request.data, context={'request':request})
-	# 	print request.data,' --- ', folderSerializer.is_valid()
-	# 	if folderSerializer.is_valid():
-	# 		folderSerializer.save(user_id=request.user)
-	# 		return Response(folderSerializer.data,status=status.HTTP_201_CREATED)
-	# 	else:
-	# 		return Response(folderSerializer.errors,status=status.HTTP_400_BAD_REQUEST)
+	def update(self, request, pk=None):
+	 	folder =get_object_or_404(self.get_queryset(), pk=pk)
+	 	folderSerializer = FolderSerializer(folder,data=request.data)
+	 	if folderSerializer.is_valid():
+	 		folderSerializer.save()
+	 		return CustomeResponse(folderSerializer.data,status=status.HTTP_201_CREATED)
+	 	else:
 
-	# def update(self, request, pk=None):
-	# 	folder =get_object_or_404(self.get_queryset(), pk=pk)
-	# 	folderSerializer = FolderSerializer(folder,data=request.data)
-	# 	if folderSerializer.is_valid():
-	# 		folderSerializer.save()
-	# 		return Response(folderSerializer.data,status=status.HTTP_201_CREATED)
-	# 	else:
+	 		return CustomeResponse(folderSerializer.errors,status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
 
-	# 		return Response(folderSerializer.errors,status=status.HTTP_400_BAD_REQUEST)
-
-	def list(self, request):
-		queryset = self.get_queryset().all()
-		if not queryset:
-			return Response({'data not found'},status=status.HTTP_404_NOT_FOUND)
-		else:
-			folderSerializer = FolderSerializer(queryset,many=True)
-			print queryset.values()
-			return Response(folderSerializer.data)
+#	def list(self, request):
+#		queryset = self.get_queryset().all()
+#		if not queryset:
+#			return Response({'data not found'},status=status.HTTP_404_NOT_FOUND)
+#		else:
+#			folderSerializer = FolderSerializer(queryset,many=True)
+#			print queryset.values()
+#			return Response(folderSerializer.data)
 
 	# def retrieve(self, request, pk=None):
 		

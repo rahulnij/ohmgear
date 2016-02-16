@@ -48,7 +48,8 @@ class OfflineSendReceiveDataViewSet(viewsets.ModelViewSet):
               
               businesscard = request.data['businesscard']
               
-              business_card_class = BusinessViewSet() 
+              business_card_class_create = BusinessViewSet.as_view({'post': 'create'})
+              business_card_class_update = BusinessViewSet.as_view({'post': 'update'})
               position = 0
               for raw_data in businesscard:
                   
@@ -72,7 +73,8 @@ class OfflineSendReceiveDataViewSet(viewsets.ModelViewSet):
                               local_business_id =''  
                             #-------------------- End --------------------------#
                             
-                            business_card_response = business_card_class.create(request,1,data)
+                            business_card_response = business_card_class_create(request,1,data)
+                            business_card_response = business_card_response.data
                             if business_card_response["status"]:
                                try:
                                  bcard_id = business_card_response["data"]["id"]
@@ -111,8 +113,8 @@ class OfflineSendReceiveDataViewSet(viewsets.ModelViewSet):
                               data['bcard_id'] =''  
                             #-------------------- End --------------------------#                            
                             if data['bcard_id']:
-                                business_card_response = business_card_class.update(request,None,1,data)
-                                print business_card_response
+                                business_card_response = business_card_class_update(request,None,1,data)
+                                business_card_response = business_card_response.data
                                 if business_card_response["status"]:
                                     
                                    try:

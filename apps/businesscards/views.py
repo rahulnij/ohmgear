@@ -25,6 +25,7 @@ from ohmgear.json_default_data import BUSINESS_CARD_DATA_VALIDATION
 from apps.users.models import User
 from apps.vacationcard.models import VacationCard 
 from apps.vacationcard.serializer import VacationCardSerializer
+from apps.folders.views import FolderViewSet
 #---------------------------End-------------#
 
 
@@ -513,22 +514,23 @@ class BusinessViewSet(viewsets.ModelViewSet):
                 except:
                     pass                            
                 #-------------------------End-----------------------------------#
+                
+                #---------------- Assign  first created business card to created default folder -----#
+                queryset_count = self.queryset.filter(user_id=user_id).count()
+                if queryset_count == 1:
+                    folder_view = FolderViewSet.as_view({'post': 'create'})
+                    offline_data={}
+                    offline_data['businesscard_id'] =business.id   
+                    offline_data['foldername'] = 'PR'
+                    folder_view= folder_view(request,offline_data)
+                #-------------------- End --------------------------------------------------------# 
             else:
-                if call_from_func:
-                    return rawResponse(contact_serializer.errors)
-                else:
-                    return CustomeResponse(contact_serializer.errors,status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
-            
-            if call_from_func:
-                return rawResponse(data_new,status=True,status_code=status.HTTP_201_CREATED)
-            else:            
-                return CustomeResponse(data_new,status=status.HTTP_201_CREATED)
+                 return CustomeResponse(contact_serializer.errors,status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
+           
+            return CustomeResponse(data_new,status=status.HTTP_201_CREATED)
  
          else:
-            if call_from_func:
-                return rawResponse(serializer.errors)
-            else:                
-                return CustomeResponse(serializer.errors,status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
+            return CustomeResponse(serializer.errors,status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
         
     def update(self, request, pk=None,call_from_func=None,offline_data=None):  
          #-------------------- First Validate the json contact data ------------------------------#
@@ -580,21 +582,12 @@ class BusinessViewSet(viewsets.ModelViewSet):
                 except:
                     pass
             else:
-                if call_from_func:
-                    return rawResponse(serializer.errors)
-                else:
-                    return CustomeResponse(contact_serializer.errors,status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
+                return CustomeResponse(contact_serializer.errors,status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
             
-            if call_from_func:
-               return rawResponse(data_new,status=True,status_code=status.HTTP_200_OK)
-            else:
-               return CustomeResponse(data_new,status=status.HTTP_200_OK)
+            return CustomeResponse(data_new,status=status.HTTP_200_OK)
  
          else:
-            if call_from_func:
-              return rawResponse(serializer.errors)
-            else:
-              return CustomeResponse(serializer.errors,status=status.HTTP_400_BAD_REQUEST,validate_errors=1)        
+            return CustomeResponse(serializer.errors,status=status.HTTP_400_BAD_REQUEST,validate_errors=1)        
         
     #---------------------------- Duplicate the business card ----------------------------#
     @list_route(methods=['post'],)   
