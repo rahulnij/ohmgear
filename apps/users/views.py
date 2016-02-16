@@ -631,11 +631,40 @@ class UserEmailViewSet(viewsets.ModelViewSet):
     def verify_email(self,request):
 
             activation_code = self.request.QUERY_PARAMS.get('activation_code','')
-            user_email = UserEmail.objects.filter(verification_code=activation_code)
+            user_email = UserEmail.objects.filter(verification_code=activation_code).values('id','isVerified')
+            data ={}
+            data['ueid']=user_email[0]['id'] #added user email pk
+            isVerified = user_email[0]['isVerified'] 
+            userEmail = request.user.email
+            try:
+                userEmailAdded = UserEmail.objects.filter(id=data['ueid']).values('isVerified','email')
+                checkUserEmail=User.objects.filter(email=userEmailAdded[0]['email']) # check email user table if exist
+            except:
+                return CustomeResponse({"msg":"email is not there"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
+    
             if user_email:
-                user_email.update(isVerified="TRUE",verification_code='')
+                if isVerified==0:
+                    user_email.update(isVerified=1,verification_code='')
+                    return CustomeResponse({'msg':'email verified'},status=status.HTTP_200_OK)
+                    
+                elif isVerified==1:
+                    user_email.update(isVerified=2,verification_code='')
+                    tempUserEmail= userEmailAdded[0]['email']
+                    
+                    if not checkUserEmail: 
+                        UserEmail.objects.filter(id=data['ueid']).update(email= userEmail)
+                        User.objects.filter(id=request.user.id).update(email=tempUserEmail)    
+                        return CustomeResponse({'msg':'email set to default'},status=status.HTTP_200_OK)
+                    else:
+                        return CustomeResponse({'msg':'email cannot be replaced'},validate_errors=1)
                 
-                if request.device:
+                else:
+                    return CustomeResponse({'msg':'server error'},validate_errors=1)
+            
+                if not userEmail:
+                    return CustomeResponse({"msg":"email is not there"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
+                
+                elif request.device:
                     from django.http import HttpResponse
                     response = HttpResponse("kinbow://verify_email=1", status=302)
                     response['Location'] = "kinbow://?verify_email=1"
@@ -644,8 +673,9 @@ class UserEmailViewSet(viewsets.ModelViewSet):
                     return CustomeResponse({'msg':'email verified'},status=status.HTTP_200_OK)
             else:
                 return CustomeResponse({'msg':'activation_code does not exist.'},validate_errors=1)              
-            
      
+            
+    
     @list_route(methods=['post'],)
     def setdefault(self, request):
         
@@ -653,30 +683,25 @@ class UserEmailViewSet(viewsets.ModelViewSet):
         data ={}
         data['id'] = request.user.id
         data['ueid'] = request.DATA.get('useremail_id')
-        
+        userEmail = request.user.email
+
         try:
-            userEmail = User.objects.values_list('email', flat=True).filter(id=data['id'])
+            #set default status(2) of all emails to 1
+            UserEmail.objects.filter(user_id=request.user.id,isVerified=2).update(isVerified=1)
             userEmailAdded = UserEmail.objects.filter(id=data['ueid']).values('isVerified','email')
-            checkUserEmail=User.objects.filter(email=userEmailAdded[0]['email']) # check email user table if exist
+            salt = hashlib.sha1(str(random.random())).hexdigest()[:5] 
+            activation_key = hashlib.sha1(salt+userEmailAdded[0]['email']).hexdigest()[:10] 
+            if user_id:
+                UserEmail.objects.filter(id=data['ueid']).update(verification_code=activation_key)
+                BaseSendMail.delay(data,type='verify_email',key = activation_key)
+                return CustomeResponse({'msg':'verification code sent'},status=status.HTTP_200_OK)
+            else:
+                return CustomeResponse({'msg':'server error'},validate_errors=1)
+        
         except:
             return CustomeResponse({"msg":"email is not there"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
         
-        tempUser = userEmail[0]
-        tempUserEmail= userEmailAdded[0]['email'] 
-       
-        if  userEmailAdded[0]['isVerified'] == True:
-            if not checkUserEmail: 
-                UserEmail.objects.filter(id=data['ueid']).update(email= tempUser)
-                User.objects.filter(id=data['id']).update(email=tempUserEmail)    
-                return CustomeResponse({'msg':'email set to default'},status=status.HTTP_200_OK)
-            else:
-                return CustomeResponse({'msg':'email cannot be replaced'},validate_errors=1)
-                
-        else:
-            return CustomeResponse({'msg':'server error'},validate_errors=1)
-            
-        if not tempUser:
-            return CustomeResponse({"msg":"email is not there"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)  
+  
     
     @list_route(methods=['post'],)
     def deleteEmail(self, request, pk=None):

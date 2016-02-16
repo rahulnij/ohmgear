@@ -211,7 +211,7 @@ class UserEmail(models.Model):
     user_id = models.ForeignKey(User,db_column ="user_id")
     email = models.EmailField()
     # default=0, email not verified
-    isVerified = models.BooleanField(_("Email Verified"), default=False)
+    isVerified = models.SmallIntegerField(_("Email Verified"), default=0)
     verification_code = models.CharField(_("Verification Code"),max_length=40,blank=True, null=True)
     created_date = models.DateTimeField(_("Created Date"),auto_now_add=True,auto_now=False)
     updated_date = models.DateTimeField(_("Updated Date"),auto_now=True)
