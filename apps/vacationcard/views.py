@@ -116,38 +116,19 @@ class VacationCardViewSet(viewsets.ModelViewSet):
                         tempdata["x"]['vacationcard_id'] = vacationid.id
                         #tempdata['vacationcard_id'] = vacationid.id
                         tempContainer.append(tempdata['x'])
-                    
-                     
-                        #tempContainer =  tempContainer[0]['x
-                    if call_from_func:
-                        
-                        serializer = VacationTripSerializer(data=tempContainer,many=True,context={'local_date': 1})
-                    else:
+                
                         serializer = VacationTripSerializer(data=tempContainer,many=True,context={'local_date': 1})
                     if serializer.is_valid():
                         serializer.save(user_id=request.user)
-                        #data_new = serializer.data.copy()
-                        if call_from_func:
-                            return rawResponse(serializer.data,status=True,status_code=status.HTTP_201_CREATED)
-                        else:            
-                            return CustomeResponse(serializer.data,status=status.HTTP_201_CREATED)
+                        return CustomeResponse(serializer.data,status=status.HTTP_201_CREATED)
                          
                     else:
-                        if call_from_func:
-                            #return rawResponse(serializer.errors)
-                            vacationcard_id = VacationCard.objects.filter(id=vacationid.id)
-                            vacationcard_id.delete()
-                            return rawResponse(serializer.errors)
-                            #return rawResponse({"msg":"check the required and trip dates"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
-                        else:
-                            vacationcard_id = VacationCard.objects.filter(id=vacationid.id)
-                            vacationcard_id.delete()
-                            return CustomeResponse({"msg":"check the required fields and trip dates"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
+                        vacationcard_data = VacationCard.objects.filter(id=vacationid.id)
+                        vacationcard_data.delete()
+                        return CustomeResponse({"msg":"check the required fields and trip dates"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
         else:
-            if call_from_func:
-                    return rawResponse(VacationCardserializer.errors)
-            else:
-                    return CustomeResponse(VacationCardserializer.errors,status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
+                    
+                return CustomeResponse(VacationCardserializer.errors,status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
             
             
         # return CustomeResponse(VacationCardserializer.errors,status=status.HTTP_401_UNAUTHORIZED,validate_errors=1)
@@ -242,8 +223,6 @@ class VacationCardViewSet(viewsets.ModelViewSet):
                 return CustomeResponse({'status':'fail','msg':'Vacation id not found'},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
         
         
-        
-        #
         try:
             vacationtrip = VacationTrip.objects.filter(vacationcard_id=vacation_id,user_id = user_id)
         except:
@@ -272,22 +251,15 @@ class VacationCardViewSet(viewsets.ModelViewSet):
                         VacationCard.objects.filter(id= vacation_id).update(vacation_name=vacation_name  )
                         vacationtrip.delete()
                         serializer.save(user_id=request.user)
-                        #data_new = serializer.data.copy()
-                        if call_from_func:
-                            return rawResponse(serializer.data,status=True,status_code=status.HTTP_201_CREATED)
-                        else:            
-                            return CustomeResponse(serializer.data,status=status.HTTP_201_CREATED)
+                        #data_new = serializer.data.copy()         
+                        return CustomeResponse(serializer.data,status=status.HTTP_201_CREATED)
                          
                     else:
-                        if call_from_func:
-                            return rawResponse(serializer.errors)
-                        else:
-                            return CustomeResponse({"msg":"data is in wrong format check details once again"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
+#                        
+                        return CustomeResponse({"msg":"data is in wrong format check details once again"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
         else:
-            if call_from_func:
-                    return rawResponse({'msg':'trip not found'})
-            else:
-                    return CustomeResponse({'msg':'trip not found'},status=status.HTTP_401_UNAUTHORIZED,validate_errors=1)
+
+            return CustomeResponse({'msg':'trip not found'},status=status.HTTP_401_UNAUTHORIZED,validate_errors=1)
                     
                     
     
