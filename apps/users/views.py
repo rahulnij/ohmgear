@@ -577,7 +577,7 @@ class UserEmailViewSet(viewsets.ModelViewSet):
             else:
                 data.append(default_email)
                 #terms['is_default'] = 1
-                data.append(terms)
+                #data.append(terms)
                 defaultEmail=User.objects.filter(id=user_id)
                 serializer = UserSerializer(defaultEmail,many=True)
                 return CustomeResponse(data,status=status.HTTP_200_OK)
