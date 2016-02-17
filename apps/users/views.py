@@ -693,7 +693,9 @@ class UserEmailViewSet(viewsets.ModelViewSet):
             UserEmail.objects.filter(user_id=request.user.id,isVerified=2).update(isVerified=1)
             userEmailAdded = UserEmail.objects.filter(id=data['ueid']).values('isVerified','email')
             salt = hashlib.sha1(str(random.random())).hexdigest()[:5] 
-            activation_key = hashlib.sha1(salt+userEmailAdded[0]['email']).hexdigest()[:10] 
+            activation_key = hashlib.sha1(salt+userEmailAdded[0]['email']).hexdigest()[:10]
+            data['email'] = userEmailAdded[0]['email']
+           
             if user_id:
                 UserEmail.objects.filter(id=data['ueid']).update(verification_code=activation_key)
                 BaseSendMail.delay(data,type='verify_email',key = activation_key)
