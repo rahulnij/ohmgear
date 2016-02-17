@@ -522,16 +522,10 @@ class BusinessViewSet(viewsets.ModelViewSet):
                 if not queryset_folder:
                     folder_view = FolderViewSet.as_view({'post': 'create'})
                     offline_data={}
-                    offline_data['businesscard_id'] =''   
+                    offline_data['businesscard_id'] =business.id  
                     offline_data['foldername'] = 'PR'
                     folder_view= folder_view(request,offline_data)
                     folder_id = folder_view.data['data']['id']
-                else:
-                    folder_id = queryset_folder[0]['id']
-                print folder_id
-                folder_contact_serializer = FolderContactSerializer(data={'folder_id':folder_id,'contact_id':contact_serializer.id,'user_id':user_id})
-                if folder_contact_serializer.is_valid():
-                   folder_contact_serializer.save()
                #-------------------- End --------------------------------------------------------# 
             else:
                  return CustomeResponse(contact_serializer.errors,status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
