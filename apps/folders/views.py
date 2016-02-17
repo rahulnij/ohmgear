@@ -4,13 +4,15 @@ from rest_framework.response import Response
 import rest_framework.status as status
 
 #Folder modules
-from apps.folders.models import Folder
-from apps.folders.serializer import FolderSerializer
+from apps.folders.models import Folder,FolderContact
+from apps.folders.serializer import FolderSerializer,FolderContactSerializer
 
 #Authentication modules
 from rest_framework.permissions import IsAuthenticated
 from ohmgear.token_authentication import ExpiringTokenAuthentication
 from permissions import IsUserData
+from rest_framework.decorators import list_route
+
 
 from ohmgear.functions import CustomeResponse
 # create user and admin viewset or model
@@ -58,6 +60,17 @@ class FolderViewSet(CheckAccess):
 	 	else:
 
 	 		return CustomeResponse(folderSerializer.errors,status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
+        
+        @list_route(methods=['post'],)
+        def folder_contact_link(self, request):  
+            
+            folder_contact_serializer = FolderContactSerializer(data=request.data, context={'request':request})
+            
+            if folder_contact_serializer.is_valid():
+         	folder_contact_serializer.save(user_id=request.user)
+         	return CustomeResponse(folder_contact_serializer.data,status=status.HTTP_201_CREATED)
+            else:
+                return CustomeResponse(folder_contact_serializer.errors,status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
 
 #	def list(self, request):
 #		queryset = self.get_queryset().all()

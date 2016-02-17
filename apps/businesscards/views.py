@@ -26,6 +26,8 @@ from apps.users.models import User
 from apps.vacationcard.models import VacationCard 
 from apps.vacationcard.serializer import VacationCardSerializer
 from apps.folders.views import FolderViewSet
+from apps.folders.models import Folder,FolderContact
+from apps.folders.serializer import FolderSerializer,FolderContactSerializer
 #---------------------------End-------------#
 
 
@@ -501,7 +503,7 @@ class BusinessViewSet(viewsets.ModelViewSet):
             if contact_serializer.is_valid():
                 business = serializer.save()
                 contact_serializer.validated_data['businesscard_id'] = business
-                contact_serializer.save()
+                contact_serializer = contact_serializer.save()
                 contact = Contacts.objects.get(businesscard_id=business.id)
                 user = request.user
                 #-------------- Save Notes -------------------------------#
@@ -516,14 +518,21 @@ class BusinessViewSet(viewsets.ModelViewSet):
                 #-------------------------End-----------------------------------#
                 
                 #---------------- Assign  first created business card to created default folder -----#
-                queryset_count = self.queryset.filter(user_id=user_id).count()
-                if queryset_count == 1:
+                queryset_folder = Folder.objects.filter(user_id=user_id,foldertype='PR').values()
+                if not queryset_folder:
                     folder_view = FolderViewSet.as_view({'post': 'create'})
                     offline_data={}
-                    offline_data['businesscard_id'] =business.id   
+                    offline_data['businesscard_id'] =''   
                     offline_data['foldername'] = 'PR'
                     folder_view= folder_view(request,offline_data)
-                #-------------------- End --------------------------------------------------------# 
+                    folder_id = folder_view.data['data']['id']
+                else:
+                    folder_id = queryset_folder[0]['id']
+                print folder_id
+                folder_contact_serializer = FolderContactSerializer(data={'folder_id':folder_id,'contact_id':contact_serializer.id,'user_id':user_id})
+                if folder_contact_serializer.is_valid():
+                   folder_contact_serializer.save()
+               #-------------------- End --------------------------------------------------------# 
             else:
                  return CustomeResponse(contact_serializer.errors,status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
            

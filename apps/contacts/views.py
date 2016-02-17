@@ -1,6 +1,7 @@
 #--------- Import Python Modules -----------#
 import json,jsonschema
 import validictory
+from collections import OrderedDict
 #-------------------------------------------#
 #------------ Third Party Imports ----------#
 from django.shortcuts import render
@@ -17,6 +18,10 @@ from ohmgear.json_default_data import BUSINESS_CARD_DATA_VALIDATION
 from models import Contacts
 from ohmgear.token_authentication import ExpiringTokenAuthentication
 from apps.businesscards.views import BusinessViewSet
+
+from apps.folders.views import FolderViewSet
+from apps.folders.models import Folder
+from apps.folders.serializer import FolderContactSerializer
 #---------------------------End------------------------------------#
 
 
@@ -36,8 +41,10 @@ class storeContactsViewSet(viewsets.ModelViewSet):
       
       @list_route(methods=['post'],)
       def uploads(self, request):
-
+             
+             user_id = request.user
              NUMBER_OF_CONTACT = 100
+             
              try:
               contact = request.DATA['contact']
              except:
@@ -45,6 +52,20 @@ class storeContactsViewSet(viewsets.ModelViewSet):
             
              if contact:
                counter = 0  
+               #---------------- Assign  first created business card to created default folder -----#
+               queryset_folder = Folder.objects.filter(user_id=user_id,foldertype='PR').values()
+               if not queryset_folder:
+                    folder_view = FolderViewSet.as_view({'post': 'create'})
+                    offline_data={}
+                    offline_data['businesscard_id'] =''   
+                    offline_data['foldername'] = 'PR'
+                    folder_view= folder_view(request,offline_data)
+                    folder_id = folder_view.data['data']['id']
+               else:
+                    folder_id = queryset_folder[0]['id']
+     
+               #-------------------- End --------------------------------------------------------#               
+               contact_new = []
                for contact_temp in contact:
 #                    print contact_temp
 #                    #--------------------  Validate the json data ------------------------------#
@@ -55,18 +76,35 @@ class storeContactsViewSet(viewsets.ModelViewSet):
 #                    except validictory.SchemaError as error:
 #                       return CustomeResponse({'msg':error.message },status=status.HTTP_400_BAD_REQUEST,validate_errors=1)        
 #                    ---------------------- - End ----------------------------------------------------------- #
+                    if 'user_id' not in contact_temp:
+                        contact_temp['user_id'] = user_id.id
+                        contact_new.append(contact_temp)
+                    else:
+                        contact_new.append(contact_temp) 
                     counter = counter + 1
                     
                if counter > NUMBER_OF_CONTACT:
                     return CustomeResponse({'msg':"Max "+str(NUMBER_OF_CONTACT)+" allowed to upload"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
                
                
-               serializer = ContactsSerializer(data=contact,many=True)
+               serializer = ContactsSerializer(data=contact_new,many=True)
                if serializer.is_valid():
-                serializer.save()
-                return CustomeResponse(serializer.data,status=status.HTTP_201_CREATED)
+                    serializer.save()
+                    #-------------------- Assign all contacts to folder -----------------#
+                    folder_contact_array = []
+                    
+                    for items in serializer.data:
+                        folder_contact_array.append({'user_id':user_id.id,'folder_id':folder_id,'contact_id':items['id']})
+  
+                    if  folder_contact_array:
+                            folder_contact_serializer = FolderContactSerializer(data=folder_contact_array,many=True)
+                            if folder_contact_serializer.is_valid():
+                               folder_contact_serializer.save() 
+                    #--------------------------- End ------------------------------------#
+                    
+                    return CustomeResponse(serializer.data,status=status.HTTP_201_CREATED)
                else:
-                return CustomeResponse(serializer.errors,status=status.HTTP_201_CREATED)   
+                    return CustomeResponse(serializer.errors,status=status.HTTP_201_CREATED)   
       
       def update(self, request, pk=None):
          return CustomeResponse({'msg':"Update method does not allow"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)      

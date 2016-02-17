@@ -25,12 +25,12 @@ class Folder(models.Model):
 	foldertype = models.CharField(_('folder type'), max_length=2,null=False,blank=False,choices=folderType, default='PR')
 	status = models.IntegerField(_('status'), default=1)
 	user_id = models.ForeignKey(User,verbose_name=_('user'), null=False, db_column='user_id')
-	businesscard_id =  models.ForeignKey(BusinessCard, verbose_name= _('business card'), null=False,db_column='businesscard_id')
+	businesscard_id =  models.ForeignKey(BusinessCard, verbose_name= _('business card'), null=True,blank=True,db_column='businesscard_id')
 	created_date = models.DateTimeField(_('created date'),default=datetime.now,blank=True)
 	updated_date =  models.DateTimeField(_('updated date'),default=datetime.now,blank=True)
 
 	def __unicode__(self):
-		return '{"foldername":%s,"foldertype":%s }' %(self.foldername,self.foldertype)
+		return '{"id":%d,"foldername":%s,"foldertype":%s }' %(self.id,self.foldername,self.foldertype)
             
 
 class FolderContact(models.Model):
