@@ -576,6 +576,8 @@ class UserEmailViewSet(viewsets.ModelViewSet):
                 return CustomeResponse(data,status=status.HTTP_200_OK) 
             else:
                 data.append(default_email)
+                #terms['is_default'] = 1
+                data.append(terms)
                 defaultEmail=User.objects.filter(id=user_id)
                 serializer = UserSerializer(defaultEmail,many=True)
                 return CustomeResponse(data,status=status.HTTP_200_OK)
@@ -629,29 +631,32 @@ class UserEmailViewSet(viewsets.ModelViewSet):
     def verify_email(self,request):
 
             activation_code = self.request.QUERY_PARAMS.get('activation_code','')
-            user_email = UserEmail.objects.filter(verification_code=activation_code).values('id','isVerified')
+            user_email = UserEmail.objects.select_related('user_id').get(verification_code=activation_code)
             data ={}
-            data['ueid']=user_email[0]['id'] #added user email pk
-            isVerified = user_email[0]['isVerified'] 
-            userEmail = request.user.email
+            data['ueid']=user_email.id #added user email pk
+            userEmail=user_email.user_id.email
+            userEmailAdded = user_email.email
+            isVerified = user_email.isVerified
+     
             try:
-                userEmailAdded = UserEmail.objects.filter(id=data['ueid']).values('isVerified','email')
-                checkUserEmail=User.objects.filter(email=userEmailAdded[0]['email']) # check email user table if exist
+                #userEmailAdded = UserEmail.objects.filter(id=data['ueid']).values('isVerified','email')
+                checkUserEmail=User.objects.filter(email=userEmailAdded) # check email user table if exist
             except:
                 return CustomeResponse({"msg":"email is not there"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
     
             if user_email:
                 if isVerified==0:
-                    user_email.update(isVerified=1,verification_code='')
+                    #user_email.update(isVerified=1,verification_code='')
+                    UserEmail.objects.filter(id=data['ueid']).update(isVerified=1,verification_code='')
                     return CustomeResponse({'msg':'email verified'},status=status.HTTP_200_OK)
                     
                 elif isVerified==1:
-                    user_email.update(isVerified=2,verification_code='')
-                    tempUserEmail= userEmailAdded[0]['email']
-                    
+                    #user_email.update(isVerified=2,verification_code='')
+                    UserEmail.objects.filter(id=data['ueid']).update(isVerified=2,verification_code='')
+                    #tempUserEmail= userEmailAdded[0]['email'] 
                     if not checkUserEmail: 
                         UserEmail.objects.filter(id=data['ueid']).update(email= userEmail)
-                        User.objects.filter(id=request.user.id).update(email=tempUserEmail)    
+                        User.objects.filter(id=request.user.id).update(email=userEmailAdded)    
                         return CustomeResponse({'msg':'email set to default'},status=status.HTTP_200_OK)
                     else:
                         return CustomeResponse({'msg':'email cannot be replaced'},validate_errors=1)
