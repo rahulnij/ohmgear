@@ -373,9 +373,19 @@ class SocialLoginViewSet(viewsets.ModelViewSet):
                             #----------- End ------------------------------------------------#
                             social_id = request.POST.get('social_id','')
                             # social_type_id for fb its 2---------------#
-                            social_type = request.POST.get('social_type_id','')
-                            sociallogin = SocialLogin(user_id=data['id'],social_media_login_id = social_id,social_type_id=social_type)
-                            createConnectedAccount(data['id'],social_type)
+                            
+                            social_type =  constant.SOCIAL_TYPE
+                            social_type_exist =social_type.has_key(request.DATA['social_type'])
+                            if  not social_type_exist:
+                               return CustomeResponse({'msg':'social_type not exist'}) 
+                           
+                            for key, social_id in social_type.iteritems():
+                                if key == request.DATA['social_type']:            
+                                    social_type_id =  social_id
+#                           
+                            #social_type = request.POST.get('social_type_id','')
+                            sociallogin = SocialLogin(user_id=data['id'],social_media_login_id = social_id,social_type_id=social_type_id)
+                            createConnectedAccount(data['id'],social_type_id)
                             sociallogin.save()
                             #--------------- Create the token ------------------------#
                             try:                                
