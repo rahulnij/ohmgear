@@ -58,6 +58,7 @@ INSTALLED_APPS = (
     'simple_history',
     'apps.staticpages',
     'apps.usersetting',
+    'apps.groups',
     'ckeditor',
 )
 
