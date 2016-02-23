@@ -31,17 +31,17 @@ class GroupViewSet(viewsets.ModelViewSet):
         
  #------------------Method: insert group--------------#       
     def create(self,request):
+        
         try:
             user_id = request.user
         except:
             user_id =''
-        data ={}
-        data   =request.DATA.copy()
-        data['user_id'] = request.user.id
-    
-        serializer = self.serializer_class(data=data,context={'request':request})
+        newdata ={}
+#        newdata['user_id'] = request.user.id
+        newdata   =request.DATA.copy()
+        serializer = self.serializer_class(data=newdata,context={'request':request})
         if serializer.is_valid():
-            serializer.save()
+            serializer.save(user_id = request.user)
             return CustomeResponse(serializer.data,status=status.HTTP_201_CREATED)
         else:    
             return CustomeResponse(serializer.errors,status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
@@ -97,16 +97,7 @@ class GroupContactsViewSet(viewsets.ModelViewSet):
     
     
     def list(self,request):
-        group_data = self.queryset.filter(user_id=request.user)
-        try:
-            serializer = self.serializer_class(group_data,many=True)
-        except:
-            return CustomeResponse({'msg':'server error please try after some time'},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
-        if serializer.data:
-            return CustomeResponse(serializer.data,status=status.HTTP_200_OK)
-        else:
-            return CustomeResponse({'msg':'Data not found for this user'},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
-#        return CustomeResponse({'msg':'Get method bnot allowed'})
+        return CustomeResponse({'msg':'Get method bnot allowed'})
     
     def create(self,request):
         
