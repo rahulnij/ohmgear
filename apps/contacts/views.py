@@ -141,22 +141,22 @@ class storeContactsViewSet(viewsets.ModelViewSet):
                   pass              
               
                try:
-                  email = first_json["side_first"]["contact_info"]["email"].values()
+                 email = [x['data'] for x in first_json["side_first"]["contact_info"]["email"]]
                except:
-                  pass 
+                 pass 
                 
                try:    
-                  phone = first_json["side_first"]["contact_info"]["phone"].values()
+                  phone = [x['data'] for x in first_json["side_first"]["contact_info"]["phone"]]
                except:
                   pass
-               
+               #--- add second side data -------#
                try:
-                  email.append(first_json["side_second"]["contact_info"]["email"].values())
+                  email = email + [x['data'] for x in first_json["side_second"]["contact_info"]["email"]]
                except:
                   pass
               
                try:
-                  phone.append(first_json["side_second"]["contact_info"]["phone"].values())                  
+                  phone = phone + [x['data'] for x in first_json["side_second"]["contact_info"]["phone"]]              
                except:
                   pass
               
@@ -176,24 +176,26 @@ class storeContactsViewSet(viewsets.ModelViewSet):
                except:
                   pass                
                
+               #--- add second side data -------#
                try:
-                   email_target = second_json["side_first"]["contact_info"]["email"].values()
+                   email_target = [x['data'] for x in second_json["side_first"]["contact_info"]["email"]]
                except:
                    pass
                
                try:
-                   phone_target = second_json["side_first"]["contact_info"]["phone"].values()
+                   phone_target = [x['data'] for x in second_json["side_first"]["contact_info"]["phone"]]
+               except:
+                   pass
+               
+               try:
+                   email_target = email_target + [x['data'] for x in second_json["side_second"]["contact_info"]["email"]]
                except:
                    pass
                try:
-                   email_target.append(second_json["side_second"]["contact_info"]["email"].values())
-               except:
-                   pass
-               try:
-                   phone_target.append(second_json["side_second"]["contact_info"]["phone"].values())                  
+                   phone_target = phone_target + [x['data'] for x in second_json["side_second"]["contact_info"]["phone"]]                  
                except:
                    pass                
-
+               #print email_target,phone_target
                check_duplicate_1 = 0
                for first_name_val in first_name:
                    if first_name_val in first_name_target and first_name_val != []:
@@ -215,11 +217,13 @@ class storeContactsViewSet(viewsets.ModelViewSet):
                          check_duplicate_2 = 1 
 
                # Condition {First_Name OR Last_Name} AND {email OR phone OR instant_message}
+               #print check_duplicate_1,check_duplicate_2
                if check_duplicate_1 and check_duplicate_2:
                   return 1
                else:
                   return 0 
       
+      #-------------- Not in use as duplicate task will be done at device side ----#
       @list_route(methods=['post'],)
       def get_duplicate_contacts(self, request):
           user_id  = request.user.id
@@ -255,6 +259,7 @@ class storeContactsViewSet(viewsets.ModelViewSet):
                          count = count + 1
                
           return CustomeResponse(finalContacts,status=status.HTTP_200_OK)
+      
       
       
       @list_route(methods=['post'],)
