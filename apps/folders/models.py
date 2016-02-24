@@ -47,8 +47,7 @@ class FolderContact(models.Model):
         user_id = models.ForeignKey(User, null=False, db_column='user_id')
         
         folder_id = models.ForeignKey(Folder, db_column='folder_id')
-	contact_id = models.ForeignKey(Contacts,db_column='contact_id')
-	
+	contact_id = models.ForeignKey(Contacts,db_column='contact_id',related_name='folder_contact_data')
         link_status =  models.IntegerField(_('link_status'), default=0,choices=linkStatus)
 	is_linked = models.IntegerField(_('status'), default=0)
         
