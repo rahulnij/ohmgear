@@ -4,10 +4,16 @@ from django.shortcuts import render
 from apps.identifiers.models import Identifier
 import rest_framework.status as status
 from functions import CreateSystemIdentifier
-import datetime
+import datetime,json
 from ohmgear.functions import CustomeResponse
 from rest_framework.decorators import api_view
+from rest_framework import viewsets
+from apps.contacts.models import Contacts
+from apps.contacts.serializer import ContactsSerializer
+from apps.contacts.views import storeContactsViewSet
 
+from apps.folders.models import FolderContact,MatchContact
+from apps.folders.serializer import MatchContactSerializer
 
 @api_view(['GET','POST'])
 def updateidentifierstatus(request,**kwargs):
@@ -63,7 +69,70 @@ def updateidentifierstatus(request,**kwargs):
 
 
         return CustomeResponse({'msg':"Cron runnig successfully"},status=status.HTTP_200_OK)
-
+    
+    
+    
+class UpdateContactLinkStatusCron(viewsets.ModelViewSet):
+      
+        #----- No need to authentication as it will run as a cron --------------#
+	queryset = Contacts.objects.all()
+	serializer_class = ContactsSerializer
+        http_method_names = ['get']
+        
+        def list(self, request):
+          #---------------------- Fetch the all users contact ---------------------------#
+          queryset = self.queryset.order_by("user_id")
+          queryset_contact_have_bcard = self.queryset.filter(businesscard_id__isnull=False).order_by("user_id")
+          queryset_serializer   = ContactsSerializer(queryset_contact_have_bcard,many=True)
+          
+          if queryset_serializer.data is not None:
+              contacts_copy = queryset_serializer.data
+              final_contact_ids = []
+              match_contact_insert = []
+              storeObject = storeContactsViewSet()
+              for value in queryset:
+                  
+                  iterator = iter(contacts_copy)
+                  try :
+                      while 1:
+                          value_copy = iterator.next()
+                          if value.user_id.id != value_copy["user_id"]:
+                             
+                             if value.bcard_json_data and value_copy["bcard_json_data"]:
+                               #print value.user_id.id,value_copy["user_id"]
+                               result = storeObject.find_duplicate(value.bcard_json_data,json.loads(value_copy["bcard_json_data"]))
+                               #print result
+                             else:
+                               result = '' 
+                             #print result  
+                             if result:
+                                #----------- Change the link status then insert into MatchContact Model ----#
+                                # ----- related field is not working value.folder_contact --# 
+                                folder_contact = FolderContact.objects.get(contact_id = value.id)
+                                if folder_contact.link_status == 0:
+                                    folder_contact.link_status = 1
+                                    folder_contact.save()
+                                    match_contact_insert.append({"user_id":value.user_id.id,"businesscard_id":value_copy['businesscard_id'],"folder_contact_id":folder_contact.id})
+                                #match_contact_insert = MatchContactSerializer({''})
+                                #------------------------------ End ----------------------------------------#
+                             #pass
+                  except StopIteration, e :
+                      pass
+                  
+              if match_contact_insert:
+#                      match_contact_insert = MatchContactSerializer(data=match_contact_insert,many=True)
+#                      if match_contact_insert.is_valid():                          
+#                         match_contact_insert.save()
+#                      else:
+#                         return CustomeResponse(match_contact_insert.errors,status=status.HTTP_400_BAD_REQUEST,validate_errors=1)  
+                       for items in match_contact_insert:
+                         match_contact_serializer = MatchContactSerializer(data=items)
+                         if match_contact_serializer.is_valid():
+                                       match_contact_serializer.save()
+                         else:
+                              pass
+          #Note : TODO we will change the order of execution  of find_duplicate              
+          return CustomeResponse({"msg":"run successfully"},status=status.HTTP_200_OK)
     
     
     

@@ -47,7 +47,7 @@ class FolderContact(models.Model):
         user_id = models.ForeignKey(User, null=False, db_column='user_id')
         
         folder_id = models.ForeignKey(Folder, db_column='folder_id')
-	contact_id = models.ForeignKey(Contacts,db_column='contact_id')
+	contact_id = models.ForeignKey(Contacts,db_column='contact_id',related_name='folder_contact')
 	
         link_status =  models.IntegerField(_('link_status'), default=0,choices=linkStatus)
 	is_linked = models.IntegerField(_('status'), default=0)
@@ -56,4 +56,19 @@ class FolderContact(models.Model):
 	updated_date =  models.DateTimeField(_('updated date'),auto_now_add=False,auto_now=True)
 
 	def __unicode__(self):
-		return '{"folder_id":%d,"contact_id":%d,"link_status":%d,"is_linked":%d}' %(self.folder_id.id,self.contact_id.id,self.link_status,self.is_linked)            
+		return '{"id":%d,"folder_id":%d,"contact_id":%d,"link_status":%d,"is_linked":%d}' %(self.id,self.folder_id.id,self.contact_id.id,self.link_status,self.is_linked)            
+
+
+class MatchContact(models.Model):
+	class Meta:
+		db_table = 'ohmgear_folders_match_contacts'
+                unique_together = ('folder_contact_id', 'businesscard_id')
+
+        user_id = models.ForeignKey(User, null=False, db_column='user_id')
+        folder_contact_id = models.ForeignKey(FolderContact, db_column='folder_contact_id')
+        businesscard_id =  models.ForeignKey(BusinessCard, verbose_name= _('business card'), null=True,blank=True,db_column='businesscard_id')
+        created_date = models.DateTimeField(_('created date'),auto_now_add=True,auto_now=False)
+	updated_date =  models.DateTimeField(_('updated date'),auto_now_add=False,auto_now=True)
+
+	def __unicode__(self):
+		return '{"id":%d,"user_id":%d,"folder_contact_id":%d,"businesscard_id":%d,"created_date":%s,"updated_date":%s}' %(self.id,self.user_id.id,self.folder_contact_id.id,self.businesscard_id.id,self.created_date,self.updated_date)

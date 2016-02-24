@@ -31,7 +31,7 @@ urlpatterns =patterns(
     url(r'^admin/', include(admin.site.urls)),
     url(r'^api/', include('apps.vacationcard.urls')),
     url(r'^api/useractivity/$','apps.users.views.useractivity',name='useractivity'),
-    url(r'^api/cron/$','apps.cron.views.updateidentifierstatus',name='updateidentifierstatus'),
+    #url(r'^api/cron/$','apps.cron.views.updateidentifierstatus',name='updateidentifierstatus'),
     url(r'^api/account_confirmation/(?P<activation_key>\w+)/$','apps.users.views.useractivity',name='registration_confirm'),
     url(r'^api/forgot_password/(?P<reset_password_key>\w+)/$','apps.users.views.useractivity',name='forgot_password'),
     #url(r'^users/emails/verify_email/(?P<activation_code>\w+)/$', 'apps.users.views.UserEmailViewSet',name='verify_email')
@@ -149,6 +149,12 @@ router.register(r'api/staticpages',staticpages_view.StaticPagesViewSet)
 import apps.offline.views as offline_view
 router.register(r'api/offline',offline_view.OfflineSendReceiveDataViewSet)
 #_-------------------------------------------------------------------#
+
+#--------------------- CRON --------------------------------------#
+import apps.cron.views as cron_view
+router.register(r'api/cron/update_contact_link_status',cron_view.UpdateContactLinkStatusCron)
+#_-------------------------------------------------------------------#
+
 
 urlpatterns += patterns('',
     url(r'^admin/', include(admin.site.urls)),

@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from models import Folder,FolderContact
+from models import Folder,FolderContact,MatchContact
 
 class FolderSerializer(serializers.ModelSerializer):
 	class Meta:
@@ -17,5 +17,11 @@ class FolderSerializer(serializers.ModelSerializer):
 class FolderContactSerializer(serializers.ModelSerializer):
 	class Meta:
 		model = FolderContact
-		fields = ('id','user_id','folder_id','contact_id')            
+		fields = ('id','user_id','folder_id','contact_id') 
+                
+                
+class MatchContactSerializer(serializers.ModelSerializer):
+	class Meta:
+		model = MatchContact
+		fields = ('id','user_id','folder_contact_id','businesscard_id')                
 	
