@@ -140,6 +140,12 @@ import apps.staticpages.views as staticpages_view
 router.register(r'api/staticpages',staticpages_view.StaticPagesViewSet)
 #-------------- End: Stattic pages app ---------------------------------------------#
 
+#----------------Group------------------------------------------------#
+import apps.groups.views as groups_view
+router.register(r'api/group',groups_view.GroupViewSet)
+router.register(r'api/groupcontacts',groups_view.GroupContactsViewSet)
+
+
 #----------------- Verification email -------------------------#
 
 #router.register(r'api/emails', users_views.UserEmailViewSet,base_name='verify_email')
