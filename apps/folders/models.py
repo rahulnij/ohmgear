@@ -39,9 +39,9 @@ class FolderContact(models.Model):
                
         linkStatus = (
 			(0,"White"),
-                        (1,"Green"),
-                        (2,"Blue"),
-                        (3,"Orange"),
+                        (1,"Orange"),
+                        (2,"Green"),
+                        (3,"Blue"),
 		     )        
 
         user_id = models.ForeignKey(User, null=False, db_column='user_id')
