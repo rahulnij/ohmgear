@@ -13,9 +13,9 @@ from rest_framework.permissions import IsAuthenticated
 #-------------------------------------------#
 #------------------ Local app imports ------#
 from ohmgear.functions import CustomeResponse
-from serializer import ContactsSerializer,ContactsSerializerWithJson
+from serializer import ContactsSerializer,ContactsSerializerWithJson,FavoriteContactSerializer
 from ohmgear.json_default_data import BUSINESS_CARD_DATA_VALIDATION
-from models import Contacts
+from models import Contacts,FavoriteContact
 from ohmgear.token_authentication import ExpiringTokenAuthentication
 from apps.businesscards.views import BusinessViewSet
 
@@ -315,7 +315,43 @@ class storeContactsViewSet(viewsets.ModelViewSet):
                         return CustomeResponse({"msg":"Please provide correct target_contact_id"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)        
                else:
                     return CustomeResponse({"msg":"Please provide merge_contact_ids, target_contact_id"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
-          
-              
-          
+    
+        
+      @list_route(methods=['post'],)
+      def addFavoriteContact(self,request):
+        try:
+              user_id = request.user.id
+        except:
+            user_id = ''
+        data ={}
+        data = request.data
+        data['user_id'] = request.user.id
+        serializer = FavoriteContactSerializer(data=data, context={'request':request})
+       
+        if serializer.is_valid():
+            serializer.save(user_id=request.user)
+        else:
+            return CustomeResponse(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
+        
+        return CustomeResponse(serializer.data,status=status.HTTP_200_OK)
+            
+        
+        
+      @list_route(methods=['get'],)
+      def getFavoriteContact(self,request): 
+
+        try:
+            user_id = request.user.id            
+        except:
+             user_id = ''
+        try:
+            favoriteContactData =   FavoriteContact.objects.filter(user_id=user_id)
+        except:
+            return CustomeResponse({'msg':'server error please try again'},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
+
+        if favoriteContactData:
+            serializer = FavoriteContactSerializer(favoriteContactData,many=True)
+            return CustomeResponse(serializer.data,status=status.HTTP_200_OK)
+        else:
+            return CustomeResponse({'msg':'favorite contact not found for this user'},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
           

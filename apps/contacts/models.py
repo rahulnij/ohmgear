@@ -25,22 +25,19 @@ class Contacts(models.Model):
         return '{"id:"%s","bcard_json_data":"%s","businesscard_id":"%s"}'%(self.id,self.bcard_json_data,self.businesscard_id)
     
     
+    
+class FavoriteContact(models.Model):
+    class Meta:
+        db_table = 'ohmgear_contacts_favorite_contact'
+        unique_together = ('contact_id', 'user_id')
+    contact_id   =  models.ForeignKey(Contacts,db_column='contact_id')
+    user_id = models.ForeignKey(User,db_column="user_id")
+    created_date=models.DateTimeField(_("Created Date"),auto_now_add=True,auto_now=False)
+    updated_date=models.DateField(_("Updated Date"),auto_now_add=False,auto_now=True)
+    
+    def __unicode__(self):
+        return '{"id:"%s","contact_id":"%s"}'%(self.id,self.contact_id)
 # Create Groups to store contacts
-
-class Groups(models.Model):
-      class Meta:
-            db_table = 'ohmgear_contacts_groups'
-            
-      user_id = models.ForeignKey(User,db_column="user_id")
-      group_name = models.CharField(_("Group Name"),max_length=30)
-      created_date=models.DateTimeField(_("Created Date"),auto_now_add=True,auto_now=False)
-      updated_date=models.DateField(_("Updated Date"),auto_now_add=False,auto_now=True)  
-      
-      
-      
-class ContactGroupReference():
-      group_id = models.ForeignKey(Groups,db_column="group_id")
-      contact_id = models.ForeignKey(Contacts,db_column="contact_id")
       
 
       
