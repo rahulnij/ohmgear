@@ -34,9 +34,9 @@ class ContactsSerializerWithJson(serializers.ModelSerializer):
         
         
 class FavoriteContactSerializer(serializers.ModelSerializer):
-    #contact_detail = ContactsSerializer(many=True,read_only=True)
-    contact_detail = serializers.ReadOnlyField(source='contact_id.bcard_json_data')
-    #businesscard_id = serializers.ReadOnlyField(source='contact_id.businesscard_id')
-    class Meta:
+    
+     folder_contact_data = serializers.ReadOnlyField(source='foldercontact_id.contact_id.bcard_json_data')
+     contact_id = serializers.ReadOnlyField(source='foldercontact_id.contact_id.id')
+     class Meta:
         model = FavoriteContact
-        fields = ('user_id','contact_detail','contact_id')
+        fields = ('user_id','foldercontact_id','folder_contact_data','contact_id')

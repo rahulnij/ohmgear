@@ -327,17 +327,16 @@ class storeContactsViewSet(viewsets.ModelViewSet):
             user_id = ''
         
         try:
-            contact_id = request.data['contact_id']
+            contact_id = request.data['foldercontact_id']
         except:
-            return CustomeResponse({'msg':'contact_id not found'},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
-        print contact_id
+            return CustomeResponse({'msg':'foldercontact_id not found'},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
+        
 #        data['user_id'] = request.user.id
         tempContainer = []
         for data in contact_id:
-            print data
             tempData = {}
             tempData['user_id'] = request.user.id
-            tempData ['contact_id'] =data
+            tempData ['foldercontact_id'] =data
             tempContainer.append(tempData)
         
         
@@ -381,12 +380,12 @@ class storeContactsViewSet(viewsets.ModelViewSet):
             user_id = ''
             
         try:
-            contact_id =request.data['contact_id']
+            foldercontact_id =request.data['foldercontact_id']
         except:
-            return CustomeResponse({'msg':'Contact_id not found'},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
+            return CustomeResponse({'msg':'Folder Contact_id not found'},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
          
         try:
-            favoriteContactData =  FavoriteContact.objects.filter(user_id=user_id,contact_id__in=contact_id)
+            favoriteContactData =  FavoriteContact.objects.filter(user_id=user_id,foldercontact_id__in=foldercontact_id)
         except:
             return CustomeResponse({'msg':'Server error please try again'},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
         
@@ -394,5 +393,5 @@ class storeContactsViewSet(viewsets.ModelViewSet):
             favoriteContactData.delete()
             return CustomeResponse({'msg':'Contact is unafavorite successfully'},status=status.HTTP_200_OK)
         else:
-            return CustomeResponse({'msg':'Contact cannot be deleted'},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
+            return CustomeResponse({'msg':'Favorite Contact cannot be deleted'},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
             
