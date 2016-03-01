@@ -28,7 +28,8 @@ class BusinessCardMediaSerializer(serializers.ModelSerializer):
 class BusinessCardSkillAvailableSerializer(serializers.ModelSerializer):
     
     class Meta:
-        model = BusinessCardSkillAvailable  
+        model = BusinessCardSkillAvailable
+        fields = ('skill_name',)  
         
 class BusinessCardHistorySerializer(serializers.ModelSerializer):
     
