@@ -351,7 +351,20 @@ class BusinessCardSkillAvailableViewSet(viewsets.ModelViewSet):
         
     def update(self, request, pk=None):
          return CustomeResponse({'msg':"Update method does not allow"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
-       
+    
+      
+    @list_route(methods=['get'],)
+    def allSkills(self,request):     
+        try:
+            skillsAvailable  = BusinessCardSkillAvailable.objects.all()
+            serializer = BusinessCardSkillAvailableSerializer(skillsAvailable,many=True)
+            return CustomeResponse(serializer.data,status=status.HTTP_200_OK)
+        except:
+            return CustomeResponse({"msg":"email is mandatory"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
+         
+      
+      
+      
  # Add Skills to Business Card      
 class BusinessCardAddSkillViewSet(viewsets.ModelViewSet):
     queryset  = BusinessCardAddSkill.objects.all()

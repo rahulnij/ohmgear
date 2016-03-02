@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from apps.folders.serializer import FolderContactSerializer
-from models import Contacts
+from models import Contacts,FavoriteContact
 # Serializers define the API representation.
 class ContactsSerializer(serializers.ModelSerializer):
     #bcard_json_data = serializers.CharField()
@@ -32,3 +32,11 @@ class ContactsSerializerWithJson(serializers.ModelSerializer):
             'user_id'
         )        
         
+        
+class FavoriteContactSerializer(serializers.ModelSerializer):
+    
+     folder_contact_data = serializers.ReadOnlyField(source='foldercontact_id.contact_id.bcard_json_data')
+     contact_id = serializers.ReadOnlyField(source='foldercontact_id.contact_id.id')
+     class Meta:
+        model = FavoriteContact
+        fields = ('user_id','foldercontact_id','folder_contact_data','contact_id')

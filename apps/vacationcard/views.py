@@ -80,7 +80,7 @@ class VacationCardViewSet(viewsets.ModelViewSet):
         if call_from_func:
             #-------------- Call from offline app ------------------------------# 
             try:
-                stops =  offline_data['vacation']
+                stops =  offline_data['vacation_trips']
                 vacation_name =   offline_data['vacation_name']
                 data    = offline_data
                 
@@ -90,7 +90,7 @@ class VacationCardViewSet(viewsets.ModelViewSet):
                 return CustomeResponse({'status':'fail','msg':'Please provide correct Json Format of vacation'},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
         else:
             try:
-                stops = request.DATA['vacation']
+                stops = request.DATA['vacation_trips']
                 vacation_name =       request.DATA['vacation_name']
                 data    = request.DATA
                 #stops = json.loads(request.DATA['vacation'])
@@ -206,7 +206,7 @@ class VacationCardViewSet(viewsets.ModelViewSet):
             #-------------- Call from offline app ------------------------------# 
             try:
                 vacation_id =  offline_data['vcard_id']
-                stops =  offline_data['vacation']
+                stops =  offline_data['vacation_trips']
                 vacation_name =   offline_data['vacation_name']
                 data    = offline_data
                 
@@ -216,7 +216,7 @@ class VacationCardViewSet(viewsets.ModelViewSet):
         else:
             try:
                 vacation_id = pk
-                stops = request.data['vacation']
+                stops = request.data['vacation_trips']
                 vacation_name =       request.DATA['vacation_name']
                 data    = request.DATA
             except:

@@ -210,9 +210,9 @@ class OfflineSendReceiveDataViewSet(viewsets.ModelViewSet):
                             
                             #------------- Local vacation card id --------------#
                             try:
-                                    data['vacation'] =      items['vacation']
+                                    data['vacation_trips'] =      items['vacation_trips']
                             except:
-                                    data['vacation'] =''
+                                    data['vacation_trips'] =''
                             #-------------------- End --------------------------#
                             try:
                               local_vacation_id = items['local_vacation_id']
@@ -258,9 +258,9 @@ class OfflineSendReceiveDataViewSet(viewsets.ModelViewSet):
                             
                             #------------- Local vacation card id --------------#
                             try:
-                                    data['vacation'] =      items['vacation']
+                                    data['vacation_trips'] =      items['vacation_trips']
                             except:
-                                    data['vacation'] =''
+                                    data['vacation_trips'] =''
                             
                                      
                             #------------- Local vacation card id --------------#
