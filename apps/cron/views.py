@@ -81,7 +81,7 @@ class UpdateContactLinkStatusCron(viewsets.ModelViewSet):
         
         def list(self, request):
           #---------------------- Fetch the all users contact ---------------------------#
-          queryset = self.queryset.order_by("user_id")
+          queryset_contact_without_bcard = self.queryset.filter(businesscard_id__isnull=True).order_by("user_id")
           queryset_contact_have_bcard = self.queryset.filter(businesscard_id__isnull=False).order_by("user_id")
           queryset_serializer   = ContactsSerializer(queryset_contact_have_bcard,many=True)
           
@@ -90,7 +90,7 @@ class UpdateContactLinkStatusCron(viewsets.ModelViewSet):
               final_contact_ids = []
               match_contact_insert = []
               storeObject = storeContactsViewSet()
-              for value in queryset:
+              for value in queryset_contact_without_bcard:
                   
                   iterator = iter(contacts_copy)
                   try :
@@ -112,7 +112,7 @@ class UpdateContactLinkStatusCron(viewsets.ModelViewSet):
                                 if folder_contact.link_status == 0:
                                     folder_contact.link_status = 1
                                     folder_contact.save()
-                                    match_contact_insert.append({"user_id":value.user_id.id,"businesscard_id":value_copy['businesscard_id'],"folder_contact_id":folder_contact.id})
+                                    match_contact_insert.append({"user_id":value.user_id.id,"folder_contact_id":folder_contact.id,"businesscard_id":value_copy['businesscard_id']})
                                 #match_contact_insert = MatchContactSerializer({''})
                                 #------------------------------ End ----------------------------------------#
                              #pass

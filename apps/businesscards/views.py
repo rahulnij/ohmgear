@@ -480,14 +480,14 @@ class BusinessViewSet(viewsets.ModelViewSet):
          except:
            user_id = None  
     #-------------------- First Validate the json contact data ------------------------------#
-#         try:
-#            validictory.validate(json.loads(request.DATA["bcard_json_data"]), BUSINESS_CARD_DATA_VALIDATION)
-#         except validictory.ValidationError as error:
-#            return CustomeResponse({'msg':error.message },status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
-#         except validictory.SchemaError as error:
-#            return CustomeResponse({'msg':error.message },status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
-#         except:
-#            return CustomeResponse({'msg':"Please provide bcard_json_data in json format" },status=status.HTTP_400_BAD_REQUEST,validate_errors=1) 
+         try:
+            validictory.validate(request.DATA["bcard_json_data"], BUSINESS_CARD_DATA_VALIDATION)
+         except validictory.ValidationError as error:
+            return CustomeResponse({'msg':error.message },status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
+         except validictory.SchemaError as error:
+            return CustomeResponse({'msg':error.message },status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
+         except:
+            return CustomeResponse({'msg':"Please provide bcard_json_data in json format" },status=status.HTTP_400_BAD_REQUEST,validate_errors=1) 
          #---------------------------------- End ----------------------------------------------------------- #
          if call_from_func:
             #-------------- Call from offline app ------------------------------# 
@@ -537,15 +537,15 @@ class BusinessViewSet(viewsets.ModelViewSet):
         
     def update(self, request, pk=None,call_from_func=None,offline_data=None):  
          #-------------------- First Validate the json contact data ------------------------------#
-#         try:
-#            validictory.validate(json.loads(request.DATA["bcard_json_data"]), BUSINESS_CARD_DATA_VALIDATION)
-#         except validictory.ValidationError as error:
-#            return CustomeResponse({'msg':error.message },status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
-#         except validictory.SchemaError as error:
-#            return CustomeResponse({'msg':error.message },status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
-#         except:
-#            return CustomeResponse({'msg':"Please provide bcard_json_data in json format" },status=status.HTTP_400_BAD_REQUEST,validate_errors=1) 
-         #---------------------- - End ----------------------------------------------------------- #
+         try:
+            validictory.validate(request.DATA["bcard_json_data"], BUSINESS_CARD_DATA_VALIDATION)
+         except validictory.ValidationError as error:
+            return CustomeResponse({'msg':error.message },status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
+         except validictory.SchemaError as error:
+            return CustomeResponse({'msg':error.message },status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
+         except:
+            return CustomeResponse({'msg':"Please provide bcard_json_data in json format" },status=status.HTTP_400_BAD_REQUEST,validate_errors=1) 
+        # ---------------------- - End ----------------------------------------------------------- #
          if call_from_func:
             data = offline_data
             pk = offline_data["bcard_id"]

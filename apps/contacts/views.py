@@ -75,12 +75,12 @@ class storeContactsViewSet(viewsets.ModelViewSet):
                for contact_temp in contact:
 #                    print contact_temp
 #                    #--------------------  Validate the json data ------------------------------#
-#                    try:
-#                       validictory.validate(contact_temp["bcard_json_data"], BUSINESS_CARD_DATA_VALIDATION)
-#                    except validictory.ValidationError as error:
-#                       return CustomeResponse({'msg':error.message },status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
-#                    except validictory.SchemaError as error:
-#                       return CustomeResponse({'msg':error.message },status=status.HTTP_400_BAD_REQUEST,validate_errors=1)        
+                    try:
+                       validictory.validate(contact_temp["bcard_json_data"], BUSINESS_CARD_DATA_VALIDATION)
+                    except validictory.ValidationError as error:
+                       return CustomeResponse({'msg':error.message },status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
+                    except validictory.SchemaError as error:
+                       return CustomeResponse({'msg':error.message },status=status.HTTP_400_BAD_REQUEST,validate_errors=1)        
 #                    ---------------------- - End ----------------------------------------------------------- #
                     if 'user_id' not in contact_temp:
                         contact_temp['user_id'] = user_id.id
