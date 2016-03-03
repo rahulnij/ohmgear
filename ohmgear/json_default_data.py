@@ -115,9 +115,9 @@ BUSINESS_CARD_DATA_VALIDATION = {
                                 "items": {
                                           "type" : "object",
                                           "properties" : {
-                                           "indexPos": { "type": "number" },
+                                           "indexPos": { "type": "string" },
 		                           "placeHolder": { "type" : "string" },
-                                           "isUpper":{ "type": "number" },
+                                           "isUpper":{ "type": "string" },
                                            "keyName":{ "type" : "string","enum": ["FirstName","LastName","CompName","CardName","DEPTName","NickName"] },
                                            "value":{ "type" : "string"}    
                                           }
