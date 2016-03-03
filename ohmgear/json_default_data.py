@@ -97,115 +97,47 @@ BUSINESS_CARD_DATA_VALIDATION = {
                     "properties":{        
                             "basic_info":
                                { 
-                                "type": "object",
-                                "properties": {
-                                                       "name":{"type": "string","blank": True},
-                                                       "nick_name":{"type": "string","blank": True},
-                                                       "card_name": {"type": "string","blank": True,"minLength": 0, "maxLength": 50},
-                                                       "language":{"type": "string","blank": True,"minLength": 2, "maxLength": 2},                                                       
-                                                       "title":{"type": "string","blank": True,"minLength": 0, "maxLength": 50},
-                                                       "company_name":{"type": "string","blank": True,"minLength": 0, "maxLength": 50}
-                                               }              
+                                "type": "array",
+                                "items":[]              
                                 },
                             "contact_info":
                                { 
                                 "type": "object",
                                 "properties": {
-                                                       "phone":{"type": "array","items":[{}],"blank": True},
-                                                       "email":{"type": "array","items":[{}],"blank": True},
-                                                       "message":{"type": "array","items":[{}],"blank": True},
-                                                       "website":{"type": "array","items":[{}],"blank": True},
-                                                       "social_network":{"type": "array","items":[{}],"blank": True},
-                                                       "address":{
-                                                               "type": "object",
-                                                               "properties": {
-                                                                "work":{
-                                                                  "type": "object",
-                                                                  "properties": {
-                                                                     "city":{"type": "string","blank": True,"minLength": 0, "maxLength": 50},
-                                                                     "country":{"type": "string","blank": True,"minLength": 0, "maxLength": 50},
-                                                                     "state":{"type": "string","blank": True,"minLength": 0, "maxLength": 50},
-                                                                     "street":{"type": "string","blank": True,"minLength": 0, "maxLength": 50},
-                                                                     "zipCode":{"type": "string","blank": True,"minLength": 0, "maxLength": 50}
-                                                                  }
-                                                                }   ,
-                                                               "phone":{
-                                                                  "type": "object",
-                                                                  "properties": {
-                                                                     "city":{"type": "string","blank": True,"minLength": 0, "maxLength": 50},
-                                                                     "country":{"type": "string","blank": True,"minLength": 0, "maxLength": 50},
-                                                                     "state":{"type": "string","blank": True,"minLength": 0, "maxLength": 50},
-                                                                     "street":{"type": "string","blank": True,"minLength": 0, "maxLength": 50},
-                                                                     "zipCode":{"type": "string","blank": True,"minLength": 0, "maxLength": 50}                                                                 
-                                                                  
-                                                                  }                                                                  
-                                                                
-                                                                
-                                                                }
-                                                               
-                                                               }
-                                                       
-                                                       }
+                                                       "phone":{"type": "array","items":[],"minItems": 0,"maxItems": 10,"additionalItems": True},
+                                                       "email":{"type": "array","items":[],"minItems": 0,"maxItems": 10,"additionalItems": True}
                                                            
                                                }              
-                                }
+                                },
+                             "basic_info":   
+                               { 
+                                "type": "array",
+                                "items": {
+                                          "type" : "object",
+                                          "properties" : {
+                                           "indexPos": { "type": "number" },
+		                           "placeHolder": { "type" : "string" },
+                                           "isUpper":{ "type": "number" },
+                                           "keyName":{ "type" : "string","enum": ["FirstName","LastName","CompName","CardName","DEPTName","NickName"] },
+                                           "value":{ "type" : "string"}    
+                                          }
+                                         },
+                                "minItems": 1,
+                                "maxItems": 10
+                                },                                 
                     }
             },
             "side_second":{
                     
                     "type": "object",
-                    "properties":{        
-                            "basic_info":
-                               { 
-                                "type": "object",
-                                "properties": {
-                                                       "name":{"type": "string","blank": True},
-                                                       "nick_name":{"type": "string","blank": True},
-                                                       "card_name": {"type": "string","blank": True,"minLength": 0, "maxLength": 50},
-                                                       "language":{"type": "string","blank": True,"minLength": 2, "maxLength": 2},                                                       
-                                                       "title":{"type": "string","blank": True,"minLength": 0, "maxLength": 50},
-                                                       "company_name":{"type": "string","blank": True,"minLength": 0, "maxLength": 50}
-                                               }              
-                                },
+                    "properties":{ 
                             "contact_info":
                                { 
                                 "type": "object",
                                 "properties": {
-                                                       "phone":{"type": "array","items":[{}],"blank": True},
-                                                       "email":{"type": "array","items":[{}],"blank": True},
-                                                       "message":{"type": "array","items":[{}],"blank": True},
-                                                       "website":{"type": "array","items":[{}],"blank": True},
-                                                       "social_network":{"type": "array","items":[{}],"blank": True},
-                                                       "address":{
-                                                               "type": "object",
-                                                               "properties": {
-                                                                "work":{
-                                                                  "type": "object",
-                                                                  "properties": {
-                                                                     "city":{"type": "string","blank": True,"minLength": 0, "maxLength": 50},
-                                                                     "country":{"type": "string","blank": True,"minLength": 0, "maxLength": 50},
-                                                                     "state":{"type": "string","blank": True,"minLength": 0, "maxLength": 50},
-                                                                     "street":{"type": "string","blank": True,"minLength": 0, "maxLength": 50},
-                                                                     "zipCode":{"type": "string","blank": True,"minLength": 0, "maxLength": 10}
-                                                                  }
-                                                                }   ,
-                                                               "phone":{
-                                                                  "type": "object",
-                                                                  "properties": {
-                                                                     "city":{"type": "string","blank": True,"minLength": 0, "maxLength": 50},
-                                                                     "country":{"type": "string","blank": True,"minLength": 0, "maxLength": 50},
-                                                                     "state":{"type": "string","blank": True,"minLength": 0, "maxLength": 50},
-                                                                     "street":{"type": "string","blank": True,"minLength": 0, "maxLength": 50},
-                                                                     "zipCode":{"type": "string","blank": True,"minLength": 0, "maxLength": 10}                                                                 
-                                                                  
-                                                                  }                                                                  
-                                                                
-                                                                
-                                                                }
-                                                               
-                                                               }
-                                                       
-                                                       }
+                                                       "phone":{"type": "array","items":[],"minItems": 0,"maxItems": 10,"additionalItems": True},
+                                                       "email":{"type": "array","items":[],"minItems": 0,"maxItems": 10,"additionalItems": True}
+                                          
                                                            
                                                }              
                                 }
