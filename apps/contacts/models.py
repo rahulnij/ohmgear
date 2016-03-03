@@ -39,6 +39,24 @@ class FavoriteContact(models.Model):
     def __unicode__(self):
         return '{"id:"%s","contact_id":"%s"}'%(self.id,self.contact_id)
 # Create Groups to store contacts
+
+class AssociateContact(models.Model):
+    class Meta:
+        db_table = 'ohmgear_contacts_associate_contact'
+        unique_together = ('user_id','associatefoldercontact_id','foldercontact_id')
+    user_id  = models.ForeignKey(User,db_column='user_id')
+    associatefoldercontact_id = models.ForeignKey(FolderContact,db_column='associatefoldercontact_id')
+    foldercontact_id  =       models.ForeignKey(FolderContact,db_column='foldercontact_id',related_name = 'folder_data')
+    created_date=models.DateTimeField(_("Created Date"),auto_now_add=True,auto_now=False)
+    updated_date=models.DateField(_("Updated Date"),auto_now_add=False,auto_now=True)
+    
+    def __unicode__(self):
+        return '{"id:"%s","user_id":"%s","associateFolderContact_id":"%s","foldercontact_id":"%s"}'%(self.id,self.user_id,self.associateFolderContact_id,self.foldercontact_id)
+    
+        
+        
+    
+
       
 
       

@@ -13,15 +13,16 @@ from rest_framework.permissions import IsAuthenticated
 #-------------------------------------------#
 #------------------ Local app imports ------#
 from ohmgear.functions import CustomeResponse
-from serializer import ContactsSerializer,ContactsSerializerWithJson,FavoriteContactSerializer
+from serializer import ContactsSerializer,ContactsSerializerWithJson,FavoriteContactSerializer,AssociateContactSerializer
 from ohmgear.json_default_data import BUSINESS_CARD_DATA_VALIDATION
 from models import Contacts,FavoriteContact
 from ohmgear.token_authentication import ExpiringTokenAuthentication
 from apps.businesscards.views import BusinessViewSet
 
 from apps.folders.views import FolderViewSet
-from apps.folders.models import Folder
+from apps.folders.models import Folder,FolderContact
 from apps.folders.serializer import FolderContactSerializer
+import copy
 #---------------------------End------------------------------------#
 
 
@@ -391,7 +392,92 @@ class storeContactsViewSet(viewsets.ModelViewSet):
         
         if favoriteContactData:
             favoriteContactData.delete()
-            return CustomeResponse({'msg':'Contact is unafavorite successfully'},status=status.HTTP_200_OK)
+            return CustomeResponse({'msg':'Remove from favorite successfully'},status=status.HTTP_200_OK)
         else:
             return CustomeResponse({'msg':'Favorite Contact cannot be deleted'},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
+
+        
+    #---------------------------------------Associate Contact--------------------------------#    
+      
+        
+      #------------------Insert Associate Contact it will be 2 way process-----------#  
+      @list_route(methods=['post'],)
+      def addAssociateContact(self,request):
+        try:
+            user_id = request.user.id
+        except:
+            user_id = None
+        
+        try:
+            associate_from  = request.data['associate']
+            associate_to      = request.data['associate_to']
             
+            #  use copy.deepcopy main request.data will be same otherwise it will be override by all_contact
+            all_contact = copy.deepcopy(request.data['associate_to'])
+            
+            all_contact.append(associate_from)
+            
+        except:
+            return CustomeResponse({'msg':'Please Check json format'},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
+        
+        try:
+            associate_contact = FolderContact.objects.filter(user_id=user_id,id__in=all_contact).values()
+            user_contact  = []
+            for data in associate_contact:
+                  contact = {}
+                  contact    =      data['id']
+                  user_contact.append(contact)
+                  
+            
+            if associate_from in user_contact:
+                #-------------intersect Associate_from and user_contact-----------# 
+                associate_contact = list(set(user_contact) & set(associate_to))
+                if not associate_contact:
+                    return CustomeResponse({'msg':'Associate Contact is not there'},status=status.HTTP_400_BAD_REQUEST,validate_errors=1) 
+                tempContainer = []
+            
+                for contact in associate_contact:
+                    tempData = {}
+                    newdata  = {}
+                    testdata = {}
+                    tempData['associatefoldercontact_id'] = associate_from
+                    tempData['foldercontact_id']          = contact
+                    tempData['user_id']                   = request.user.id
+                    
+                    newdata['associatefoldercontact_id'] = contact
+                    newdata['foldercontact_id']          = associate_from
+                    newdata['user_id']                   = request.user.id
+                    
+                    tempContainer.append(tempData)
+                    tempContainer.append(newdata)
+                                
+                serializer = AssociateContactSerializer(data=tempContainer,many=True)
+                if serializer.is_valid():
+                    serializer.save()
+                    return CustomeResponse(serializer.data,status=status.HTTP_201_CREATED)
+                else:
+                    return CustomeResponse(serializer.errors,status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
+                    
+                
+                
+            else:
+                return CustomeResponse({'msg':'The contact from which to associate is not in user Contact'},status=status.HTTP_400_BAD_REQUEST,validate_errors=1) 
+        except:
+            return CustomeResponse({'msg':'Contact not found'},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
+        
+      @list_route(methods=['get'])  
+      def getAssociateContact(self,request):  
+        try:
+              user_id  = request.user.id
+            
+        except:
+            user_id     =   ''
+            return CustomeResponse({'msg':'user not found'},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
+        
+        accociateContactData  = AssociateContact.objects.filter(user_id=user_id)
+        serializer = AssociateContactSerializer(accociateContactData,many=True)
+        if serializer.is_valid():
+            return CustomeResponse(serializer.data,satus=status.HTTP_200_OK)
+        else:
+            return CustomeResponse({'msg':'Assciate Contact not found'},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
+             
