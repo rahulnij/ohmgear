@@ -331,8 +331,8 @@ class BusinessCardVacationViewSet(viewsets.ModelViewSet):
         #bcard_id =  bcard_id['data']
 
 
-        business_id = request.DATA['businesscard_id'].split(',')
-        vacation_id = request.DATA['vacationcard_id'].split(',')
+        business_id = request.DATA['businesscard_id']
+        vacation_id = request.DATA['vacationcard_id']
         
         #print vacation_id
         count = 0
