@@ -702,8 +702,7 @@ class BusinessViewSet(viewsets.ModelViewSet):
                   target_bcard_id = None
                   
                #------------------ Get the  target_bcard_id and merge_bcards_ids data ------------------------------#
-               if merge_bcards_ids and target_bcard_id and user_id:
-                    self.mergeSkills(merge_bcards_ids, target_bcard_id,user_id)
+               if merge_bcards_ids and target_bcard_id and user_id:                    
                     target_bacard = BusinessCard.objects.select_related().get(id=target_bcard_id,user_id= user_id)
                     first_json = json.loads(json.dumps(target_bacard.contact_detail.bcard_json_data))
                     #---- make sure target_bcard_id not in merge_bcards_ids ---------------------------------------------#
@@ -728,6 +727,7 @@ class BusinessViewSet(viewsets.ModelViewSet):
                                first_json = third_json
                         #------------------- TODO Delete the  merge_bcards_ids -------------------#
                         if merge_bcards:
+                            self.mergeSkills(merge_bcards_ids, target_bcard_id,user_id)
                             #pass
                             merge_bcards.delete()
                         else:
