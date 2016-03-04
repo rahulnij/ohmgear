@@ -15,7 +15,7 @@ from rest_framework.permissions import IsAuthenticated
 from ohmgear.functions import CustomeResponse
 from serializer import ContactsSerializer,ContactsSerializerWithJson,FavoriteContactSerializer,AssociateContactSerializer
 from ohmgear.json_default_data import BUSINESS_CARD_DATA_VALIDATION
-from models import Contacts,FavoriteContact
+from models import Contacts,FavoriteContact,AssociateContact
 from ohmgear.token_authentication import ExpiringTokenAuthentication
 from apps.businesscards.views import BusinessViewSet
 
@@ -23,6 +23,7 @@ from apps.folders.views import FolderViewSet
 from apps.folders.models import Folder,FolderContact
 from apps.folders.serializer import FolderContactSerializer
 import copy
+from django.db.models import Q
 #---------------------------End------------------------------------#
 
 
@@ -326,6 +327,7 @@ class storeContactsViewSet(viewsets.ModelViewSet):
               user_id = request.user.id
         except:
             user_id = ''
+            return CustomeResponse({'msg':'user not found'},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
         
         try:
             contact_id = request.data['foldercontact_id']
@@ -359,6 +361,8 @@ class storeContactsViewSet(viewsets.ModelViewSet):
             user_id = request.user.id            
         except:
              user_id = ''
+             return CustomeResponse({'msg':'user not found'},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
+             
         try:
             favoriteContactData =   FavoriteContact.objects.filter(user_id=user_id)
         except:
@@ -379,6 +383,7 @@ class storeContactsViewSet(viewsets.ModelViewSet):
             user_id = request.user.id
         except:
             user_id = ''
+            return CustomeResponse({'msg':'user not found'},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
             
         try:
             foldercontact_id =request.data['foldercontact_id']
@@ -406,7 +411,8 @@ class storeContactsViewSet(viewsets.ModelViewSet):
         try:
             user_id = request.user.id
         except:
-            user_id = None
+            user_id = ''
+            return CustomeResponse({'msg':'user not found'},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
         
         try:
             associate_from  = request.data['associate']
@@ -439,7 +445,6 @@ class storeContactsViewSet(viewsets.ModelViewSet):
                 for contact in associate_contact:
                     tempData = {}
                     newdata  = {}
-                    testdata = {}
                     tempData['associatefoldercontact_id'] = associate_from
                     tempData['foldercontact_id']          = contact
                     tempData['user_id']                   = request.user.id
@@ -457,15 +462,15 @@ class storeContactsViewSet(viewsets.ModelViewSet):
                     return CustomeResponse(serializer.data,status=status.HTTP_201_CREATED)
                 else:
                     return CustomeResponse(serializer.errors,status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
-                    
-                
-                
+    
             else:
                 return CustomeResponse({'msg':'The contact from which to associate is not in user Contact'},status=status.HTTP_400_BAD_REQUEST,validate_errors=1) 
         except:
             return CustomeResponse({'msg':'Contact not found'},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
         
-      @list_route(methods=['get'])  
+      #---------------------------Get All associate Contact of a user----------------------#
+      
+      @list_route(methods=['post'])  
       def getAssociateContact(self,request):  
         try:
               user_id  = request.user.id
@@ -474,10 +479,53 @@ class storeContactsViewSet(viewsets.ModelViewSet):
             user_id     =   ''
             return CustomeResponse({'msg':'user not found'},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
         
-        accociateContactData  = AssociateContact.objects.filter(user_id=user_id)
-        serializer = AssociateContactSerializer(accociateContactData,many=True)
-        if serializer.is_valid():
-            return CustomeResponse(serializer.data,satus=status.HTTP_200_OK)
+        try:
+            associate_folder_id = request.data['associatefoldercontact_id']
+        except:
+            return CustomeResponse({'msg':'associatefoldercontact_id not found'},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
+            
+        try:
+            accociateContactData  = AssociateContact.objects.filter(associatefoldercontact_id=associate_folder_id)
+        except:
+            return CustomeResponse({'msg':'Server error please try again'},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
+        if accociateContactData:
+            serializer = AssociateContactSerializer(accociateContactData,many=True)
+            return CustomeResponse(serializer.data,status=status.HTTP_200_OK)
         else:
             return CustomeResponse({'msg':'Assciate Contact not found'},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
-             
+        
+        
+    #-------------------Delete Associate Contact to whom it is connected---------#    
+        
+      @list_route(methods=['post'])  
+      def deleteAssociateContact(self,request):       
+        try:
+            user_id = request.user.id
+        except:
+            user_id = ''
+            return CustomeResponse({'msg':'User not found'},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
+            
+        try:
+            associate_from = request.data['associate_from']
+            associate_to = request.data['associate_to']
+            
+        except:
+            return CustomeResponse({'msg':'Associate Contact not found'},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
+        
+        try:
+            associateContactData =AssociateContact.objects.filter(Q(user_id=user_id,associatefoldercontact_id__in=associate_from,foldercontact_id__in=associate_to) | Q(user_id=user_id,associatefoldercontact_id__in=associate_to,foldercontact_id__in=associate_from))
+        
+        except:
+            return CustomeResponse({'msg':'Server try again'},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
+        
+        if associateContactData:
+            associateContactData.delete()
+            return CustomeResponse({'msg':'Associate Contact delete successfully'},status=status.HTTP_200_OK)
+        else:
+            return CustomeResponse({'msg':'Assciate Contact cannot be deleted'},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
+            
+            
+            
+        
+        
+            

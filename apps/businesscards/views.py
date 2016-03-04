@@ -817,10 +817,10 @@ class BusinessViewSet(viewsets.ModelViewSet):
                     return CustomeResponse({"msg":"Card can't be Reactive as your Business card is not attached with any identifiers  "},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
                         
             except:
-                return CustomeResponse({"msg":"some problem occured during server side during Reactibe business card "},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
+                return CustomeResponse({"msg":"some problem occured during server side during Reactive business card "},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
         else:
             return CustomeResponse({"msg":"Business Card not found"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
             
     
     def destroy(self, request, pk=None):
-         return CustomeResponse({'msg':'record not found'},status=status.HTTP_404_NOT_FOUND,validate_errors=1)
+         return CustomeResponse({'msg':'record not found'},status=status.HTTP_404_NOT_FOUND,validate_errors=1)  
