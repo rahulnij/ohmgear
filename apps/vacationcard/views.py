@@ -14,7 +14,7 @@ from apps.businesscards.models import BusinessCardVacation,BusinessCard
 from rest_framework.decorators import detail_route, list_route
 from django.shortcuts import get_object_or_404
 from rest_framework.views import APIView
-from serializer import VacationCardMergeSerializer
+from serializer import VacationCardMergeSerializer,VacationDuplicateSerializer
 
 
 class VacationCardViewSet(viewsets.ModelViewSet):
@@ -450,7 +450,9 @@ class VacationCardMerge(APIView):
                 #remove source vacation card once it trips done
                 VacationCard.objects.filter(user_id=request.user, id__in=sourceVacationCardIds).delete()
                 
-                return CustomeResponse({'msg':'success'}, status=status.HTTP_200_OK)
+                vacationmerge_data = VacationCard.objects.filter(user_id=request.user, id=destVacationCardId)
+                serializer = VacationDuplicateSerializer(data=vacationmerge_data,many=True)
+                return CustomeResponse(serializer.data, status=status.HTTP_200_OK)
         except:
             return CustomeResponse({'msg':'Server Error'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
