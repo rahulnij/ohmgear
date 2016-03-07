@@ -435,23 +435,23 @@ class VacationCardMerge(APIView):
                 destVacationCardId = request.data.get('dest')
                 vacationCardIds = sourceVacationCardIds[:]
                 vacationCardIds.append(destVacationCardId)
-               
+
                 vacationCardCount = VacationCard.objects.filter(user_id=request.user, id__in=vacationCardIds).count()
-                
+
                 # ids must be belongs to session user and not dest id not in source
                 if vacationCardCount != len(vacationCardIds):
                     return CustomeResponse({'msg': 'one or all of the vacation ids not exists'}, status=status.HTTP_400_BAD_REQUEST)
-                
+
                 #update source vacation card ids to destination vacation card id
                 VacationTrip.objects.filter(user_id=request.user, vacationcard_id__in=sourceVacationCardIds).update(vacationcard_id=destVacationCardId)
                 BusinessCardVacation.objects.filter(user_id=request.user, vacationcard_id__in=sourceVacationCardIds).update(vacationcard_id=destVacationCardId)
 
-                
+
                 #remove source vacation card once it trips done
                 VacationCard.objects.filter(user_id=request.user, id__in=sourceVacationCardIds).delete()
-                
-                vacationmerge_data = VacationCard.objects.filter(user_id=request.user, id=destVacationCardId)
-                serializer = VacationDuplicateSerializer(data=vacationmerge_data,many=True)
+
+                vacationmerge_data = VacationTrip.objects.filter(user_id=request.user,vacationcard_id=destVacationCardId)
+                serializer = VacationDuplicateSerializer(vacationmerge_data,many=True)
                 return CustomeResponse(serializer.data, status=status.HTTP_200_OK)
         except:
             return CustomeResponse({'msg':'Server Error'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
