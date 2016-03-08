@@ -151,6 +151,39 @@ class BusinessCardIdentifierViewSet(viewsets.ModelViewSet):
              return CustomeResponse({'msg':"Businesscard Identifier Id not found"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
                             
             
+    #-----------------search contact by identifier ------------#
+    @list_route(methods=['post'])
+    def searchIdentifier(self,request):
+        try:
+            user_id  =request.user
+        
+        except:
+            user_id = ''
+            return CustomeResponse({'msg':"user not found"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
+                
+        try:
+            identifier = request.data['identifier']
+        except:
+            identifier = ''
+            return CustomeResponse({'msg':"Please provide identifier name"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
+            
+        try:    
+            identifier_data = Identifier.objects.filter(user_id=user_id,identifier=identifier)
+        except:
+            return CustomeResponse({'msg':"Server error"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
+        
+        if not identifier_data:
+            return CustomeResponse({'msg':"identifier not Found"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
+
+        serializer = BusinessIdentifierSerializer(identifier_data,many=True)
+        businesscard_data =  serializer.data[0]['business_identifier']
+        if not businesscard_data:
+            return CustomeResponse({'msg':"No Business Card Found"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
+        if serializer: 
+                return CustomeResponse(serializer.data,status=status.HTTP_200_OK)
+        else:
+            return CustomeResponse({'msg':"No Data Found"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
+    
     
          
 # BusinessCard Gallery 
