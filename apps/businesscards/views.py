@@ -766,7 +766,13 @@ class BusinessViewSet(viewsets.ModelViewSet):
                         else:
                            return CustomeResponse({"msg":"merge_bcards_ids does not exist."},status=status.HTTP_400_BAD_REQUEST,validate_errors=1) 
                         #----------------------- End ---------------------------------------------#
-                        return CustomeResponse({"msg":"successfully merged"},status=status.HTTP_200_OK)
+                        
+                        self.queryset = self.queryset.select_related('user_id').filter(user_id=user_id,id=target_bcard_id)  
+                        serializer = self.serializer_class(self.queryset,many=True)
+                        data = {}
+                        data['business_cards'] = serializer.data
+                        return CustomeResponse(data,status=status.HTTP_200_OK)
+            
                     else:
                         return CustomeResponse({"msg":"Please provide correct target_bcard_id"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)        
                else:
