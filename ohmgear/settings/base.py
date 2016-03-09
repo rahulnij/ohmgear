@@ -60,6 +60,7 @@ INSTALLED_APPS = (
     'apps.usersetting',
     'apps.groups',
     'ckeditor',
+    'apps.sendrequest'
 )
 
 MIDDLEWARE_CLASSES = (

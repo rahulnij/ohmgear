@@ -8,12 +8,13 @@ import boto3
 #------------------ Local app imports ------#
 from ohmgear.functions import CustomeResponse
 from ohmgear.token_authentication import ExpiringTokenAuthentication
+from models import Notification 
 #---------------------------End-------------#
 # Create your views here.
 
 class SendNotification(viewsets.ModelViewSet):
 
-    queryset  = None.objects.all()
+    queryset  = Notification.objects.all()
     serializer_class = None
     authentication_classes = (ExpiringTokenAuthentication,)
     permission_classes = (IsAuthenticated,)
