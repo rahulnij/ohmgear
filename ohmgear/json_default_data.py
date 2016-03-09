@@ -104,8 +104,33 @@ BUSINESS_CARD_DATA_VALIDATION = {
                                { 
                                 "type": "object",
                                 "properties": {
-                                                       "phone":{"type": "array","items":[],"minItems": 0,"maxItems": 10,"additionalItems": True},
-                                                       "email":{"type": "array","items":[],"minItems": 0,"maxItems": 10,"additionalItems": True}
+                                                       "phone":{
+                                                            "type": "array",
+                                                            "items":{
+                                                               "type": "object",
+                                                               "properties": {
+                                                                "type": { "type" : "string","required":True },
+                                                                "data": { "type" : "string","required":True,"minLength": 2,"maxLength": 15 }
+                                                               
+                                                               }
+                                                            },
+                                                            "minItems": 0,"maxItems": 10,
+                                                            "additionalItems": True
+                                                       },
+                                                       "email":{
+                                                            "type": "array",
+                                                            "items":{
+                                                               "type": "object",
+                                                               "properties": {
+                                                                "type": { "type" : "string","required":True },
+                                                                "data": { "type" : "string","required":True,"minLength": 2,"maxLength": 30 }
+                                                               
+                                                               }
+                                                            },
+                                                            "minItems": 0,
+                                                            "maxItems": 10,
+                                                            "additionalItems": True
+                                                       }
                                                            
                                                }              
                                 },
@@ -137,7 +162,8 @@ BUSINESS_CARD_DATA_VALIDATION = {
                                                        "email":{"type": "array","items":[],"minItems": 0,"maxItems": 10,"additionalItems": True}
                                           
                                                            
-                                               }              
+                                               },
+                                "required":False               
                                 }
                     }
             }            
