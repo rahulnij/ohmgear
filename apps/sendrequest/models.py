@@ -5,7 +5,7 @@ from django.utils.translation import ugettext_lazy as _
 class Notification(models.Model):  
     
     class Meta:
-     db_table = 'ohmgear_send_request'
+     db_table = 'ohmgear_send_requestssss'
 
     type = models.CharField(max_length=50,blank=True,null=True)
     sender_id = models.PositiveIntegerField(default=0, blank=True)
