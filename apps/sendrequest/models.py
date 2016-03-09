@@ -6,6 +6,7 @@ class Notification(models.Model):
     
     class Meta:
      db_table = 'ohmgear_send_request'
+
     type = models.CharField(max_length=50,blank=True,null=True)
     sender_id = models.PositiveIntegerField(default=0, blank=True)
     object_pk_url = models.CharField(max_length=100,blank=True,null=True)
