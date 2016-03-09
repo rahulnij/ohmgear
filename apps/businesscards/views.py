@@ -151,6 +151,39 @@ class BusinessCardIdentifierViewSet(viewsets.ModelViewSet):
              return CustomeResponse({'msg':"Businesscard Identifier Id not found"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
                             
             
+    #-----------------search contact by identifier ------------#
+    @list_route(methods=['post'])
+    def searchIdentifier(self,request):
+        try:
+            user_id  =request.user
+        
+        except:
+            user_id = ''
+            return CustomeResponse({'msg':"user not found"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
+                
+        try:
+            identifier = request.data['identifier']
+        except:
+            identifier = ''
+            return CustomeResponse({'msg':"Please provide identifier name"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
+            
+        try:    
+            identifier_data = Identifier.objects.filter(user_id=user_id,identifier=identifier)
+        except:
+            return CustomeResponse({'msg':"Server error"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
+        
+        if not identifier_data:
+            return CustomeResponse({'msg':"identifier not Found"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
+
+        serializer = BusinessIdentifierSerializer(identifier_data,many=True)
+        businesscard_data =  serializer.data[0]['business_identifier']
+        if not businesscard_data:
+            return CustomeResponse({'msg':"No Business Card Found"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
+        if serializer: 
+                return CustomeResponse(serializer.data,status=status.HTTP_200_OK)
+        else:
+            return CustomeResponse({'msg':"No Data Found"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
+    
     
          
 # BusinessCard Gallery 
@@ -733,7 +766,13 @@ class BusinessViewSet(viewsets.ModelViewSet):
                         else:
                            return CustomeResponse({"msg":"merge_bcards_ids does not exist."},status=status.HTTP_400_BAD_REQUEST,validate_errors=1) 
                         #----------------------- End ---------------------------------------------#
-                        return CustomeResponse({"msg":"successfully merged"},status=status.HTTP_200_OK)
+                        
+                        self.queryset = self.queryset.select_related('user_id').filter(user_id=user_id,id=target_bcard_id)  
+                        serializer = self.serializer_class(self.queryset,many=True)
+                        data = {}
+                        data['business_cards'] = serializer.data
+                        return CustomeResponse(data,status=status.HTTP_200_OK)
+            
                     else:
                         return CustomeResponse({"msg":"Please provide correct target_bcard_id"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)        
                else:
@@ -817,10 +856,10 @@ class BusinessViewSet(viewsets.ModelViewSet):
                     return CustomeResponse({"msg":"Card can't be Reactive as your Business card is not attached with any identifiers  "},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
                         
             except:
-                return CustomeResponse({"msg":"some problem occured during server side during Reactibe business card "},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
+                return CustomeResponse({"msg":"some problem occured during server side during Reactive business card "},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
         else:
             return CustomeResponse({"msg":"Business Card not found"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
             
     
     def destroy(self, request, pk=None):
-         return CustomeResponse({'msg':'record not found'},status=status.HTTP_404_NOT_FOUND,validate_errors=1)
+         return CustomeResponse({'msg':'record not found'},status=status.HTTP_404_NOT_FOUND,validate_errors=1)  

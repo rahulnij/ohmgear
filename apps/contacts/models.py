@@ -37,7 +37,7 @@ class FavoriteContact(models.Model):
     updated_date=models.DateField(_("Updated Date"),auto_now_add=False,auto_now=True)
     
     def __unicode__(self):
-        return '{"id:"%s","contact_id":"%s"}'%(self.id,self.contact_id)
+        return '{"id:"%s","foldercontact_id":"%s"}'%(self.id,self.foldercontact_id)
 # Create Groups to store contacts
 
 class AssociateContact(models.Model):
@@ -51,7 +51,7 @@ class AssociateContact(models.Model):
     updated_date=models.DateField(_("Updated Date"),auto_now_add=False,auto_now=True)
     
     def __unicode__(self):
-        return '{"id:"%s","user_id":"%s","associateFolderContact_id":"%s","foldercontact_id":"%s"}'%(self.id,self.user_id,self.associateFolderContact_id,self.foldercontact_id)
+        return '{"id:"%s","user_id":"%s","associatefoldercontact_id":"%s","foldercontact_id":"%s"}'%(self.id,self.user_id,self.associatefoldercontact_id,self.foldercontact_id)
     
         
         
