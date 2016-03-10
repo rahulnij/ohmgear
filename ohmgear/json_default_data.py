@@ -142,7 +142,7 @@ BUSINESS_CARD_DATA_VALIDATION = {
                                           "properties" : {
 		                           "placeHolder": { "type" : "string" },
                                            "keyName":{ "type" : "string","enum": ["FirstName","LastName","CompName","CardName","DEPTName","NickName"] },
-                                           "value":{ "type" : "string"}    
+                                           "value":{ "type" : "string","required":False,"blank":True}    
                                           }
                                          },
                                 "minItems": 1,

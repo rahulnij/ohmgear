@@ -162,6 +162,11 @@ import apps.cron.views as cron_view
 router.register(r'api/cron/update_contact_link_status',cron_view.UpdateContactLinkStatusCron)
 #_-------------------------------------------------------------------#
 
+#--------------------- SEND REQUEST(NOTIFICATION) --------------------------------------#
+import apps.sendrequest.views as notification_view
+router.register(r'api/sendrequest/invite_to_businesscard',notification_view.SendNotification)
+#_-------------------------------------------------------------------#
+
 
 urlpatterns += patterns('',
     url(r'^admin/', include(admin.site.urls)),
