@@ -3,6 +3,7 @@ from django.shortcuts import render
 from rest_framework import viewsets
 from rest_framework.decorators import detail_route, list_route
 from rest_framework.permissions import IsAuthenticated
+import rest_framework.status as status
 import boto3
 #------------ Third Party Imports ----------#
 #------------------ Local app imports ------#
@@ -30,6 +31,14 @@ class SendNotification(viewsets.ModelViewSet):
     @list_route(methods=['post'],)
     def invite_to_businesscard(self, request):
         client = boto3.client('sns')
-        response = client.list_topics()
-                           
+#        response = client.list_topics()
+        response = client.publish(
+            #TopicArn='',
+            TargetArn='arn:aws:sns:ap-southeast-1:625053715246:endpoint/APNS_SANDBOX/KINBOW/1cd49ef5-734b-3d52-8ac3-65aaa3acc341',
+            Message='Hello vijay',
+            Subject='Hello vijay',
+            MessageStructure='string',
+            MessageAttributes={               
+            }
+        )                           
         return CustomeResponse(response,status=status.HTTP_200_OK)
