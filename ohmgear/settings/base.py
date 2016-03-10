@@ -146,9 +146,9 @@ WSGI_APPLICATION = 'ohmgear.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'ohmgear',
-        'USER': 'ohmgear',
-        'PASSWORD': 'ohmgear@123',
+        'NAME': 'postgres',
+        'USER': 'postgres',
+        'PASSWORD': '',
         'HOST': 'localhost',
         'PORT': '',
     }
