@@ -47,7 +47,7 @@ import apps.businesscards.views as businesscardidentifier_views
 router.register(r'api/businesscardidentifier',businesscards_views.BusinessCardIdentifierViewSet)
 
 #-------------- Business card Media  ----------------------#
-router.register(r'api/businesscardmedia', businesscards_views.BusinessCardMediaViewSet)
+#router.register(r'api/businesscardmedia', businesscards_views.BusinessCardMediaViewSet)
 
 #-------------- Add Skills ----------------------#
 router.register(r'api/businesscardaddskill', businesscards_views.BusinessCardAddSkillViewSet)
@@ -84,6 +84,8 @@ router.register(r'api/notes', notes_views.NotesViewSet)
 
 #-------------- Contacts app url registration ----------------------#
 import apps.contacts.views as  contacts_views
+#----------Contact media------------------------#
+router.register(r'api/contactmedia', contacts_views.ContactMediaViewSet)
 #
 #urlpatterns += [
 #    url(r'api/upload_contacs', contacts_views.storeContactsViewSet),    

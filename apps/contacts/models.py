@@ -1,7 +1,6 @@
 from django.db import models
 from apps.businesscards.models import BusinessCard,BusinessCardTemplate
 from django.utils.translation import ugettext_lazy as _
-from django.conf import settings
 from django_pgjson.fields import JsonField
 from django.conf import settings
 
@@ -24,6 +23,34 @@ class Contacts(models.Model):
     
     def __unicode__(self):
         return '{"id":"%s","bcard_json_data":"%s","businesscard_id":"%s"}'%(self.id,self.bcard_json_data,self.businesscard_id)
+    
+    def bcard_image_frontend(self):
+        media = ContactMedia.objects.filter(contact_id=self.id,status=1).order_by('front_back')
+        data =[]
+        #i = 0
+        for item in media:
+            data.append({"img_url":str(settings.DOMAIN_NAME)+str(settings.MEDIA_URL)+str(item.img_url),"front_back":item.front_back})
+            #i = i + 1
+        return data    
+    
+
+    
+class ContactMedia(models.Model):
+    class Meta:
+        db_table = 'ohmgear_contact_media'
+    user_id = models.ForeignKey(User,db_column="user_id")
+    contact_id = models.ForeignKey("Contacts",db_column='contact_id',related_name='businesscard_media')
+    img_url      = models.ImageField(_("Image Url"),upload_to='uploads/bcards_gallary/', max_length=254)
+    created_date=models.DateTimeField(_("Created Date"),auto_now_add=True,auto_now=False)
+    updated_date=models.DateTimeField(_("Updated Date"),auto_now_add=False,auto_now=True)
+    front_back      = models.IntegerField(_("Front Back"),default=1) # 1=Front ,2=Back
+    position      = models.IntegerField(_("Position"),default=1) # 1=Horizontal ,2=Vertical
+    status      = models.IntegerField(_("Status"),default=0)
+    #history = HistoricalRecords()
+    
+    def __unicode__(self):
+        return '{"id:"%s","contact_id":"%s","user_id":"%s","status":"%s","front_back":"%s","img_url":"%s"}' %(self.id,self.contact_id,self.user_id,self.status,self.front_back,self.img_url)    
+
     
     
 from apps.folders.models import FolderContact    
