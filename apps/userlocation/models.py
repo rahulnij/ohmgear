@@ -16,4 +16,4 @@ class UserLocation(models.Model):
 
 
     def __unicode__(self):
-    	return '{"user_id":%r,"region":%r, "lon":%r, "lag":%r, "updatedDate":%r}' % (self.user_id, self.region, self.lon, self.lat, self.updatedDate)
+    	return '{"user_id":%r,"region":%r, "lon":%r, "lat":%r, "updatedDate":%r}' % (self.user_id, self.region, self.lon, self.lat, self.updatedDate)
