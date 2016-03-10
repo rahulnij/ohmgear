@@ -148,7 +148,10 @@ class User(AbstractBaseUser):
 class Profile(models.Model):
     class Meta:
         db_table = 'ohmgear_users_profile'
-    
+        
+    prefix     = models.CharField(_("Prefix"),max_length=30)
+    middle     = models.CharField(_("Middle"),max_length=45)
+    suffix     = models.CharFeld(_("Suffix"),max_length=45)
     first_name = models.CharField(_("First Name"),max_length=45)
     last_name = models.CharField(_("Last Name"),max_length=45,null=True)
     nick_name = models.CharField(_("Nick Name"),max_length=45,null=True)
