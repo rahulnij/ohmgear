@@ -59,7 +59,9 @@ INSTALLED_APPS = (
     'apps.staticpages',
     'apps.usersetting',
     'apps.groups',
+    'apps.userlocation',
     'ckeditor',
+    'apps.sendrequest'
 )
 
 MIDDLEWARE_CLASSES = (
