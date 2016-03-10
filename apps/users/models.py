@@ -148,18 +148,21 @@ class User(AbstractBaseUser):
 class Profile(models.Model):
     class Meta:
         db_table = 'ohmgear_users_profile'
-    
+
+    prefix     = models.CharField(_("Prefix"),max_length=30)
+    middle     = models.CharField(_("Middle"),max_length=45)
+    suffix     = models.CharField(_("Suffix"),max_length=45)
     first_name = models.CharField(_("First Name"),max_length=45)
     last_name = models.CharField(_("Last Name"),max_length=45,null=True)
     nick_name = models.CharField(_("Nick Name"),max_length=45,null=True)
     headline  = models.CharField(_("Headline"),max_length=80,null=True)
     dob = models.DateField(_("DOB"),null=True)
-    gender = models.CharField(_("Gender"),null =True,max_length= 10) 
+    gender = models.CharField(_("Gender"),null =True,max_length= 10)
     address = models.CharField(_("Address"),max_length=80,null=True)
-    mobile_number = models.CharField(_("Mobile Number"),max_length=20,null=True)   
+    mobile_number = models.CharField(_("Mobile Number"),max_length=20,null=True)
     custom_data = JsonField(null=True)
     created_date=models.DateTimeField(_("Created Date"),auto_now_add=True,auto_now=False)
-    updated_date=models.DateTimeField(_("Updated Date"),auto_now_add=False,auto_now=True)    
+    updated_date=models.DateTimeField(_("Updated Date"),auto_now_add=False,auto_now=True)
     user = models.OneToOneField(User,null=True,related_name="user_profile")
     income_group = models.ForeignKey(IncomeGroup, null=True, blank=True)
     business_type = models.ForeignKey(BusinessType,null= True)
@@ -172,7 +175,7 @@ class Profile(models.Model):
     first_time_login  = models.BooleanField(default=True)
     #------------- End -------------------------------------------#
     def __unicode__(self):
-        return '{"id":"%s","dob":"%s","gender":"%s","address":"%s","mobile_number":"%s","user":"%s","income_group":"%s","business_type":"%s","first_time_login":"%s","first_name":"%s","last_name":"%s","nick_name":"%s","headline":"%s","profile_image":"%s"}' %(self.id,self.dob,self.gender,self.address,self.mobile_number,self.user,self.income_group,self.business_type,self.first_time_login,self.first_name,self.last_name,self.nick_name,self.headline,self.profile_image)
+        return '{"id":"%s","dob":"%s","prefix":"%s","middle":"%s","suffix":"%s","gender":"%s","address":"%s","mobile_number":"%s","user":"%s","income_group":"%s","business_type":"%s","first_time_login":"%s","first_name":"%s","last_name":"%s","nick_name":"%s","headline":"%s","profile_image":"%s"}' %(self.id,self.dob,self.gender,self.address,self.mobile_number,self.user,self.income_group,self.business_type,self.first_time_login,self.first_name,self.last_name,self.nick_name,self.headline,self.profile_image,self.prefix,self.middle,self.suffix) 
 
 
 
