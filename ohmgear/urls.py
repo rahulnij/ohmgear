@@ -29,6 +29,7 @@ urlpatterns =patterns(
     #url(r'^jet/dashboard/', include('jet.dashboard.urls', 'jet-dashboard')), 
     url(r'^api/', include('apps.users.urls')),
     url(r'^admin/', include(admin.site.urls)),
+    url(r'^api/', include('apps.userlocation.urls')),
     url(r'^api/', include('apps.vacationcard.urls')),
     url(r'^api/useractivity/$','apps.users.views.useractivity',name='useractivity'),
     #url(r'^api/cron/$','apps.cron.views.updateidentifierstatus',name='updateidentifierstatus'),
