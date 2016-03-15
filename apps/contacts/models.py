@@ -23,16 +23,7 @@ class Contacts(models.Model):
     
     def __unicode__(self):
         return '{"id":"%s","bcard_json_data":"%s","businesscard_id":"%s"}'%(self.id,self.bcard_json_data,self.businesscard_id)
-    
-    def bcard_image_frontend(self):
-        media = ContactMedia.objects.filter(contact_id=self.id,status=1).order_by('front_back')
-        data =[]
-        #i = 0
-        for item in media:
-            data.append({"img_url":str(settings.DOMAIN_NAME)+str(settings.MEDIA_URL)+str(item.img_url),"front_back":item.front_back})
-            #i = i + 1
-        return data    
-    
+        
 
     
 class ContactMedia(models.Model):

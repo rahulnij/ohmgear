@@ -16,7 +16,7 @@ from rest_framework.decorators import detail_route, list_route
 from models import BusinessCard,BusinessCardTemplate,BusinessCardIdentifier,Identifier,BusinessCardSkillAvailable,BusinessCardAddSkill,BusinessCardHistory
 from serializer import BusinessCardSerializer,BusinessCardIdentifierSerializer,BusinessCardSkillAvailableSerializer,BusinessCardAddSkillSerializer,BusinessCardSummarySerializer,BusinessCardHistorySerializer
 from apps.contacts.serializer import ContactsSerializer
-from apps.contacts.models import Contacts
+from apps.contacts.models import Contacts,ContactMedia
 from apps.identifiers.models import Identifier
 from apps.identifiers.serializer import IdentifierSerializer,BusinessIdentifierSerializer
 from ohmgear.token_authentication import ExpiringTokenAuthentication
@@ -50,7 +50,7 @@ class CardSummary(APIView):
            for d in serializer.data:
                 dt = d
                 businesscard =  BusinessCard(id=bcard_id)
-                dt['business_media'] =  businesscard.bcard_image_frontend()
+#                dt['business_media'] =  businesscard.bcard_image_frontend()
                 break
            return CustomeResponse(dt,status=status.HTTP_200_OK)
         else:
@@ -495,12 +495,12 @@ class BusinessViewSet(viewsets.ModelViewSet):
          
     
     #--------------Method: GET retrieve single record-----------------------------#
-    def retrieve(self,request,pk=None,contact_id=None,call_from_function=None):
+    def retrieve(self,request,pk=None,contact_id_new=None,call_from_function=None):
         queryset = self.queryset
         user_id = request.user.id
         bcard_obj = get_object_or_404(BusinessCard,pk=pk,user_id=user_id)
         serializer = self.serializer_class(bcard_obj,context={'request':request})
-        media=ContactMedia.objects.filter(contactid=contact_id,front_back__in=[1,2],status=1).values('img_url','front_back')
+        media=ContactMedia.objects.filter(contact_id=contact_id_new,front_back__in=[1,2],status=1).values('img_url','front_back')
         data = {}
         data = serializer.data
         if media:

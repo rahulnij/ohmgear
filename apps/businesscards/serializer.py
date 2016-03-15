@@ -1,6 +1,8 @@
 from rest_framework import  serializers
 from models import BusinessCard,BusinessCardIdentifier ,BusinessCardSkillAvailable,BusinessCardAddSkill,BusinessCardHistory
 from apps.contacts.serializer import ContactsSerializerWithJson
+from apps.contacts.models import ContactMedia
+from django.conf import settings
 # Serializers define the API representation.
 
 
@@ -41,11 +43,23 @@ class BusinessCardHistorySerializer(serializers.ModelSerializer):
 class BusinessCardSerializer(serializers.ModelSerializer):
             
     contact_detail = ContactsSerializerWithJson(read_only=True)
-    media_detail    = serializers.SerializerMethodField('media')
+#    media_detail    = serializers.SerializerMethodField('media')
     
-    def media(self,instance):
-        return instance.bcard_image_frontend()
+#    def media(self,instance):
+#        return instance.bcard_image_frontend()
     #identifier_new = serializers.ReadOnlyField(source='*')
+    media_detail    = serializers.SerializerMethodField('bcard_image_frontend')
+    
+    
+    def bcard_image_frontend(self,obj):
+        media = ContactMedia.objects.filter(contact_id=obj.contact_detail.id,status=1).order_by('front_back')
+        data =[]
+        #i = 0
+        for item in media:
+            data.append({"img_url":str(settings.DOMAIN_NAME)+str(settings.MEDIA_URL)+str(item.img_url),"front_back":item.front_back})
+            #i = i + 1
+        return data
+    
     #------------------------ End -----------------------------------------------------------#
     class Meta:
         model = BusinessCard
@@ -66,10 +80,20 @@ from apps.identifiers.serializer import IdentifierSerializer
 class BusinessCardWithIdentifierSerializer(serializers.ModelSerializer):
             
     contact_detail = ContactsSerializerWithJson(read_only=True)
-    media_detail    = serializers.SerializerMethodField('media')
+    media_detail    = serializers.SerializerMethodField('bcard_image_frontend')
     business_identifier = IdentifierSerializer(many=True,read_only=True)
-    def media(self,instance):
-        return instance.bcard_image_frontend()
+    
+    
+    def bcard_image_frontend(self,obj):
+        media = ContactMedia.objects.filter(contact_id=obj.contact_detail.id,status=1).order_by('front_back')
+        data =[]
+        #i = 0
+        for item in media:
+            data.append({"img_url":str(settings.DOMAIN_NAME)+str(settings.MEDIA_URL)+str(item.img_url),"front_back":item.front_back})
+            #i = i + 1
+        return data
+#    def media(self,instance):
+#        return instance.bcard_image_frontend()
     #identifier_new = serializers.ReadOnlyField(source='*')
     #------------------------ End -----------------------------------------------------------#
     class Meta:
@@ -96,6 +120,16 @@ class BusinessCardSummarySerializer(serializers.HyperlinkedModelSerializer):
     business_vacation = VacationCardSerializer(many=True,read_only=True)
     contact_detail    =  ContactsSerializerWithJson(read_only=True)
     #business_media = serializers.CharField(source='bcard_image_frontend')
+    business_media    = serializers.SerializerMethodField('bcard_image_frontend')
+    
+    def bcard_image_frontend(self,obj):
+        media = ContactMedia.objects.filter(contact_id=obj.contact_detail.id,status=1).order_by('front_back')
+        data =[]
+        #i = 0
+        for item in media:
+            data.append({"img_url":str(settings.DOMAIN_NAME)+str(settings.MEDIA_URL)+str(item.img_url),"front_back":item.front_back})
+            #i = i + 1
+        return data
     #------------------------ End -----------------------------------------------------------#
     class Meta:
         model = BusinessCard
@@ -106,7 +140,7 @@ class BusinessCardSummarySerializer(serializers.HyperlinkedModelSerializer):
             'business_identifier',
             'business_vacation',
             'contact_detail',
-            #'business_media',
+            'business_media',
         )        
   
 
