@@ -32,7 +32,7 @@ from django.db.models import Q
 class storeContactsViewSet(viewsets.ModelViewSet):
     
       queryset = Contacts.objects.all()
-      serializer_class = ContactsSerializer
+      serializer_class = ContactsSerializerWithJson
       authentication_classes = (ExpiringTokenAuthentication,)
       permission_classes = (IsAuthenticated,)      
       
@@ -96,8 +96,10 @@ class storeContactsViewSet(viewsets.ModelViewSet):
                     return CustomeResponse({'msg':"Max "+str(NUMBER_OF_CONTACT)+" allowed to upload"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
                
                
-               serializer = ContactsSerializer(data=contact_new,many=True)
+               serializer = ContactsSerializerWithJson(data=contact_new,many=True)
+               
                if serializer.is_valid():
+#                    print serializer.data
                     serializer.save()
                     #-------------------- Assign all contacts to folder -----------------#
                     folder_contact_array = []
