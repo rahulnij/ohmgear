@@ -1,7 +1,7 @@
 from django.conf import settings
 #------------------ Return token if does not exit then create -------------------#  
-from models import BusinessCard,BusinessCardMedia,BusinessCardAddSkill
-from apps.contacts.models import Contacts
+from models import BusinessCard,BusinessCardAddSkill
+from apps.contacts.models import Contacts,ContactMedia
 from apps.notes.models import Notes
 
 def createDuplicateBusinessCard(bcard_id=None,user_id=None):
@@ -49,23 +49,25 @@ def createDuplicateBusinessCard(bcard_id=None,user_id=None):
                 pass    
             
             try:
-                bcard_image = BusinessCardMedia.objects.get(businesscard_id=bcard_id,user_id=user_id,front_back=1,status=1)
-                bcard_image.businesscard_id = BusinessCard.objects.get(id=bcards_id_new)   
+                bcard_image = ContactMedia.objects.get(contact_id=contact_id,user_id=user_id,front_back=1,status=1)
+                bcard_image.contact_id = Contacts.objects.get(id=contact_id_new)   
                 bcard_image.id =None
                 bcard_image.save()
             except:
                 pass
             
             try:
-                bcard_image = BusinessCardMedia.objects.get(businesscard_id=bcard_id,user_id=user_id,front_back=2,status=1)
-                bcard_image.businesscard_id = BusinessCard.objects.get(id=bcards_id_new)   
+                bcard_image = ContactMedia.objects.get(contact_id=contact_id,user_id=user_id,front_back=2,status=1)
+                bcard_image.contact_id = Contacts.objects.get(id=contact_id_new) 
                 bcard_image.front_back =2
                 bcard_image.id =None
                 bcard_image.save()
             except:
                 pass
-            
-            return bcards_id_new
+            data = {}
+            data['bcards_id_new'] = bcards_id_new
+            data['contact_id_new'] = contact_id_new
+            return data
             #---------------------- End---------------------------------------------------#
             
             #--------------- Return the new business card --------------------------------#

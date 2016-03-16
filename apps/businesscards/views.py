@@ -13,10 +13,10 @@ from rest_framework.views import APIView
 from rest_framework.decorators import detail_route, list_route
 #-------------------------------------------#
 #------------------ Local app imports ------#
-from models import BusinessCard,BusinessCardTemplate,BusinessCardIdentifier,Identifier,BusinessCardMedia,BusinessCardSkillAvailable,BusinessCardAddSkill,BusinessCardHistory
-from serializer import BusinessCardSerializer,BusinessCardIdentifierSerializer,BusinessCardMediaSerializer,BusinessCardSkillAvailableSerializer,BusinessCardAddSkillSerializer,BusinessCardSummarySerializer,BusinessCardHistorySerializer
+from models import BusinessCard,BusinessCardTemplate,BusinessCardIdentifier,Identifier,BusinessCardSkillAvailable,BusinessCardAddSkill,BusinessCardHistory
+from serializer import BusinessCardSerializer,BusinessCardIdentifierSerializer,BusinessCardSkillAvailableSerializer,BusinessCardAddSkillSerializer,BusinessCardSummarySerializer,BusinessCardHistorySerializer
 from apps.contacts.serializer import ContactsSerializer
-from apps.contacts.models import Contacts
+from apps.contacts.models import Contacts,ContactMedia
 from apps.identifiers.models import Identifier
 from apps.identifiers.serializer import IdentifierSerializer,BusinessIdentifierSerializer
 from ohmgear.token_authentication import ExpiringTokenAuthentication
@@ -50,7 +50,7 @@ class CardSummary(APIView):
            for d in serializer.data:
                 dt = d
                 businesscard =  BusinessCard(id=bcard_id)
-                dt['business_media'] =  businesscard.bcard_image_frontend()
+#                dt['business_media'] =  businesscard.bcard_image_frontend()
                 break
            return CustomeResponse(dt,status=status.HTTP_200_OK)
         else:
@@ -187,131 +187,131 @@ class BusinessCardIdentifierViewSet(viewsets.ModelViewSet):
     
          
 # BusinessCard Gallery 
-class BusinessCardMediaViewSet(viewsets.ModelViewSet):
-    queryset  = BusinessCardMedia.objects.all().order_by('front_back')
-    serializer_class = BusinessCardMediaSerializer
-    authentication_classes = (ExpiringTokenAuthentication,)
-    permission_classes = (IsAuthenticated,) 
-    
-    def list(self,request):
-            user_id = self.request.user.id
-            bcard_id = self.request.QUERY_PARAMS.get('bcard_id', None) 
-            if bcard_id:
-                #-------- Should be pass queryset to serializer but error occured ---#
-                self.queryset = self.queryset.filter(businesscard_id=bcard_id,user_id=user_id)
-                if self.queryset: 
-                    data = {}
-                    data['all'] = []
-                    data['top'] = []
-                    i = 0 
-                    for items in self.queryset:
-                        print items
-                        if items.status == 1:
-                           data['top'].append({"image_id":items.id,"front_back":items.front_back,"img_url":str(settings.DOMAIN_NAME)+str(settings.MEDIA_URL)+str(items.img_url)})
-                        data['all'].append({"image_id":items.id,"front_back":items.front_back,"img_url":str(settings.DOMAIN_NAME)+str(settings.MEDIA_URL)+str(items.img_url)})
-                    return CustomeResponse(data,status=status.HTTP_200_OK)
-                else:
-                   return CustomeResponse({'msg':"Data not exist"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
-            else:
-                return CustomeResponse({'msg':"Without parameters does not support"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
-                            
-            
-    #------------- Add image into business card gallary ---------------------#
-    def create(self,request,call_from_function=None):
-        data = request.data.copy()
-        data['status'] = 0 
-        data['user_id'] = self.request.user.id
-        serializer = BusinessCardMediaSerializer(data = data,context={'request':request})
-        
-        if serializer.is_valid():
-            serializer.save()
-            if call_from_function:
-               return json.loads(unicode(serializer.data))
-            else:
-               return CustomeResponse(serializer.data,status=status.HTTP_201_CREATED) 
-        else:
-            if call_from_function:
-               return serializer.errors
-            else:
-              return CustomeResponse(serializer.errors,status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
-    #----------------- End-------------------------------------------------------#
-    #------------- Upload image after business card created ---------------------#
-    @list_route(methods=['post'],) 
-    def upload(self,request):
-        user_id = self.request.user.id
-        bcard_id = self.request.data["bcard_id"] 
-        try:
-          business = BusinessCard.objects.get(id=bcard_id,user_id=user_id)   
-        except:
-         return CustomeResponse({'msg':"Business id does not exist"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)   
-        #-------------- Save Image in image Gallary -------------------------------#
-        data_new = {}
-        data_new['bcard_image_frontend'] = ""
-        data_new['bcard_image_backend'] = ""
-        try:
-         if 'bcard_image_frontend' in request.data and  request.data['bcard_image_frontend']: 
-           #------------------ Set previous image 0 ----------------------------------------# 
-           BusinessCardMedia.objects.filter(businesscard_id=business,front_back=1).update(status=0)
-           bcard_image_frontend, created = BusinessCardMedia.objects.update_or_create(user_id=self.request.user,businesscard_id=business,img_url=request.data['bcard_image_frontend'],front_back=1,status=1)
-           #print bcard_image_frontend.img_url
-           data_new['bcard_image_frontend'] = str(settings.DOMAIN_NAME)+str(settings.MEDIA_URL)+str(bcard_image_frontend.img_url)                  
-        except:
-           pass
-
-        try:
-         if 'bcard_image_backend' in request.data and  request.data['bcard_image_backend']:
-           BusinessCardMedia.objects.filter(businesscard_id=business,front_back=2).update(status=0)  
-           bcard_image_backend, created = BusinessCardMedia.objects.update_or_create(user_id=self.request.user,businesscard_id=business,img_url=request.data['bcard_image_backend'],front_back=2,status=1)
-           if bcard_image_backend:
-              data_new['bcard_image_backend'] = str(settings.DOMAIN_NAME)+str(settings.MEDIA_URL)+str(bcard_image_backend.img_url)                  
-
-        except:
-            pass 
-            
-        if data_new['bcard_image_frontend'] or data_new['bcard_image_backend']:
-           return CustomeResponse({"bcard_id":bcard_id,"bcard_image_frontend":data_new['bcard_image_frontend'],"bcard_image_backend":data_new['bcard_image_backend']},status=status.HTTP_201_CREATED)
-        else:
-           return CustomeResponse({'msg':"Please upload media bcard_image_frontend or bcard_image_backend"},status=status.HTTP_200_OK)     
-        #-------------------------End-----------------------------------#        
-    #-------------------- Change image of business card -----------------------#
-    @list_route(methods=['post'],) 
-    def change(self,request):
-        user_id = request.user.id
-        try:
-          bcard_id = request.data["bcard_id"]
-          gallary_image_id = request.data["gallary_image_id"]
-          image_type = request.data["image_type"] # means it is 1 frontend or 2 backend 
-        except:
-          bcard_id = None  
-          
-        if bcard_id:
-          try:  
-           get_image = BusinessCardMedia.objects.get(id=gallary_image_id,businesscard_id=bcard_id,user_id=user_id)
-           get_image.status = 1
-           get_image.front_back = image_type
-           get_image.save()
-           BusinessCardMedia.objects.filter(businesscard_id=bcard_id,front_back=image_type).exclude(id=gallary_image_id).update(status=0)
-           return CustomeResponse({"msg":"Business card image changed successfully."},status=status.HTTP_200_OK)
-          except:
-            return CustomeResponse({'msg':"provided bcard_id,gallary_image_id not valid"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)  
-        else:
-          return CustomeResponse({'msg':"Please provide bcard_id,gallary_image_id"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)  
-    #------------------------------ End ---------------------------------------#
-        
-    def update(self, request, pk=None):
-         return CustomeResponse({'msg':"Update method does not allow"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
-    
-    @list_route(methods=['post'],) 
-    def delete(self, request):
-        try:
-            user_id = request.user.id
-            bcard_id = request.data["bcard_id"]
-            pk = request.data["media_id"]
-            get_image = BusinessCardMedia.objects.get(id=pk,businesscard_id=bcard_id,user_id=user_id,status=1)
-            get_image.delete()
-            return CustomeResponse({'msg':"Media deleted successfully"},status=status.HTTP_200_OK)
-        except:
-            return CustomeResponse({'msg':"Please provide correct bcard_id,media id"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)  
+#class BusinessCardMediaViewSet(viewsets.ModelViewSet):
+#    queryset  = BusinessCardMedia.objects.all().order_by('front_back')
+#    serializer_class = BusinessCardMediaSerializer
+#    authentication_classes = (ExpiringTokenAuthentication,)
+#    permission_classes = (IsAuthenticated,) 
+#    
+#    def list(self,request):
+#            user_id = self.request.user.id
+#            bcard_id = self.request.QUERY_PARAMS.get('bcard_id', None) 
+#            if bcard_id:
+#                #-------- Should be pass queryset to serializer but error occured ---#
+#                self.queryset = self.queryset.filter(businesscard_id=bcard_id,user_id=user_id)
+#                if self.queryset: 
+#                    data = {}
+#                    data['all'] = []
+#                    data['top'] = []
+#                    i = 0 
+#                    for items in self.queryset:
+#                        print items
+#                        if items.status == 1:
+#                           data['top'].append({"image_id":items.id,"front_back":items.front_back,"img_url":str(settings.DOMAIN_NAME)+str(settings.MEDIA_URL)+str(items.img_url)})
+#                        data['all'].append({"image_id":items.id,"front_back":items.front_back,"img_url":str(settings.DOMAIN_NAME)+str(settings.MEDIA_URL)+str(items.img_url)})
+#                    return CustomeResponse(data,status=status.HTTP_200_OK)
+#                else:
+#                   return CustomeResponse({'msg':"Data not exist"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
+#            else:
+#                return CustomeResponse({'msg':"Without parameters does not support"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
+#                            
+#            
+#    #------------- Add image into business card gallary ---------------------#
+#    def create(self,request,call_from_function=None):
+#        data = request.data.copy()
+#        data['status'] = 0 
+#        data['user_id'] = self.request.user.id
+#        serializer = BusinessCardMediaSerializer(data = data,context={'request':request})
+#        
+#        if serializer.is_valid():
+#            serializer.save()
+#            if call_from_function:
+#               return json.loads(unicode(serializer.data))
+#            else:
+#               return CustomeResponse(serializer.data,status=status.HTTP_201_CREATED) 
+#        else:
+#            if call_from_function:
+#               return serializer.errors
+#            else:
+#              return CustomeResponse(serializer.errors,status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
+#    #----------------- End-------------------------------------------------------#
+#    #------------- Upload image after business card created ---------------------#
+#    @list_route(methods=['post'],) 
+#    def upload(self,request):
+#        user_id = self.request.user.id
+#        bcard_id = self.request.data["bcard_id"] 
+#        try:
+#          business = BusinessCard.objects.get(id=bcard_id,user_id=user_id)   
+#        except:
+#         return CustomeResponse({'msg':"Business id does not exist"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)   
+#        #-------------- Save Image in image Gallary -------------------------------#
+#        data_new = {}
+#        data_new['bcard_image_frontend'] = ""
+#        data_new['bcard_image_backend'] = ""
+#        try:
+#         if 'bcard_image_frontend' in request.data and  request.data['bcard_image_frontend']: 
+#           #------------------ Set previous image 0 ----------------------------------------# 
+#           BusinessCardMedia.objects.filter(businesscard_id=business,front_back=1).update(status=0)
+#           bcard_image_frontend, created = BusinessCardMedia.objects.update_or_create(user_id=self.request.user,businesscard_id=business,img_url=request.data['bcard_image_frontend'],front_back=1,status=1)
+#           #print bcard_image_frontend.img_url
+#           data_new['bcard_image_frontend'] = str(settings.DOMAIN_NAME)+str(settings.MEDIA_URL)+str(bcard_image_frontend.img_url)                  
+#        except:
+#           pass
+#
+#        try:
+#         if 'bcard_image_backend' in request.data and  request.data['bcard_image_backend']:
+#           BusinessCardMedia.objects.filter(businesscard_id=business,front_back=2).update(status=0)  
+#           bcard_image_backend, created = BusinessCardMedia.objects.update_or_create(user_id=self.request.user,businesscard_id=business,img_url=request.data['bcard_image_backend'],front_back=2,status=1)
+#           if bcard_image_backend:
+#              data_new['bcard_image_backend'] = str(settings.DOMAIN_NAME)+str(settings.MEDIA_URL)+str(bcard_image_backend.img_url)                  
+#
+#        except:
+#            pass 
+#            
+#        if data_new['bcard_image_frontend'] or data_new['bcard_image_backend']:
+#           return CustomeResponse({"bcard_id":bcard_id,"bcard_image_frontend":data_new['bcard_image_frontend'],"bcard_image_backend":data_new['bcard_image_backend']},status=status.HTTP_201_CREATED)
+#        else:
+#           return CustomeResponse({'msg':"Please upload media bcard_image_frontend or bcard_image_backend"},status=status.HTTP_200_OK)     
+#        #-------------------------End-----------------------------------#        
+#    #-------------------- Change image of business card -----------------------#
+#    @list_route(methods=['post'],) 
+#    def change(self,request):
+#        user_id = request.user.id
+#        try:
+#          bcard_id = request.data["bcard_id"]
+#          gallary_image_id = request.data["gallary_image_id"]
+#          image_type = request.data["image_type"] # means it is 1 frontend or 2 backend 
+#        except:
+#          bcard_id = None  
+#          
+#        if bcard_id:
+#          try:  
+#           get_image = BusinessCardMedia.objects.get(id=gallary_image_id,businesscard_id=bcard_id,user_id=user_id)
+#           get_image.status = 1
+#           get_image.front_back = image_type
+#           get_image.save()
+#           BusinessCardMedia.objects.filter(businesscard_id=bcard_id,front_back=image_type).exclude(id=gallary_image_id).update(status=0)
+#           return CustomeResponse({"msg":"Business card image changed successfully."},status=status.HTTP_200_OK)
+#          except:
+#            return CustomeResponse({'msg':"provided bcard_id,gallary_image_id not valid"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)  
+#        else:
+#          return CustomeResponse({'msg':"Please provide bcard_id,gallary_image_id"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)  
+#    #------------------------------ End ---------------------------------------#
+#        
+#    def update(self, request, pk=None):
+#         return CustomeResponse({'msg':"Update method does not allow"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
+#    
+#    @list_route(methods=['post'],) 
+#    def delete(self, request):
+#        try:
+#            user_id = request.user.id
+#            bcard_id = request.data["bcard_id"]
+#            pk = request.data["media_id"]
+#            get_image = BusinessCardMedia.objects.get(id=pk,businesscard_id=bcard_id,user_id=user_id,status=1)
+#            get_image.delete()
+#            return CustomeResponse({'msg':"Media deleted successfully"},status=status.HTTP_200_OK)
+#        except:
+#            return CustomeResponse({'msg':"Please provide correct bcard_id,media id"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)  
 
 #BusinessCard History
 
@@ -495,12 +495,12 @@ class BusinessViewSet(viewsets.ModelViewSet):
          
     
     #--------------Method: GET retrieve single record-----------------------------#
-    def retrieve(self,request,pk=None,call_from_function=None):
+    def retrieve(self,request,pk=None,contact_id_new=None,call_from_function=None):
         queryset = self.queryset
         user_id = request.user.id
         bcard_obj = get_object_or_404(BusinessCard,pk=pk,user_id=user_id)
         serializer = self.serializer_class(bcard_obj,context={'request':request})
-        media=BusinessCardMedia.objects.filter(businesscard_id=pk,front_back__in=[1,2],status=1).values('img_url','front_back')
+        media=ContactMedia.objects.filter(contact_id=contact_id_new,front_back__in=[1,2],status=1).values('img_url','front_back')
         data = {}
         data = serializer.data
         if media:
@@ -653,9 +653,10 @@ class BusinessViewSet(viewsets.ModelViewSet):
                   
             if bcard_id and user_id:
                   from functions import createDuplicateBusinessCard
-                  bcards_id_new = createDuplicateBusinessCard(bcard_id,user_id)
-                  if bcards_id_new:
-                    data =  self.retrieve(request,pk=bcards_id_new,call_from_function=1)
+                  data = createDuplicateBusinessCard(bcard_id,user_id)
+            
+                  if data:
+                    data =  self.retrieve(request,pk=data['bcards_id_new'],contact_id_new = data['contact_id_new'],call_from_function=1)
                   else:
                       return CustomeResponse({"msg":"some problem occured on server side."},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
                   return CustomeResponse(data,status=status.HTTP_200_OK)

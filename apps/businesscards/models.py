@@ -48,14 +48,14 @@ class BusinessCard(models.Model):
     def __unicode__(self):
         return'{"id":"%s","name":"%s","user_id":"%s"}' %(self.id,self.name,self.user_id.id)
   
-    def bcard_image_frontend(self):
-        media = BusinessCardMedia.objects.filter(businesscard_id=self.id,status=1).order_by('front_back')
-        data =[]
-        #i = 0
-        for item in media:
-            data.append({"img_url":str(settings.DOMAIN_NAME)+str(settings.MEDIA_URL)+str(item.img_url),"front_back":item.front_back})
-            #i = i + 1
-        return data    
+#    def bcard_image_frontend(self):
+#        media = BusinessCardMedia.objects.filter(businesscard_id=self.id,status=1).order_by('front_back')
+#        data =[]
+#        #i = 0
+#        for item in media:
+#            data.append({"img_url":str(settings.DOMAIN_NAME)+str(settings.MEDIA_URL)+str(item.img_url),"front_back":item.front_back})
+#            #i = i + 1
+#        return data    
 
 class BusinessCardIdentifier(models.Model):
     
@@ -82,22 +82,22 @@ class BusinessCardIdentifier(models.Model):
     
     
     
-class BusinessCardMedia(models.Model):
-    
-    class Meta:
-        db_table = 'ohmgear_businesscards_media'
-    user_id = models.ForeignKey(User,db_column="user_id")
-    businesscard_id = models.ForeignKey(BusinessCard,db_column='businesscard_id',related_name='businesscard_media')
-    img_url      = models.ImageField(_("Image Url"),upload_to='uploads/bcards_gallary/', max_length=254)
-    created_date=models.DateTimeField(_("Created Date"),auto_now_add=True,auto_now=False)
-    updated_date=models.DateTimeField(_("Updated Date"),auto_now_add=False,auto_now=True)
-    front_back      = models.IntegerField(_("Front Back"),default=1) # 1=Front ,2=Back
-    position      = models.IntegerField(_("Position"),default=1) # 1=Horizontal ,2=Vertical
-    status      = models.IntegerField(_("Status"),default=0)
-    #history = HistoricalRecords()
-    
-    def __unicode__(self):
-        return '{"id:"%s","businesscard_id":"%s","user_id":"%s","status":"%s","front_back":"%s","img_url":"%s"}' %(self.id,self.businesscard_id,self.user_id,self.status,self.front_back,self.img_url)
+#class BusinessCardMedia(models.Model):
+#    
+#    class Meta:
+#        db_table = 'ohmgear_businesscards_media'
+#    user_id = models.ForeignKey(User,db_column="user_id")
+#    businesscard_id = models.ForeignKey(BusinessCard,db_column='businesscard_id',related_name='businesscard_media')
+#    img_url      = models.ImageField(_("Image Url"),upload_to='uploads/bcards_gallary/', max_length=254)
+#    created_date=models.DateTimeField(_("Created Date"),auto_now_add=True,auto_now=False)
+#    updated_date=models.DateTimeField(_("Updated Date"),auto_now_add=False,auto_now=True)
+#    front_back      = models.IntegerField(_("Front Back"),default=1) # 1=Front ,2=Back
+#    position      = models.IntegerField(_("Position"),default=1) # 1=Horizontal ,2=Vertical
+#    status      = models.IntegerField(_("Status"),default=0)
+#    #history = HistoricalRecords()
+#    
+#    def __unicode__(self):
+#        return '{"id:"%s","businesscard_id":"%s","user_id":"%s","status":"%s","front_back":"%s","img_url":"%s"}' %(self.id,self.businesscard_id,self.user_id,self.status,self.front_back,self.img_url)
         
     
 class BusinessCardSkillAvailable(models.Model):
