@@ -168,6 +168,11 @@ router.register(r'api/sendrequest',notification_view.SendNotification)
 #_-------------------------------------------------------------------#
 
 
+#--------------------- AWS Activity --------------------------------------#
+from  apps.awsserver.views import AWSActivity
+router.register(r'api/aws',AWSActivity)
+#_-------------------------------------------------------------------#
+
 urlpatterns += patterns('',
     url(r'^admin/', include(admin.site.urls)),
 )

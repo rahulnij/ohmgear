@@ -10,6 +10,10 @@ import boto3
 from ohmgear.functions import CustomeResponse
 from ohmgear.token_authentication import ExpiringTokenAuthentication
 from models import Notification 
+from apps.businesscards.models import BusinessCard
+from apps.awsserver.models import AwsDeviceToken
+from apps.users.models import Profile
+import json
 #---------------------------End-------------#
 # Create your views here.
 
@@ -30,15 +34,53 @@ class SendNotification(viewsets.ModelViewSet):
     
     @list_route(methods=['post'],)
     def invite_to_businesscard(self, request):
+        user_id  =request.user   
+        try:
+          to_business_card_id  =request.DATA['to_business_card_id'] 
+          from_business_card_id  =request.DATA['from_business_card_id']
+          device_token  =request.DATA['device_token']
+          get_profile = Profile.objects.filter(user_id=user_id).values("first_name","last_name").latest("id")
+          user_name = str(get_profile["first_name"])+" "+str(get_profile["last_name"])
+        except:
+          return CustomeResponse({'msg':"Please provide to_business_card_id,from_business_card_id and device_token"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)     
+        
+       
+        #check from_business_card_id belongs to user_id 
+        try:
+         business_card_from = BusinessCard.objects.filter(user_id=user_id.id,id = from_business_card_id).latest("id")
+         business_card_to  = BusinessCard.objects.filter(id = to_business_card_id).exclude(user_id=user_id.id).latest("id")
+        except:
+         return CustomeResponse({'msg':"Provided business cards are not correct"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)     
+        
+        #--- Get the aws arn from token table ------------------#
+        try:
+          aws_token_data = AwsDeviceToken.objects.filter(user_id=business_card_to.user_id.id,device_token=device_token).latest("id")
+        except:
+          return CustomeResponse({'msg':"to_business_card_id device token does not exist."},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)        
+        #aws_plateform_endpoint_arn = '%s'%aws_token_data.aws_plateform_endpoint_arn
+        #---------- End ----------------------------------------#
         client = boto3.client('sns')
-#        response = client.list_topics()
+        #------------ Make json to send data ---------------------#
+        message = {
+                   'default':'request sent from '+user_name+' to accept businesscard11.', 
+                   'APNS_SANDBOX':{'aps':{'alert':'Hi How are you'},'data':{
+                    'business_card_from':business_card_from.id,
+                    'business_card_to':business_card_to.id,
+                    }},
+                   
+                  }
+        message = json.dumps(message,ensure_ascii=False)          
+        print message
+        #------------------------ End ----------------------------#
         response = client.publish(
-            #TopicArn='',
-            TargetArn='arn:aws:sns:ap-southeast-1:625053715246:endpoint/APNS_SANDBOX/KINBOW/1cd49ef5-734b-3d52-8ac3-65aaa3acc341',
-            Message='Hello vijay',
+            TargetArn= aws_token_data.aws_plateform_endpoint_arn,
+            Message=message,
             Subject='Hello vijay',
-            MessageStructure='string',
+            MessageStructure='json',
             MessageAttributes={               
             }
         )                           
         return CustomeResponse(response,status=status.HTTP_200_OK)
+    
+    
+    
