@@ -61,7 +61,8 @@ INSTALLED_APPS = (
     'apps.groups',
     'apps.userlocation',
     'ckeditor',
-    'apps.sendrequest'
+    'apps.sendrequest',
+    'apps.awsserver',
 )
 
 MIDDLEWARE_CLASSES = (
