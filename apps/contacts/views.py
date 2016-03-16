@@ -38,7 +38,8 @@ class storeContactsViewSet(viewsets.ModelViewSet):
       
       def list(self,request):
         queryset = self.queryset.filter(user_id=request.user.id) 
-        serializer = self.serializer_class(queryset,many=True)
+#        serializer = self.serializer_class(queryset,many=True)
+        serializer = ContactsSerializerWithJson(queryset,many=True)
         
         if serializer.data:
             return CustomeResponse(serializer.data,status=status.HTTP_200_OK)
