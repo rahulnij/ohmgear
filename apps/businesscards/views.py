@@ -564,14 +564,16 @@ class BusinessViewSet(viewsets.ModelViewSet):
                 #-------------------------End-----------------------------------#
                 
                 #---------------- Assign  first created business card to created default folder -----#
-                #queryset_folder = Folder.objects.filter(user_id=user_id,foldertype='PR').values()
-                #if not queryset_folder:
-                folder_view = FolderViewSet.as_view({'post': 'create'})
-                offline_data={}
-                offline_data['businesscard_id'] =business.id  
-                offline_data['foldername'] = 'PR Folder'
-                folder_view= folder_view(request,offline_data)
-                folder_id = folder_view.data['data']['id']
+                queryset_folder = Folder.objects.filter(user_id=user_id,foldertype='PR',businesscard_id__isnull=True)
+                if not queryset_folder:
+                    folder_view = FolderViewSet.as_view({'post': 'create'})
+                    offline_data={}
+                    offline_data['businesscard_id'] =business.id  
+                    offline_data['foldername'] = 'PR Folder'
+                    folder_view= folder_view(request,offline_data)
+                    folder_id = folder_view.data['data']['id']
+                else:
+                    queryset_folder.update(businesscard_id = business.id )
                #-------------------- End --------------------------------------------------------# 
             else:
                  return CustomeResponse(contact_serializer.errors,status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
