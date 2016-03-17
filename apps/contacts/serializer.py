@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from apps.folders.serializer import FolderContactSerializer
 from models import Contacts,FavoriteContact,AssociateContact,ContactMedia
+from django.conf import settings
 # Serializers define the API representation.
 
 
@@ -33,7 +34,21 @@ class ContactsSerializerWithJson(serializers.ModelSerializer):
     #bcard_json_data = serializers.CharField()
     bcard_json_data = serializers.SerializerMethodField('clean_bcard_json_data')
     folder_contact_data = FolderContactSerializer(many=True,read_only=True)
-    businesscard_media = ContactMediaSerializer(many=True,read_only=True)
+#    businesscard_media = ContactMediaSerializer(many=True,read_only=True)
+    
+    businesscard_media    = serializers.SerializerMethodField('bcard_image_frontend')
+    
+    
+    def bcard_image_frontend(self,obj):
+        media = ContactMedia.objects.filter(contact_id=obj.id,status=1).order_by('front_back')
+        data =[]
+        #i = 0
+        for item in media:
+            data.append({"img_url":str(settings.DOMAIN_NAME)+str(settings.MEDIA_URL)+str(item.img_url),"front_back":item.front_back})
+            #i = i + 1
+        return data
+    
+    
     def clean_bcard_json_data(self, obj):
         return obj.bcard_json_data    
     
