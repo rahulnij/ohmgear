@@ -36,6 +36,7 @@ class Folder(models.Model):
 class FolderContact(models.Model):
 	class Meta:
 		db_table = 'ohmgear_folders_folder_contact'
+                unique_together = ('folder_id', 'contact_id')
                
         linkStatus = (
 			(0,"White"),

@@ -36,15 +36,16 @@ class AWSActivity(viewsets.ModelViewSet):
            device_token  =request.DATA['device_token']
            device_type  =request.DATA['device_type']
         except:
-           device_token = "" 
-           device_type  = ""
+           return CustomeResponse({'msg':"Please provide device_token,device_type"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)       
         
         if device_type == 'apns':
            platform_application_arn = settings.AWS_PLATEFORM_APPLICATION_ARN["APNS"]
-        else:
+        elif device_type == 'gcm':
            platform_application_arn = settings.AWS_PLATEFORM_APPLICATION_ARN["GCM"] 
+        else:
+           return CustomeResponse({'msg':"device_type must be apns or gcm"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)          
            
-        if device_token and user_id:            
+        if device_token and user_id and device_type:            
            client = boto3.client('sns')
            #--- TODO Need to check device token already exist or not ---#
            
