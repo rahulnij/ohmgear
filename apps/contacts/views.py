@@ -581,7 +581,10 @@ class ContactMediaViewSet(viewsets.ModelViewSet):
     @list_route(methods=['post'],) 
     def upload(self,request):
         user_id = self.request.user.id
-        contact_id = self.request.data["contact_id"] 
+        try:
+            contact_id = self.request.data["contact_id"]
+        except:
+            return CustomeResponse({'msg':"provide contact_id"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)   
         try:
           contact = Contacts.objects.get(id=contact_id,user_id=user_id)   
         except:
