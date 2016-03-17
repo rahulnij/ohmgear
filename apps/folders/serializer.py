@@ -17,7 +17,7 @@ class FolderSerializer(serializers.ModelSerializer):
 class FolderContactSerializer(serializers.ModelSerializer):
 	class Meta:
 		model = FolderContact
-		fields = ('id','user_id','folder_id','contact_id') 
+		fields = ('id','user_id','folder_id','contact_id','link_status') 
                 
                 
 class MatchContactSerializer(serializers.ModelSerializer):

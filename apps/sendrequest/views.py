@@ -32,6 +32,19 @@ class SendAcceptRequest(viewsets.ModelViewSet):
     def destroy(self, request, pk=None):
         return CustomeResponse({'msg':"DELETE METHOD NOT ALLOWD"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)  
     
+    #-------------------- local class function --------------------------------#
+    def insert_notification(self,type,sender_id,receiver_id,message):
+       try: 
+        notification = Notification()
+        notification.type = type
+        notification.sender_id = sender_id
+        notification.receiver_id = receiver_id
+        notification.message = message
+        notification.save()
+        return True
+       except:
+        return False   
+    #-------------------------- End -------------------------------------------#
     
     @list_route(methods=['post'],)
     def invite_to_businesscard(self, request):
@@ -82,12 +95,11 @@ class SendAcceptRequest(viewsets.ModelViewSet):
             }
         )
         #--- Insert into Notification Table ---#
-        notification = Notification()
-        notification.type = 'b2b'
-        notification.sender_id = sender_business_card_id
-        notification.receiver_id = receiver_business_card_id
-        notification.message = 'request sent from '+user_name+' to accept businesscard.'
-        notification.save()
+        type = 'b2b'
+        sender_id = sender_business_card_id
+        receiver_id = receiver_business_card_id
+        message = 'request sent from '+user_name+' to accept businesscard.'
+        self.insert_notification(type,sender_id,receiver_id,message)
         #--------- End-----------------------------------------------#         
         return CustomeResponse(response,status=status.HTTP_200_OK)
     
