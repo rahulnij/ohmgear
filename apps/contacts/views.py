@@ -37,7 +37,7 @@ class storeContactsViewSet(viewsets.ModelViewSet):
       permission_classes = (IsAuthenticated,)      
       
       def list(self,request):
-        queryset = self.queryset.filter(user_id=request.user.id) 
+        queryset = self.queryset.filter(user_id=request.user.id,businesscard_id__isnull=True) 
 #        serializer = self.serializer_class(queryset,many=True)
         serializer = ContactsSerializerWithJson(queryset,many=True)
         
