@@ -38,7 +38,8 @@ class storeContactsViewSet(viewsets.ModelViewSet):
       
       def list(self,request):
         queryset = self.queryset.filter(user_id=request.user.id) 
-        serializer = self.serializer_class(queryset,many=True)
+#        serializer = self.serializer_class(queryset,many=True)
+        serializer = ContactsSerializerWithJson(queryset,many=True)
         
         if serializer.data:
             return CustomeResponse(serializer.data,status=status.HTTP_200_OK)
@@ -558,23 +559,23 @@ class ContactMediaViewSet(viewsets.ModelViewSet):
     #------------- Add image into business card gallary ---------------------#
     
     def create(self,request,call_from_function=None):
-        return CustomeResponse({"msg":"POST method not allowed"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
-#        data = request.data.copy()
-#        data['status'] = 0 
-#        data['user_id'] = self.request.user.id
-#        serializer = ContactMediaSerializer(data = data,context={'request':request})
-#        
-#        if serializer.is_valid():
-#            serializer.save()
-#            if call_from_function:
-#               return json.loads(unicode(serializer.data))
-#            else:
-#               return CustomeResponse(serializer.data,status=status.HTTP_201_CREATED) 
-#        else:
-#            if call_from_function:
-#               return serializer.errors
-#            else:
-#              return CustomeResponse(serializer.errors,status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
+#        return CustomeResponse({"msg":"POST method not allowed"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
+        data = request.data.copy()
+        data['status'] = 0 
+        data['user_id'] = self.request.user.id
+        serializer = ContactMediaSerializer(data = data,context={'request':request})
+        
+        if serializer.is_valid():
+            serializer.save()
+            if call_from_function:
+               return json.loads(unicode(serializer.data))
+            else:
+               return CustomeResponse(serializer.data,status=status.HTTP_201_CREATED) 
+        else:
+            if call_from_function:
+               return serializer.errors
+            else:
+              return CustomeResponse(serializer.errors,status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
     #----------------- End-------------------------------------------------------#
     #------------- Upload image after business card created ---------------------#
     @list_route(methods=['post'],) 

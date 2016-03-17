@@ -168,7 +168,7 @@ class BusinessCardIdentifierViewSet(viewsets.ModelViewSet):
             return CustomeResponse({'msg':"Please provide identifier name"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
             
         try:    
-            identifier_data = Identifier.objects.filter(user_id=user_id,identifier=identifier)
+            identifier_data = Identifier.objects.filter(user_id=user_id,identifier=identifier,status=1)
         except:
             return CustomeResponse({'msg':"Server error"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
         
