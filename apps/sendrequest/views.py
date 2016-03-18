@@ -15,6 +15,7 @@ from apps.awsserver.models import AwsDeviceToken
 from apps.users.models import Profile
 from apps.folders.models import Folder,FolderContact
 import json
+import ohmgear.settings.aws as aws
 #---------------------------End-------------#
 # Create your views here.
 
@@ -73,7 +74,7 @@ class SendAcceptRequest(viewsets.ModelViewSet):
           return CustomeResponse({'msg':"receiver device token does not exist."},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)        
         #aws_plateform_endpoint_arn = '%s'%aws_token_data.aws_plateform_endpoint_arn
         #---------- End ----------------------------------------#
-        client = boto3.client('sns')
+        client = boto3.client('sns',**aws.AWS_CREDENTIAL)
         #------------ Make json to send data ---------------------#
         message = {
                    'default':'request sent from '+user_name+' to accept businesscard.', 
