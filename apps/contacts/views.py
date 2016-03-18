@@ -99,7 +99,11 @@ class storeContactsViewSet(viewsets.ModelViewSet):
                
                serializer = ContactsSerializer(data=contact_new,many=True)
                if serializer.is_valid():
-                    serializer.save()
+                    contact_data = serializer.save()
+                    contact_id = contact_data[0].id        
+                    queryset = self.queryset.filter(user_id=request.user.id,businesscard_id__isnull=True,id=contact_id) 
+
+                    
                     #-------------------- Assign all contacts to folder -----------------#
                     folder_contact_array = []
                     
@@ -111,7 +115,7 @@ class storeContactsViewSet(viewsets.ModelViewSet):
                             if folder_contact_serializer.is_valid():
                                folder_contact_serializer.save() 
                     #--------------------------- End ------------------------------------#
-                    
+                    serializer = ContactsSerializerWithJson(queryset,many=True)
                     return CustomeResponse(serializer.data,status=status.HTTP_201_CREATED)
                else:
                     return CustomeResponse(serializer.errors,status=status.HTTP_201_CREATED)   
