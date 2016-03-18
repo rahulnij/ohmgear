@@ -44,7 +44,7 @@ class AWSActivity(viewsets.ModelViewSet):
            platform_application_arn = settings.AWS_PLATEFORM_APPLICATION_ARN["GCM"] 
         else:
            return CustomeResponse({'msg':"device_type must be apns or gcm"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)          
-           
+        return CustomeResponse({'msg':platform_application_arn},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)             
         if device_token and user_id and device_type:            
            client = boto3.client('sns')
            #--- TODO Need to check device token already exist or not ---#
