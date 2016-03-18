@@ -50,8 +50,8 @@ class AWSActivity(viewsets.ModelViewSet):
            #--- TODO Need to check device token already exist or not ---#
            
            #--------- End-----------------------------------------------#           
-           try:  
-                response = client.create_platform_endpoint(
+           #try:  
+           response = client.create_platform_endpoint(
                              PlatformApplicationArn=platform_application_arn,
                              Token=device_token,
                              CustomUserData='',
@@ -59,11 +59,11 @@ class AWSActivity(viewsets.ModelViewSet):
                                  #'string': 'string'
                              }
                             )            
-                if "EndpointArn" in response:
+           if "EndpointArn" in response:
                     AwsDeviceToken.objects.update_or_create(device_token=device_token,aws_plateform_endpoint_arn=response["EndpointArn"],user_id=user_id,device_type=device_type)                    
                     
-           except:
-                return CustomeResponse({'msg':"this token already attached to provided plateform application"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)   
+           #except:
+           #     return CustomeResponse({'msg':"this token already attached to provided plateform application"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)   
            
            return CustomeResponse(response,status=status.HTTP_200_OK)
         else:
