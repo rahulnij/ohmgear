@@ -97,7 +97,7 @@ class storeContactsViewSet(viewsets.ModelViewSet):
                     return CustomeResponse({'msg':"Max "+str(NUMBER_OF_CONTACT)+" allowed to upload"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
                
                
-               serializer = ContactsSerializerWithJson(data=contact_new,many=True)
+               serializer = ContactsSerializer(data=contact_new,many=True)
                if serializer.is_valid():
                     serializer.save()
                     #-------------------- Assign all contacts to folder -----------------#
