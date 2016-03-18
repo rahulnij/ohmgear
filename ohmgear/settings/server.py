@@ -31,8 +31,3 @@ CELERY_ACCEPT_CONTENT = ['application/json']
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
 CELERY_IMPORTS=("apps.email.views")
-
-
-AWS_PLATEFORM_APPLICATION_ARN = {"APNS":"arn:aws:sns:ap-southeast-1:625053715246:app/APNS_SANDBOX/KINBOW",
-                                 "GCM":"" 
-                                }
