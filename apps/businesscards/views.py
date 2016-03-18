@@ -799,7 +799,7 @@ class BusinessViewSet(viewsets.ModelViewSet):
                  bcard_ids = None
                  
                 if bcard_ids and user_id:
-                    try:
+#                    try:
                      business_card = BusinessCard.objects.filter(id__in=bcard_ids,user_id= user_id)
                      print business_card
                      if business_card:
@@ -807,8 +807,8 @@ class BusinessViewSet(viewsets.ModelViewSet):
                        return CustomeResponse({"msg":"business card deleted successfully."},status=status.HTTP_200_OK)
                      else:
                        return CustomeResponse({"msg":"business card does not exists."},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)  
-                    except:
-                     return CustomeResponse({"msg":"some problem occured on server side during delete business cards"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
+#                    except:
+#                     return CustomeResponse({"msg":"some problem occured on server side during delete business cards"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
             
     #----------------------------- End ----------------------------------------------------#
     
