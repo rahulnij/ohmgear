@@ -3,6 +3,9 @@ from django.conf import settings
 from models import BusinessCard,BusinessCardAddSkill
 from apps.contacts.models import Contacts,ContactMedia
 from apps.notes.models import Notes
+from ohmgear.functions import CustomeResponse
+import rest_framework.status as status
+
 
 def createDuplicateBusinessCard(bcard_id=None,user_id=None):
     
@@ -144,5 +147,28 @@ class DiffJson(object):
         if diff_message not in self.difference:
             self.difference.append(message)
   
+  
+  
+def searchjson(name, value,user_id=None):
+    bcard_id = []
     
+    if user_id:
+        try:
+            bcard = BusinessCard.objects.filter(user_id=user_id,status=1,contact_detail__bcard_json_data__contains=value)
+        except:
+            return CustomeResponse({'msg':"Businesscard Identifier Id not found"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
+        for data in bcard:    
+            bcard_id.append(data.id)
+            
+    contact = BusinessCard.objects.filter(status=1,contact_detail__bcard_json_data__contains=value).exclude(id__in=bcard_id)
+
+    
+    if bcard or contact: 
+        result_list = []        
+        from itertools import chain
+        result_list = list(chain(bcard, contact))
+        return result_list
+    else:
+        return False
+        
     
