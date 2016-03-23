@@ -46,7 +46,7 @@ class UserLocationViewSet(viewsets.ModelViewSet):
 			
 		if ulserializer.is_valid():
 			ulserializer.save()
-			#return CustomeResponse({},status=status.HTTP_204_NO_CONTENT)
+			return CustomeResponse({},status=status.HTTP_204_NO_CONTENT)
 		
 		return CustomeResponse([],status=status.HTTP_400_BAD_REQUEST)
 		
