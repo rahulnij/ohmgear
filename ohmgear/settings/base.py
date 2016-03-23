@@ -63,6 +63,8 @@ INSTALLED_APPS = (
     'ckeditor',
     'apps.sendrequest',
     'apps.awsserver',
+    'django.contrib.gis',
+
 )
 
 MIDDLEWARE_CLASSES = (
@@ -153,6 +155,8 @@ DATABASES = {
         'HOST': 'localhost',
         'PORT': '',
     }
+   
+
 }
 
 
