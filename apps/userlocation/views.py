@@ -62,7 +62,7 @@ class UserLocationViewSet(viewsets.ModelViewSet):
 			timeSubtract = datetime.timedelta(hours=1)
 			timeBeforeCurrentTime = curTime - timeSubtract
 
-			uls = self.queryset.filter(geom__distance_lte=(currentUserLocation, D(m=radius))).filter(~Q(id=ul.id)).filter(updatedDate__gte=timeBeforeCurrentTime.strftime('%Y-%m-%d %H:%M:%S'))
+			uls = self.queryset.filter(geom__distance_lte=(currentUserLocation, D(m=radius))).filter(~Q(id=ul.id)).filter(updated_date__gte=timeBeforeCurrentTime.strftime('%Y-%m-%d %H:%M:%S'))
 			
 			userIds = [oul.user_id for oul in uls]
 				
