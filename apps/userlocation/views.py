@@ -5,6 +5,7 @@ from django.db.models import Q
 from django.contrib.gis.measure import D 
 import datetime
 from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
+import rest_framework.status as status
 
 from rest_framework.permissions import IsAuthenticated
 
@@ -45,11 +46,9 @@ class UserLocationViewSet(viewsets.ModelViewSet):
 			
 		if ulserializer.is_valid():
 			ulserializer.save()
-			return CustomeResponse({"msg": "success"},status=status.HTTP_200_OK)
+			#return CustomeResponse({},status=status.HTTP_204_NO_CONTENT)
 		
-		print ulserializer.errors
-		
-		return CustomeResponse({"msg": "failed"},status=status.HTTP_200_OK)
+		return CustomeResponse([],status=status.HTTP_400_BAD_REQUEST)
 		
 
 	@list_route(methods=['GET'])
@@ -71,7 +70,7 @@ class UserLocationViewSet(viewsets.ModelViewSet):
 			
 			return CustomeResponse(pserializer.data,status=status.HTTP_200_OK)
 		except ObjectDoesNotExist:
-			return CustomeResponse({"msg": "user current location not found"},status=status.HTTP_200_OK)
+			return CustomeResponse([],status=status.HTTP_404_NOT_FOUND)
 
 	
 
