@@ -54,7 +54,7 @@ class UserLocationViewSet(viewsets.ModelViewSet):
 	@list_route(methods=['GET'])
 	def nearuser(self, request):
 		try:
-			radius = 100; # in meter
+			radius = 5; # in meter
 			ul = self.queryset.get(user_id=request.user.id, region=REGION)
 			currentUserLocation = 'POINT(%s %s)'%(ul.geom.x, ul.geom.y)#{"lat": ul.lat, "lon": ul.lon}
 			curTime = datetime.datetime.now()
