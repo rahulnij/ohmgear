@@ -66,7 +66,7 @@ class UserLocationViewSet(viewsets.ModelViewSet):
 			userIds = [oul.user_id for oul in uls]
 				
 			userProfiles = Profile.objects.filter(user_id__in=userIds)
-			pserializer = ProfileSerializer(userProfiles, many=True, fields=('user', 'first_name','last_name', 'email'))
+			pserializer = ProfileSerializer(userProfiles, many=True, fields=('user', 'first_name','last_name', 'email','profile_image'))
 			
 			return CustomeResponse(pserializer.data,status=status.HTTP_200_OK)
 		except ObjectDoesNotExist:
