@@ -1,22 +1,26 @@
 from rest_framework import viewsets
 from rest_framework.decorators import list_route
+import rest_framework.status as status
+from django.db.models import Q
+from django.contrib.gis.measure import D 
+import datetime
+from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
+import rest_framework.status as status
+
+from rest_framework.permissions import IsAuthenticated
 
 from ohmgear.token_authentication import ExpiringTokenAuthentication
-from rest_framework.permissions import IsAuthenticated
 
 from models import UserLocation
 from apps.users.models import Profile
-
-
-from ohmgear.settings.constant import REGION
-
 from serializer import UserLocationSerializer
 from apps.users.serializer import ProfileSerializer
 
-from ohmgear.functions import CustomeResponse
-from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
+from ohmgear.settings.constant import REGION
 
-import rest_framework.status as status
+from ohmgear.functions import CustomeResponse
+
+
 class UserLocationViewSet(viewsets.ModelViewSet):
 
 	queryset = UserLocation.objects.all()
@@ -27,70 +31,47 @@ class UserLocationViewSet(viewsets.ModelViewSet):
 	def create(self, request):
 		data = {}
 		try:
-			data['user_id'] = request.user.id
-			data['region'] = REGION
-			data['lat'] = request.data['lat']
-			data['lon'] = request.data['lon']
 			
+			data['geom'] = 'POINT(%s %s)'%(request.data['lon'], request.data['lat'])
+
 			ul = self.queryset.get(user_id=request.user.id, region=REGION)
-			ulserializer = UserLocationSerializer(ul, data=request.data, partial=True)
+			ulserializer = UserLocationSerializer(ul, data=data, partial=True)
 		except MultipleObjectsReturned:
 			pass
 		except ObjectDoesNotExist:
+			data['user_id'] = request.user.id
+			data['region'] = REGION
 			ulserializer = UserLocationSerializer(data=data)
 			
 			
 		if ulserializer.is_valid():
 			ulserializer.save()
-			return CustomeResponse({"msg": "success"},status=status.HTTP_200_OK)
+			return CustomeResponse({},status=status.HTTP_204_NO_CONTENT)
 		
-		print ulserializer.errors
-		
-		return CustomeResponse({"msg": "failed"},status=status.HTTP_200_OK)
+		return CustomeResponse([],status=status.HTTP_400_BAD_REQUEST)
 		
 
 	@list_route(methods=['GET'])
 	def nearuser(self, request):
 		try:
+			radius = 20; # in meter
 			ul = self.queryset.get(user_id=request.user.id, region=REGION)
-			geo1 = {"lat": ul.lat, "lon": ul.lon}
+			currentUserLocation = 'POINT(%s %s)'%(ul.geom.x, ul.geom.y)#{"lat": ul.lat, "lon": ul.lon}
+			curTime = datetime.datetime.now()
+			timeSubtract = datetime.timedelta(minutes=30)
+			timeBeforeCurrentTime = curTime - timeSubtract
+
+			uls = self.queryset.filter(geom__distance_lte=(currentUserLocation, D(m=radius))).filter(~Q(id=ul.id)).filter(updated_date__gte=timeBeforeCurrentTime.strftime('%Y-%m-%d %H:%M:%S'))
 			
-			uls = self.queryset.exclude(user_id=request.user.id, region=REGION)
-			userIds = []
-			for oul in uls:
-				geo2 = {"lat": oul.lat, "lon": oul.lon}
-				
-				if self.locationWithin(geo1, geo2):
-					userIds.append(oul.user_id)
+			userIds = [oul.user_id for oul in uls]
 				
 			userProfiles = Profile.objects.filter(user_id__in=userIds)
-			pserializer = ProfileSerializer(userProfiles, many=True)
-				
+			pserializer = ProfileSerializer(userProfiles, many=True, fields=('user', 'first_name','last_name', 'email','profile_image'))
+			
 			return CustomeResponse(pserializer.data,status=status.HTTP_200_OK)
 		except ObjectDoesNotExist:
-			return CustomeResponse({"msg": "user current location not found"},status=status.HTTP_200_OK)
+			return CustomeResponse([],status=status.HTTP_404_NOT_FOUND)
 
-	def locationWithin(self, geo1, geo2, radius=200):
-		from math import sin, cos, sqrt, atan2, radians
-		# approximate radius of earth in km
-		R = 6373.0
-		
-		lat1 = radians(geo1["lat"])
-		lon1 = radians(geo1["lon"])
-		lat2 = radians(geo2["lat"])
-		lon2 = radians(geo2["lon"])
-		dlon = lon2 - lon1
-		dlat = lat2 - lat1
-
-		a = sin(dlat / 2)**2 + cos(lat1) * cos(lat2) * sin(dlon / 2)**2
-		c = 2 * atan2(sqrt(a), sqrt(1 - a))
-
-		#distance in meter
-		distance = R * c * 1000
-		print distance
-		if distance <= radius:
-			return True
-
-		return False
+	
 
 		
