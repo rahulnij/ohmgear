@@ -68,11 +68,24 @@ class ContactsSerializerWithJson(serializers.ModelSerializer):
         
 class FavoriteContactSerializer(serializers.ModelSerializer):
     
-     folder_contact_data = serializers.ReadOnlyField(source='foldercontact_id.contact_id.bcard_json_data')
-     contact_id = serializers.ReadOnlyField(source='foldercontact_id.contact_id.id')
-     class Meta:
+    folder_contact_data = serializers.ReadOnlyField(source='foldercontact_id.contact_id.bcard_json_data')
+    contact_id = serializers.ReadOnlyField(source='foldercontact_id.contact_id.id')
+     
+    businesscard_media    = serializers.SerializerMethodField('bcard_image_frontend')
+    
+    
+    def bcard_image_frontend(self,obj):
+        media = ContactMedia.objects.filter(contact_id=obj.id,status=1).order_by('front_back')
+        data =[]
+        #i = 0
+        for item in media:
+            data.append({"img_url":str(settings.DOMAIN_NAME)+str(settings.MEDIA_URL)+str(item.img_url),"front_back":item.front_back})
+            #i = i + 1
+        return data
+     
+    class Meta:
         model = FavoriteContact
-        fields = ('user_id','foldercontact_id','folder_contact_data','contact_id')
+        fields = ('user_id','foldercontact_id','folder_contact_data','contact_id','businesscard_media')
         
         
 class AssociateContactSerializer(serializers.ModelSerializer):
