@@ -151,6 +151,23 @@ class DiffJson(object):
   
 def searchjson(name, value,user_id=None):
     bcard_id = []
+    bcard = ''
+    
+    if name == 'firstname_lastname':
+        print name
+        print value
+#        new =s.split(" ")[1:][0]
+                
+        try:
+            bcard = BusinessCard.objects.filter(status=1,contact_detail__bcard_json_data__contains=value)
+            print bcard
+        except:
+            return CustomeResponse({'msg':"Businesscard Identifier Id not found"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
+        for data in bcard:    
+            bcard_id.append(data.id)
+        
+        return bcard
+    
     
     if user_id:
         try:
