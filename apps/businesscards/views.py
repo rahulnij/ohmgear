@@ -153,6 +153,7 @@ class BusinessCardIdentifierViewSet(viewsets.ModelViewSet):
                             
             
     #-----------------search contact by identifier ------------#
+    
     @list_route(methods=['post'])
     def searchIdentifier(self,request):
         from functions import searchjson
@@ -189,16 +190,33 @@ class BusinessCardIdentifierViewSet(viewsets.ModelViewSet):
                 if not identifier_data:
                     return CustomeResponse({'msg':"identifier not Found"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
                 
-                serializer = BusinessIdentifierSerializer(identifier_data,many=True)
-                businesscard_data =  serializer.data[0]['business_identifier']
-                if businesscard_data:
-                    if businesscard_data[0]['status']: 
-                        return CustomeResponse(serializer.data,status=status.HTTP_200_OK)
-                    else:
-                        return CustomeResponse({'msg':"Business Card is not published"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
                 
+                serializer = BusinessIdentifierSerializer(identifier_data,many=True)
+                
+                
+                try:
+                    businesscard_data =  serializer.data[0]['business_identifier']
+                    contact_id = serializer.data[0]['business_identifier'][0]['contact_detail']['id']
+                except:
+                    return CustomeResponse({'msg':"No Business card found"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
+                try:
+                    folder_contacts = FolderContact.objects.filter(user_id=user_id,contact_id=contact_id)
+                except:
+                    return CustomeResponse({'msg':"server error"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
+                
+                if folder_contacts:
+                    return CustomeResponse({'msg':"Business card is already been added"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
                 else:
-                    return CustomeResponse({'msg':"No Business Card Found"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
+
+                    if businesscard_data:
+
+                        if businesscard_data[0]['status']: 
+                            return CustomeResponse(serializer.data,status=status.HTTP_200_OK)
+                        else:
+                            return CustomeResponse({'msg':"Business Card is not published"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
+
+                    else:
+                        return CustomeResponse({'msg':"No Business Card Found"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
                 
           
             else:
