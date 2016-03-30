@@ -167,20 +167,21 @@ class BusinessCardIdentifierViewSet(viewsets.ModelViewSet):
             value = request.data['name']
         except:
             value = ''
-            return CustomeResponse({'msg':"Please provide identifier name"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
+            return CustomeResponse({'msg':"Please provide name"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
    
         
         if (' ' in value) == True:
-            print value
-            print "first last name found"
-            data =searchjson(name,value,user_id)
+            name="firstname_lastname"
+            user_id =''
+            data =searchjson(name,value)
+            
         else:
             
             if not re.match("[^@]+@[^@]+\.[^@]+", value):
+            
                 name = "identifier"
-#                data =searchjson(name,value)
                 try:    
-                    identifier_data = Identifier.objects.filter(user_id=user_id,identifier=value,status=1)
+                    identifier_data = Identifier.objects.filter(identifier=value,status=1)
                     
                 except:
                     return CustomeResponse({'msg':"Server error"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
@@ -190,13 +191,16 @@ class BusinessCardIdentifierViewSet(viewsets.ModelViewSet):
                 
                 serializer = BusinessIdentifierSerializer(identifier_data,many=True)
                 businesscard_data =  serializer.data[0]['business_identifier']
-                if not businesscard_data:
-                    return CustomeResponse({'msg':"No Business Card Found"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
-                if serializer: 
-                    return CustomeResponse(serializer.data,status=status.HTTP_200_OK)
-                else:
-                    return CustomeResponse({'msg':"No Data Found"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
+                if businesscard_data:
+                    if businesscard_data[0]['status']: 
+                        return CustomeResponse(serializer.data,status=status.HTTP_200_OK)
+                    else:
+                        return CustomeResponse({'msg':"Business Card is not published"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
                 
+                else:
+                    return CustomeResponse({'msg':"No Business Card Found"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
+                
+          
             else:
                 try:
                     userdata = User.objects.filter(email=value).values()
