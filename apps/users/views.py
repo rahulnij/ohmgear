@@ -37,7 +37,10 @@ from apps.usersetting.serializer import UserSignupSettingSerializer
 import os
 from django.conf import settings
 from apps.email.views import BaseSendMail
+from apps.businesscards.models import BusinessCard
+from apps.businesscards.views import BusinessViewSet
 
+from apps.businesscards.views import WhiteCardViewSet
 #class UserPermissionsObj(permissions.BasePermission):
 #    """
 #    Object-level permission to only allow owners of an object to edit it.
@@ -92,13 +95,14 @@ class UserViewSet(viewsets.ModelViewSet):
          request.POST._mutable = True
          pin_no   =    CreatePinNumber()
          request.DATA['pin_number']  = pin_no
+        
          if serializer.is_valid():
              
             #------------ enable/desable signal -----------------#
             if fromsocial:
                 self._disable_signals = True
             #------------ End -----------------------------------#
-            user_id=serializer.save() 
+            user_id=serializer.save()          
             
             #---------------- create the profile -----------#
             salt = hashlib.sha1(str(random.random())).hexdigest()[:5]            
@@ -108,6 +112,20 @@ class UserViewSet(viewsets.ModelViewSet):
             profile.activation_key = activation_key
             profile.key_expires = key_expires
             profile.user_id = user_id.id
+            
+            #------------------------ grey contact invite auth-token -----------------------------#
+            if request.DATA['status']:
+                
+                token = getToken(user_id.id)
+                cid = request.DATA['cid']
+                sid = request.DATA['sid']
+                from apps.sendrequest.models import Notification 
+                Notification.objects.filter(sender_id=sid,receiver_id=cid).update(read_status=1,receiver_id=user_id.id)
+                business_card_class_create = WhiteCardViewSet.as_view({'post': 'create'})
+                
+                business_card_response = business_card_class_create(request,from_white_contact=user_id.id,cid=cid)
+                print business_card_response.data
+                return CustomeResponse({"msg":business_card_response.data},status=status.HTTP_200_OK)    
             
             if request.data.has_key('first_name'):
                 profile.first_name = request.data['first_name']
