@@ -154,14 +154,27 @@ def searchjson(name, value,user_id=None):
     bcard = ''
     
     if name == 'firstname_lastname':
-        print name
-        print value
-#        new =s.split(" ")[1:][0]
-                
+        
+        new =value.split(" ")
+#        print new1[0]
+#        print new
+#        new =value.split(" ")[1:][0]
+        print new
         try:
-            bcard = BusinessCard.objects.filter(status=1,contact_detail__bcard_json_data__contains=value)
-            print bcard
-        except:
+#             print "@@"
+             
+#             print "bcard"
+#             bcard =  Contacts.objects.filter(id=3,bcard_json_data__contains={"breed": "labrador"})
+#             bcard =Contacts.objects.filter(bcard_json_data__contains={'breed':'labrador'})
+            # bcard =BusinessCard.objects.filter(status=1,contact_detail__bcard_json_data__breed="labrador")
+             bcard = BusinessCard.objects.filter(status=1,contact_detail__bcard_json_data__contains=new)
+#            bcard = BusinessCard.objects.filter(contact_detail__bcard_json_data__side_first__basic_info__1__value=new[0])
+#             print "##"
+#             print bcard
+#             print "vcjnnnnnnnnnnnnnnnnnnnnnnnnnnn"
+             
+        except Exception as e:
+            print e
             return CustomeResponse({'msg':"Businesscard Identifier Id not found"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
         for data in bcard:    
             bcard_id.append(data.id)

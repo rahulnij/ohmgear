@@ -153,6 +153,7 @@ class BusinessCardIdentifierViewSet(viewsets.ModelViewSet):
                             
             
     #-----------------search contact by identifier ------------#
+    
     @list_route(methods=['post'])
     def searchIdentifier(self,request):
         from functions import searchjson
@@ -189,16 +190,33 @@ class BusinessCardIdentifierViewSet(viewsets.ModelViewSet):
                 if not identifier_data:
                     return CustomeResponse({'msg':"identifier not Found"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
                 
-                serializer = BusinessIdentifierSerializer(identifier_data,many=True)
-                businesscard_data =  serializer.data[0]['business_identifier']
-                if businesscard_data:
-                    if businesscard_data[0]['status']: 
-                        return CustomeResponse(serializer.data,status=status.HTTP_200_OK)
-                    else:
-                        return CustomeResponse({'msg':"Business Card is not published"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
                 
+                serializer = BusinessIdentifierSerializer(identifier_data,many=True)
+                
+                
+                try:
+                    businesscard_data =  serializer.data[0]['business_identifier']
+                    contact_id = serializer.data[0]['business_identifier'][0]['contact_detail']['id']
+                except:
+                    return CustomeResponse({'msg':"No Business card found"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
+                try:
+                    folder_contacts = FolderContact.objects.filter(user_id=user_id,contact_id=contact_id)
+                except:
+                    return CustomeResponse({'msg':"server error"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
+                
+                if folder_contacts:
+                    return CustomeResponse({'msg':"Business card is already been added"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
                 else:
-                    return CustomeResponse({'msg':"No Business Card Found"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
+
+                    if businesscard_data:
+
+                        if businesscard_data[0]['status']: 
+                            return CustomeResponse(serializer.data,status=status.HTTP_200_OK)
+                        else:
+                            return CustomeResponse({'msg':"Business Card is not published"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
+
+                    else:
+                        return CustomeResponse({'msg':"No Business Card Found"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
                 
           
             else:
@@ -610,7 +628,7 @@ class BusinessViewSet(viewsets.ModelViewSet):
     
     #--------------Method: POST create new business card and other operation -----------------------------# 
     def create(self, request, call_from_func=None,offline_data=None): 
-           
+         
          try:           
            user_id = request.user.id
          except:
@@ -625,6 +643,8 @@ class BusinessViewSet(viewsets.ModelViewSet):
          except:
             return CustomeResponse({'msg':"Please provide bcard_json_data in json format" },status=status.HTTP_400_BAD_REQUEST,validate_errors=1) 
          #---------------------------------- End ----------------------------------------------------------- #
+          
+            
          if call_from_func:
             #-------------- Call from offline app ------------------------------# 
             tempData = offline_data
@@ -959,3 +979,61 @@ class BusinessViewSet(viewsets.ModelViewSet):
     
     def destroy(self, request, pk=None):
          return CustomeResponse({'msg':'record not found'},status=status.HTTP_404_NOT_FOUND,validate_errors=1)  
+     
+
+class WhiteCardViewSet(viewsets.ModelViewSet):
+
+     #--------------Method: GET-----------------------------#       
+     def create(self, request,from_white_contact=None,cid=None): 
+         try:           
+           user_id = from_white_contact
+         except:
+           user_id = None  
+ 
+         #tempData = request.data.copy()
+         tempData = {}
+         tempData["user_id"] = user_id
+         
+         serializer =  BusinessCardSerializer(data=tempData,context={'request': request})
+         
+         if serializer.is_valid():
+                business = serializer.save()
+  
+                data_new = serializer.data.copy()
+
+                #---------------- Assign  first created business card to created default folder -----#
+                queryset_folder = Folder.objects.filter(user_id=user_id,foldertype='PR').values()
+                if not queryset_folder:
+                    
+                    user =  business.user_id
+                    user_id =  user.id
+
+                    offline_data={}
+                    offline_data['businesscard_id'] = business.id  
+                    offline_data['user_id'] = user_id
+                    offline_data['foldername'] = 'PR'
+                    serializer =  FolderSerializer(data=offline_data,context={'request': request})
+         
+                    if serializer.is_valid():
+                        serializer.save(user_id=user)
+                       # static now need to be dynamic from sign up form
+                        Contacts.objects.filter(id=cid).update(businesscard_id=offline_data['businesscard_id'],user_id=from_white_contact)
+                       
+                       #print serializer
+#                        connection_color={}
+#                        connection_color['folder_id'] = 124 
+#                        connection_color['user_id'] = user_id
+#                        connection_color['contact_id'] = cid
+#                        connection_color['link_status'] = 2
+#                        connection_color['is_linked'] = 1
+#                        serializer =  FolderContactSerializer(data=connection_color,context={'request': request})
+#                        if serializer.is_valid():
+#                            serializer.save()
+                        #folder_view.save()
+                        #folder_id = folder_view.data['data']['id']
+               #-------------------- End --------------------------------------------------------# 
+            
+                return CustomeResponse(data_new,status=status.HTTP_201_CREATED)
+ 
+         else:
+            return CustomeResponse(serializer.errors,status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
