@@ -199,6 +199,7 @@ class SendAcceptRequest(viewsets.ModelViewSet):
         
         return CustomeResponse({"msg":"success"},status=status.HTTP_200_OK)
 
+
     
     @list_route(methods=['post'],)
     def send_white_invitation(self, request):
