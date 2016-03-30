@@ -107,12 +107,15 @@ class UpdateContactLinkStatusCron(viewsets.ModelViewSet):
                              #print result  
                              if result:
                                 #----------- Change the link status then insert into MatchContact Model ----#
-                                # ----- related field is not working value.folder_contact --# 
-                                folder_contact = FolderContact.objects.get(contact_id = value.id)
-                                if folder_contact.link_status == 0:
-                                    folder_contact.link_status = 1
-                                    folder_contact.save()
-                                    match_contact_insert.append({"user_id":value.user_id.id,"folder_contact_id":folder_contact.id,"businesscard_id":value_copy['businesscard_id']})
+                                # ----- related field is not working value.folder_contact --#
+                                try:
+                                    folder_contact = FolderContact.objects.get(contact_id = value.id,user_id=value.user_id)
+                                    if folder_contact.link_status == 0:
+                                        folder_contact.link_status = 1
+                                        folder_contact.save()
+                                        match_contact_insert.append({"user_id":value.user_id.id,"folder_contact_id":folder_contact.id,"businesscard_id":value_copy['businesscard_id']})
+                                except:
+                                    pass
                                 #match_contact_insert = MatchContactSerializer({''})
                                 #------------------------------ End ----------------------------------------#
                              #pass

@@ -9,7 +9,7 @@ import boto3
 #------------------ Local app imports ------#
 from ohmgear.functions import CustomeResponse
 from ohmgear.token_authentication import ExpiringTokenAuthentication
-from models import Notification 
+from models import SendRequest 
 from apps.businesscards.models import BusinessCard
 from apps.awsserver.models import AwsDeviceToken
 from apps.users.models import Profile
@@ -21,7 +21,7 @@ import ohmgear.settings.aws as aws
 
 class SendAcceptRequest(viewsets.ModelViewSet):
 
-    queryset  = Notification.objects.all()
+    queryset  = SendRequest.objects.all()
     serializer_class = None
     authentication_classes = (ExpiringTokenAuthentication,)
     permission_classes = (IsAuthenticated,)
@@ -34,18 +34,66 @@ class SendAcceptRequest(viewsets.ModelViewSet):
         return CustomeResponse({'msg':"DELETE METHOD NOT ALLOWD"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)  
     
     #-------------------- local class function --------------------------------#
-    def insert_notification(self,type,sender_id,receiver_id,message):
+    def insert_notification(self,**karg):
+        #-- Required data---#
+        #-- sender_user_id
+        #-- sender_obj_id
+        #-- receiver_user_id
+        #-- receiver_obj_id
+        #-- message       
        try: 
-        notification = Notification()
-        notification.type = type
-        notification.sender_id = sender_id
-        notification.receiver_id = receiver_id
-        notification.message = message
+        notification = SendRequest()
+        
+        notification.type = karg['type']
+        notification.sender_user_id = karg['sender_user_id']
+        notification.sender_obj_id = karg['sender_obj_id']
+        
+        notification.receiver_user_id = karg['receiver_user_id']
+        notification.receiver_obj_id = karg['receiver_obj_id']
+        
+        notification.message = karg['message']
         notification.save()
         return True
        except:
         return False   
+    
+    
+    def exchange_business_cards(self,**karg):
+        
+        #-- Required data---#
+        #-- sender_folder
+        #-- sender_business_card object with contact_detail
+        #-- receiver_folder
+        #-- receiver_business_card object with contact_detail
+        #-- sender_user_id # we can also get this from sender_business_card
+        
+        try:
+            try:
+              folder_sender= FolderContact.objects.get(folder_id = karg['sender_folder'],contact_id = karg['receiver_business_card'].contact_detail)
+            except:
+                folder_sender= FolderContact()
+                folder_sender.user_id = karg['sender_user_id']
+                folder_sender.folder_id = karg['sender_folder']
+                folder_sender.contact_id = karg['receiver_business_card'].contact_detail
+                folder_sender.link_status = 2
+                folder_sender.save()
+        
+            try:
+               folder_receiver= FolderContact.objects.get(folder_id = karg['receiver_folder'],contact_id=karg['sender_business_card'].contact_detail)
+            except:
+                folder_receiver= FolderContact()
+                folder_receiver.user_id = karg['receiver_business_card'].user_id
+                folder_receiver.folder_id = karg['receiver_folder']
+                folder_receiver.contact_id = karg['sender_business_card'].contact_detail
+                folder_receiver.link_status = 2
+                folder_receiver.save()
+            
+            return True    
+                
+        except:
+            return False        
     #-------------------------- End -------------------------------------------#
+    
     
     @list_route(methods=['post'],)
     def invite_to_businesscard(self, request):
@@ -97,10 +145,14 @@ class SendAcceptRequest(viewsets.ModelViewSet):
         )
         #--- Insert into Notification Table ---#
         type = 'b2b'
-        sender_id = sender_business_card_id
-        receiver_id = receiver_business_card_id
+        sender_obj_id = sender_business_card_id
+        receiver_obj_id = receiver_business_card_id
         message = 'request sent from '+user_name+' to accept businesscard.'
-        self.insert_notification(type,sender_id,receiver_id,message)
+        #---- Before inser check request already sent --------------------#
+        already_sent_request = SendRequest.objects.filter(type=type,sender_user_id=user_id,sender_obj_id=sender_obj_id,receiver_user_id=receiver_business_card.user_id,receiver_obj_id=receiver_obj_id)
+        #----------------------- End--------------------------------------#
+        if not already_sent_request:
+           self.insert_notification(type=type,sender_user_id=user_id,sender_obj_id=sender_obj_id,receiver_user_id=receiver_business_card.user_id,receiver_obj_id=receiver_obj_id,message=message)
         #--------- End-----------------------------------------------#         
         return CustomeResponse(response,status=status.HTTP_200_OK)
     
@@ -142,24 +194,7 @@ class SendAcceptRequest(viewsets.ModelViewSet):
           return CustomeResponse({'msg':"receiver businesscard dont have folder"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)         
     
         #--------------------- Now we are inserting data in folder contact table for making connection -----#
-        try:
-          folder_sender= FolderContact.objects.get(folder_id = sender_folder,contact_id = receiver_business_card.contact_detail)
-        except:
-            folder_sender= FolderContact()
-            folder_sender.user_id = user_id
-            folder_sender.folder_id = sender_folder
-            folder_sender.contact_id = receiver_business_card.contact_detail
-            folder_sender.link_status = 2
-            folder_sender.save()
-        try:
-           folder_receiver= FolderContact.objects.get(user_id = user_id,folder_id = receiver_folder)
-        except:
-            folder_receiver= FolderContact()
-            folder_receiver.user_id = receiver_business_card.user_id
-            folder_receiver.folder_id = receiver_folder
-            folder_receiver.contact_id = sender_business_card.contact_detail
-            folder_receiver.link_status = 2
-            folder_receiver.save()        
+        self.exchange_business_cards(sender_folder=sender_folder,sender_business_card=sender_business_card,receiver_folder=receiver_folder,receiver_business_card=receiver_business_card,sender_user_id=user_id)
         #--------------------------------- End -------------------------------------------------------------#
         
         return CustomeResponse({"msg":"success"},status=status.HTTP_200_OK)
