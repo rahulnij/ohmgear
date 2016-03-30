@@ -63,6 +63,8 @@ INSTALLED_APPS = (
     'ckeditor',
     'apps.sendrequest',
     'apps.awsserver',
+    'django.contrib.gis',
+
 )
 
 MIDDLEWARE_CLASSES = (
@@ -104,13 +106,15 @@ AUTHENTICATION_BACKENDS = (
 PASSWORD_HASHERS = (
     'django.contrib.auth.hashers.SHA1PasswordHasher',
 )
-DEFAULT_FROM_EMAIL = 'OhmGear <bhoopendra.ohmgear@gmail.com>'
+
+#DEFAULT_FROM_EMAIL = 'welcome@kinbow.com'
 #q@123456
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_USE_TLS = True
-EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_HOST = 'email-smtp.us-west-2.amazonaws.com'#'smtp.gmail.com'
 EMAIL_PORT = 587
-EMAIL_HOST_USER = 'bhoopendra.ohmgear@gmail.com'
-EMAIL_HOST_PASSWORD = 'q@123456'
+EMAIL_HOST_USER = 'AKIAJUDMRYODLOT4FMJQ'#'bhoopendra.ohmgear@gmail.com'
+EMAIL_HOST_PASSWORD = 'Atf+OJN+84eKW0jqqhp0MAzYsnB7Ra78ilfj8SHsb821' #'q@123456'
 
 TEMPLATE_CONTEXT_PROCESSORS = (
     # other context processors....
@@ -153,6 +157,8 @@ DATABASES = {
         'HOST': 'localhost',
         'PORT': '',
     }
+   
+
 }
 
 

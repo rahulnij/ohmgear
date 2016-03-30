@@ -32,7 +32,7 @@ def CreateSystemIdentifier():
     
 def validate_identifier(identifier):  
     
-    if re.match(r'^[A-Za-z0-9^&]{4,14}$', identifier):
+    if re.match(r'^[A-Za-z0-9^&]{6,12}$', identifier):
         return True
     else:
         return False
