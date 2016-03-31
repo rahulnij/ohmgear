@@ -232,21 +232,11 @@ class BusinessCardIdentifierViewSet(viewsets.ModelViewSet):
                 except:
                     return CustomeResponse({'msg':"Server error"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
                 
-                try:
-                    folder_contacts = FolderContact.objects.filter(user_id=user_id).values()
                 
-                except:
-                    return CustomeResponse({'msg':"Server error"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
-                
-                folder_contacts_ids = []
-                for data in folder_contacts:
-                    folder_contacts_ids.append(data['contact_id_id'])
-                
-               
                 if userdata:
                     user_id = userdata[0]['id']
                     name="email"
-                    data =searchjson(name,value,user_id,folder_contacts_ids)
+                    data =searchjson(name,value,user_id)
                     if data:
                         serializer = SearchBusinessCardWithIdentifierSerializer(data,many=True,context={'request': request})
                         return CustomeResponse(serializer.data,status=status.HTTP_200_OK)
@@ -256,7 +246,7 @@ class BusinessCardIdentifierViewSet(viewsets.ModelViewSet):
                 else:
                     name =  "email"
                     user_id= ""
-                    data =searchjson(name,value,user_id,folder_contacts_ids)
+                    data =searchjson(name,value,user_id)
                     if data:
                         serializer = SearchBusinessCardWithIdentifierSerializer(data,many=True,context={'request': request.user})
                         return CustomeResponse(serializer.data,status=status.HTTP_200_OK)

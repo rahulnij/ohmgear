@@ -149,7 +149,7 @@ class DiffJson(object):
   
   
   
-def searchjson(name,value,user_id=None,folder_contacts_ids=None):
+def searchjson(name,value,user_id=None):
     bcard_id = []
     bcard = ''
     
