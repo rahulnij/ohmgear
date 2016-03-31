@@ -16,6 +16,10 @@ from apps.users.models import Profile
 from apps.folders.models import Folder,FolderContact
 import json
 import ohmgear.settings.aws as aws
+import hashlib, datetime, random
+from django.conf import settings
+from apps.email.views import BaseSendMail
+from apps.sendrequest.serializer import SendRequestSerializer
 
 #---------------------------End-------------#
 # Create your views here.
@@ -203,36 +207,36 @@ class SendAcceptRequest(viewsets.ModelViewSet):
     
     @list_route(methods=['post'],)
     def send_white_invitation(self, request):
-
+        
         authentication_classes = (ExpiringTokenAuthentication,)
         permission_classes = (IsAuthenticated,)
+        
         try:
             user_id = request.user
         except:
             user_id = None
 
         data = {}
-        data['sender_id'] = request.user.id
-        data['type'] = request.user.user_type_id
-        data['receiver_id'] = request.DATA.get('receiver_id')
+        data['email'] = request.user.email
+        data['sender_user_id'] = request.user.id
+        data['type'] = "b2g"
+        data['receiver_obj_id'] = request.DATA.get('receiver_obj_id')
         data['message'] = request.DATA.get('message')
-
+        
         fname = data['message']['fname']
         lname = data['message']['lname']
         email = data['message']['email']
-        contactId = data['receiver_id']
-        sid = str(data['sender_id'])
+        contactId = str(data['receiver_obj_id'])
+        sid = str(data['sender_user_id'])
         
         salt = hashlib.sha1(str(random.random())).hexdigest()[:5]
         activation_key = hashlib.sha1(salt+email).hexdigest()[:10]
-         
-        data['object_pk_url'] = str(settings.DOMAIN_NAME)+ "/api/greyrequest/invite_registration"+ "/?email="+email+"&fname="+fname+"&lname="+lname+"&cid="+contactId+"&sid="+sid
-    
-        serializer = NotificationSerializer(data=data,context ={'request':request,'msg':'not exist'})
-        
+        email_invit_url = str(settings.DOMAIN_NAME)+ "/api/greyrequest/invite_registration"+ "/?email="+email+"&fname="+fname+"&lname="+lname+"&cid="+contactId+"&sid="+sid
+        print email_invit_url
+        serializer = SendRequestSerializer(data=data,context ={'request':request,'msg':'not exist'})
         if serializer.is_valid():
                 serializer.save()
-                BaseSendMail.delay(data,type='grey_invitation',key = activation_key)
+                BaseSendMail.delay(data,type='grey_invitation',key = activation_key,url=email_invit_url,first_name=fname)
                 return CustomeResponse(serializer.data,status=status.HTTP_201_CREATED)
         else:
             return CustomeResponse({'msg':serializer.errors},validate_errors=1)
@@ -245,28 +249,31 @@ class SendAcceptRequest(viewsets.ModelViewSet):
             user_id = request.user.id
         except:
             user_id = None
-        print user_id
-        queryset_folder = Notification.objects.filter(receiver_id=user_id,read_status=0).values()
+    
+        queryset_folder = SendRequest.objects.filter(receiver_id=user_id,read_status=0).values()
         if  queryset_folder:
             return CustomeResponse({'msg':queryset_folder},status=status.HTTP_201_CREATED)
         else:
             return CustomeResponse({'msg':"data not found"},validate_errors=1)
     
     
-  
+# needs to be optimized  
 class GreyInvitationViewSet(viewsets.ModelViewSet):
     
-    queryset  = Notification.objects.all()
-    serializer_class = NotificationSerializer
+    queryset  = SendRequest.objects.all()
+    serializer_class = SendRequestSerializer
     
     @list_route(methods=['get'],)
     def invite_registration(self, request):
-        
-        email = request.GET.get('email')
-        fname = request.GET.get('fname')
-        lname = request.GET.get('lname')
-        cid = request.GET.get('cid')
-        sid = request.GET.get('sid')
-             
-        return render_to_response('templates/index.html', {'email': email,'fname':fname,'lname':lname,'cid':cid,'sid':sid})
+        from django.shortcuts import render
+        try:
+            email = request.GET.get('email')
+            fname = request.GET.get('fname')
+            lname = request.GET.get('lname')
+            cid = request.GET.get('cid')
+            sid = request.GET.get('sid')
+        except:
+            return CustomeResponse({'msg':"parameter(s) not found"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)         
+            
+        return render(request, 'sendrequest/index.html', {'email': email,'fname':fname,'lname':lname,'cid':cid,'sid':sid})
     

@@ -982,14 +982,14 @@ class BusinessViewSet(viewsets.ModelViewSet):
      
 
 class WhiteCardViewSet(viewsets.ModelViewSet):
-
+     
      #--------------Method: GET-----------------------------#       
      def create(self, request,from_white_contact=None,cid=None): 
          try:           
            user_id = from_white_contact
          except:
            user_id = None  
- 
+          
          #tempData = request.data.copy()
          tempData = {}
          tempData["user_id"] = user_id
@@ -998,22 +998,19 @@ class WhiteCardViewSet(viewsets.ModelViewSet):
          
          if serializer.is_valid():
                 business = serializer.save()
-  
-                data_new = serializer.data.copy()
-
+                #data_new = serializer.data.copy   
                 #---------------- Assign  first created business card to created default folder -----#
                 queryset_folder = Folder.objects.filter(user_id=user_id,foldertype='PR').values()
-                if not queryset_folder:
-                    
+                print queryset_folder
+                if not queryset_folder:                    
                     user =  business.user_id
                     user_id =  user.id
-
                     offline_data={}
                     offline_data['businesscard_id'] = business.id  
                     offline_data['user_id'] = user_id
                     offline_data['foldername'] = 'PR'
                     serializer =  FolderSerializer(data=offline_data,context={'request': request})
-         
+                    
                     if serializer.is_valid():
                         serializer.save(user_id=user)
                        # static now need to be dynamic from sign up form
@@ -1033,7 +1030,7 @@ class WhiteCardViewSet(viewsets.ModelViewSet):
                         #folder_id = folder_view.data['data']['id']
                #-------------------- End --------------------------------------------------------# 
             
-                return CustomeResponse(data_new,status=status.HTTP_201_CREATED)
+                return CustomeResponse(offline_data,status=status.HTTP_201_CREATED)
  
          else:
             return CustomeResponse(serializer.errors,status=status.HTTP_400_BAD_REQUEST,validate_errors=1)

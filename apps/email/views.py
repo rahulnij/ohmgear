@@ -16,9 +16,14 @@ class BaseSendMail(Task):
             email=EmailTemplate.objects.get(slug=type)
            except:
             return False
-           
-           user_id =  userObj['id']
-           getdata = Profile.objects.get(user=user_id)
+        
+            if type == 'grey_invitation':
+                user_id =  userObj['sender_user_id']
+
+            else :
+             user_id =  userObj['id']
+             getdata = Profile.objects.get(user=user_id)
+            
            if type == 'account_confirmation':
                
                 activation_key = kwargs.get("key")
@@ -38,8 +43,8 @@ class BaseSendMail(Task):
            if type == 'grey_invitation':
                
                 activation_key = kwargs.get("key")
-                email_body = email.content.replace('%user_name%',str(getdata.first_name))
-                url = '/api/users/emails/verify_email/?activation_code='+str(activation_key)
+                email_body = email.content.replace('%user_name%',str(kwargs.get("first_name")))
+                url = kwargs.get('url')
                 email_body = email_body.replace('%url%',"<a href='"+settings.DOMAIN_NAME+url+"'>Link</a>")
 
            elif type == 'forgot_password': 
