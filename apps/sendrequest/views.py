@@ -101,11 +101,11 @@ class SendAcceptRequest(viewsets.ModelViewSet):
         try:
           receiver_business_card_id  =request.DATA['receiver_business_card_id'] 
           sender_business_card_id  =request.DATA['sender_business_card_id']
-          device_token  =request.DATA['device_token']
+          #device_token  =request.DATA['device_token']
           get_profile = Profile.objects.filter(user_id=user_id).values("first_name","last_name").latest("id")
           user_name = str(get_profile["first_name"])+" "+str(get_profile["last_name"])
         except:
-          return CustomeResponse({'msg':"Please provide receiver_business_card_id,sender_business_card_id and device_token"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)     
+          return CustomeResponse({'msg':"Please provide receiver_business_card_id and sender_business_card_id"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)     
         
        
         #check from_business_card_id belongs to user_id 
