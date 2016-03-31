@@ -16,6 +16,7 @@ from apps.users.models import Profile
 from apps.folders.models import Folder,FolderContact
 import json
 import ohmgear.settings.aws as aws
+
 #---------------------------End-------------#
 # Create your views here.
 
