@@ -14,7 +14,7 @@ from rest_framework.decorators import detail_route, list_route
 #-------------------------------------------#
 #------------------ Local app imports ------#
 from models import BusinessCard,BusinessCardTemplate,BusinessCardIdentifier,Identifier,BusinessCardSkillAvailable,BusinessCardAddSkill,BusinessCardHistory
-from serializer import BusinessCardSerializer,BusinessCardIdentifierSerializer,BusinessCardSkillAvailableSerializer,BusinessCardAddSkillSerializer,BusinessCardSummarySerializer,BusinessCardHistorySerializer
+from serializer import BusinessCardSerializer,BusinessCardIdentifierSerializer,BusinessCardSkillAvailableSerializer,BusinessCardAddSkillSerializer,BusinessCardSummarySerializer,BusinessCardHistorySerializer,SearchBusinessCardWithIdentifierSerializer
 from apps.contacts.serializer import ContactsSerializer
 from apps.contacts.models import Contacts,ContactMedia
 from apps.identifiers.models import Identifier
@@ -153,6 +153,12 @@ class BusinessCardIdentifierViewSet(viewsets.ModelViewSet):
                             
             
     #-----------------search contact by identifier ------------#
+    """
+    *search identiifer and get published business card coreesponding to it but that contact should't be in user's contact.
+    * search email if user's is signup with his email account and with same in  business card then business card shold be on top in search result 
+      1 if user signup account email is different and match with business card then it will after user's sign seacrh.
+      2 The email which is searched that contact should'nt be in user's contact.
+    """
     
     @list_route(methods=['post'])
     def searchIdentifier(self,request):
@@ -220,17 +226,29 @@ class BusinessCardIdentifierViewSet(viewsets.ModelViewSet):
                 
           
             else:
+                
                 try:
                     userdata = User.objects.filter(email=value).values()
                 except:
                     return CustomeResponse({'msg':"Server error"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
+                
+                try:
+                    folder_contacts = FolderContact.objects.filter(user_id=user_id).values()
+                
+                except:
+                    return CustomeResponse({'msg':"Server error"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
+                
+                folder_contacts_ids = []
+                for data in folder_contacts:
+                    folder_contacts_ids.append(data['contact_id_id'])
+                
+               
                 if userdata:
-                    print "userdata email"
                     user_id = userdata[0]['id']
                     name="email"
-                    data =searchjson(name,value,user_id)
+                    data =searchjson(name,value,user_id,folder_contacts_ids)
                     if data:
-                        serializer = BusinessCardWithIdentifierSerializer(data,many=True)
+                        serializer = SearchBusinessCardWithIdentifierSerializer(data,many=True,context={'request': request})
                         return CustomeResponse(serializer.data,status=status.HTTP_200_OK)
                     else:
                         return CustomeResponse({'msg':"email not found"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
@@ -238,9 +256,9 @@ class BusinessCardIdentifierViewSet(viewsets.ModelViewSet):
                 else:
                     name =  "email"
                     user_id= ""
-                    data =searchjson(name,value)
+                    data =searchjson(name,value,user_id,folder_contacts_ids)
                     if data:
-                        serializer = BusinessCardWithIdentifierSerializer(data,many=True)
+                        serializer = SearchBusinessCardWithIdentifierSerializer(data,many=True,context={'request': request.user})
                         return CustomeResponse(serializer.data,status=status.HTTP_200_OK)
                     else:
                         return CustomeResponse({'msg':"email not found"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)

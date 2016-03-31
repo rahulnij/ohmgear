@@ -1,6 +1,7 @@
 from rest_framework import  serializers
 from models import BusinessCard,BusinessCardIdentifier ,BusinessCardSkillAvailable,BusinessCardAddSkill,BusinessCardHistory
 from apps.contacts.serializer import ContactsSerializerWithJson
+from apps.folders.models import FolderContact
 from apps.contacts.models import ContactMedia
 from django.conf import settings
 # Serializers define the API representation.
@@ -108,6 +109,53 @@ class BusinessCardWithIdentifierSerializer(serializers.ModelSerializer):
             'contact_detail',
             'media_detail',
             'business_identifier',
+            #'identifier_new',
+        )
+        
+        
+class SearchBusinessCardWithIdentifierSerializer(serializers.ModelSerializer):
+   
+    user =[]        
+    contact_detail = ContactsSerializerWithJson(read_only=True)
+    media_detail    = serializers.SerializerMethodField('bcard_image_frontend')
+    folder_contact_detail  = serializers.SerializerMethodField('folder_contact')       
+    business_identifier = IdentifierSerializer(many=True,read_only=True)
+    
+    
+    def bcard_image_frontend(self,obj):
+        media = ContactMedia.objects.filter(contact_id=obj.contact_detail.id,status=1).order_by('front_back')
+        data =[]
+        #i = 0
+        for item in media:
+            data.append({"img_url":str(settings.DOMAIN_NAME)+str(settings.MEDIA_URL)+str(item.img_url),"front_back":item.front_back})
+            #i = i + 1
+        return data
+    
+    def folder_contact(self,obj):
+        user =  self.context.get("request")
+        user_id =user.id
+        folder = FolderContact.objects.filter(contact_id=obj.contact_detail.id,user_id=user_id).exclude(link_status=0).values()
+        return folder
+        
+        
+        
+#    def media(self,instance):
+#        return instance.bcard_image_frontend()
+    #identifier_new = serializers.ReadOnlyField(source='*')
+    #------------------------ End -----------------------------------------------------------#
+    class Meta:
+        model = BusinessCard
+        fields = (
+            'id',
+            'name',
+            'bcard_type',
+            'is_active',
+            'status',
+            'user_id',
+            'contact_detail',
+            'media_detail',
+            'business_identifier',
+            'folder_contact_detail'
             #'identifier_new',
         )
 
