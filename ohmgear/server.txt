@@ -17,3 +17,7 @@ Default Port:6379
 - Postgres 9.4.4
 For more you can see requirment.txt file
 #--------------------------------------------------------#
+
+#------------ Install geos library ----------------------#
+sudo apt-get install libgeos-dev
+#--------------------------------------------------------#
