@@ -254,19 +254,19 @@ class SendAcceptRequest(viewsets.ModelViewSet):
     
     
   
-class GreyInvitationViewSet(viewsets.ModelViewSet):
-    
-    queryset  = Notification.objects.all()
-    serializer_class = NotificationSerializer
-    
-    @list_route(methods=['get'],)
-    def invite_registration(self, request):
-        
-        email = request.GET.get('email')
-        fname = request.GET.get('fname')
-        lname = request.GET.get('lname')
-        cid = request.GET.get('cid')
-        sid = request.GET.get('sid')
-             
-        return render_to_response('templates/index.html', {'email': email,'fname':fname,'lname':lname,'cid':cid,'sid':sid})
-    
+#class GreyInvitationViewSet(viewsets.ModelViewSet):
+#    
+#    queryset  = Notification.objects.all()
+#    serializer_class = NotificationSerializer
+#    
+#    @list_route(methods=['get'],)
+#    def invite_registration(self, request):
+#        
+#        email = request.GET.get('email')
+#        fname = request.GET.get('fname')
+#        lname = request.GET.get('lname')
+#        cid = request.GET.get('cid')
+#        sid = request.GET.get('sid')
+#             
+#        return render_to_response('templates/index.html', {'email': email,'fname':fname,'lname':lname,'cid':cid,'sid':sid})
+#    

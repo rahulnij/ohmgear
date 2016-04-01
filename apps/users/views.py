@@ -114,18 +114,18 @@ class UserViewSet(viewsets.ModelViewSet):
             profile.user_id = user_id.id
             
             #------------------------ grey contact invite auth-token -----------------------------#
-            if request.DATA['status']:
-                
-                token = getToken(user_id.id)
-                cid = request.DATA['cid']
-                sid = request.DATA['sid']
-                from apps.sendrequest.models import Notification 
-                Notification.objects.filter(sender_id=sid,receiver_id=cid).update(read_status=1,receiver_id=user_id.id)
-                business_card_class_create = WhiteCardViewSet.as_view({'post': 'create'})
-                
-                business_card_response = business_card_class_create(request,from_white_contact=user_id.id,cid=cid)
-                print business_card_response.data
-                return CustomeResponse({"msg":business_card_response.data},status=status.HTTP_200_OK)    
+#            if request.DATA['status']:
+#                
+#                token = getToken(user_id.id)
+#                cid = request.DATA['cid']
+#                sid = request.DATA['sid']
+#                from apps.sendrequest.models import Notification 
+#                Notification.objects.filter(sender_id=sid,receiver_id=cid).update(read_status=1,receiver_id=user_id.id)
+#                business_card_class_create = WhiteCardViewSet.as_view({'post': 'create'})
+#                
+#                business_card_response = business_card_class_create(request,from_white_contact=user_id.id,cid=cid)
+#                print business_card_response.data
+#                return CustomeResponse({"msg":business_card_response.data},status=status.HTTP_200_OK)    
             
             if request.data.has_key('first_name'):
                 profile.first_name = request.data['first_name']
@@ -424,10 +424,13 @@ class SocialLoginViewSet(viewsets.ModelViewSet):
 @api_view(['GET','POST'])       
 def useractivity(request,**kwargs):
     msg = {}
-    print request.device
     if request.method == 'GET':
-       activation_key = kwargs.get("activation_key")
-       reset_password_key = kwargs.get("reset_password_key")
+       try:
+        activation_key = request.DATA["activation_key"]
+        reset_password_key = request.DATA["reset_password_key"]
+       except:
+        activation_key = None   
+        reset_password_key = None
        
        #------------- get the activation key and activate the account : Process after registration ----------------------#
        if activation_key:
@@ -464,13 +467,23 @@ def useractivity(request,**kwargs):
        return CustomeResponse({'msg':'Please provide correct parameters'},status=status.HTTP_401_UNAUTHORIZED,validate_errors=1)              
     
     if request.method == 'POST':
-        op = request.POST.get('op','')
+        try:
+          op = request.DATA['op']
+        except:
+          op = None  
         # ----------- Login ------------------#
         if op == 'login':
-                username = request.POST.get('username','')
-                password = request.POST.get('password','')
-                #------------------- save password in case of forgot passord ----------------#
-                reset_password_key = request.POST.get('reset_password_key','')
+                try:
+                    username = request.DATA['username']
+                    password = request.DATA['password']
+                except:
+                    username = None
+                    password = None
+                #------------------- save password in case of forgot passord TODO  move this section from login section----------------#
+                try:
+                  reset_password_key = request.DATA['reset_password_key']
+                except:
+                  reset_password_key = None  
                 if reset_password_key:
                     try:
                      profile = Profile.objects.select_related().get(reset_password_key=reset_password_key,user__email=username)
@@ -509,8 +522,10 @@ def useractivity(request,**kwargs):
                 return CustomeResponse(user,status=status.HTTP_200_OK)
         # ----------- restet password and send the email------------------#
         elif op == 'reset_password':
-            
-                email = request.POST.get('email','')
+                try:                    
+                  email = request.DATA['email']
+                except:
+                  email = None  
                 try:
                  profile = Profile.objects.select_related().get(user__email=request.DATA['email'],user__user_type__in=[2,3])
                 except:
@@ -537,8 +552,10 @@ def useractivity(request,**kwargs):
                 return CustomeResponse(profile,status=status.HTTP_200_OK)
             
         elif op == 'resend_register_mail':
-            
-                email = request.POST.get('email','')                
+                try:
+                  email = request.DATA['email']     
+                except:
+                  email = None  
                 try:
                  profile = Profile.objects.select_related().get(user__email=email)
                 except:

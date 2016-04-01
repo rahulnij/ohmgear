@@ -23,12 +23,14 @@ class CustomUserManager(BaseUserManager):
         email = self.normalize_email(email)
         user = self.model(email=email, **extra_fields)
         user.user_type = UserType.objects.get(id=1)
-        user.set_password(password)
+        user.status = 1
+        #----------- Hashing password is done in model --------#
+        user.password = password
         user.save(using=self._db)
         return user
 
-    def create_user(self, email, password=None,**extra_fields):
-        return self._create_user(email, password,**extra_fields)
+#    def create_user(self, email, password=None,**extra_fields):
+#        return self._create_user(email, password,**extra_fields)
 
     def create_superuser(self, email, password=None,**extra_fields):
         return self._create_user(email, password,**extra_fields)
