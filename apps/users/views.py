@@ -114,18 +114,19 @@ class UserViewSet(viewsets.ModelViewSet):
             profile.user_id = user_id.id
             
             #------------------------ grey contact invite auth-token -----------------------------#
-#            if request.DATA['status']:
-#                
-#                token = getToken(user_id.id)
-#                cid = request.DATA['cid']
-#                sid = request.DATA['sid']
-#                from apps.sendrequest.models import Notification 
-#                Notification.objects.filter(sender_id=sid,receiver_id=cid).update(read_status=1,receiver_id=user_id.id)
-#                business_card_class_create = WhiteCardViewSet.as_view({'post': 'create'})
-#                
-#                business_card_response = business_card_class_create(request,from_white_contact=user_id.id,cid=cid)
-#                print business_card_response.data
-#                return CustomeResponse({"msg":business_card_response.data},status=status.HTTP_200_OK)    
+
+            if request.GET.get('from_web', ''):
+                token = getToken(user_id.id)
+                cid = request.DATA['cid']
+                sid = request.DATA['sid']
+                from apps.sendrequest.models import SendRequest 
+                SendRequest.objects.filter(sender_user_id=sid,receiver_obj_id=cid).update(read_status=1,receiver_user_id=user_id.id)
+                business_card_class_create = WhiteCardViewSet.as_view({'post': 'create'})
+    
+                business_card_response = business_card_class_create(request,from_white_contact=user_id.id,cid=cid)
+    
+                #return CustomeResponse({"msg":business_card_response.data},status=status.HTTP_200_OK)    
+
             
             if request.data.has_key('first_name'):
                 profile.first_name = request.data['first_name']

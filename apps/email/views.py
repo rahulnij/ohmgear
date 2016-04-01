@@ -16,9 +16,11 @@ class BaseSendMail(Task):
             email=EmailTemplate.objects.get(slug=type)
            except:
             return False
-           
-           user_id =  userObj['id']
-           getdata = Profile.objects.get(user=user_id)
+        
+            if type  != 'grey_invitation':
+                user_id =  userObj['id']
+                getdata = Profile.objects.get(user=user_id)
+            
            if type == 'account_confirmation':
                
                 activation_key = kwargs.get("key")
@@ -36,11 +38,15 @@ class BaseSendMail(Task):
                 email_body = email_body.replace('%url%',"<a href='"+settings.DOMAIN_NAME+url+"'>Link</a>")
                 
            if type == 'grey_invitation':
-               
+        
                 activation_key = kwargs.get("key")
-                email_body = email.content.replace('%user_name%',str(getdata.first_name))
-                url = '/api/users/emails/verify_email/?activation_code='+str(activation_key)
-                email_body = email_body.replace('%url%',"<a href='"+settings.DOMAIN_NAME+url+"'>Link</a>")
+                userObj['email']=str(kwargs.get("email")).decode('base64','strict')
+                first_name = str(kwargs.get("first_name")).decode('base64','strict')
+                email_body = email.content.replace('%user_name%',first_name)
+                url = kwargs.get('url')
+                email_body = email_body.replace('%url%',"<a href='"+url+"'>Link</a>")
+                print url
+                print email_body
 
            elif type == 'forgot_password': 
                
@@ -51,6 +57,10 @@ class BaseSendMail(Task):
                 email_body = email_body.replace('%url%',"<a href='"+settings.DOMAIN_NAME+url+"'>Link</a>")
                 
            email.from_email = email.from_email if email.from_email else settings.DEFAULT_FROM_EMAIL
+           
+           print email.from_email
+           print userObj['email']
+           
            send_mail(email.subject, email_body, email.from_email,
                             [userObj['email']], fail_silently=False,html_message=email_body) 
                         
