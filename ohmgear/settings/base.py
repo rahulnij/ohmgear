@@ -107,7 +107,7 @@ PASSWORD_HASHERS = (
     'django.contrib.auth.hashers.SHA1PasswordHasher',
 )
 
-#DEFAULT_FROM_EMAIL = 'welcome@kinbow.com'
+DEFAULT_FROM_EMAIL = 'welcome@kinbow.com'
 #q@123456
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_USE_TLS = True
