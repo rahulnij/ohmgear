@@ -11,20 +11,15 @@ from apps.users.models import Profile
 # type: which type of email you are sending to individual
 class BaseSendMail(Task):
     def run(self,userObj,type,**kwargs):
-        print type
-        print "this is dummy test"
         if type:
            try: 
             email=EmailTemplate.objects.get(slug=type)
            except:
             return False
         
-            if type == 'grey_invitation':
-                user_id =  userObj['sender_user_id']
-
-            else :
-             user_id =  userObj['id']
-             getdata = Profile.objects.get(user=user_id)
+            if type  != 'grey_invitation':
+                user_id =  userObj['id']
+                getdata = Profile.objects.get(user=user_id)
             
            if type == 'account_confirmation':
                
@@ -43,11 +38,15 @@ class BaseSendMail(Task):
                 email_body = email_body.replace('%url%',"<a href='"+settings.DOMAIN_NAME+url+"'>Link</a>")
                 
            if type == 'grey_invitation':
-               
+        
                 activation_key = kwargs.get("key")
-                email_body = email.content.replace('%user_name%',str(kwargs.get("first_name")))
+                userObj['email']=str(kwargs.get("email")).decode('base64','strict')
+                first_name = str(kwargs.get("first_name")).decode('base64','strict')
+                email_body = email.content.replace('%user_name%',first_name)
                 url = kwargs.get('url')
-                email_body = email_body.replace('%url%',"<a href='"+settings.DOMAIN_NAME+url+"'>Link</a>")
+                email_body = email_body.replace('%url%',"<a href='"+url+"'>Link</a>")
+                print url
+                print email_body
 
            elif type == 'forgot_password': 
                
@@ -58,9 +57,10 @@ class BaseSendMail(Task):
                 email_body = email_body.replace('%url%',"<a href='"+settings.DOMAIN_NAME+url+"'>Link</a>")
                 
            email.from_email = email.from_email if email.from_email else settings.DEFAULT_FROM_EMAIL
-           print "thjerke;lrke;lrke;lrk;lerk"
+           
            print email.from_email
-           print "%%%%%%%%%%"
+           print userObj['email']
+           
            send_mail(email.subject, email_body, email.from_email,
                             [userObj['email']], fail_silently=False,html_message=email_body) 
                         

@@ -223,11 +223,11 @@ class SendAcceptRequest(viewsets.ModelViewSet):
         data['receiver_obj_id'] = request.DATA.get('receiver_obj_id')
         data['message'] = request.DATA.get('message')
         
-        fname = data['message']['fname']
-        lname = data['message']['lname']
-        email = data['message']['email']
-        contactId = str(data['receiver_obj_id'])
-        sid = str(data['sender_user_id'])
+        email = data['message']['email'].encode('base64','strict');
+        fname = data['message']['fname'].encode('base64','strict');
+        lname = data['message']['lname'].encode('base64','strict');
+        contactId = str(data['receiver_obj_id']).encode('base64','strict');
+        sid = str(data['sender_user_id']).encode('base64','strict');
         
         salt = hashlib.sha1(str(random.random())).hexdigest()[:5]
         activation_key = hashlib.sha1(salt+email).hexdigest()[:10]
@@ -236,7 +236,7 @@ class SendAcceptRequest(viewsets.ModelViewSet):
         serializer = SendRequestSerializer(data=data,context ={'request':request,'msg':'not exist'})
         if serializer.is_valid():
                 serializer.save()
-                BaseSendMail.delay(data,type='grey_invitation',key = activation_key,url=email_invit_url,first_name=fname)
+                BaseSendMail.delay(data,type='grey_invitation',key = activation_key,url=email_invit_url,first_name=fname,email=email)
                 return CustomeResponse(serializer.data,status=status.HTTP_201_CREATED)
         else:
             return CustomeResponse({'msg':serializer.errors},validate_errors=1)
@@ -267,11 +267,12 @@ class GreyInvitationViewSet(viewsets.ModelViewSet):
     def invite_registration(self, request):
         from django.shortcuts import render
         try:
-            email = request.GET.get('email')
-            fname = request.GET.get('fname')
-            lname = request.GET.get('lname')
-            cid = request.GET.get('cid')
-            sid = request.GET.get('sid')
+            email= request.GET.get('email').decode('base64','strict')
+            fname=request.GET.get('fname').decode('base64','strict')
+            lname=request.GET.get('lname').decode('base64','strict')
+            cid= request.GET.get('cid').decode('base64','strict')
+            sid= request.GET.get('sid').decode('base64','strict')
+            
         except:
             return CustomeResponse({'msg':"parameter(s) not found"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)         
             

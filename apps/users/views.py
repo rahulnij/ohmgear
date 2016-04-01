@@ -114,8 +114,7 @@ class UserViewSet(viewsets.ModelViewSet):
             profile.user_id = user_id.id
             
             #------------------------ grey contact invite auth-token -----------------------------#
-            if request.DATA['status']:
-                
+            if request.GET.get('from_web', ''):
                 token = getToken(user_id.id)
                 cid = request.DATA['cid']
                 sid = request.DATA['sid']
