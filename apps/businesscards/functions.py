@@ -149,9 +149,10 @@ class DiffJson(object):
   
   
   
-def searchjson(name, value,user_id=None):
+def searchjson(name,value,user_id=None):
     bcard_id = []
     bcard = ''
+    
     
     if name == 'firstname_lastname':
         
@@ -185,13 +186,14 @@ def searchjson(name, value,user_id=None):
     if user_id:
         try:
             bcard = BusinessCard.objects.filter(user_id=user_id,status=1,contact_detail__bcard_json_data__contains=value)
+            print "emial present"
         except:
             return CustomeResponse({'msg':"Businesscard Identifier Id not found"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
         for data in bcard:    
             bcard_id.append(data.id)
             
-    contact = BusinessCard.objects.filter(status=1,contact_detail__bcard_json_data__contains=value).exclude(id__in=bcard_id)
-
+    contact = BusinessCard.objects.select_related('contact_detail').filter(status=1,contact_detail__bcard_json_data__contains=value).exclude(id__in=bcard_id)
+    
     
     if bcard or contact: 
         result_list = []        
