@@ -702,7 +702,7 @@ class BusinessViewSet(viewsets.ModelViewSet):
                 else:
                     queryset_folder.update(businesscard_id = business.id)
                     
-                #  Create Default Business Card and update in user setting #     
+                #  Create first Business Card as default and update in user setting #     
                 bcard_data = BusinessCard.objects.filter(user_id=user_id).count()
                 if bcard_data ==1:
                     try:
