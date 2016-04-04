@@ -59,11 +59,11 @@ INSTALLED_APPS = (
     'apps.staticpages',
     'apps.usersetting',
     'apps.groups',
-    'apps.userlocation',
+    #'apps.userlocation',
     'ckeditor',
     'apps.sendrequest',
     'apps.awsserver',
-    'django.contrib.gis',
+    #'django.contrib.gis',
 
 )
 
