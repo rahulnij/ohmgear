@@ -153,27 +153,15 @@ def searchjson(name,value,user_id=None):
     bcard_id = []
     bcard = ''
     
-    
-    if name == 'firstname_lastname':
-        
+    #--------------------- need to be optimised ------------#
+    #--------------------- search by name ------------------#
+    if name == 'firstname_lastname':        
         new =value.split(" ")
-#        print new1[0]
-#        print new
-#        new =value.split(" ")[1:][0]
-        print new
         try:
-#             print "@@"
-             
-#             print "bcard"
-#             bcard =  Contacts.objects.filter(id=3,bcard_json_data__contains={"breed": "labrador"})
-#             bcard =Contacts.objects.filter(bcard_json_data__contains={'breed':'labrador'})
-            # bcard =BusinessCard.objects.filter(status=1,contact_detail__bcard_json_data__breed="labrador")
-             bcard = BusinessCard.objects.filter(status=1,contact_detail__bcard_json_data__contains=new)
-#            bcard = BusinessCard.objects.filter(contact_detail__bcard_json_data__side_first__basic_info__1__value=new[0])
-#             print "##"
-#             print bcard
-#             print "vcjnnnnnnnnnnnnnnnnnnnnnnnnnnn"
-             
+              
+#              BusinessCard.objects.filter(jsonfield__contains={"status": value2}).exclude(jsonfield__contains={"status": value1})    
+              bcard = BusinessCard.objects.filter(status=1,contact_detail__bcard_json_data__at_owner_at_name=value)
+#              bcard =BusinessCard.objects.filter(status=1,contact_detail__bcard_json_data__at_breed="labrador")
         except Exception as e:
             print e
             return CustomeResponse({'msg':"Businesscard Identifier Id not found"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
@@ -182,7 +170,7 @@ def searchjson(name,value,user_id=None):
         
         return bcard
     
-    
+    #--------------------- search by email ------------------#
     if user_id:
         try:
             bcard = BusinessCard.objects.filter(user_id=user_id,status=1,contact_detail__bcard_json_data__contains=value)
