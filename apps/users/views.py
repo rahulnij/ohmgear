@@ -427,8 +427,10 @@ def useractivity(request,**kwargs):
     msg = {}
     if request.method == 'GET':
        try:
-        activation_key = request.DATA["activation_key"]
-        reset_password_key = request.DATA["reset_password_key"]
+#       activation_key = request.DATA["activation_key"]
+        activation_key=request.GET.get('activation_key')
+#       reset_password_key = request.DATA["reset_password_key"]
+        reset_password_key = request.GET.get('reset_password_key')
        except:
         activation_key = None   
         reset_password_key = None

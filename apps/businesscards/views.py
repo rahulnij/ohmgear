@@ -27,6 +27,7 @@ from apps.vacationcard.models import VacationCard
 from apps.vacationcard.serializer import VacationCardSerializer
 from apps.folders.views import FolderViewSet
 from apps.folders.models import Folder,FolderContact
+from apps.usersetting.models import UserSetting
 from apps.folders.serializer import FolderSerializer,FolderContactSerializer
 import re
 #---------------------------End-------------#
@@ -701,20 +702,15 @@ class BusinessViewSet(viewsets.ModelViewSet):
                 else:
                     queryset_folder.update(businesscard_id = business.id)
                     
+                #  Create Default Business Card and update in user setting #     
                 bcard_data = BusinessCard.objects.filter(user_id=user_id).count()
-                
                 if bcard_data ==1:
-                     
-#                    offline_data={}
-#                    offline_data['businesscard_id'] =business.id  
-#                    offline_data['foldername'] = 'PR Folder'
-#                    folder_view= folder_view(request,offline_data)                    
-#                    folder_id = folder_view.data['data']['id']
-#                    data_new["folder_info"] =  folder_view.data['data']
-                    
-                    
-                
-                    #data_new["folder_info"]=folder_info
+                    try:
+                        getkey =  "DEFAULT_BUSINESS_CARD"
+                        UserSetting.objects.filter(setting_id__key=getkey,user_id=user_id).update(value=business.id)
+                    except:
+                        pass
+                        
                #-------------------- End --------------------------------------------------------# 
             else:
                  return CustomeResponse(contact_serializer.errors,status=status.HTTP_400_BAD_REQUEST,validate_errors=1)

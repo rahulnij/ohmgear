@@ -23,10 +23,13 @@ class BaseSendMail(Task):
             
            if type == 'account_confirmation':
                
+                user_id =  userObj['id']
+                getdata = Profile.objects.get(user=user_id)
                 activation_key = kwargs.get("key")
                 #email_body = email.content.replace('%user_name%',userObj['first_name'])
                 email_body = email.content.replace('%user_name%',getdata.first_name)
-                url = reverse('registration_confirm', args=[activation_key])
+#                url = reverse('registration_confirm', args=[activation_key])
+                url = '/api/useractivity/?activation_key='+str(activation_key)
                 email_body = email_body.replace('%url%',"<a href='"+settings.DOMAIN_NAME+url+"'>Link</a>")
             
                 

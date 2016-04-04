@@ -72,6 +72,5 @@ def CreatePinNumber():
         
     if pin_no_exist:
         return CreatePinNumber()
-    print pin_no
     return pin_no
     
