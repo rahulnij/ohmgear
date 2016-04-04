@@ -29,7 +29,7 @@ urlpatterns =patterns(
     #url(r'^jet/dashboard/', include('jet.dashboard.urls', 'jet-dashboard')), 
     url(r'^api/', include('apps.users.urls')),
     url(r'^admin/', include(admin.site.urls)),
-    url(r'^api/', include('apps.userlocation.urls')),
+    #url(r'^api/', include('apps.userlocation.urls')),
     url(r'^api/', include('apps.vacationcard.urls')),
     url(r'^api/useractivity/$','apps.users.views.useractivity',name='useractivity'),
     #url(r'^api/cron/$','apps.cron.views.updateidentifierstatus',name='updateidentifierstatus'),
@@ -165,9 +165,10 @@ router.register(r'api/cron/update_contact_link_status',cron_view.UpdateContactLi
 #_-------------------------------------------------------------------#
 
 #--------------------- SEND REQUEST(NOTIFICATION) --------------------------------------#
-#import apps.sendrequest.views as sendrequest_view
-#router.register(r'api/send_accept_request',sendrequest_view.SendAcceptRequest)
-#router.register(r'api/greyrequest',sendrequest_view.GreyInvitationViewSet)
+import apps.sendrequest.views as sendrequest_view
+router.register(r'api/send_accept_request',sendrequest_view.SendAcceptRequest)
+router.register(r'api/sendrequest',sendrequest_view.SendAcceptRequest)
+router.register(r'api/greyrequest',sendrequest_view.GreyInvitationViewSet)
 #_-------------------------------------------------------------------#
 #_-------------------------------------------------------------------#
 

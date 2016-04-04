@@ -1,8 +1,8 @@
 from rest_framework import serializers
-from models import Notification
+from models import SendRequest
 # Serializers define the API representation.
 
         
-class NotificationSerializer(serializers.ModelSerializer):
+class SendRequestSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Notification
+        model = SendRequest
