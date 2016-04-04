@@ -181,6 +181,11 @@ class BusinessCardIdentifierViewSet(viewsets.ModelViewSet):
             name="firstname_lastname"
             user_id =''
             data =searchjson(name,value)
+            if data:
+                serializer = BusinessCardWithIdentifierSerializer(data,many=True,context={'request': request})
+                return CustomeResponse(serializer.data,status=status.HTTP_200_OK)
+            else:
+                return CustomeResponse({'msg':"name not found"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
             
         else:
             
@@ -619,6 +624,7 @@ class BusinessViewSet(viewsets.ModelViewSet):
         media=ContactMedia.objects.filter(contact_id=contact_id_new,front_back__in=[1,2],status=1).values('img_url','front_back')
         data = {}
         data = serializer.data
+        print data
         if media:
            try: 
             for item in media:
@@ -694,6 +700,20 @@ class BusinessViewSet(viewsets.ModelViewSet):
                     data_new["folder_info"] =  folder_view.data['data']
                 else:
                     queryset_folder.update(businesscard_id = business.id)
+                    
+                bcard_data = BusinessCard.objects.filter(user_id=user_id).count()
+                
+                if bcard_data ==1:
+                     
+#                    offline_data={}
+#                    offline_data['businesscard_id'] =business.id  
+#                    offline_data['foldername'] = 'PR Folder'
+#                    folder_view= folder_view(request,offline_data)                    
+#                    folder_id = folder_view.data['data']['id']
+#                    data_new["folder_info"] =  folder_view.data['data']
+                    
+                    
+                
                     #data_new["folder_info"]=folder_info
                #-------------------- End --------------------------------------------------------# 
             else:
