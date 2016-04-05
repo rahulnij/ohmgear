@@ -1,34 +1,31 @@
 from base import *
+
 DOMAIN_NAME = 'http://localhost:8000'
-DEBUG = True
-ALLOWED_HOSTS =['localhost','*','192.168.2.146:8100']
-if DEBUG:
-    MIDDLEWARE_CLASSES += (
-        'debug_toolbar.middleware.DebugToolbarMiddleware',
-    )
 
-#    INSTALLED_APPS += (
-#        'debug_toolbar',
-#    )
+ALLOWED_HOSTS = ['localhost','*','192.168.2.146:8100']
+MIDDLEWARE_CLASSES += (
+    'debug_toolbar.middleware.DebugToolbarMiddleware',
+)
 
-    DEBUG_TOOLBAR_PANELS = [
-        'debug_toolbar.panels.versions.VersionsPanel',
-        'debug_toolbar.panels.timer.TimerPanel',
-        'debug_toolbar.panels.settings.SettingsPanel',
-        'debug_toolbar.panels.headers.HeadersPanel',
-        'debug_toolbar.panels.request.RequestPanel',
-        'debug_toolbar.panels.sql.SQLPanel',
-        'debug_toolbar.panels.staticfiles.StaticFilesPanel',
-        'debug_toolbar.panels.templates.TemplatesPanel',
-        'debug_toolbar.panels.cache.CachePanel',
-        'debug_toolbar.panels.signals.SignalsPanel',
-        'debug_toolbar.panels.logging.LoggingPanel',
-        'debug_toolbar.panels.redirects.RedirectsPanel',
-    ]
 
-    DEBUG_TOOLBAR_CONFIG = {
-        'INTERCEPT_REDIRECTS': False,
-    }
+DEBUG_TOOLBAR_PANELS = [
+    'debug_toolbar.panels.versions.VersionsPanel',
+    'debug_toolbar.panels.timer.TimerPanel',
+    'debug_toolbar.panels.settings.SettingsPanel',
+    'debug_toolbar.panels.headers.HeadersPanel',
+    'debug_toolbar.panels.request.RequestPanel',
+    'debug_toolbar.panels.sql.SQLPanel',
+    'debug_toolbar.panels.staticfiles.StaticFilesPanel',
+    'debug_toolbar.panels.templates.TemplatesPanel',
+    'debug_toolbar.panels.cache.CachePanel',
+    'debug_toolbar.panels.signals.SignalsPanel',
+    'debug_toolbar.panels.logging.LoggingPanel',
+    'debug_toolbar.panels.redirects.RedirectsPanel',
+]
+
+DEBUG_TOOLBAR_CONFIG = {
+    'INTERCEPT_REDIRECTS': False,
+}
 
 LOGGING = {
     'version': 1,
@@ -64,7 +61,11 @@ LOGGING = {
 }
 
 # CELERY STUFF
-INSTALLED_APPS += ("djcelery","apps.test_purposes", 'rest_framework_swagger', 'raven.contrib.django.raven_compat',)
+INSTALLED_APPS += (
+    "djcelery","apps.test_purposes", 
+    "rest_framework_swagger", 
+    'raven.contrib.django.raven_compat'
+)
 
 import raven
 
@@ -97,7 +98,6 @@ BCARDS_TEMPLATE_IMAGE_URL = DOMAIN_NAME
 
 # Database
 # https://docs.djangoproject.com/en/1.8/ref/settings/#databases
-DATABASE_ROUTERS = ['apps.userlocation.userlocationRouter.UserLocationRouter']
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
@@ -116,3 +116,13 @@ DATABASES = {
         'PORT': '5432',  
     }
 }
+
+
+#DEFAULT_FROM_EMAIL = 'welcome@kinbow.com'
+#q@123456
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_USE_TLS = True
+EMAIL_HOST = 'email-smtp.us-west-2.amazonaws.com'#'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_HOST_USER = 'AKIAJUDMRYODLOT4FMJQ'#'bhoopendra.ohmgear@gmail.com'
+EMAIL_HOST_PASSWORD = 'Atf+OJN+84eKW0jqqhp0MAzYsnB7Ra78ilfj8SHsb821' #'q@123456'

@@ -35,7 +35,7 @@ ALLOWED_HOSTS = []
 
 # Application definition
 
-DJANGO_APPS = [
+DJANGO_APPS = (
     'django_admin_bootstrapped',
     'django.contrib.admin',
     'django.contrib.auth',
@@ -48,9 +48,9 @@ DJANGO_APPS = [
     'django.contrib.gis',
     'simple_history',
     'ckeditor',
-]
+)
 
-PROJECT_APPS = [
+PROJECT_APPS = (
     'apps.users',
     'apps.notes',
     'apps.businesscards',
@@ -68,11 +68,11 @@ PROJECT_APPS = [
     'apps.sendrequest',
     'apps.awsserver',
 
-]
+)
 
 INSTALLED_APPS = DJANGO_APPS + PROJECT_APPS
 
-DJANGO_MIDDLEWARE_CLASSES = [
+DJANGO_MIDDLEWARE_CLASSES = (
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -82,11 +82,11 @@ DJANGO_MIDDLEWARE_CLASSES = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'simple_history.middleware.HistoryRequestMiddleware'
-]
+)
 
-PROJECT_MIDDLEWARE_CLASSES = [
-    'apps.users.mobile_detect_middleware.MobileDetectionMiddleware'
-]
+PROJECT_MIDDLEWARE_CLASSES = (
+    'apps.users.mobile_detect_middleware.MobileDetectionMiddleware',
+)
 
 MIDDLEWARE_CLASSES = DJANGO_MIDDLEWARE_CLASSES + PROJECT_MIDDLEWARE_CLASSES
 #------------------------- Custome setting ------------------------------------#
@@ -135,7 +135,7 @@ TEMPLATES = [
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
-		'django.core.context_processors.request',
+                'django.core.context_processors.request',
                 'django.template.context_processors.debug',
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
@@ -150,7 +150,7 @@ WSGI_APPLICATION = 'ohmgear.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/1.8/ref/settings/#databases
-DATABASE_ROUTERS = ['apps.userlocation.userlocationRouter.UserLocationRouter']
+DATABASE_ROUTERS = ['ohmgear.databaseroutes.userlocationrouter.UserLocationRouter']
 
 
 

@@ -1,22 +1,15 @@
 #!/usr/bin/env python
 import os
 import sys
-import socket
-import re
 
-#----------- clavax:Set setting according server -------------------------#
-'''HOSTNAME = socket.gethostname().lower().split('.')[0].replace('-','')
-if re.search('clavax',  HOSTNAME):
-   settings = "ohmgear.settings.local"
-else:
-   settings = "ohmgear.settings.server"
-#----------- End Setting -------------------------------------------#
-'''
-if os.environ.has_key('ENV_VAR')
-   
+ 
 if __name__ == "__main__":
-    os.environ.setdefault("DJANGO_SETTINGS_MODULE", settings)
+	
+	# ENV, provide current environment eg. Development(dev), test, production
+	settings = "ohmgear.settings.%s" %(os.environ.get('ENV'))
+	
+	os.environ.setdefault("DJANGO_SETTINGS_MODULE", settings)
 
-    from django.core.management import execute_from_command_line
+	from django.core.management import execute_from_command_line
 
-    execute_from_command_line(sys.argv)
+	execute_from_command_line(sys.argv)
