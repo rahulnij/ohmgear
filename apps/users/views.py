@@ -70,7 +70,7 @@ class UserViewSet(viewsets.ModelViewSet):
     def set_password(self,request,user_id):
       try:
         user = get_user_model().objects.get(id=user_id) 
-        user.set_password(request.DATA['password'])
+        user.set_password(request.data['password'])
         user.save()
         return True
       except:
@@ -90,11 +90,11 @@ class UserViewSet(viewsets.ModelViewSet):
     #--------------Method: POST create new user -----------------------------#
     def create(self, request,fromsocial=None):
          
-         serializer =  UserSerializer(data=request.DATA,context={'request': request})
+         serializer =  UserSerializer(data=request.data,context={'request': request})
          mutable = request.POST._mutable
          request.POST._mutable = True
          pin_no   =    CreatePinNumber()
-         request.DATA['pin_number']  = pin_no
+         request.data['pin_number']  = pin_no
         
          if serializer.is_valid():
              
@@ -117,8 +117,8 @@ class UserViewSet(viewsets.ModelViewSet):
 
             if request.GET.get('from_web', ''):
                 token = getToken(user_id.id)
-                cid = request.DATA['cid']
-                sid = request.DATA['sid']
+                cid = request.data['cid']
+                sid = request.data['sid']
                 from apps.sendrequest.models import SendRequest 
                 SendRequest.objects.filter(sender_user_id=sid,receiver_obj_id=cid).update(read_status=1,receiver_user_id=user_id.id)
                 business_card_class_create = WhiteCardViewSet.as_view({'post': 'create'})
@@ -151,11 +151,11 @@ class UserViewSet(viewsets.ModelViewSet):
          except:
            return CustomeResponse({'msg':'record not found'},status=status.HTTP_404_NOT_FOUND,validate_errors=1)
        
-         serializer =  UserSerializer(messages,data=request.DATA,partial=True,context={'request': request})
+         serializer =  UserSerializer(messages,data=request.data,partial=True,context={'request': request})
          if serializer.is_valid():
             serializer.save()
 #            #---------------- Set the password -----------#
-#            if 'password' in request.DATA and request.DATA['password'] is not None:
+#            if 'password' in request.data and request.data['password'] is not None:
 #               self.set_password(request,pk)
 #            #---------------- End ------------------------#            
             return CustomeResponse(serializer.data,status=status.HTTP_201_CREATED)
@@ -167,9 +167,9 @@ class UserViewSet(viewsets.ModelViewSet):
     def changepassword(self,request):
         try:
             user_id =request.user.id
-            old_password    =  request.DATA['old_password']
-            password        =  request.DATA['password']
-            confirmpassword =  request.DATA['confirm_password']
+            old_password    =  request.data['old_password']
+            password        =  request.data['password']
+            confirmpassword =  request.data['confirm_password']
         except:
             return CustomeResponse({'msg':'Old_password,password and confirm_password are missing'},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)   
         
@@ -215,13 +215,13 @@ class UserViewSet(viewsets.ModelViewSet):
     @list_route(methods=['post'],)
     def connectedaccounts(self,request):
         social_type =  constant.SOCIAL_TYPE
-        social_type_exist =social_type.has_key(request.DATA['social_type_id'])
+        social_type_exist =social_type.has_key(request.data['social_type_id'])
         if not social_type_exist:
             return CustomeResponse({"msg":"social_type is not there"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
         
         try:
             for key, social_id in social_type.iteritems():
-                if key == request.DATA['social_type_id']:            
+                if key == request.data['social_type_id']:            
                     user_id = request.user
                     social_type_id =  social_id
                     data ={}
@@ -244,7 +244,7 @@ class UserViewSet(viewsets.ModelViewSet):
         try:
             user_id = request.user
             social_type =  constant.SOCIAL_TYPE
-            social_type_exist =social_type.has_key(request.DATA['social_type_id'])
+            social_type_exist =social_type.has_key(request.data['social_type_id'])
             if not social_type_exist:
                 return CustomeResponse({"msg":"social_type is not there"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
         except:
@@ -253,7 +253,7 @@ class UserViewSet(viewsets.ModelViewSet):
         
         try:
             for key, social_id in social_type.iteritems():
-                if key == request.DATA['social_type_id']:            
+                if key == request.data['social_type_id']:            
                     social_type_id =  social_id
                     sociallogin = SocialLogin.objects.get(user=user_id,social_type=social_type_id)
         except:
@@ -333,7 +333,7 @@ class ProfileViewSet(viewsets.ModelViewSet):
                  profile_image = messages.profile_image
         except:
            return CustomeResponse({'msg':'record not found'},status=status.HTTP_404_NOT_FOUND,validate_errors=1)
-        serializer =  ProfileSerializer(messages,data=request.DATA,partial=True,context={'request': request})
+        serializer =  ProfileSerializer(messages,data=request.data,partial=True,context={'request': request})
         if serializer.is_valid():
             serializer.save(first_time_login  = False,profile_image= profile_image)
             return CustomeResponse(serializer.data,status=status.HTTP_200_OK)
@@ -364,13 +364,13 @@ class SocialLoginViewSet(viewsets.ModelViewSet):
     
     def create(self, request):
                 try:
-                  if request.DATA['status'] is 0:
+                  if request.data['status'] is 0:
                      return CustomeResponse({'msg':'provide status active'},status=status.HTTP_400_BAD_REQUEST,validate_errors=1) 
                 except:
                   return CustomeResponse({'msg':'provide status active'},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)   
-                serializer =  UserSerializer(data=request.DATA,context={'request': request,'msg':'not exist'})
+                serializer =  UserSerializer(data=request.data,context={'request': request,'msg':'not exist'})
                 try:               
-                 user = checkEmail(request.DATA['email'])
+                 user = checkEmail(request.data['email'])
                 except:
                     user = ''
                 if user:
@@ -394,12 +394,12 @@ class SocialLoginViewSet(viewsets.ModelViewSet):
                             # social_type_id for fb its 2---------------#
                             
                             social_type =  constant.SOCIAL_TYPE
-                            social_type_exist =social_type.has_key(request.DATA['social_type'])
+                            social_type_exist =social_type.has_key(request.data['social_type'])
                             if  not social_type_exist:
                                return CustomeResponse({'msg':'social_type not exist'}) 
                            
                             for key, social_id in social_type.iteritems():
-                                if key == request.DATA['social_type']:            
+                                if key == request.data['social_type']:            
                                     social_type_id =  social_id
 #                           
                             #social_type = request.POST.get('social_type_id','')
@@ -427,12 +427,13 @@ def useractivity(request,**kwargs):
     msg = {}
     if request.method == 'GET':
        try:
-#       activation_key = request.DATA["activation_key"]
-        activation_key=request.GET.get('activation_key')
-#       reset_password_key = request.DATA["reset_password_key"]
-        reset_password_key = request.GET.get('reset_password_key')
+        activation_key = kwargs['activation_key']
        except:
-        activation_key = None   
+        activation_key = None 
+      
+       try:
+        reset_password_key = kwargs['reset_password_key']
+       except:
         reset_password_key = None
        
        #------------- get the activation key and activate the account : Process after registration ----------------------#
@@ -471,20 +472,20 @@ def useractivity(request,**kwargs):
     
     if request.method == 'POST':
         try:
-          op = request.DATA['op']
+          op = request.data['op']
         except:
           op = None  
         # ----------- Login ------------------#
         if op == 'login':
                 try:
-                    username = request.DATA['username']
-                    password = request.DATA['password']
+                    username = request.data['username']
+                    password = request.data['password']
                 except:
                     username = None
                     password = None
                 #------------------- save password in case of forgot passord TODO  move this section from login section----------------#
                 try:
-                  reset_password_key = request.DATA['reset_password_key']
+                  reset_password_key = request.data['reset_password_key']
                 except:
                   reset_password_key = None  
                 if reset_password_key:
@@ -526,11 +527,11 @@ def useractivity(request,**kwargs):
         # ----------- restet password and send the email------------------#
         elif op == 'reset_password':
                 try:                    
-                  email = request.DATA['email']
+                  email = request.data['email']
                 except:
                   email = None  
                 try:
-                 profile = Profile.objects.select_related().get(user__email=request.DATA['email'],user__user_type__in=[2,3])
+                 profile = Profile.objects.select_related().get(user__email=request.data['email'],user__user_type__in=[2,3])
                 except:
                  profile = ''
                 if email:                   
@@ -556,7 +557,7 @@ def useractivity(request,**kwargs):
             
         elif op == 'resend_register_mail':
                 try:
-                  email = request.DATA['email']     
+                  email = request.data['email']     
                 except:
                   email = None  
                 try:
@@ -639,7 +640,7 @@ class UserEmailViewSet(viewsets.ModelViewSet):
             user_id = None
         data ={}
         data['user_id'] = request.user.id
-        data['email'] = request.DATA.get('email')
+        data['email'] = request.data.get('email')
         data['is_default'] = 0
         #todo email validation in serializer 
         serializer = UserEmailSerializer(data=data,context ={'request':request,'msg':'not exist'})
@@ -658,12 +659,12 @@ class UserEmailViewSet(viewsets.ModelViewSet):
             user_id = request.user
             salt = hashlib.sha1(str(random.random())).hexdigest()[:5] 
             data ={}
-            data['email'] = request.DATA.get('email')
+            data['email'] = request.data.get('email')
             data['id'] = request.user.id
             
             activation_key = hashlib.sha1(salt+data['email']).hexdigest()[:10] 
             if user_id:
-                UserEmail.objects.filter(user_id=request.user.id,email=request.DATA.get('email')).update(verification_code=activation_key)
+                UserEmail.objects.filter(user_id=request.user.id,email=request.data.get('email')).update(verification_code=activation_key)
                 BaseSendMail.delay(data,type='verify_email',key = activation_key)
                 return CustomeResponse({'msg':'verification code sent'},status=status.HTTP_200_OK)
             else:
@@ -733,7 +734,7 @@ class UserEmailViewSet(viewsets.ModelViewSet):
         user_id = request.user
         data ={}
         data['id'] = request.user.id
-        data['ueid'] = request.DATA.get('useremail_id')
+        data['ueid'] = request.data.get('useremail_id')
         userEmail = request.user.email
 
         try:
@@ -762,13 +763,13 @@ class UserEmailViewSet(viewsets.ModelViewSet):
             user_id = request.user.id
     
             #userEmailId = self.request.QUERY_PARAMS.get('id')
-            userEmailId = request.DATA['userEmailId']
+            userEmailId = request.data['userEmailId']
         except:
             userEmailId = ''
         try:
             #checkEmail=UserEmail.objects.filter(user_id=user_id)
             count = UserEmail.objects.filter(user_id=user_id).count()
-            userEmail=UserEmail.objects.filter(id=request.DATA['userEmailId'])  
+            userEmail=UserEmail.objects.filter(id=request.data['userEmailId'])  
         
         except:
             return CustomeResponse({'msg':'Email not found'},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)

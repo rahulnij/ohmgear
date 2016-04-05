@@ -88,11 +88,11 @@ class BusinessCardIdentifierViewSet(viewsets.ModelViewSet):
     def create(self,request,call_from_function=None,offline_data=None):
        #print request.data
         try:
-            op  =request.DATA['op']
+            op  =request.data['op']
         except:
            op = None
         if op == 'change':
-            businesscard_id  = request.DATA['businesscard_id']
+            businesscard_id  = request.data['businesscard_id']
         
             if businesscard_id:
                businesscardidentifier_detail = BusinessCardIdentifier.objects.filter(businesscard_id= businesscard_id)
@@ -537,8 +537,8 @@ class BusinessCardAddSkillViewSet(viewsets.ModelViewSet):
       #  tempData = request.data.copy()]
         tempData = {}
         tempData['user_id'] = request.user.id
-        tempData['businesscard_id'] = request.DATA['businesscard_id']
-        tempData['skill_name'] = request.DATA['skill_name'].split(',')
+        tempData['businesscard_id'] = request.data['businesscard_id']
+        tempData['skill_name'] = request.data['skill_name'].split(',')
         serializer = BusinessCardAddSkillSerializer(data = tempData,context={'request':request})
 
         if serializer.is_valid():
@@ -650,7 +650,7 @@ class BusinessViewSet(viewsets.ModelViewSet):
            user_id = None  
     #-------------------- First Validate the json contact data ------------------------------#
          try:
-            validictory.validate(request.DATA["bcard_json_data"], BUSINESS_CARD_DATA_VALIDATION)
+            validictory.validate(request.data["bcard_json_data"], BUSINESS_CARD_DATA_VALIDATION)
          except validictory.ValidationError as error:
             return CustomeResponse({'msg':error.message },status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
          except validictory.SchemaError as error:
@@ -725,7 +725,7 @@ class BusinessViewSet(viewsets.ModelViewSet):
     def update(self, request, pk=None,call_from_func=None,offline_data=None):  
          #-------------------- First Validate the json contact data ------------------------------#
          try:
-            validictory.validate(request.DATA["bcard_json_data"], BUSINESS_CARD_DATA_VALIDATION)
+            validictory.validate(request.data["bcard_json_data"], BUSINESS_CARD_DATA_VALIDATION)
          except validictory.ValidationError as error:
             return CustomeResponse({'msg':error.message },status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
          except validictory.SchemaError as error:
@@ -738,7 +738,7 @@ class BusinessViewSet(viewsets.ModelViewSet):
             pk = offline_data["bcard_id"]
             user_id  =offline_data["user_id"]
          else:
-            data = request.DATA.copy()
+            data = request.data.copy()
             user_id  =request.user.id
             data['user_id']  =request.user.id             
          try:
@@ -956,7 +956,7 @@ class BusinessViewSet(viewsets.ModelViewSet):
                except:
                   user_id = None        
                try:
-                   bcards_id = request.DATA["bcards_ids"]
+                   bcards_id = request.data["bcards_ids"]
                except:
                    bcards_id = None
                if bcards_id:
@@ -979,7 +979,7 @@ class BusinessViewSet(viewsets.ModelViewSet):
         except:
             user_id = None
         try:
-            bcard_id  = request.DATA['bcard_id']
+            bcard_id  = request.data['bcard_id']
         except:
             bcard_id =None
         if bcard_id:

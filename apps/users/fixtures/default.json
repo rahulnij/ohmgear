@@ -1,0 +1,172 @@
+[
+  {
+    "model": "users.usertype",
+    "pk": 1,
+    "fields": {
+      "user_type": "Admin"
+    }
+  },
+  {
+    "model": "users.usertype",
+    "pk": 2,
+    "fields": {
+      "user_type": "Individual"
+    }
+  },
+  {
+    "model": "users.usertype",
+    "pk": 3,
+    "fields": {
+      "user_type": "Corporate"
+    }
+  },
+  
+  
+  
+  
+  {
+    "model": "users.socialtype",
+    "pk": 1,
+    "fields": {
+      "social_type": "FB"
+    }
+  },
+  {
+    "model": "users.socialtype",
+    "pk": 2,
+    "fields": {
+      "social_type": "QQ"
+    }
+  },
+  
+  
+  
+  
+  
+  {
+    "model": "users.incomegroup",
+    "pk": 1,
+    "fields": {
+      "income_group": "1000-4999"
+    }
+  },
+  {
+    "model": "users.incomegroup",
+    "pk": 2,
+    "fields": {
+      "income_group": "5000-9999"
+    }
+  },
+  {
+    "model": "users.incomegroup",
+    "pk": 3,
+    "fields": {
+      "income_group": "9999-15000"
+    }
+  },
+  
+  
+  
+  
+  {
+    "model": "users.businesstype",
+    "pk": 1,
+    "fields": {
+      "business_type": "Option1"
+    }
+  },
+  {
+    "model": "users.businesstype",
+    "pk": 2,
+    "fields": {
+      "business_type": "Option2"
+    }
+  },
+  {
+    "model": "users.businesstype",
+    "pk": 3,
+    "fields": {
+      "business_type": "Option3"
+    }
+  },
+  {
+    "model": "users.businesstype",
+    "pk": 4,
+    "fields": {
+      "business_type": "Option4"
+    }
+  },
+  
+  
+  
+  
+  {
+    "model": "email.emailtemplate",
+    "pk": 1,
+    "fields": {
+      "subject": "user registration",
+      "content": "",
+      "slug": "user_registration",
+      "status":"True",
+      "from_email": "",
+      "created_date":"2015-09-03 00:00:00",
+      "updated_date":"2015-09-03 00:00:00"
+    }
+  },
+  {
+    "model": "email.emailtemplate",
+    "pk": 2,
+    "fields": {
+      "subject": "account confirmation",
+      "content": "Hey %user_name%,<br>thanks for signing up. To activate your account, click this link within 48hours %url%",
+      "slug": "account_confirmation",
+      "status":"True",
+      "from_email": "",
+      "created_date":"2015-09-03 00:00:00",
+      "updated_date":"2015-09-03 00:00:00"
+    }
+  },
+  {
+    "model": "email.emailtemplate",
+    "pk": 3,
+    "fields": {
+      "subject": "forgot password",
+      "content": "Hey %user_name%, <br>Please click on %url% to reset password.",
+      "slug": "forgot_password",
+      "status":"True",
+      "from_email": "",
+      "created_date":"2015-09-03 00:00:00",
+      "updated_date":"2015-09-03 00:00:00"
+    }
+  },
+  {
+    "model": "email.emailtemplate",
+    "pk": 4,
+    "fields": {
+      "subject": "verify email",
+      "content": "Hey %user_name%, To activate your account, click this link %url%",
+      "slug": "verify_email",
+      "status":"True",
+      "from_email": "",
+      "created_date":"2015-09-03 00:00:00",
+      "updated_date":"2015-09-03 00:00:00"
+    }
+  },
+  {
+    "model": "email.emailtemplate",
+    "pk": 5,
+    "fields": {
+      "subject": "grey invitation",
+      "content": "Hey %user_name%,<br>You are invited on Kinbow . Please click  on %url% to start with kinbow.",
+      "slug": "grey_invitation",
+      "status":"True",
+      "from_email": "",
+      "created_date":"2015-09-03 00:00:00",
+      "updated_date":"2015-09-03 00:00:00"
+    }
+  }
+  
+  
+  
+]
+

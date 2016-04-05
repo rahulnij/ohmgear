@@ -116,12 +116,6 @@ EMAIL_HOST = 'email-smtp.us-west-2.amazonaws.com'#'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_HOST_USER = 'AKIAJUDMRYODLOT4FMJQ'#'bhoopendra.ohmgear@gmail.com'
 EMAIL_HOST_PASSWORD = 'Atf+OJN+84eKW0jqqhp0MAzYsnB7Ra78ilfj8SHsb821' #'q@123456'
-
-TEMPLATE_CONTEXT_PROCESSORS = (
-    # other context processors....
-    'django.core.context_processors.static',
-    # other context processors....
-)
 #----------------------- End setting -------------------------------------------#
 
 ROOT_URLCONF = 'ohmgear.urls'
@@ -138,6 +132,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'django.core.context_processors.static'
             ],
         },
     },

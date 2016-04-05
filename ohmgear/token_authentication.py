@@ -21,8 +21,8 @@ EXPIRE_HOURS = getattr(settings, 'REST_FRAMEWORK_TOKEN_EXPIRE_HOURS', 2)
 class ExpiringTokenAuthentication(TokenAuthentication):
     def authenticate_credentials(self, key):
         try:
-            token = self.model.objects.get(key=key)
-        except self.model.DoesNotExist:
+            token = self.get_model().objects.get(key=key)
+        except self.get_model().DoesNotExist:
             raise exceptions.AuthenticationFailed('Invalid token')
 
         if not token.user.is_active:
