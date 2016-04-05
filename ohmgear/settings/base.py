@@ -35,7 +35,7 @@ ALLOWED_HOSTS = []
 
 # Application definition
 
-INSTALLED_APPS = (
+DJANGO_APPS = [
     'django_admin_bootstrapped',
     'django.contrib.admin',
     'django.contrib.auth',
@@ -43,6 +43,14 @@ INSTALLED_APPS = (
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'rest_framework',
+    'rest_framework.authtoken',
+    'django.contrib.gis',
+    'simple_history',
+    'ckeditor',
+]
+
+PROJECT_APPS = [
     'apps.users',
     'apps.notes',
     'apps.businesscards',
@@ -52,18 +60,15 @@ INSTALLED_APPS = (
     'apps.email',
     'apps.promocode',
     'apps.folders',
-    'rest_framework',
-    'rest_framework.authtoken',
     'apps.feedbacks',
-    'simple_history',
     'apps.staticpages',
     'apps.usersetting',
     'apps.groups',
     'apps.userlocation',
-    'ckeditor',
     'apps.sendrequest',
-    'django.contrib.gis',
-)
+]
+
+INSTALLED_APPS = DJANGO_APPS + PROJECT_APPS
 
 MIDDLEWARE_CLASSES = (
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -143,19 +148,8 @@ WSGI_APPLICATION = 'ohmgear.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/1.8/ref/settings/#databases
+DATABASE_ROUTERS = ['apps.userlocation.userlocationRouter.UserLocationRouter']
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'ohmgear',
-        'USER': 'ohmgear',
-        'PASSWORD': 'ohmgear@123',
-        'HOST': 'localhost',
-        'PORT': '',
-    }
-   
-
-}
 
 
 # Internationalization

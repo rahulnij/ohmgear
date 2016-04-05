@@ -7,9 +7,9 @@ if DEBUG:
         'debug_toolbar.middleware.DebugToolbarMiddleware',
     )
 
-    INSTALLED_APPS += (
-        'debug_toolbar',
-    )
+#    INSTALLED_APPS += (
+#        'debug_toolbar',
+#    )
 
     DEBUG_TOOLBAR_PANELS = [
         'debug_toolbar.panels.versions.VersionsPanel',
@@ -64,7 +64,17 @@ LOGGING = {
 }
 
 # CELERY STUFF
-INSTALLED_APPS += ("djcelery", )
+INSTALLED_APPS += ("djcelery","apps.test_purposes", 'rest_framework_swagger', 'raven.contrib.django.raven_compat',)
+
+import raven
+
+RAVEN_CONFIG = {
+    'dsn': 'https://729dcf0cf35742559908b6eea18f6563:a91b624970fd49caba33b442ba37b499@app.getsentry.com/60299',
+    # If you are using git, you can also automatically configure the
+    # release based on the git info.
+    #'release': raven.fetch_git_sha(os.path.dirname(__file__)),
+}
+
 import djcelery
 djcelery.setup_loader()
 
@@ -80,14 +90,29 @@ CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
 #CELERY_TIMEZONE = 'Africa/Nairobi'
 
+
+#--------- UPLOAD URL PATHS -------------------#
+BCARDS_TEMPLATE_IMAGE_URL = DOMAIN_NAME
+#--------- End --------------------------------#
+
+# Database
+# https://docs.djangoproject.com/en/1.8/ref/settings/#databases
+DATABASE_ROUTERS = ['apps.userlocation.userlocationRouter.UserLocationRouter']
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'postgres',
-        'USER': 'postgres',
-        'PASSWORD': 'password',
+        'NAME': 'ohmgear',
+        'USER': 'ohmgear',
+        'PASSWORD': 'ohmgear',
         'HOST': 'localhost',
         'PORT': '',
+    },
+     'userlocation': {
+        'ENGINE': 'django.contrib.gis.db.backends.postgis',
+        'NAME': 'OGPostgres2',
+        'USER': 'OGAdmin',
+        'PASSWORD': 'OG132465',
+        'HOST': 'ogpostgres3.cdibcw5lvsbm.us-west-2.rds.amazonaws.com',
+        'PORT': '5432',  
     }
 }
-
