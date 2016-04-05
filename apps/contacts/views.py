@@ -56,7 +56,7 @@ class storeContactsViewSet(viewsets.ModelViewSet):
              NUMBER_OF_CONTACT = 100
              
              try:
-              contact = request.DATA['contact']
+              contact = request.data['contact']
              except:
                return CustomeResponse({'msg':'Please provide correct Json Format'},status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
             

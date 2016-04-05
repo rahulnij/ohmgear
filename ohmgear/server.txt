@@ -21,3 +21,4 @@ For more you can see requirment.txt file
 #------------ Install geos library ----------------------#
 sudo apt-get install libgeos-dev
 #--------------------------------------------------------#
+python manage.py migrate --run-syncdb
