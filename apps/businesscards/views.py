@@ -703,17 +703,17 @@ class BusinessViewSet(viewsets.ModelViewSet):
                     queryset_folder.update(businesscard_id = business.id)
                     
                 #  Create first Business Card as default and update in user setting #     
-                bcard_data = BusinessCard.objects.filter(user_id=user_id).count()
-                if bcard_data ==1:
-                    try:
-                        getkey =  "DEFAULT_BUSINESS_CARD"
-                        UserSetting.objects.filter(setting_id__key=getkey,user_id=user_id).update(value=business.id)
-                    except:
-                        pass
+#                bcard_data = BusinessCard.objects.filter(user_id=user_id,status=1).count()
+#                if bcard_data ==1:
+#                    try:
+#                        getkey =  "DEFAULT_BUSINESS_CARD"
+#                        UserSetting.objects.filter(setting_id__key=getkey,user_id=user_id).update(value=business.id)
+#                    except:
+#                        pass
                         
                #-------------------- End --------------------------------------------------------# 
             else:
-                 return CustomeResponse(contact_serializer.errors,status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
+                    return CustomeResponse(contact_serializer.errors,status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
            
             return CustomeResponse(data_new,status=status.HTTP_201_CREATED)
  
