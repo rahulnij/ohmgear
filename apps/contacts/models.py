@@ -1,7 +1,8 @@
 from django.db import models
 from apps.businesscards.models import BusinessCard,BusinessCardTemplate
 from django.utils.translation import ugettext_lazy as _
-from django_pgjson.fields import JsonField
+#from django_pgjson.fields import JsonField
+from django.contrib.postgres.fields import JSONField
 from django.conf import settings
 
 from simple_history.models import HistoricalRecords
@@ -14,7 +15,7 @@ class Contacts(models.Model):
     class Meta:
         db_table = 'ohmgear_contacts_contact'
     businesscard_id = models.OneToOneField(BusinessCard,null=True, blank=True,related_name='contact_detail',db_column="businesscard_id")
-    bcard_json_data = JsonField(null=True)
+    bcard_json_data = JSONField(null=True)
 #    template_id = models.ForeignKey(BusinessCardTemplate,db_column="template_id")
     user_id = models.ForeignKey(User,db_column="user_id")
     created_date=models.DateTimeField(_("Created Date"),auto_now_add=True,auto_now=False)

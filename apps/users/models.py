@@ -3,7 +3,8 @@ from django.contrib.auth.models import  BaseUserManager, AbstractBaseUser
 from django.utils import timezone
 from django.contrib.auth.hashers import make_password
 from django.utils.translation import ugettext_lazy as _
-from django_pgjson.fields import JsonField
+#from django_pgjson.fields import JsonField
+from django.contrib.postgres.fields import JSONField
 import datetime
 from datetime import timedelta
 from django.utils.html import format_html
@@ -161,7 +162,7 @@ class Profile(models.Model):
     gender = models.CharField(_("Gender"),null =True,max_length= 10)
     address = models.CharField(_("Address"),max_length=80,null=True)
     mobile_number = models.CharField(_("Mobile Number"),max_length=20,null=True)
-    custom_data = JsonField(null=True)
+    custom_data = JSONField(null=True)
     created_date=models.DateTimeField(_("Created Date"),auto_now_add=True,auto_now=False)
     updated_date=models.DateTimeField(_("Updated Date"),auto_now_add=False,auto_now=True)
     user = models.OneToOneField(User,null=True,related_name="user_profile")
