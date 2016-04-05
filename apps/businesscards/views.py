@@ -701,8 +701,10 @@ class BusinessViewSet(viewsets.ModelViewSet):
                     data_new["folder_info"] =  folder_view.data['data']
                 else:
                     queryset_folder.update(businesscard_id = business.id)
-                    
-                #  Create first Business Card as default and update in user setting #     
+                
+                # now default business card will be managed in user setting by providing key and value--------#    
+                #  Create first Business Card as default and update in user setting -----------#
+                
 #                bcard_data = BusinessCard.objects.filter(user_id=user_id,status=1).count()
 #                if bcard_data ==1:
 #                    try:
