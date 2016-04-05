@@ -5,13 +5,14 @@ import socket
 import re
 
 #----------- clavax:Set setting according server -------------------------#
-HOSTNAME = socket.gethostname().lower().split('.')[0].replace('-','')
+'''HOSTNAME = socket.gethostname().lower().split('.')[0].replace('-','')
 if re.search('clavax',  HOSTNAME):
    settings = "ohmgear.settings.local"
 else:
    settings = "ohmgear.settings.server"
 #----------- End Setting -------------------------------------------#
-   
+'''
+if os.environ.has_key('ENV_VAR')
    
 if __name__ == "__main__":
     os.environ.setdefault("DJANGO_SETTINGS_MODULE", settings)
