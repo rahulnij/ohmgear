@@ -33,19 +33,16 @@ LOGGING = {
     'formatters': {
         'verbose': {
             'format': "[%(asctime)s] %(levelname)s [%(name)s:%(lineno)s] %(message)s",
-            'datefmt': "%d/%b/%Y %H:%M:%S"
-        },
+            'datefmt': "%d/%b/%Y %H:%M:%S"},
         'simple': {
-            'format': '%(levelname)s %(message)s'
-        },
+            'format': '%(levelname)s %(message)s'},
     },
     'handlers': {
         'file': {
             'level': 'DEBUG',
             'class': 'logging.FileHandler',
             'filename': 'mysite.log',
-            'formatter': 'verbose'
-        },
+                        'formatter': 'verbose'},
     },
     'loggers': {
         'django': {
@@ -57,8 +54,7 @@ LOGGING = {
             'handlers': ['file'],
             'level': 'DEBUG',
         },
-    }
-}
+    }}
 
 # CELERY STUFF
 INSTALLED_APPS += (
@@ -67,7 +63,7 @@ INSTALLED_APPS += (
     'raven.contrib.django.raven_compat'
 )
 
-import raven
+'''import raven
 
 RAVEN_CONFIG = {
     'dsn': 'https://729dcf0cf35742559908b6eea18f6563:a91b624970fd49caba33b442ba37b499@app.getsentry.com/60299',
@@ -75,6 +71,7 @@ RAVEN_CONFIG = {
     # release based on the git info.
     #'release': raven.fetch_git_sha(os.path.dirname(__file__)),
 }
+'''
 
 import djcelery
 djcelery.setup_loader()
