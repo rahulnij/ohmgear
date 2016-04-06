@@ -1,8 +1,8 @@
-#----------------------------------------------#
+# ----------------------------------------------#
 # Developer Name: Sajid
 # Creation Date: 2015/08/04
 # Notes: Main setting file
-#----------------------------------------------#
+# ----------------------------------------------#
 """
 Django settings for ohmgear project.
 
@@ -35,15 +35,23 @@ ALLOWED_HOSTS = []
 
 # Application definition
 
-INSTALLED_APPS = (
-    'jet',
-#    'django_admin_bootstrapped',
+
+DJANGO_APPS = (
+    'django_admin_bootstrapped',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'rest_framework',
+    'rest_framework.authtoken',
+    'django.contrib.gis',
+    'simple_history',
+    'ckeditor',
+)
+
+PROJECT_APPS = (
     'apps.users',
     'apps.notes',
     'apps.businesscards',
@@ -53,22 +61,20 @@ INSTALLED_APPS = (
     'apps.email',
     'apps.promocode',
     'apps.folders',
-    'rest_framework',
-    'rest_framework.authtoken',
     'apps.feedbacks',
-    'simple_history',
     'apps.staticpages',
     'apps.usersetting',
     'apps.groups',
-    #'apps.userlocation',
-    'ckeditor',
+    'apps.userlocation',
     'apps.sendrequest',
     'apps.awsserver',
-    #'django.contrib.gis',
+
 
 )
 
-MIDDLEWARE_CLASSES = (
+INSTALLED_APPS = DJANGO_APPS + PROJECT_APPS
+
+DJANGO_MIDDLEWARE_CLASSES = (
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -77,10 +83,15 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'django.middleware.security.SecurityMiddleware',
-    'apps.users.mobile_detect_middleware.MobileDetectionMiddleware',
     'simple_history.middleware.HistoryRequestMiddleware'
 )
-#------------------------- Custome setting ------------------------------------#
+
+PROJECT_MIDDLEWARE_CLASSES = (
+    'apps.users.mobile_detect_middleware.MobileDetectionMiddleware',
+)
+
+MIDDLEWARE_CLASSES = DJANGO_MIDDLEWARE_CLASSES + PROJECT_MIDDLEWARE_CLASSES
+# ------------------------- Custome setting ------------------------------------#
 import sys
 reload(sys)  # Reload does the trick!
 sys.setdefaultencoding('UTF8')
@@ -89,16 +100,14 @@ REST_FRAMEWORK = {
 
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework.authentication.SessionAuthentication',
-        #'rest_framework.authentication.TokenAuthentication',
-        #'ohmgear.token_authentication.ExpiringTokenAuthentication',
     ),
     'EXCEPTION_HANDLER': 'ohmgear.custom_exception_handler.custom_exception_handler',
     'DEFAULT_PARSER_CLASSES': (
-            'rest_framework.parsers.JSONParser',
-            'rest_framework.parsers.FormParser',
-            'rest_framework.parsers.MultiPartParser',
-        ),
-    'UPLOADED_FILES_USE_URL': True,    
+        'rest_framework.parsers.JSONParser',
+        'rest_framework.parsers.FormParser',
+        'rest_framework.parsers.MultiPartParser',
+    ),
+    'UPLOADED_FILES_USE_URL': True,
 }
 AUTH_USER_MODEL = 'users.User'
 AUTHENTICATION_BACKENDS = (
@@ -108,32 +117,24 @@ PASSWORD_HASHERS = (
     'django.contrib.auth.hashers.SHA1PasswordHasher',
 )
 
-DEFAULT_FROM_EMAIL = 'welcome@kinbow.com'
-#q@123456
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_USE_TLS = True
-EMAIL_HOST = 'email-smtp.us-west-2.amazonaws.com'#'smtp.gmail.com'
-EMAIL_PORT = 587
-EMAIL_HOST_USER = 'AKIAJUDMRYODLOT4FMJQ'#'bhoopendra.ohmgear@gmail.com'
-EMAIL_HOST_PASSWORD = 'Atf+OJN+84eKW0jqqhp0MAzYsnB7Ra78ilfj8SHsb821' #'q@123456'
 
 TEMPLATE_CONTEXT_PROCESSORS = (
     # other context processors....
     'django.core.context_processors.static',
     # other context processors....
 )
-#----------------------- End setting -------------------------------------------#
+# ----------------------- End setting -------------------------------------------#
 
 ROOT_URLCONF = 'ohmgear.urls'
 
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR,'ohmgear/templates'],
+        'DIRS': [BASE_DIR, 'ohmgear/templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
-		'django.core.context_processors.request',
+                'django.core.context_processors.request',
                 'django.template.context_processors.debug',
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
@@ -148,19 +149,9 @@ WSGI_APPLICATION = 'ohmgear.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/1.8/ref/settings/#databases
-
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'ohmgear',
-        'USER': 'ohmgear',
-        'PASSWORD': 'ohmgear@123',
-        'HOST': 'localhost',
-        'PORT': '',
-    }
-   
-
-}
+DATABASE_ROUTERS = [
+    'ohmgear.databaseroutes.userlocationrouter.UserLocationRouter'
+]
 
 
 # Internationalization
