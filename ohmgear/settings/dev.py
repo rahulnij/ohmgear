@@ -59,9 +59,8 @@ LOGGING = {
 # CELERY STUFF
 INSTALLED_APPS += (
     "djcelery", "apps.test_purposes",
-    '''"rest_framework_swagger",
-    'raven.contrib.django.raven_compat'
-    '''
+    # "rest_framework_swagger",
+    # 'raven.contrib.django.raven_compat'
 )
 
 '''import raven
