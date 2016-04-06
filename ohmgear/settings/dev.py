@@ -2,7 +2,7 @@ from base import *
 
 DOMAIN_NAME = 'http://localhost:8000'
 
-ALLOWED_HOSTS = ['localhost','*','192.168.2.146:8100']
+ALLOWED_HOSTS = ['localhost', '*', '192.168.2.146:8100']
 MIDDLEWARE_CLASSES += (
     'debug_toolbar.middleware.DebugToolbarMiddleware',
 )
@@ -32,8 +32,8 @@ LOGGING = {
     'disable_existing_loggers': False,
     'formatters': {
         'verbose': {
-            'format' : "[%(asctime)s] %(levelname)s [%(name)s:%(lineno)s] %(message)s",
-            'datefmt' : "%d/%b/%Y %H:%M:%S"
+            'format': "[%(asctime)s] %(levelname)s [%(name)s:%(lineno)s] %(message)s",
+            'datefmt': "%d/%b/%Y %H:%M:%S"
         },
         'simple': {
             'format': '%(levelname)s %(message)s'
@@ -49,9 +49,9 @@ LOGGING = {
     },
     'loggers': {
         'django': {
-            'handlers':['file'],
+            'handlers': ['file'],
             'propagate': True,
-            'level':'DEBUG',
+            'level': 'DEBUG',
         },
         'MYAPP': {
             'handlers': ['file'],
@@ -62,8 +62,8 @@ LOGGING = {
 
 # CELERY STUFF
 INSTALLED_APPS += (
-    "djcelery","apps.test_purposes", 
-    "rest_framework_swagger", 
+    "djcelery", "apps.test_purposes",
+    "rest_framework_swagger",
     'raven.contrib.django.raven_compat'
 )
 
@@ -107,22 +107,22 @@ DATABASES = {
         'HOST': 'localhost',
         'PORT': '',
     },
-     'userlocation': {
+    'userlocation': {
         'ENGINE': 'django.contrib.gis.db.backends.postgis',
         'NAME': 'OGPostgres2',
         'USER': 'OGAdmin',
         'PASSWORD': 'OG132465',
         'HOST': 'ogpostgres3.cdibcw5lvsbm.us-west-2.rds.amazonaws.com',
-        'PORT': '5432',  
+        'PORT': '5432',
     }
 }
 
 
 #DEFAULT_FROM_EMAIL = 'welcome@kinbow.com'
-#q@123456
+# q@123456
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_USE_TLS = True
-EMAIL_HOST = 'email-smtp.us-west-2.amazonaws.com'#'smtp.gmail.com'
+EMAIL_HOST = 'email-smtp.us-west-2.amazonaws.com'  # 'smtp.gmail.com'
 EMAIL_PORT = 587
-EMAIL_HOST_USER = 'AKIAJUDMRYODLOT4FMJQ'#'bhoopendra.ohmgear@gmail.com'
-EMAIL_HOST_PASSWORD = 'Atf+OJN+84eKW0jqqhp0MAzYsnB7Ra78ilfj8SHsb821' #'q@123456'
+EMAIL_HOST_USER = 'AKIAJUDMRYODLOT4FMJQ'  # 'bhoopendra.ohmgear@gmail.com'
+EMAIL_HOST_PASSWORD = 'Atf+OJN+84eKW0jqqhp0MAzYsnB7Ra78ilfj8SHsb821'  # 'q@123456'
