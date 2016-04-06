@@ -118,11 +118,11 @@ DATABASES = {
 }
 
 
-#DEFAULT_FROM_EMAIL = 'welcome@kinbow.com'
+DEFAULT_FROM_EMAIL = 'bhoopendra.ohmgear@gmail.com'
 # q@123456
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_USE_TLS = True
-EMAIL_HOST = 'email-smtp.us-west-2.amazonaws.com'  # 'smtp.gmail.com'
+EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
-EMAIL_HOST_USER = 'AKIAJUDMRYODLOT4FMJQ'  # 'bhoopendra.ohmgear@gmail.com'
-EMAIL_HOST_PASSWORD = 'Atf+OJN+84eKW0jqqhp0MAzYsnB7Ra78ilfj8SHsb821'  # 'q@123456'
+EMAIL_HOST_USER = 'bhoopendra.ohmgear@gmail.com'
+EMAIL_HOST_PASSWORD = 'q@123456'

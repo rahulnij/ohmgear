@@ -15,8 +15,7 @@ DATABASES = {
     }
 }
 
-#DEFAULT_FROM_EMAIL = 'welcome@kinbow.com'
-#q@123456
+DEFAULT_FROM_EMAIL = 'welcome@kinbow.com'
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_USE_TLS = True
 EMAIL_HOST = 'email-smtp.us-west-2.amazonaws.com'#'smtp.gmail.com'
