@@ -134,23 +134,25 @@ class BusinessCardIdentifierViewSet(viewsets.ModelViewSet):
         else:
             return CustomeResponse({'msg':"Card is not attached"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
      
-    #-------Delete Identifiers it will first inactive the businesscard than delete the linking of identifier with businesscard in businesscard_identifier table
-     #than delete the identifeirs in identifier table ------------# 
+    #-------Identifier delete only if business card is not connected with it. ------------# 
     def destroy(self, request, pk=None):
         
         identifier_data = Identifier.objects.filter(id=pk)
     
         if identifier_data:
-            businesscard_identifier_data = BusinessCardIdentifier.objects.filter(identifier_id=identifier_data)
+            try:
+                businesscard_identifier_data = BusinessCardIdentifier.objects.filter(identifier_id=identifier_data)
+            except:
+                businesscard_identifier_data = []
             if businesscard_identifier_data:
-                
-                businesscard_id =  businesscard_identifier_data[0].businesscard_id.id
-                BusinessCard.objects.filter(id=businesscard_id).update(status=0,is_active=0 )
-                businesscard_identifier_data.delete()   
+                return CustomeResponse({'msg':"Business card is already attached first unlink identifier from identifier"},status=status.HTTP_200_OK)
+#                businesscard_id =  businesscard_identifier_data[0].businesscard_id.id
+#                BusinessCard.objects.filter(id=businesscard_id).update(status=0,is_active=0 )
+#                businesscard_identifier_data.delete()   
             identifier_data.delete()
-            return CustomeResponse({'msg':"Business card has been Inactive and identifiers has been deleted "},status=status.HTTP_200_OK)
+            return CustomeResponse({'msg':"Identifier has been deleted successfully"},status=status.HTTP_200_OK)
         else:
-             return CustomeResponse({'msg':"Businesscard Identifier Id not found"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
+             return CustomeResponse({'msg':"Identifier Id not found"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
                             
             
     #-----------------search contact by identifier ------------#
