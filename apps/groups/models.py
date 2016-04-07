@@ -12,7 +12,6 @@ class Group(models.Model):
     class Meta:
         db_table = 'ohmgear_groups_group'
     group_name = models.CharField(_("Group Name"),max_length=60)
-    description = models.TextField("Description")
     user_id    = models.ForeignKey(User,db_column="user_id")
     status = models.IntegerField(_('status'), default=1)
     created_date = models.DateTimeField(_("Created Date"),auto_now_add=True,auto_now=False)

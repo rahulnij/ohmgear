@@ -10,8 +10,6 @@ class GroupSerializer(serializers.ModelSerializer):
         fields =('id','group_name','attached_group_contacts')
         
 class GroupContactsSerializer(serializers.ModelSerializer):
-    contact_data = []
-    count = 0
     
     class Meta:
         model = GroupContacts
