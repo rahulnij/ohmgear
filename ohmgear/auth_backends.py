@@ -4,14 +4,18 @@ from django.core.exceptions import ImproperlyConfigured
 from django.contrib.auth import get_user_model
 from django.contrib.auth.hashers import make_password
 # We are using this class for API authentication + django ADMIN ACCESS
+
+
 class UsersModelBackend(ModelBackend):
+
     def authenticate(self, username=None, password=None):
-        
+
         try:
-            user = self.user_class.objects.get(email=username,user_type=1,status=1)
+            user = self.user_class.objects.get(
+                email=username, user_type=1, status=1)
             if user.check_password(password):
                 return user
-        except self.user_class.DoesNotExist:            
+        except self.user_class.DoesNotExist:
             return None
 
     def get_user(self, user_id):
@@ -27,5 +31,3 @@ class UsersModelBackend(ModelBackend):
             if not self._user_class:
                 raise ImproperlyConfigured('Could not get custom user model')
         return self._user_class
-    
-    

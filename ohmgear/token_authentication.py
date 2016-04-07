@@ -18,7 +18,9 @@ from django.utils.timezone import utc
 
 EXPIRE_HOURS = getattr(settings, 'REST_FRAMEWORK_TOKEN_EXPIRE_HOURS', 2)
 
+
 class ExpiringTokenAuthentication(TokenAuthentication):
+
     def authenticate_credentials(self, key):
         try:
             token = self.model.objects.get(key=key)
@@ -29,11 +31,11 @@ class ExpiringTokenAuthentication(TokenAuthentication):
             raise exceptions.AuthenticationFailed('User inactive or deleted')
 
 #        if token.created < timezone.now() - timedelta(hours=EXPIRE_HOURS):
-#            raise exceptions.AuthenticationFailed('Token has expired')        
+#            raise exceptions.AuthenticationFailed('Token has expired')
         return (token.user, token)
-    
-    
-#class AuthTokenSerializer(serializers.Serializer):
+
+
+# class AuthTokenSerializer(serializers.Serializer):
 #    username = serializers.CharField()
 #    password = serializers.CharField(style={'input_type': 'password'})
 #
@@ -57,10 +59,10 @@ class ExpiringTokenAuthentication(TokenAuthentication):
 #
 #        attrs['user'] = user
 #        return attrs
-#    
-##---------------------- Token Creation Process ------------------#    
+#
+##---------------------- Token Creation Process ------------------#
 #from rest_framework.authtoken.views import ObtainAuthToken
-#class ObtainExpiringAuthToken(ObtainAuthToken):
+# class ObtainExpiringAuthToken(ObtainAuthToken):
 #    serializer_class = AuthTokenSerializer
 #    def post(self, request):
 #        serializer = self.serializer_class(data=request.DATA)
@@ -74,4 +76,4 @@ class ExpiringTokenAuthentication(TokenAuthentication):
 #
 #            return Response(custome_response({'token': token.key},0))
 #        return Response(custome_response(serializer.errors,1))
-#obtain_expiring_auth_token = ObtainExpiringAuthToken.as_view()        
+#obtain_expiring_auth_token = ObtainExpiringAuthToken.as_view()
