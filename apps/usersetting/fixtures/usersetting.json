@@ -1,0 +1,251 @@
+[
+  {
+    "model": "usersetting.displaycontactnameas",
+    "pk": 1,
+    "fields": {
+      "name_display_format": "FIRST_NAME LAST_NAME",
+      "created_date":"2015-09-03 00:00:00",
+      "updated_date":"2015-09-03 00:00:00"
+    }
+  },
+  {
+    "model": "usersetting.displaycontactnameas",
+    "pk": 2,
+    "fields": {
+      "name_display_format": "LAST_NAME FIRST_NAME",
+      "created_date":"2015-09-03 00:00:00",
+      "updated_date":"2015-09-03 00:00:00"
+    }
+  },
+  {
+    "model": "usersetting.displaycontactnameas",
+    "pk": 3,
+    "fields": {
+      "name_display_format": "COMPANY NAME",
+      "created_date":"2015-09-03 00:00:00",
+      "updated_date":"2015-09-03 00:00:00"
+    }
+  },
+  
+  
+  
+  
+  {
+    "model": "usersetting.language",
+    "pk": 1,
+    "fields": {
+      "language": "ENGLISH",
+      "created_date":"2015-09-03 00:00:00",
+      "updated_date":"2015-09-03 00:00:00"
+    }
+  },
+  {
+    "model": "usersetting.language",
+    "pk": 2,
+    "fields": {
+      "language": "CHINESE",
+      "created_date":"2015-09-03 00:00:00",
+      "updated_date":"2015-09-03 00:00:00"
+    }
+  },
+  {
+    "model": "usersetting.language",
+    "pk": 3,
+    "fields": {
+      "language": "BAHASA_INDONESIA",
+      "created_date":"2015-09-03 00:00:00",
+      "updated_date":"2015-09-03 00:00:00"
+    }
+  },
+  {
+    "model": "usersetting.language",
+    "pk": 4,
+    "fields": {
+      "language": "DANSK",
+      "created_date":"2015-09-03 00:00:00",
+      "updated_date":"2015-09-03 00:00:00"
+    }
+  },
+  {
+    "model": "usersetting.language",
+    "pk": 5,
+    "fields": {
+      "language": "DEUTSCH",
+      "created_date":"2015-09-03 00:00:00",
+      "updated_date":"2015-09-03 00:00:00"
+    }
+  },
+  {
+    "model": "usersetting.language",
+    "pk": 6,
+    "fields": {
+      "language": "EESTI",
+      "created_date":"2015-09-03 00:00:00",
+      "updated_date":"2015-09-03 00:00:00"
+    }
+  },
+  {
+    "model": "usersetting.language",
+    "pk": 7,
+    "fields": {
+      "language": "ITALIANO",
+      "created_date":"2015-09-03 00:00:00",
+      "updated_date":"2015-09-03 00:00:00"
+    }
+  },
+  {
+    "model": "usersetting.language",
+    "pk": 8,
+    "fields": {
+      "language": "MAGYAR",
+      "created_date":"2015-09-03 00:00:00",
+      "updated_date":"2015-09-03 00:00:00"
+    }
+  },
+  {
+    "model": "usersetting.language",
+    "pk": 9,
+    "fields": {
+      "language": "NEDERLANDS",
+      "created_date":"2015-09-03 00:00:00",
+      "updated_date":"2015-09-03 00:00:00"
+    }
+  },
+  {
+    "model": "usersetting.language",
+    "pk": 10,
+    "fields": {
+      "language": "NORSK",
+      "created_date":"2015-09-03 00:00:00",
+      "updated_date":"2015-09-03 00:00:00"
+    }
+  },
+  {
+    "model": "usersetting.language",
+    "pk": 11,
+    "fields": {
+      "language": "SVENSKA",
+      "created_date":"2015-09-03 00:00:00",
+      "updated_date":"2015-09-03 00:00:00"
+    }
+  },
+  {
+    "model": "usersetting.language",
+    "pk": 12,
+    "fields": {
+      "language": "SUOMI",
+      "created_date":"2015-09-03 00:00:00",
+      "updated_date":"2015-09-03 00:00:00"
+    }
+  },
+  
+  
+  
+  
+ 
+  
+  {
+    "model": "usersetting.setting",
+    "pk": 1,
+    "fields": {
+        
+      "key": "DISPLAY_CONTACT_NAME_AS",
+      "default_value":"INT",
+      "value_type":"1",
+      "created_date":"2015-09-03 00:00:00",
+      "updated_date":"2015-09-03 00:00:00"
+    }
+  },
+  {
+    "model": "usersetting.setting",
+    "pk": 2,
+    "fields": {
+      "key": "LANGUAGE",
+      "default_value":"INT",
+      "value_type":"1",
+      "created_date":"2015-09-03 00:00:00",
+      "updated_date":"2015-09-03 00:00:00"
+    }
+  },
+  {
+    "model": "usersetting.setting",
+    "pk": 3,
+    "fields": {
+      "key": "AUTO_APPROVE_PIN",
+      "default_value":"INT",
+      "value_type":"0",
+      "created_date":"2015-09-03 00:00:00",
+      "updated_date":"2015-09-03 00:00:00"
+    }
+  },
+  {
+    "model": "usersetting.setting",
+    "pk": 4,
+    "fields": {
+      "key": "CONNECTION_REQUEST_AUTOMATICALLY",
+      "default_value":"INT",
+      "value_type":"0",
+      "created_date":"2015-09-03 00:00:00",
+      "updated_date":"2015-09-03 00:00:00"
+    }
+  },
+  {
+    "model": "usersetting.setting",
+    "pk": 5,
+    "fields": {
+       "key" :"IN_APP_SOUNDS",
+      "default_value":"INT",
+      "value_type":"0",
+      "created_date":"2015-09-03 00:00:00",
+      "updated_date":"2015-09-03 00:00:00"
+      
+    }
+  },
+  {
+    "model": "usersetting.setting",
+    "pk": 6,
+    "fields": {
+      "key":"IN_APP_VIBRATION",
+      "default_value": "INT",
+      "value_type":"0",
+      "created_date":"2015-09-03 00:00:00",
+      "updated_date":"2015-09-03 00:00:00"
+    }
+  },
+  {
+    "model": "usersetting.setting",
+    "pk": 7,
+    "fields": {
+      "key":"SAVE_CARD_IMAGES_TO_LIBRARY",
+      "default_value": "INT",
+      "value_type":"0",
+      "created_date":"2015-09-03 00:00:00",
+      "updated_date":"2015-09-03 00:00:00"
+    }
+  },
+  {
+    "model": "usersetting.setting",
+    "pk": 8,
+    "fields": {
+      "key":"SCANNING_LANGUAGES", 
+      "default_value": "CHAR",
+      "value_type":"1",
+      "created_date":"2015-09-03 00:00:00",
+      "updated_date":"2015-09-03 00:00:00"
+    }
+  },
+  {
+    "model": "usersetting.setting",
+    "pk": 9,
+    "fields": {
+      "key":"DEFAULT_BUSINESS_CARD", 
+      "default_value": "INT",
+      "value_type":"0",
+      "created_date":"2015-09-03 00:00:00",
+      "updated_date":"2015-09-03 00:00:00"
+    }
+  }
+  
+  
+]
+

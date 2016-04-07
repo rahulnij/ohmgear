@@ -1,0 +1,29 @@
+[
+  {
+    "model": "staticpages.staticpages",
+    "pk": 1,
+    "fields": {
+      "headline": "Privacy of Policy",
+      "content": "Privacy Policy",
+      "page_name":"Privacypolicy",
+      "status":"1",
+      "created_date":"2015-09-03 00:00:00",
+      "updated_date":"2015-09-03 00:00:00"
+    }
+  },
+  {
+    "model": "staticpages.staticpages",
+    "pk": 2,
+    "fields": {
+      "headline": "Terms of Service",
+      "content": "Terms of Service",
+      "page_name":"Termsservice",
+      "status":"1",
+      "created_date":"2015-09-03 00:00:00",
+      "updated_date":"2015-09-03 00:00:00"
+    }
+  }
+  
+  
+]
+
