@@ -2,7 +2,6 @@ from django.conf.urls import include, url
 from django.contrib import admin
 
 
-
 urlpatterns = [
     url(r'', include('apps.awsserver.urls')),
     url(r'', include('apps.businesscards.urls')),
@@ -16,7 +15,7 @@ urlpatterns = [
     url(r'', include('apps.offline.urls')),
     url(r'', include('apps.sendrequest.urls')),
     url(r'', include('apps.staticpages.urls')),
-    #url(r'', include('apps.userlocation.urls')),
+    url(r'', include('apps.userlocation.urls')),
     url(r'', include('apps.users.urls')),
     url(r'', include('apps.usersetting.urls')),
     url(r'', include('apps.vacationcard.urls')),
@@ -30,6 +29,7 @@ urlpatterns += staticfiles_urlpatterns()
 
 #------------- Only on Development to server media files otherwise we will disable -------------#
 from django.conf import settings
-urlpatterns += [
-        url(r'^media/(?P<path>.*)$', 'django.views.static.serve', {'document_root': settings.MEDIA_ROOT, 'show_indexes': True}),
-]
+if settings.DEBUG:
+        from django.conf.urls.static import static
+        urlpatterns += static(settings.MEDIA_URL,
+                              document_root=settings.MEDIA_ROOT)

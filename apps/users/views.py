@@ -322,7 +322,7 @@ class ProfileViewSet(viewsets.ModelViewSet):
         serializer = self.serializer_class(profile,context={'request': request})
         return CustomeResponse(serializer.data,status=status.HTTP_200_OK)
     
-     #--------------Method: PUT update the record-----------------------------#
+     #-------------- Work as update user profile -----------------------------#
     def create(self, request, pk=None):
         try:
             user_id = request.user.id

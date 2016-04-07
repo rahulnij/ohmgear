@@ -13,9 +13,9 @@ router.register(r'api/sociallogin',users_views.SocialLoginViewSet)
 urlpatterns = router.urls
 
 urlpatterns +=[
-    url(r'^api/useractivity/$','apps.users.views.useractivity',name='useractivity'),
-    url(r'^api/account_confirmation/(?P<activation_key>\w+)/$','apps.users.views.useractivity',name='registration_confirm'),
-    url(r'^api/forgot_password/(?P<reset_password_key>\w+)/$','apps.users.views.useractivity',name='forgot_password'),
+    url(r'^api/useractivity/$',users_views.useractivity,name='useractivity'),
+    url(r'^api/account_confirmation/(?P<activation_key>\w+)/$',users_views.useractivity,name='registration_confirm'),
+    url(r'^api/forgot_password/(?P<reset_password_key>\w+)/$',users_views.useractivity,name='forgot_password'),
    
 ]
 

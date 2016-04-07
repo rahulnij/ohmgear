@@ -8,6 +8,7 @@ router.register(r'api/businesscard', businesscards_views.BusinessViewSet)
 router.register(r'api/businesscardidentifier',businesscards_views.BusinessCardIdentifierViewSet)
 router.register(r'api/businesscardaddskill', businesscards_views.BusinessCardAddSkillViewSet)
 router.register(r'api/businesscardskillavailable', businesscards_views.BusinessCardSkillAvailableViewSet)
+router.register(r'api/businesscardshistory', businesscards_views.BusinessCardHistoryViewSet)
 urlpatterns = router.urls
 urlpatterns += [
     url(r'^api/businesscardsummary/$', businesscards_views.CardSummary.as_view()),    

@@ -17,7 +17,10 @@ def register_profile(sender, **kwargs):
         profile = kwargs.get('instance')
         if profile:
                 user_new = model_to_dict(profile.user)
-                BaseSendMail.delay(user_new,type='account_confirmation',key = profile.activation_key)
+                try:
+                  BaseSendMail.delay(user_new,type='account_confirmation',key = profile.activation_key)
+                except:
+                  pass  
                 return
 post_save.connect(register_profile, sender=Profile, dispatch_uid='register_profile')
 #-------------------------- End ---------------------------------------------------------------------#
