@@ -8,6 +8,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import api_view
 import rest_framework.status as status
 from rest_framework.decorators import detail_route, list_route
+from functions import addFolderContact
 # Create your views here.
 class GroupViewSet(viewsets.ModelViewSet):
     
@@ -38,10 +39,27 @@ class GroupViewSet(viewsets.ModelViewSet):
             user_id =''
         newdata ={}
 #        newdata['user_id'] = request.user.id
-        newdata   =request.DATA.copy()
+#        newdata   =request.DATA.copy()
+        description = request.DATA['description']
+        print description
+        user_id     = request.user.id
+        print user_id
+        group_name  = request.DATA['group_name']
+        print group_name
+        folder_contact_id = request.DATA['folder_contact_id']
+        print folder_contact_id
+        newdata = {"description":description,"user_id":user_id,"group_name":group_name}
+        print newdata
         serializer = self.serializer_class(data=newdata,context={'request':request})
         if serializer.is_valid():
-            serializer.save(user_id = request.user)
+            group_id = serializer.save(user_id = request.user)
+            print group_id
+            data = {"group_id":group_id,"user_id":user_id,"folder_contact_id":folder_contact_id}
+            print data
+            groupContactData = addFolderContact(data)
+            print groupContactData
+#            GroupContactsViewSet.as_view({'post': 'create'})
+            
             return CustomeResponse(serializer.data,status=status.HTTP_201_CREATED)
         else:    
             return CustomeResponse(serializer.errors,status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
