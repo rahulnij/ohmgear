@@ -19,7 +19,7 @@ class BusinessCardTests(APITestCase):
             "status": 1}
         response = self.client.post(url, data, format='json')
 
-    def test_create_business_card(self):
+    def test_create_update_business_card(self):
         user = User.objects.get(email='test@kinbow.com')
         Token = getToken(user.id)
         #----------- insert template -------------------#
@@ -31,4 +31,12 @@ class BusinessCardTests(APITestCase):
         }
         response = self.client.post(
             '/api/businesscard/', data, format='json', **auth_headers)
+        if  response.status_code == '201':
+          response = self.client.post(
+            '/api/businesscard/%s/' (response.data.id), data, format='json', **auth_headers)  
+          print response  
         self.assertEqual(response.status_code, 201)
+        
+       
+        
+        
