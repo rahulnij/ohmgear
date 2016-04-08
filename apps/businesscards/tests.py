@@ -13,7 +13,7 @@ class BusinessCardTests(APITestCase):
 
     business_card_id = ''
 
-    business_card_data = ''
+    business_card_data = {}
 
     def setUp(self):
         """ create the user and get the token """
@@ -35,6 +35,7 @@ class BusinessCardTests(APITestCase):
         }
         response = self.client.post(
             '/api/businesscard/', self.business_card_data, format='json', **auth_headers)
+        print response
         self.business_card_id = response.data["data"]["id"]
         
         """ End """
