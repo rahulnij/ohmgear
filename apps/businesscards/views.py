@@ -648,9 +648,9 @@ class BusinessViewSet(viewsets.ModelViewSet):
 
         # user_id = self.request.QUERY_PARAMS.get('user_id', None)
         user_id = request.user.id
-        published = self.request.QUERY_PARAMS.get('published', None)
-        business_id = self.request.QUERY_PARAMS.get('business_id', None)
-        is_active = self.request.QUERY_PARAMS.get('is_active', None)
+        published = self.request.query_params.get('published', None)
+        business_id = self.request.query_params.get('business_id', None)
+        is_active = self.request.query_params.get('is_active', None)
         vacation_data_check = 0
         #---------------------- Filter ------------------------#
         if published is not None and user_id is not None:

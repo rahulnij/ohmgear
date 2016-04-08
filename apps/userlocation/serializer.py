@@ -1,5 +1,7 @@
+# Third Party Imports
 from rest_framework import serializers
 
+# Local app imports
 from models import UserLocation
 
 

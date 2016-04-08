@@ -9,7 +9,6 @@ class FeedbacksAdmin(admin.ModelAdmin):
 
     list_display = ('user_name_display', 'bug_type',
                     'created_date', 'updated_date')
-    #search_fields = ['identifier']
     counter = 0
 
     def serial_number(self, obj):
