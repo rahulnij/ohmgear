@@ -1,23 +1,20 @@
+# Import Python Modules
+import datetime
+# Third Party Imports
+from django.contrib.gis.measure import D
+from django.core.exceptions import MultipleObjectsReturned, ObjectDoesNotExist
+from django.db.models import Q
 from rest_framework import viewsets
 from rest_framework.decorators import list_route
-import rest_framework.status as status
-from django.db.models import Q
-from django.contrib.gis.measure import D
-import datetime
-from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
-import rest_framework.status as status
-
 from rest_framework.permissions import IsAuthenticated
-
-from ohmgear.token_authentication import ExpiringTokenAuthentication
-
+import rest_framework.status as status
+# Local app imports
 from models import UserLocation
 from apps.users.models import Profile
+from ohmgear.token_authentication import ExpiringTokenAuthentication
 from serializer import UserLocationSerializer
 from apps.users.serializer import ProfileSerializer
-
 from ohmgear.settings.constant import REGION
-
 from ohmgear.functions import CustomeResponse
 
 

@@ -1,47 +1,63 @@
-from django.shortcuts import render
-
-# Create your views here.
-from apps.identifiers.models import Identifier
-import rest_framework.status as status
-from functions import CreateSystemIdentifier
+# Import Python Modules
 import datetime
 import json
-from ohmgear.functions import CustomeResponse
+
+# Third Party Imports
+from django.shortcuts import render
+import rest_framework.status as status
 from rest_framework.decorators import api_view
 from rest_framework import viewsets
+
+# Local app imports
+from apps.identifiers.models import Identifier
+from functions import CreateSystemIdentifier
+from ohmgear.functions import CustomeResponse
 from apps.contacts.models import Contacts
 from apps.contacts.serializer import ContactsSerializer
 from apps.contacts.views import storeContactsViewSet
-
 from apps.folders.models import FolderContact, MatchContact
 from apps.folders.serializer import MatchContactSerializer
 
 
 @api_view(['GET', 'POST'])
 def updateidentifierstatus(request, **kwargs):
- #   queryset = Cron.objects.select_related().all()
-  #  serializer_class = CronSerializer
 
     if request.method == 'GET':
 
         currentdate = datetime.date.today()
-        #queryset = Identifier.objects.select_related().all()
-
-        #------------First time user will get premium identifier for 3 months after that premium identifier will replace by sytem identifier----#
+        """ First time user will get premium identifier for 3 months after that
+         premium identifier will replace by sytem identifier"""
         getfreeexpiredpremiumidentifier = Identifier.objects.filter(
-            identifierlastdate=currentdate, paymentstatus=0, status=1, identifiertype=2, totalmonths=3).values()
+            identifierlastdate=currentdate,
+            paymentstatus=0,
+            status=1,
+            identifiertype=2,
+            totalmonths=3).values()
         if getfreeexpiredpremiumidentifier:
-            #-----------premium identifier replaced by system-------#
+            # premium identifier replaced by system
             totalrecord = getfreeexpiredpremiumidentifier.count()
 
             for i in range(totalrecord):
-                Identifier.objects.filter(id=getfreeexpiredpremiumidentifier[i]['id']).update(identifier=CreateSystemIdentifier(
-                ), identifiertype=1, identifierlastdate=str((datetime.date.today() + datetime.timedelta(3 * 365 / 12)).isoformat()))
+                Identifier.objects.filter(
+                    id=getfreeexpiredpremiumidentifier[i]['id']).update(
+                    identifier=CreateSystemIdentifier(),
+                    identifiertype=1,
+                    identifierlastdate=str(
+                        (datetime.date.today() +
+                         datetime.timedelta(
+                            3 *
+                            365 /
+                            12)).isoformat()))
                 # print "run api for systematic identifier"
 
-        #------------------ After 3 months of premium identifier system identifier will be given for  3 months  and after that it will get expire and identifier status will be 0-------#
+        # After 3 months of premium identifier system identifier will be given
+        # for  3 months  and after that it will get expire and identifier
+        # status will be 0-------#
         getfreeexpiredsystemidentifier = Identifier.objects.filter(
-            identifierlastdate=currentdate, paymentstatus=0, status=1, identifiertype=1).values()
+            identifierlastdate=currentdate,
+            paymentstatus=0,
+            status=1,
+            identifiertype=1).values()
         if getfreeexpiredsystemidentifier:
             totalfreeexpiredsystemidentifierrecord = getfreeexpiredsystemidentifier.count()
 
@@ -51,42 +67,52 @@ def updateidentifierstatus(request, **kwargs):
 
             # print "update query make status 0 "
 
-        #------------------premium identifier user have paid for premium but now expired  -------#
+        # premium identifier user have paid for premium but now expired
+        # -------#
         getpaidexpiredpremiumidentifier = Identifier.objects.filter(
-            identifierlastdate=currentdate, paymentstatus=1, status=1, identifiertype=2).values()
+            identifierlastdate=currentdate,
+            paymentstatus=1,
+            status=1,
+            identifiertype=2).values()
         if getpaidexpiredpremiumidentifier:
             totalpaidexpiredpremiumidentifierrecord = getpaidexpiredpremiumidentifier.count()
 
             for i in range(totalpaidexpiredpremiumidentifierrecord):
-                Identifier.objects.filter(id=getpaidexpiredpremiumidentifier[i][
-                                          'id']).update(status=0, paymentstatus=0)
+                Identifier.objects.filter(
+                    id=getpaidexpiredpremiumidentifier[i]['id']).update(
+                    status=0, paymentstatus=0)
                 # print "update query make status 0 and payement status 0 for
                 # premium identifier"
 
-        #------------------System identifier user have paid for system but now expired  -------#
+        # System identifier user have paid for system but now expired  -------#
         getpaidexpiredsystemidentifier = Identifier.objects.filter(
-            identifierlastdate=currentdate, paymentstatus=1, status=1, identifiertype=1).values()
+            identifierlastdate=currentdate,
+            paymentstatus=1,
+            status=1,
+            identifiertype=1).values()
         if getpaidexpiredsystemidentifier:
             totalpaidexpiredsystemidentifier = getpaidexpiredsystemidentifier.count()
 
             for i in range(totalpaidexpiredsystemidentifier):
-                Identifier.objects.filter(id=getpaidexpiredsystemidentifier[i][
-                                          'id']).update(status=0, paymentstatus=0)
+                Identifier.objects.filter(
+                    id=getpaidexpiredsystemidentifier[i]['id']).update(
+                    status=0, paymentstatus=0)
         # print "update query make status 0 and payement status 0 for system
         # identifier"
 
-        return CustomeResponse({'msg': "Cron runnig successfully"}, status=status.HTTP_200_OK)
+        return CustomeResponse(
+            {'msg': "Cron runnig successfully"}, status=status.HTTP_200_OK)
 
 
 class UpdateContactLinkStatusCron(viewsets.ModelViewSet):
 
-        #----- No need to authentication as it will run as a cron --------------#
+    # No need to authentication as it will run as a cron
     queryset = Contacts.objects.all()
     serializer_class = ContactsSerializer
     http_method_names = ['get']
 
     def list(self, request):
-        #---------------------- Fetch the all users contact ---------------------------#
+        # Fetch the all users contact
         queryset_contact_without_bcard = self.queryset.filter(
             businesscard_id__isnull=True).order_by("user_id")
         queryset_contact_have_bcard = self.queryset.filter(
@@ -96,28 +122,30 @@ class UpdateContactLinkStatusCron(viewsets.ModelViewSet):
 
         if queryset_serializer.data is not None:
             contacts_copy = queryset_serializer.data
-            final_contact_ids = []
             match_contact_insert = []
-            storeObject = storeContactsViewSet()
+            store_object = storeContactsViewSet()
             for value in queryset_contact_without_bcard:
 
                 iterator = iter(contacts_copy)
                 try:
-                    while 1:
+                    while True:
                         value_copy = iterator.next()
                         if value.user_id.id != value_copy["user_id"]:
 
-                            if value.bcard_json_data and value_copy["bcard_json_data"]:
+                            if value.bcard_json_data and value_copy[
+                                    "bcard_json_data"]:
                                 # print value.user_id.id,value_copy["user_id"]
-                                result = storeObject.find_duplicate(
-                                    value.bcard_json_data, json.loads(value_copy["bcard_json_data"]))
+                                result = store_object.find_duplicate(
+                                    value.bcard_json_data, json.loads(
+                                        value_copy["bcard_json_data"]))
                                 # print result
                             else:
                                 result = ''
                             # print result
                             if result:
-                                #----------- Change the link status then insert into MatchContact Model ----#
-                                # ----- related field is not working value.folder_contact --#
+                                # Change the link status then insert into MatchContact Model
+                                # related field is not working
+                                # value.folder_contact
                                 try:
                                     folder_contact = FolderContact.objects.get(
                                         contact_id=value.id, user_id=value.user_id)
@@ -125,13 +153,15 @@ class UpdateContactLinkStatusCron(viewsets.ModelViewSet):
                                         folder_contact.link_status = 1
                                         folder_contact.save()
                                         match_contact_insert.append(
-                                            {"user_id": value.user_id.id, "folder_contact_id": folder_contact.id, "businesscard_id": value_copy['businesscard_id']})
+                                            {
+                                                "user_id": value.user_id.id,
+                                                "folder_contact_id": folder_contact.id,
+                                                "businesscard_id": value_copy['businesscard_id']})
                                 except:
                                     pass
                                 # match_contact_insert = MatchContactSerializer({''})
-                                #------------------------------ End ----------------------------------------#
                             # pass
-                except StopIteration, e:
+                except StopIteration:
                     pass
 
             if match_contact_insert:
@@ -149,4 +179,5 @@ class UpdateContactLinkStatusCron(viewsets.ModelViewSet):
                     else:
                         pass
         # Note : TODO we will change the order of execution  of find_duplicate
-        return CustomeResponse({"msg": "run successfully"}, status=status.HTTP_200_OK)
+        return CustomeResponse(
+            {"msg": "run successfully"}, status=status.HTTP_200_OK)
