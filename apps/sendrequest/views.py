@@ -1,30 +1,33 @@
-#------------ Third Party Imports ----------#
+# --------- Import Python Modules ----------- #
 from django.shortcuts import render
 from rest_framework import viewsets
 from rest_framework.decorators import detail_route, list_route
 from rest_framework.permissions import IsAuthenticated
 import rest_framework.status as status
 import boto3
-#------------ Third Party Imports ----------#
-#------------------ Local app imports ------#
+
+# ------------ Third Party Imports ---------- #
 from ohmgear.functions import CustomeResponse
 from ohmgear.token_authentication import ExpiringTokenAuthentication
-from models import SendRequest
-from apps.businesscards.models import BusinessCard
+from django.conf import settings
 from apps.awsserver.models import AwsDeviceToken
-from apps.users.models import Profile
-from apps.folders.models import Folder, FolderContact
-import json
 import ohmgear.settings.aws as aws
+from django.shortcuts import render
 import hashlib
 import datetime
 import random
-from django.conf import settings
+import json
+
+
+# ----------------- Local app imports ------ #
 from apps.email.views import BaseSendMail
 from apps.sendrequest.serializer import SendRequestSerializer
+from models import SendRequest
+from apps.businesscards.models import BusinessCard
+from apps.users.models import Profile
+from apps.folders.models import Folder, FolderContact
 
-#---------------------------End-------------#
-# Create your views here.
+# ---------------------------End------------- #
 
 
 class SendAcceptRequest(viewsets.ModelViewSet):
@@ -46,14 +49,14 @@ class SendAcceptRequest(viewsets.ModelViewSet):
         return CustomeResponse({'msg': "DELETE METHOD NOT ALLOWD"},
                                status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
 
-    #-------------------- local class function --------------------------------#
+    # -------------------- local class function ----------------------- #
     def insert_notification(self, **karg):
-        #-- Required data---#
-        #-- sender_user_id
-        #-- sender_obj_id
-        #-- receiver_user_id
-        #-- receiver_obj_id
-        #-- message
+        # Required data
+        # sender_user_id
+        # sender_obj_id
+        # receiver_user_id
+        # receiver_obj_id
+        # message
         try:
             notification = SendRequest()
 
@@ -72,12 +75,12 @@ class SendAcceptRequest(viewsets.ModelViewSet):
 
     def exchange_business_cards(self, **karg):
 
-            #-- Required data---#
-            #-- sender_folder
-            #-- sender_business_card object with contact_detail
-            #-- receiver_folder
-            #-- receiver_business_card object with contact_detail
-            #-- sender_user_id # we can also get this from sender_business_card
+            # Required data
+            # sender_folder
+            # sender_business_card object with contact_detail
+            # receiver_folder
+            # receiver_business_card object with contact_detail
+            # sender_user_id # we can also get this from sender_business_card
 
         try:
             try:
@@ -111,7 +114,7 @@ class SendAcceptRequest(viewsets.ModelViewSet):
 
         except:
             return False
-    #-------------------------- End -------------------------------------------#
+    # -------------------------- End -------------------------------- #
 
     @list_route(methods=['post'],)
     def invite_to_businesscard(self, request):
@@ -120,7 +123,6 @@ class SendAcceptRequest(viewsets.ModelViewSet):
             receiver_business_card_id = request.DATA[
                 'receiver_business_card_id']
             sender_business_card_id = request.DATA['sender_business_card_id']
-            #device_token  =request.DATA['device_token']
             get_profile = Profile.objects.filter(user_id=user_id).values(
                 "first_name", "last_name").latest("id")
             user_name = str(get_profile["first_name"]) + \
@@ -134,7 +136,7 @@ class SendAcceptRequest(viewsets.ModelViewSet):
 
         # check from_business_card_id belongs to user_id
         try:
-            sender_business_card = BusinessCard.objects.filter(
+            BusinessCard.objects.filter(
                 user_id=user_id.id, id=sender_business_card_id).latest("id")
             receiver_business_card = BusinessCard.objects.filter(
                 id=receiver_business_card_id).exclude(
@@ -146,7 +148,7 @@ class SendAcceptRequest(viewsets.ModelViewSet):
                 status=status.HTTP_400_BAD_REQUEST,
                 validate_errors=1)
 
-        #--- Get the aws arn from token table ------------------#
+        #  Get the aws arn from token table
         try:
             aws_token_data = AwsDeviceToken.objects.filter(
                 user_id=receiver_business_card.user_id.id).latest("id")
@@ -156,10 +158,10 @@ class SendAcceptRequest(viewsets.ModelViewSet):
                     'msg': "receiver device token does not exist."},
                 status=status.HTTP_400_BAD_REQUEST,
                 validate_errors=1)
-        #aws_plateform_endpoint_arn = '%s'%aws_token_data.aws_plateform_endpoint_arn
-        #---------- End ----------------------------------------#
+        # aws_plateform_endpoint_arn = '%s'%aws_token_data.aws_plateform_endpoint_arn
+        # ---------- End ---------------------------------------- #
         client = boto3.client('sns', **aws.AWS_CREDENTIAL)
-        #------------ Make json to send data ---------------------#
+        # Make json to send data
         message = {
             'default': 'request sent from ' + user_name + ' to accept businesscard.',
             'APNS_SANDBOX': {
@@ -171,9 +173,9 @@ class SendAcceptRequest(viewsets.ModelViewSet):
                 }},
         }
         message = json.dumps(message, ensure_ascii=False)
-        #------------------------ End ----------------------------#
-        #--- TODO If user install app more then one device then send the notification more then one device ---#
-        #--- End ---#
+        # ------------------------ End ---------------------------- #
+        # TODO If user install app more then one device then send the notification more then one device
+        # --- End ---#
         response = client.publish(
             TargetArn=aws_token_data.aws_plateform_endpoint_arn,
             Message=message,
@@ -181,19 +183,19 @@ class SendAcceptRequest(viewsets.ModelViewSet):
             MessageAttributes={
             }
         )
-        #--- Insert into Notification Table ---#
+        # Insert into Notification Table
         type = 'b2b'
         sender_obj_id = sender_business_card_id
         receiver_obj_id = receiver_business_card_id
         message = 'request sent from ' + user_name + ' to accept businesscard.'
-        #---- Before inser check request already sent --------------------#
+        # Before inser check request already sent
         already_sent_request = SendRequest.objects.filter(
             type=type,
             sender_user_id=user_id,
             sender_obj_id=sender_obj_id,
             receiver_user_id=receiver_business_card.user_id,
             receiver_obj_id=receiver_obj_id)
-        #----------------------- End--------------------------------------#
+        # ----------------------- End------------------------ #
         if not already_sent_request:
             self.insert_notification(
                 type=type,
@@ -202,11 +204,10 @@ class SendAcceptRequest(viewsets.ModelViewSet):
                 receiver_user_id=receiver_business_card.user_id,
                 receiver_obj_id=receiver_obj_id,
                 message=message)
-        #--------- End-----------------------------------------------#
+        # --------- End----------------------------------------------- #
         return CustomeResponse(response, status=status.HTTP_200_OK)
 
-    #----------------------------------------------------------------------------------------------------#
-    #----------------------------------- Receive Request ------------------------------------------------#
+    # ---------- Receive Request ---------- #
 
     @list_route(methods=['post'],)
     def accept_businesscard(self, request):
@@ -259,14 +260,15 @@ class SendAcceptRequest(viewsets.ModelViewSet):
                 status=status.HTTP_400_BAD_REQUEST,
                 validate_errors=1)
 
-        #--------------------- Now we are inserting data in folder contact table for making connection -----#
+        # Now we are inserting data in folder contact table for making
+        # connection
         self.exchange_business_cards(
             sender_folder=sender_folder,
             sender_business_card=sender_business_card,
             receiver_folder=receiver_folder,
             receiver_business_card=receiver_business_card,
             sender_user_id=user_id)
-        #--------------------------------- End -------------------------------------------------------------#
+        # --------------------------------- End ------------------------------------------------------------- #
 
         return CustomeResponse({"msg": "success"}, status=status.HTTP_200_OK)
 
@@ -344,7 +346,7 @@ class GreyInvitationViewSet(viewsets.ModelViewSet):
 
     @list_route(methods=['get'],)
     def invite_registration(self, request):
-        from django.shortcuts import render
+        
         try:
             email = request.GET.get('email').decode('base64', 'strict')
             fname = request.GET.get('fname').decode('base64', 'strict')
