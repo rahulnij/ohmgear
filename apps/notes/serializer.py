@@ -1,6 +1,6 @@
-from django.conf.urls import url, include
+from rest_framework import serializers
+
 from apps.notes.models import Notes
-from rest_framework import routers, serializers, viewsets
 
 
 class NotesSerializer(serializers.ModelSerializer):

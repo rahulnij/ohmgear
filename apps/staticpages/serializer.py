@@ -1,6 +1,6 @@
-from django.conf.urls import url, include
+from rest_framework import serializers
+
 from models import StaticPages
-from rest_framework import routers, serializers, viewsets
 
 
 class StaticPagesSerializer(serializers.ModelSerializer):

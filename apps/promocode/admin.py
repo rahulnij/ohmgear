@@ -1,14 +1,18 @@
 from django.contrib import admin
 
-# Register your models here.
-
 from .models import Promocode
 
 
 class PromocodeAdmin(admin.ModelAdmin):
 
-    list_display = ('promocode_title', 'promocode_worth',
-                    'created_date', 'expiry_date', 'get_user_type', 'no_of_use')
+    list_display = (
+        'promocode_title',
+        'promocode_worth',
+        'created_date',
+        'expiry_date',
+        'get_user_type',
+        'no_of_use'
+    )
 
     def get_user_type(self, obj):
         if (obj.user_type == 1):
