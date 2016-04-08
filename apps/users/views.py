@@ -4,7 +4,7 @@
  Notes: View File
 """
 
-# Standards import
+# --------- Import Python Modules ----------- #
 from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated
 import rest_framework.status as status
@@ -15,12 +15,11 @@ from ohmgear.auth_frontend import authenticate_frontend
 from django.shortcuts import get_object_or_404
 from django.contrib.auth import get_user_model
 from django.forms.models import model_to_dict
-import datetime
-
 from rest_framework.decorators import api_view
-
-
 from rest_framework.decorators import list_route
+
+#------------------ Local app imports ------#
+import datetime
 import random
 import hashlib
 
