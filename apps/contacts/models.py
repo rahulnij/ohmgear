@@ -16,7 +16,12 @@ class Contacts(models.Model):
     class Meta:
         db_table = 'ohmgear_contacts_contact'
 
-    businesscard_id = models.OneToOneField(BusinessCard,null=True, blank=True,related_name='contact_detail',db_column="businesscard_id")
+    businesscard_id = models.OneToOneField(
+        BusinessCard,
+        null=True,
+        blank=True,
+        related_name='contact_detail',
+        db_column="businesscard_id")
     bcard_json_data = JSONField(null=True)
 #    template_id = models.ForeignKey(BusinessCardTemplate,db_column="template_id")
     user_id = models.ForeignKey(User, db_column="user_id")
@@ -27,7 +32,8 @@ class Contacts(models.Model):
     history = HistoricalRecords()
 
     def __unicode__(self):
-        return '{"id":"%s","bcard_json_data":"%s","businesscard_id":"%s"}' % (self.id, self.bcard_json_data, self.businesscard_id)
+        return '{"id":"%s","bcard_json_data":"%s","businesscard_id":"%s"}' % (
+            self.id, self.bcard_json_data, self.businesscard_id)
 
 
 class ContactMedia(models.Model):
@@ -51,7 +57,8 @@ class ContactMedia(models.Model):
     #history = HistoricalRecords()
 
     def __unicode__(self):
-        return '{"id:"%s","contact_id":"%s","user_id":"%s","status":"%s","front_back":"%s","img_url":"%s"}' % (self.id, self.contact_id, self.user_id, self.status, self.front_back, self.img_url)
+        return '{"id:"%s","contact_id":"%s","user_id":"%s","status":"%s","front_back":"%s","img_url":"%s"}' % (
+            self.id, self.contact_id, self.user_id, self.status, self.front_back, self.img_url)
 
 
 from apps.folders.models import FolderContact
@@ -71,7 +78,8 @@ class FavoriteContact(models.Model):
         _("Updated Date"), auto_now_add=False, auto_now=True)
 
     def __unicode__(self):
-        return '{"id:"%s","foldercontact_id":"%s"}' % (self.id, self.foldercontact_id)
+        return '{"id:"%s","foldercontact_id":"%s"}' % (
+            self.id, self.foldercontact_id)
 # Create Groups to store contacts
 
 
@@ -85,11 +93,14 @@ class AssociateContact(models.Model):
     associatefoldercontact_id = models.ForeignKey(
         FolderContact, db_column='associatefoldercontact_id')
     foldercontact_id = models.ForeignKey(
-        FolderContact, db_column='foldercontact_id', related_name='folder_data')
+        FolderContact,
+        db_column='foldercontact_id',
+        related_name='folder_data')
     created_date = models.DateTimeField(
         _("Created Date"), auto_now_add=True, auto_now=False)
     updated_date = models.DateField(
         _("Updated Date"), auto_now_add=False, auto_now=True)
 
     def __unicode__(self):
-        return '{"id:"%s","user_id":"%s","associatefoldercontact_id":"%s","foldercontact_id":"%s"}' % (self.id, self.user_id, self.associatefoldercontact_id, self.foldercontact_id)
+        return '{"id:"%s","user_id":"%s","associatefoldercontact_id":"%s","foldercontact_id":"%s"}' % (
+            self.id, self.user_id, self.associatefoldercontact_id, self.foldercontact_id)

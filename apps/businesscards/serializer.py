@@ -59,7 +59,8 @@ class BusinessCardSerializer(serializers.ModelSerializer):
         data = []
         #i = 0
         for item in media:
-            data.append({"img_url": str(settings.DOMAIN_NAME) + str(settings.MEDIA_URL) +
+            data.append({"img_url": str(settings.DOMAIN_NAME) +
+                         str(settings.MEDIA_URL) +
                          str(item.img_url), "front_back": item.front_back})
             #i = i + 1
         return data
@@ -95,7 +96,8 @@ class BusinessCardWithIdentifierSerializer(serializers.ModelSerializer):
         data = []
         #i = 0
         for item in media:
-            data.append({"img_url": str(settings.DOMAIN_NAME) + str(settings.MEDIA_URL) +
+            data.append({"img_url": str(settings.DOMAIN_NAME) +
+                         str(settings.MEDIA_URL) +
                          str(item.img_url), "front_back": item.front_back})
             #i = i + 1
         return data
@@ -134,7 +136,8 @@ class SearchBusinessCardWithIdentifierSerializer(serializers.ModelSerializer):
         data = []
         #i = 0
         for item in media:
-            data.append({"img_url": str(settings.DOMAIN_NAME) + str(settings.MEDIA_URL) +
+            data.append({"img_url": str(settings.DOMAIN_NAME) +
+                         str(settings.MEDIA_URL) +
                          str(item.img_url), "front_back": item.front_back})
             #i = i + 1
         return data
@@ -143,7 +146,9 @@ class SearchBusinessCardWithIdentifierSerializer(serializers.ModelSerializer):
         user = self.context.get("request")
         user_id = user.id
         folder = FolderContact.objects.filter(
-            contact_id=obj.contact_detail.id, user_id=user_id).exclude(link_status=0).values()
+            contact_id=obj.contact_detail.id,
+            user_id=user_id).exclude(
+            link_status=0).values()
         return folder
 
 
@@ -186,7 +191,8 @@ class BusinessCardSummarySerializer(serializers.HyperlinkedModelSerializer):
         data = []
         #i = 0
         for item in media:
-            data.append({"img_url": str(settings.DOMAIN_NAME) + str(settings.MEDIA_URL) +
+            data.append({"img_url": str(settings.DOMAIN_NAME) +
+                         str(settings.MEDIA_URL) +
                          str(item.img_url), "front_back": item.front_back})
             #i = i + 1
         return data

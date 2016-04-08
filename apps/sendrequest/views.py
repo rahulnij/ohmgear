@@ -35,13 +35,16 @@ class SendAcceptRequest(viewsets.ModelViewSet):
     permission_classes = (IsAuthenticated,)
 
     def list(self, request):
-        return CustomeResponse({'msg': "GET METHOD NOT ALLOWD"}, status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
+        return CustomeResponse({'msg': "GET METHOD NOT ALLOWD"},
+                               status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
 
     def create(self, request, call_from_function=None, offline_data=None):
-        return CustomeResponse({'msg': "POST METHOD NOT ALLOWD"}, status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
+        return CustomeResponse({'msg': "POST METHOD NOT ALLOWD"},
+                               status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
 
     def destroy(self, request, pk=None):
-        return CustomeResponse({'msg': "DELETE METHOD NOT ALLOWD"}, status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
+        return CustomeResponse({'msg': "DELETE METHOD NOT ALLOWD"},
+                               status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
 
     #-------------------- local class function --------------------------------#
     def insert_notification(self, **karg):
@@ -78,8 +81,9 @@ class SendAcceptRequest(viewsets.ModelViewSet):
 
         try:
             try:
-                folder_sender = FolderContact.objects.get(folder_id=karg['sender_folder'], contact_id=karg[
-                                                          'receiver_business_card'].contact_detail)
+                folder_sender = FolderContact.objects.get(
+                    folder_id=karg['sender_folder'],
+                    contact_id=karg['receiver_business_card'].contact_detail)
             except:
                 folder_sender = FolderContact()
                 folder_sender.user_id = karg['sender_user_id']
@@ -90,8 +94,9 @@ class SendAcceptRequest(viewsets.ModelViewSet):
                 folder_sender.save()
 
             try:
-                folder_receiver = FolderContact.objects.get(folder_id=karg[
-                                                            'receiver_folder'], contact_id=karg['sender_business_card'].contact_detail)
+                folder_receiver = FolderContact.objects.get(
+                    folder_id=karg['receiver_folder'],
+                    contact_id=karg['sender_business_card'].contact_detail)
             except:
                 folder_receiver = FolderContact()
                 folder_receiver.user_id = karg[
@@ -121,34 +126,49 @@ class SendAcceptRequest(viewsets.ModelViewSet):
             user_name = str(get_profile["first_name"]) + \
                 " " + str(get_profile["last_name"])
         except:
-            return CustomeResponse({'msg': "Please provide receiver_business_card_id and sender_business_card_id"}, status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
+            return CustomeResponse(
+                {
+                    'msg': "Please provide receiver_business_card_id and sender_business_card_id"},
+                status=status.HTTP_400_BAD_REQUEST,
+                validate_errors=1)
 
         # check from_business_card_id belongs to user_id
         try:
             sender_business_card = BusinessCard.objects.filter(
                 user_id=user_id.id, id=sender_business_card_id).latest("id")
             receiver_business_card = BusinessCard.objects.filter(
-                id=receiver_business_card_id).exclude(user_id=user_id.id).latest("id")
+                id=receiver_business_card_id).exclude(
+                user_id=user_id.id).latest("id")
         except:
-            return CustomeResponse({'msg': "Provided business cards are not correct"}, status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
+            return CustomeResponse(
+                {
+                    'msg': "Provided business cards are not correct"},
+                status=status.HTTP_400_BAD_REQUEST,
+                validate_errors=1)
 
         #--- Get the aws arn from token table ------------------#
         try:
             aws_token_data = AwsDeviceToken.objects.filter(
                 user_id=receiver_business_card.user_id.id).latest("id")
         except:
-            return CustomeResponse({'msg': "receiver device token does not exist."}, status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
+            return CustomeResponse(
+                {
+                    'msg': "receiver device token does not exist."},
+                status=status.HTTP_400_BAD_REQUEST,
+                validate_errors=1)
         #aws_plateform_endpoint_arn = '%s'%aws_token_data.aws_plateform_endpoint_arn
         #---------- End ----------------------------------------#
         client = boto3.client('sns', **aws.AWS_CREDENTIAL)
         #------------ Make json to send data ---------------------#
         message = {
             'default': 'request sent from ' + user_name + ' to accept businesscard.',
-            'APNS_SANDBOX': {'aps': {'alert': 'Hi How are you'}, 'data': {
-                       'receiver_business_card_id': receiver_business_card_id,
-                       'sender_business_card_id': sender_business_card_id,
-            }},
-
+            'APNS_SANDBOX': {
+                'aps': {
+                    'alert': 'Hi How are you'},
+                'data': {
+                    'receiver_business_card_id': receiver_business_card_id,
+                    'sender_business_card_id': sender_business_card_id,
+                }},
         }
         message = json.dumps(message, ensure_ascii=False)
         #------------------------ End ----------------------------#
@@ -168,11 +188,20 @@ class SendAcceptRequest(viewsets.ModelViewSet):
         message = 'request sent from ' + user_name + ' to accept businesscard.'
         #---- Before inser check request already sent --------------------#
         already_sent_request = SendRequest.objects.filter(
-            type=type, sender_user_id=user_id, sender_obj_id=sender_obj_id, receiver_user_id=receiver_business_card.user_id, receiver_obj_id=receiver_obj_id)
+            type=type,
+            sender_user_id=user_id,
+            sender_obj_id=sender_obj_id,
+            receiver_user_id=receiver_business_card.user_id,
+            receiver_obj_id=receiver_obj_id)
         #----------------------- End--------------------------------------#
         if not already_sent_request:
-            self.insert_notification(type=type, sender_user_id=user_id, sender_obj_id=sender_obj_id,
-                                     receiver_user_id=receiver_business_card.user_id, receiver_obj_id=receiver_obj_id, message=message)
+            self.insert_notification(
+                type=type,
+                sender_user_id=user_id,
+                sender_obj_id=sender_obj_id,
+                receiver_user_id=receiver_business_card.user_id,
+                receiver_obj_id=receiver_obj_id,
+                message=message)
         #--------- End-----------------------------------------------#
         return CustomeResponse(response, status=status.HTTP_200_OK)
 
@@ -187,7 +216,11 @@ class SendAcceptRequest(viewsets.ModelViewSet):
                 'receiver_business_card_id']
             sender_business_card_id = request.DATA['sender_business_card_id']
         except:
-            return CustomeResponse({'msg': "Please provide sender_business_card_id,receiver_business_card_id"}, status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
+            return CustomeResponse(
+                {
+                    'msg': "Please provide sender_business_card_id,receiver_business_card_id"},
+                status=status.HTTP_400_BAD_REQUEST,
+                validate_errors=1)
 
         try:
             sender_business_card = BusinessCard.objects.select_related(
@@ -195,7 +228,11 @@ class SendAcceptRequest(viewsets.ModelViewSet):
             receiver_business_card = BusinessCard.objects.select_related(
                 "contact_detail").exclude(user_id=user_id.id).get(id=receiver_business_card_id)
         except:
-            return CustomeResponse({'msg': "Provided business cards are not correct"}, status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
+            return CustomeResponse(
+                {
+                    'msg': "Provided business cards are not correct"},
+                status=status.HTTP_400_BAD_REQUEST,
+                validate_errors=1)
 
         sender_contact_id = sender_business_card.contact_detail.id
         receiver_contact_id = receiver_business_card.contact_detail.id
@@ -205,18 +242,30 @@ class SendAcceptRequest(viewsets.ModelViewSet):
                 businesscard_id=sender_business_card_id)
             sender_folder_id = sender_folder.id
         except:
-            return CustomeResponse({'msg': "sender businesscard dont have folder"}, status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
+            return CustomeResponse(
+                {
+                    'msg': "sender businesscard dont have folder"},
+                status=status.HTTP_400_BAD_REQUEST,
+                validate_errors=1)
 
         try:
             receiver_folder = Folder.objects.get(
                 businesscard_id=receiver_business_card_id)
             receiver_folder_id = receiver_folder.id
         except:
-            return CustomeResponse({'msg': "receiver businesscard dont have folder"}, status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
+            return CustomeResponse(
+                {
+                    'msg': "receiver businesscard dont have folder"},
+                status=status.HTTP_400_BAD_REQUEST,
+                validate_errors=1)
 
         #--------------------- Now we are inserting data in folder contact table for making connection -----#
-        self.exchange_business_cards(sender_folder=sender_folder, sender_business_card=sender_business_card,
-                                     receiver_folder=receiver_folder, receiver_business_card=receiver_business_card, sender_user_id=user_id)
+        self.exchange_business_cards(
+            sender_folder=sender_folder,
+            sender_business_card=sender_business_card,
+            receiver_folder=receiver_folder,
+            receiver_business_card=receiver_business_card,
+            sender_user_id=user_id)
         #--------------------------------- End -------------------------------------------------------------#
 
         return CustomeResponse({"msg": "success"}, status=status.HTTP_200_OK)
@@ -255,11 +304,19 @@ class SendAcceptRequest(viewsets.ModelViewSet):
             data=data, context={'request': request, 'msg': 'not exist'})
         if serializer.is_valid():
             serializer.save()
-            BaseSendMail.delay(data, type='grey_invitation', key=activation_key,
-                               url=email_invit_url, first_name=fname, email=email)
-            return CustomeResponse(serializer.data, status=status.HTTP_201_CREATED)
+            BaseSendMail.delay(
+                data,
+                type='grey_invitation',
+                key=activation_key,
+                url=email_invit_url,
+                first_name=fname,
+                email=email)
+            return CustomeResponse(
+                serializer.data,
+                status=status.HTTP_201_CREATED)
         else:
-            return CustomeResponse({'msg': serializer.errors}, validate_errors=1)
+            return CustomeResponse(
+                {'msg': serializer.errors}, validate_errors=1)
 
     @list_route(methods=['post'],)
     def rest_invitation(self, request):
@@ -272,9 +329,11 @@ class SendAcceptRequest(viewsets.ModelViewSet):
         queryset_folder = SendRequest.objects.filter(
             receiver_id=user_id, read_status=0).values()
         if queryset_folder:
-            return CustomeResponse({'msg': queryset_folder}, status=status.HTTP_201_CREATED)
+            return CustomeResponse(
+                {'msg': queryset_folder}, status=status.HTTP_201_CREATED)
         else:
-            return CustomeResponse({'msg': "data not found"}, validate_errors=1)
+            return CustomeResponse(
+                {'msg': "data not found"}, validate_errors=1)
 
 
 # needs to be optimized
@@ -294,6 +353,13 @@ class GreyInvitationViewSet(viewsets.ModelViewSet):
             sid = request.GET.get('sid').decode('base64', 'strict')
 
         except:
-            return CustomeResponse({'msg': "parameter(s) not found"}, status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
+            return CustomeResponse({'msg': "parameter(s) not found"},
+                                   status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
 
-        return render(request, 'sendrequest/index.html', {'email': email, 'fname': fname, 'lname': lname, 'cid': cid, 'sid': sid})
+        return render(request,
+                      'sendrequest/index.html',
+                      {'email': email,
+                       'fname': fname,
+                       'lname': lname,
+                       'cid': cid,
+                       'sid': sid})

@@ -22,7 +22,9 @@ def register_profile(sender, **kwargs):
         if profile:
             user_new = model_to_dict(profile.user)
             BaseSendMail.delay(
-                user_new, type='account_confirmation', key=profile.activation_key)
+                user_new,
+                type='account_confirmation',
+                key=profile.activation_key)
             return
 post_save.connect(register_profile, sender=Profile,
                   dispatch_uid='register_profile')

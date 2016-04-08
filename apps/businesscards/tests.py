@@ -1,4 +1,4 @@
-from rest_framework.test import APITestCase,APIClient
+from rest_framework.test import APITestCase, APIClient
 from apps.users.functions import getToken
 from apps.users.models import User
 # Test api : create business card

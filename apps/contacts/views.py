@@ -46,7 +46,9 @@ class storeContactsViewSet(viewsets.ModelViewSet):
         if serializer.data:
             return CustomeResponse(serializer.data, status=status.HTTP_200_OK)
         else:
-            return CustomeResponse({"msg": "No Data found"}, status=status.HTTP_400_BAD_REQUEST, validate_errors=True)
+            return CustomeResponse({"msg": "No Data found"},
+    status=status.HTTP_400_BAD_REQUEST,
+     validate_errors=True)
 
       def create(self, request):
           return CustomeResponse({'msg':'POST method not allowed'},status=status.HTTP_405_METHOD_NOT_ALLOWED,validate_errors=1)

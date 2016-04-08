@@ -127,7 +127,8 @@ class User(AbstractBaseUser):
         return self.email
 
     def __unicode__(self):
-        return '{"id":"%s","email":"%s","user_type":"%s","status":"%s","pin_number":"%s"}' % (self.id, self.email, self.user_type, self.status, self.pin_number)
+        return '{"id":"%s","email":"%s","user_type":"%s","status":"%s","pin_number":"%s"}' % (
+            self.id, self.email, self.user_type, self.status, self.pin_number)
 
     def has_perm(self, perm, obj=None):
         "Does the user have a specific permission?"
@@ -182,7 +183,11 @@ class Profile(models.Model):
     income_group = models.ForeignKey(IncomeGroup, null=True, blank=True)
     business_type = models.ForeignKey(BusinessType, null=True)
     profile_image = models.ImageField(
-        _("Profile Image"), upload_to='uploads/profile_img/', max_length=254, blank=True, null=True)
+        _("Profile Image"),
+        upload_to='uploads/profile_img/',
+        max_length=254,
+        blank=True,
+        null=True)
     activation_key = models.CharField(max_length=40, blank=True)
     key_expires = models.DateTimeField(auto_now_add=True)
     #------------ field for forgot passoword ---------------------#
@@ -192,7 +197,8 @@ class Profile(models.Model):
     #------------- End -------------------------------------------#
 
     def __unicode__(self):
-        return '{"id":"%s","dob":"%s","prefix":"%s","middle":"%s","suffix":"%s","gender":"%s","address":"%s","mobile_number":"%s","user":"%s","income_group":"%s","business_type":"%s","first_time_login":"%s","first_name":"%s","last_name":"%s","nick_name":"%s","headline":"%s","profile_image":"%s"}' % (self.id, self.dob, self.gender, self.address, self.mobile_number, self.user, self.income_group, self.business_type, self.first_time_login, self.first_name, self.last_name, self.nick_name, self.headline, self.profile_image, self.prefix, self.middle, self.suffix)
+        return '{"id":"%s","dob":"%s","prefix":"%s","middle":"%s","suffix":"%s","gender":"%s","address":"%s","mobile_number":"%s","user":"%s","income_group":"%s","business_type":"%s","first_time_login":"%s","first_name":"%s","last_name":"%s","nick_name":"%s","headline":"%s","profile_image":"%s"}' % (
+            self.id, self.dob, self.gender, self.address, self.mobile_number, self.user, self.income_group, self.business_type, self.first_time_login, self.first_name, self.last_name, self.nick_name, self.headline, self.profile_image, self.prefix, self.middle, self.suffix)
 
 
 class SocialLogin(models.Model):
@@ -207,7 +213,8 @@ class SocialLogin(models.Model):
     user = models.OneToOneField(User, null=True)
 
     def __unicode__(self):
-        return '{"id":"%s","social_media_login_id":"%s","social_type":"%s"}' % (self.id, self.social_media_login_id, self.social_type)
+        return '{"id":"%s","social_media_login_id":"%s","social_type":"%s"}' % (
+            self.id, self.social_media_login_id, self.social_type)
 
 
 class ConnectedAccount(models.Model):
@@ -225,7 +232,8 @@ class ConnectedAccount(models.Model):
         _("Updated Date"), auto_now_add=False, auto_now=True)
 
     def __unicode__(self):
-        return '{"id":"%s","social_type_id":"%r", "user_id":"%r"}' % (self.id, self.social_type_id, self.user_id)
+        return '{"id":"%s","social_type_id":"%r", "user_id":"%r"}' % (
+            self.id, self.social_type_id, self.user_id)
 
 
 class UserEmail(models.Model):
@@ -249,4 +257,5 @@ class UserEmail(models.Model):
         # '{"id":"%s","user_id":"%d","email":"%s","isVerified":"%d","verification_code":"%s","verification_code":"%s"
         # }'
         # %(self.id,self.user_id.id,self.email,self.isVerified,self.verification_code)
-        return '{"id":"%s","user_id":"%s","email":"%s","isVerified":"%s","verification_code":"%s"}' % (self.id, self.user_id, self.email, self.isVerified, self.verification_code)
+        return '{"id":"%s","user_id":"%s","email":"%s","isVerified":"%s","verification_code":"%s"}' % (
+            self.id, self.user_id, self.email, self.isVerified, self.verification_code)

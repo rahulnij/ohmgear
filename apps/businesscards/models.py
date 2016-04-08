@@ -23,7 +23,8 @@ class BusinessCardTemplate(models.Model):
         _("Updated Date"), auto_now_add=False, auto_now=True)
 
     def __unicode__(self):
-        return '{"id":"%s","template_name":"%s","template_content":"%s"}' % (self.id, self.template_name, self.template_content)
+        return '{"id":"%s","template_name":"%s","template_content":"%s"}' % (
+            self.id, self.template_name, self.template_content)
 
 
 class BusinessCard(models.Model):
@@ -45,9 +46,13 @@ class BusinessCard(models.Model):
         User, related_name='buser', db_column="user_id")
 
     business_identifier = models.ManyToManyField(
-        Identifier, through='BusinessCardIdentifier', related_name='business_identifier')
+        Identifier,
+        through='BusinessCardIdentifier',
+        related_name='business_identifier')
     business_vacation = models.ManyToManyField(
-        VacationCard, through='BusinessCardVacation', related_name='business_vacation')
+        VacationCard,
+        through='BusinessCardVacation',
+        related_name='business_vacation')
 
     #history = HistoricalRecords()
 
@@ -71,7 +76,9 @@ class BusinessCardIdentifier(models.Model):
     businesscard_id = models.ForeignKey(
         BusinessCard, db_column="businesscard_id")
     identifier_id = models.OneToOneField(
-        Identifier, db_column="identifier_id", related_name='businesscard_identifiers')
+        Identifier,
+        db_column="identifier_id",
+        related_name='businesscard_identifiers')
     status = models.IntegerField(_("Status"), default=1)
     created_date = models.DateTimeField(
         _("Created Date"), auto_now_add=True, auto_now=False)
@@ -126,7 +133,7 @@ class BusinessCardHistory(models.Model):
 
     class Meta:
         db_table = 'contacts_historicalcontacts1'
-    user_id = models.ForeignKey(User,db_column="user_id")
+    user_id = models.ForeignKey(User, db_column="user_id")
     bcard_json_data = JsonField(null=True)
     businesscard = models.ForeignKey(BusinessCard, db_column='businesscard_id')
     created_date = models.DateTimeField(
@@ -151,7 +158,9 @@ class BusinessCardAddSkill(models.Model):
     #user = models.ForeignKey(User)
     user_id = models.ForeignKey(User, db_column="user_id")
     businesscard_id = models.ForeignKey(
-        BusinessCard, db_column='businesscard_id', related_name='businesscard_skills')
+        BusinessCard,
+        db_column='businesscard_id',
+        related_name='businesscard_skills')
     created_date = models.DateTimeField(
         _("Created Date"), auto_now_add=True, auto_now=False)
     updated_date = models.DateTimeField(
@@ -172,7 +181,9 @@ class BusinessCardVacation(models.Model):
         unique_together = ('vacationcard_id', 'businesscard_id')
 
     vacationcard_id = models.ForeignKey(
-        VacationCard, db_column="vacationcard_id", related_name="businesscardvacation")
+        VacationCard,
+        db_column="vacationcard_id",
+        related_name="businesscardvacation")
     businesscard_id = models.ForeignKey(
         BusinessCard, db_column="businesscard_id")
     user_id = models.ForeignKey(User, db_column="user_id")
@@ -183,4 +194,5 @@ class BusinessCardVacation(models.Model):
     status = models.IntegerField(_('Status'), default=1)
 
     def __unicode__(self):
-        return '{"id":"%s","vacationcard_id","businesscard_id":"%s"}' % (self.id, self.vacationcard_id, self.businesscard_id)
+        return '{"id":"%s","vacationcard_id","businesscard_id":"%s"}' % (
+            self.id, self.vacationcard_id, self.businesscard_id)

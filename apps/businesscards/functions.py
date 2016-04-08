@@ -92,7 +92,7 @@ class DiffJson(object):
             self.check(second, first, with_values=with_values)
 
     def check(self, first, second, path='', with_values=False):
-        if second != None:
+        if second is not None:
             if not isinstance(first, type(second)):
                 message = '%s- %s, %s' % (path, type(first), type(second))
                 self.save_diff(message, TYPE)
@@ -106,7 +106,7 @@ class DiffJson(object):
                     new_path = "%s.%s" % (path, key)
 
                 if isinstance(second, dict):
-                    if second.has_key(key):
+                    if key in second:
                         sec = second[key]
                     else:
                         # there are key in the first, that is not presented in
@@ -132,13 +132,14 @@ class DiffJson(object):
                 new_path = "%s[%s]" % (path, index)
                 # try to get the same index from second
                 sec = None
-                if second != None:
+                if second is not None:
                     try:
                         sec = second[index]
                     except (IndexError, KeyError):
                         # goes to difference
-                        self.save_diff('%s - %s, %s' %
-                                       (new_path, type(first), type(second)), TYPE)
+                        self.save_diff(
+                            '%s - %s, %s' %
+                            (new_path, type(first), type(second)), TYPE)
 
                 # recursive call
                 self.check(first[index], sec, path=new_path,
@@ -147,7 +148,7 @@ class DiffJson(object):
         # not list, not dict. check for equality (only if with_values is True)
         # and return.
         else:
-            if with_values and second != None:
+            if with_values and second is not None:
                 if first != second:
                     self.save_diff('%s - %s | %s' %
                                    (path, first, second), VALUE)
@@ -168,14 +169,19 @@ def searchjson(name, value, user_id=None):
     if name == 'firstname_lastname':
         new = value.split(" ")
         try:
-              print ">>>>>>>>>>>>>>>>>>>>>>>>>>>>"
-#              BusinessCard.objects.filter(jsonfield__contains={"status": value2}).exclude(jsonfield__contains={"status": value1})    
-              
-              bcard = BusinessCard.objects.filter(contact_detail__bcard_json_data__contains={'side_first':{'basic_info': [{'keyName':'FirstName'}]}})
+            print ">>>>>>>>>>>>>>>>>>>>>>>>>>>>"
+#              BusinessCard.objects.filter(jsonfield__contains={"status": value2}).exclude(jsonfield__contains={"status": value1})
+
+            bcard = BusinessCard.objects.filter(contact_detail__bcard_json_data__contains={
+                                                'side_first': {'basic_info': [{'keyName': 'FirstName'}]}})
 #              bcard =BusinessCard.objects.filter(status=1,contact_detail__bcard_json_data__at_breed="labrador")
         except Exception as e:
             print e
-            return CustomeResponse({'msg': "Businesscard Identifier Id not found"}, status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
+            return CustomeResponse(
+                {
+                    'msg': "Businesscard Identifier Id not found"},
+                status=status.HTTP_400_BAD_REQUEST,
+                validate_errors=1)
         for data in bcard:
             bcard_id.append(data.id)
         return bcard
@@ -187,12 +193,17 @@ def searchjson(name, value, user_id=None):
                 user_id=user_id, status=1, contact_detail__bcard_json_data__contains=value)
             print "emial present"
         except:
-            return CustomeResponse({'msg': "Businesscard Identifier Id not found"}, status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
+            return CustomeResponse(
+                {
+                    'msg': "Businesscard Identifier Id not found"},
+                status=status.HTTP_400_BAD_REQUEST,
+                validate_errors=1)
         for data in bcard:
             bcard_id.append(data.id)
 
     contact = BusinessCard.objects.select_related('contact_detail').filter(
-        status=1, contact_detail__bcard_json_data__contains=value).exclude(id__in=bcard_id)
+        status=1, contact_detail__bcard_json_data__contains=value).exclude(
+        id__in=bcard_id)
 
     if bcard or contact:
         result_list = []

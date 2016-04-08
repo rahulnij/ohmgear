@@ -82,7 +82,9 @@ class UserViewSet(viewsets.ModelViewSet):
 
     #---    -----------Method: GET-----------------------------#
     def list(self, request):
-        return CustomeResponse({'msg': 'GET method not allowed'}, status=status.HTTP_405_METHOD_NOT_ALLOWED, validate_errors=1)
+        return CustomeResponse({'msg': 'GET method not allowed'},
+    status=status.HTTP_405_METHOD_NOT_ALLOWED,
+     validate_errors=1)
 
     #--------------Method: GET retrieve single record-----------------------------#
     def retrieve(self, request, pk=None):
@@ -146,7 +148,8 @@ class UserViewSet(viewsets.ModelViewSet):
             #---------------- End ------------------------#
 
             if not fromsocial:
-                return CustomeResponse(serializer.data, status=status.HTTP_201_CREATED)
+                return CustomeResponse(
+    serializer.data, status=status.HTTP_201_CREATED)
             else:
                 return serializer.data
         else:

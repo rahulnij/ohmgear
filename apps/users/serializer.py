@@ -9,8 +9,11 @@ from rest_framework.validators import UniqueValidator
 class UserSerializer(serializers.ModelSerializer):
     password = serializers.CharField(
         write_only=True, required=False, allow_blank=True)
-    email = serializers.EmailField(validators=[UniqueValidator(queryset=get_user_model(
-    ).objects.all(), message='Email id is already registered with ohmgear')])
+    email = serializers.EmailField(
+        validators=[
+            UniqueValidator(
+                queryset=get_user_model().objects.all(),
+                message='Email id is already registered with ohmgear')])
 
     class Meta:
         model = get_user_model()
