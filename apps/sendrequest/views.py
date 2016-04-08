@@ -272,6 +272,7 @@ class SendAcceptRequest(viewsets.ModelViewSet):
 
         return CustomeResponse({"msg": "success"}, status=status.HTTP_200_OK)
 
+    # send white contact invitation 
     @list_route(methods=['post'],)
     def send_white_invitation(self, request):
 
@@ -306,20 +307,13 @@ class SendAcceptRequest(viewsets.ModelViewSet):
             data=data, context={'request': request, 'msg': 'not exist'})
         if serializer.is_valid():
             serializer.save()
-            BaseSendMail.delay(
-                data,
-                type='grey_invitation',
-                key=activation_key,
-                url=email_invit_url,
-                first_name=fname,
-                email=email)
-            return CustomeResponse(
-                serializer.data,
-                status=status.HTTP_201_CREATED)
+            BaseSendMail.delay(data, type='grey_invitation', key=activation_key,
+                               url=email_invit_url, first_name=fname, email=email)
+            return CustomeResponse(serializer.data, status=status.HTTP_201_CREATED)
         else:
-            return CustomeResponse(
-                {'msg': serializer.errors}, validate_errors=1)
+            return CustomeResponse({'msg': serializer.errors}, validate_errors=1)
 
+    # yellow contacts
     @list_route(methods=['post'],)
     def rest_invitation(self, request):
 
@@ -331,14 +325,12 @@ class SendAcceptRequest(viewsets.ModelViewSet):
         queryset_folder = SendRequest.objects.filter(
             receiver_id=user_id, read_status=0).values()
         if queryset_folder:
-            return CustomeResponse(
-                {'msg': queryset_folder}, status=status.HTTP_201_CREATED)
+            return CustomeResponse({'msg': queryset_folder}, status=status.HTTP_201_CREATED)
         else:
-            return CustomeResponse(
-                {'msg': "data not found"}, validate_errors=1)
+            return CustomeResponse({'msg': "data not found"}, validate_errors=1)
 
 
-# needs to be optimized
+# needs to be optimized as per client provided form
 class GreyInvitationViewSet(viewsets.ModelViewSet):
 
     queryset = SendRequest.objects.all()
@@ -346,7 +338,6 @@ class GreyInvitationViewSet(viewsets.ModelViewSet):
 
     @list_route(methods=['get'],)
     def invite_registration(self, request):
-        
         try:
             email = request.GET.get('email').decode('base64', 'strict')
             fname = request.GET.get('fname').decode('base64', 'strict')
@@ -355,13 +346,6 @@ class GreyInvitationViewSet(viewsets.ModelViewSet):
             sid = request.GET.get('sid').decode('base64', 'strict')
 
         except:
-            return CustomeResponse({'msg': "parameter(s) not found"},
-                                   status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
+            return CustomeResponse({'msg': "parameter(s) not found"}, status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
 
-        return render(request,
-                      'sendrequest/index.html',
-                      {'email': email,
-                       'fname': fname,
-                       'lname': lname,
-                       'cid': cid,
-                       'sid': sid})
+        return render(request, 'sendrequest/index.html', {'email': email, 'fname': fname, 'lname': lname, 'cid': cid, 'sid': sid})
