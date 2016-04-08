@@ -1,10 +1,15 @@
+# --------- Import Python Modules ----------- #
 from django.db import models
-from django.utils.translation import ugettext_lazy as _
-from apps.identifiers.models import Identifier
 from django.conf import settings
-from simple_history.models import HistoricalRecords
 from django_pgjson.fields import JsonField
 User = settings.AUTH_USER_MODEL
+from django.utils.translation import ugettext_lazy as _
+
+# ----------------- Local app imports ------ #
+
+
+from apps.identifiers.models import Identifier
+from simple_history.models import HistoricalRecords
 from apps.vacationcard.models import VacationCard
 
 
