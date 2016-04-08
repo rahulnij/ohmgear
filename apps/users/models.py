@@ -174,7 +174,7 @@ class Profile(models.Model):
     address = models.CharField(_("Address"), max_length=80, null=True)
     mobile_number = models.CharField(
         _("Mobile Number"), max_length=20, null=True)
-    custom_data = JsonField(null=True)
+    custom_data = JSONField(null=True)
     created_date = models.DateTimeField(
         _("Created Date"), auto_now_add=True, auto_now=False)
     updated_date = models.DateTimeField(
