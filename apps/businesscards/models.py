@@ -1,7 +1,7 @@
 # --------- Import Python Modules ----------- #
 from django.db import models
 from django.conf import settings
-from django_pgjson.fields import JsonField
+from django.contrib.postgres.fields import JSONField
 User = settings.AUTH_USER_MODEL
 from django.utils.translation import ugettext_lazy as _
 
@@ -105,7 +105,7 @@ class BusinessCardHistory(models.Model):
     class Meta:
         db_table = 'contacts_historicalcontacts1'
     user_id = models.ForeignKey(User, db_column="user_id")
-    bcard_json_data = JsonField(null=True)
+    bcard_json_data = JSONField(null=True)
     businesscard = models.ForeignKey(BusinessCard, db_column='businesscard_id')
     created_date = models.DateTimeField(
         _("Created Date"), auto_now_add=True, auto_now=False)
