@@ -23,7 +23,10 @@ class CustomUserManager(BaseUserManager):
 #            raise ValueError('first_name required')
         email = self.normalize_email(email)
         user = self.model(email=email, **extra_fields)
-        user.user_type = UserType.objects.get(id=1)
+        try:
+          user.user_type = UserType.objects.get(id=1)
+        except ObjectDoesNotExist:
+          user.user_type = 1  
         user.status = 1
         #----------- Hashing password is done in model --------#
         user.password = password

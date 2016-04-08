@@ -37,7 +37,7 @@ ALLOWED_HOSTS = []
 
 
 DJANGO_APPS = (
-    'django_admin_bootstrapped',
+    'jet',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -117,12 +117,6 @@ PASSWORD_HASHERS = (
     'django.contrib.auth.hashers.SHA1PasswordHasher',
 )
 
-
-TEMPLATE_CONTEXT_PROCESSORS = (
-    # other context processors....
-    'django.core.context_processors.static',
-    # other context processors....
-)
 # ----------------------- End setting -------------------------------------------#
 
 
@@ -140,6 +134,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'django.core.context_processors.static',
                 'django.core.context_processors.static'
             ],
         },

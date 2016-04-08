@@ -18,7 +18,8 @@ urlpatterns = [
     url(r'', include('apps.users.urls')),
     url(r'', include('apps.usersetting.urls')),
     url(r'', include('apps.vacationcard.urls')),
-    url(r'^admin/', include(admin.site.urls))
+    url(r'^admin/', include(admin.site.urls)),
+    url(r'^jet/', include('jet.urls', 'jet')), 
     
 ]
 

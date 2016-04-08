@@ -14,12 +14,5 @@ class GroupSerializer(serializers.ModelSerializer):
 
 
 class GroupContactsSerializer(serializers.ModelSerializer):
-<<<<<<< HEAD
-    
-=======
-    contact_data = []
-    count = 0
-
->>>>>>> pep8_autoformat
     class Meta:
         model = GroupContacts
