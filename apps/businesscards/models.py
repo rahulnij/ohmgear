@@ -125,8 +125,8 @@ class BusinessCardSkillAvailable(models.Model):
 class BusinessCardHistory(models.Model):
 
     class Meta:
-        db_table = 'contacts_historicalcontacts'
-    user_id = models.ForeignKey(User, db_column="user_id")
+        db_table = 'contacts_historicalcontacts1'
+    user_id = models.ForeignKey(User,db_column="user_id")
     bcard_json_data = JsonField(null=True)
     businesscard = models.ForeignKey(BusinessCard, db_column='businesscard_id')
     created_date = models.DateTimeField(

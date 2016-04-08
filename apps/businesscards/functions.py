@@ -168,17 +168,16 @@ def searchjson(name, value, user_id=None):
     if name == 'firstname_lastname':
         new = value.split(" ")
         try:
-
-            #              BusinessCard.objects.filter(jsonfield__contains={"status": value2}).exclude(jsonfield__contains={"status": value1})
-            bcard = BusinessCard.objects.filter(
-                status=1, contact_detail__bcard_json_data__at_owner_at_name=value)
+              print ">>>>>>>>>>>>>>>>>>>>>>>>>>>>"
+#              BusinessCard.objects.filter(jsonfield__contains={"status": value2}).exclude(jsonfield__contains={"status": value1})    
+              
+              bcard = BusinessCard.objects.filter(contact_detail__bcard_json_data__contains={'side_first':{'basic_info': [{'keyName':'FirstName'}]}})
 #              bcard =BusinessCard.objects.filter(status=1,contact_detail__bcard_json_data__at_breed="labrador")
         except Exception as e:
             print e
             return CustomeResponse({'msg': "Businesscard Identifier Id not found"}, status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
         for data in bcard:
             bcard_id.append(data.id)
-
         return bcard
 
     #--------------------- search by email ------------------#

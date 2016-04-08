@@ -1,45 +1,31 @@
-from rest_framework import status
-from rest_framework.test import APITestCase, APIClient
-from apps.users.models import User, UserType
+from rest_framework.test import APITestCase,APIClient
 from apps.users.functions import getToken
-from apps.email.models import EmailTemplate
-from apps.businesscards.models import BusinessCardTemplate
-import json
+from apps.users.models import User
+# Test api : create business card
 
 
-class UserTests(APITestCase):
+class BusinessCardTests(APITestCase):
     client = APIClient()
 
-    #---------------------- First Insert the default value -------------------------------#
-    #fixtures = ['usertype']
+    fixtures = ['default']
+
     def setUp(self):
-          #----------------------- Insert the INITIAL DATA ---------------------------------#
-        #----------------------- Insert User Type --------------------------#
-        UserType.objects.create(id=1, user_type="Admin")
-        usertype = UserType.objects.create(id=2, user_type="Individual")
-        UserType.objects.create(id=3, user_type="Corporate")
-        #-------------------------------------------------------------------#
-        EmailTemplate.objects.create(subject='account confirmation', content='ddddddd', slug='account_confirmation',
-                                     status='True', from_email='', created_date='2015-09-03 00:00:00', updated_date='2015-09-03 00:00:00')
-        #------------------------- Insert first user to check login --------#
-        User.objects.create(
-            first_name='sazid', email='sazidk@clavax.us', status=1, user_type=usertype)
-        user = User.objects.get(email='sazidk@clavax.us')
-        user.set_password('1111')
-        user.save()
-        #--------------------------------------------------------------------#
-        #--------- insert business card template ----------------------------#
-        BusinessCardTemplate.objects.create(
-            template_name='test', template_content='testt')
-   #-------------------------------------------------------------------------------------#
+        url = '/api/users/'
+        data = {
+            "first_name": "sazid",
+            "email": "test@kinbow.com",
+            "password": "1111",
+            "user_type": 2,
+            "status": 1}
+        response = self.client.post(url, data, format='json')
 
     def test_create_business_card(self):
-        user = User.objects.get(email='sazidk@clavax.us')
+        user = User.objects.get(email='test@kinbow.com')
         Token = getToken(user.id)
         #----------- insert template -------------------#
 
         #-----------------------------------------------#
-        data = {"bcard_json_data": '{"side_second": {"card_name": "first","language":"eq", "personal_info": {"nick_name": "", "name": "sdf"}, "organization_info": {"company": "", "title": ""}, "contact_info": {"phone": "", "skype_id": "", "email": "", "address": ""}}, "side_first": {"card_name": "test","language":"df", "personal_info": {"nick_name": "", "name": ""}, "organization_info": {"company": "", "title": ""}, "contact_info": {"phone": "", "skype_id": "", "email": "", "address": ""}}}', "template": 1, "user": user.id}
+        data = {"bcard_json_data": '{"side_first": {"basic_info": [{"value": "MyBusinesscar", "isUpper": "1", "keyName": "CardName", "indexPos": "0", "placeHolder": "NAME THIS CARD (Required)"}, {"value": "Detail Check", "isUpper": "1", "keyName": "FirstName", "indexPos": "2", "placeHolder": "First Name(Required)"}, {"value": "sdfsdfsdfdsf", "isUpper": "1", "keyName": "LastName", "indexPos": "3", "placeHolder": "Last Name"}, {"value": "sdfsdf", "isUpper": "1", "keyName": "NickName", "indexPos": "4", "placeHolder": "Nick Name Or Alias"}, {"value": "asfasf", "isUpper": "1", "keyName": "DEPTName", "indexPos": "5", "placeHolder": "Title & Department"}, {"value": "zvzxvx", "isUpper": "1", "keyName": "CompName", "indexPos": "6", "placeHolder": "Company Name"}], "contact_info": {"email": [{"data": "hhhhh@fff.fff1", "type": "home"}, {"data": "sdfsdf1@asfasfa.khk", "type": "work"}, {"data": "asdfas1@wee.qeq", "type": "iCloud"}], "phone": [{"data": "(122) 222-221", "type": "home", "countryCode": "+93", "countryFlag": "AF"}, {"data": "(yyy) yyy-yyy1", "type": "work", "countryCode": "+93", "countryFlag": "AF"}]}}, "side_second": {"contact_info": {"email": [{"data": "sec_12341@asf.dfsas", "type": "home"}, {"data": "sec_12351@adds.fghf", "type": "work"}, {"data": "asdfas1@gaff.utyu", "type": "iCloud"}], "phone": [{"data": "sec_12341", "type": "home", "countryCode": "+93", "countryFlag": "AF"}, {"data": "1234123412341", "type": "home", "countryCode": "+93", "countryFlag": "AF"}]}}}'}
         auth_headers = {
             'HTTP_AUTHORIZATION': 'Token ' + str(Token),
         }
