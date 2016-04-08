@@ -32,8 +32,6 @@ from apps.sendrequest.views import SendAcceptRequest
 from apps.folders.models import Folder, FolderContact
 from apps.folders.serializer import FolderSerializer, FolderContactSerializer
 from serializer import BusinessCardWithIdentifierSerializer
-
-
 import re
 # ---------------------------End------------- #
 
@@ -103,7 +101,7 @@ class BusinessCardIdentifierViewSet(viewsets.ModelViewSet):
                     businesscard_id=businesscard_id)
                 businesscardidentifier_detail.delete()
 
-        #TODO check business card and identifier belongs to authentic user
+        # TODO check business card and identifier belongs to authentic user
         # --------- END ----- #
         data = {}
         if call_from_function:
@@ -386,7 +384,6 @@ class BusinessCardAddSkillViewSet(viewsets.ModelViewSet):
         return CustomeResponse({'msg': "Update method does not allow"}, status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
 
 
-
 class BusinessViewSet(viewsets.ModelViewSet):
     queryset = BusinessCard.objects.all()
     serializer_class = BusinessCardWithIdentifierSerializer
@@ -518,7 +515,7 @@ class BusinessViewSet(viewsets.ModelViewSet):
                     pass
                 # -------------------------End------------ #
 
-                # Assign  first created business card to created default folder 
+                # Assign  first created business card to created default folder
                 queryset_folder = Folder.objects.filter(
                     user_id=user_id, foldertype='PR', businesscard_id__isnull=True)
                 if not queryset_folder:
@@ -770,7 +767,7 @@ class BusinessViewSet(viewsets.ModelViewSet):
 
     # ----------------------------- End ---------------- #
 
-    # Inactive Business Card 
+    # Inactive Business Card
     @list_route(methods=['post'],)
     def inactive(self, request):
 
@@ -843,7 +840,6 @@ class WhiteCardViewSet(viewsets.ModelViewSet):
             sender_user_id = sid
         except:
             user_id = None
-
         tempData = {}
         tempData["user_id"] = user_id
 
@@ -852,7 +848,7 @@ class WhiteCardViewSet(viewsets.ModelViewSet):
 
         if serializer.is_valid():
             business = serializer.save()
-            # ---------------- Assign  first created business card to created default folder ----- #
+            # Assign  first created business card to created default folder
             queryset_folder = Folder.objects.filter(
                 user_id=user_id, foldertype='PR').values()
             sender_user_data = BusinessCard.objects.filter(
@@ -876,8 +872,6 @@ class WhiteCardViewSet(viewsets.ModelViewSet):
                     receiver_folder_id = Folder.objects.get(
                         id=receiver_folder.id)
                     receiver_contact_id = Contacts.objects.get(id=cid)
-                    print sid
-                    print cid
                     sender_data = FolderContact.objects.filter(
                         user_id=sid, contact_id=cid)
                     sender_folder_id = Folder.objects.get(
@@ -886,11 +880,12 @@ class WhiteCardViewSet(viewsets.ModelViewSet):
                     sender_contact_id = Contacts.objects.get(
                         businesscard_id=sender_businesscard_id)
 
+                    # create connections - folderContact
                     contact_share = SendAcceptRequest()
                     contact_share.exchange_business_cards(sender_folder=sender_folder_id,
                                                                                        sender_contact_id=sender_contact_id, receiver_contact_id=receiver_contact_id, receiver_folder=receiver_folder_id, sender_user_id=sender_user_id, receiver_user_id=user_id)
 
-        # -------------------- End -------------------------------------------------------- #
+        #  ------------------- End ---------------- #
 
             return CustomeResponse(offline_data, status=status.HTTP_201_CREATED)
 
