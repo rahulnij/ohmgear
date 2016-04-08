@@ -12,11 +12,11 @@ import sys
 import socket
 import re
 #----------- clavax:Set setting according server -------------------------#
-HOSTNAME = socket.gethostname().lower().split('.')[0].replace('-','')
+HOSTNAME = socket.gethostname().lower().split('.')[0].replace('-', '')
 if re.search('clavax',  HOSTNAME):
-   settings = "ohmgear.settings.local"
+    settings = "ohmgear.settings.local"
 else:
-   settings = "ohmgear.settings.server"
+    settings = "ohmgear.settings.server"
 #----------- End Setting -------------------------------------------#
 
 from django.core.wsgi import get_wsgi_application

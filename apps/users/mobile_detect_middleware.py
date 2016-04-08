@@ -9,7 +9,7 @@ def mobile(request):
 
     if ua.find("iphone") > 0:
         #device['iphone'] = "iphone" + re.search("iphone os (\d)", ua).groups(0)[0]
-         device['iphone'] = "iphone"
+        device['iphone'] = "iphone"
 
     if ua.find("ipad") > 0:
         device['ipad'] = "ipad"

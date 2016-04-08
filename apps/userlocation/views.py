@@ -2,7 +2,7 @@ from rest_framework import viewsets
 from rest_framework.decorators import list_route
 import rest_framework.status as status
 from django.db.models import Q
-from django.contrib.gis.measure import D 
+from django.contrib.gis.measure import D
 import datetime
 from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 import rest_framework.status as status
@@ -23,55 +23,53 @@ from ohmgear.functions import CustomeResponse
 
 class UserLocationViewSet(viewsets.ModelViewSet):
 
-	queryset = UserLocation.objects.all()
-	serializer_class = UserLocationSerializer
-	authentication_classes = (ExpiringTokenAuthentication,)
-	permission_classes = (IsAuthenticated,)
-	
-	def create(self, request):
-		data = {}
-		try:
-			
-			data['geom'] = 'POINT(%s %s)'%(request.data['lon'], request.data['lat'])
+    queryset = UserLocation.objects.all()
+    serializer_class = UserLocationSerializer
+    authentication_classes = (ExpiringTokenAuthentication,)
+    permission_classes = (IsAuthenticated,)
 
-			ul = self.queryset.get(user_id=request.user.id, region=REGION)
-			ulserializer = UserLocationSerializer(ul, data=data, partial=True)
-		except MultipleObjectsReturned:
-			pass
-		except ObjectDoesNotExist:
-			data['user_id'] = request.user.id
-			data['region'] = REGION
-			ulserializer = UserLocationSerializer(data=data)
-			
-			
-		if ulserializer.is_valid():
-			ulserializer.save()
-			return CustomeResponse({},status=status.HTTP_204_NO_CONTENT)
-		
-		return CustomeResponse([],status=status.HTTP_400_BAD_REQUEST)
-		
+    def create(self, request):
+        data = {}
+        try:
 
-	@list_route(methods=['GET'])
-	def nearuser(self, request):
-		try:
-			radius = 20; # in meter
-			ul = self.queryset.get(user_id=request.user.id, region=REGION)
-			currentUserLocation = 'POINT(%s %s)'%(ul.geom.x, ul.geom.y)#{"lat": ul.lat, "lon": ul.lon}
-			curTime = datetime.datetime.now()
-			timeSubtract = datetime.timedelta(minutes=30)
-			timeBeforeCurrentTime = curTime - timeSubtract
+            data['geom'] = 'POINT(%s %s)' % (
+                request.data['lon'], request.data['lat'])
 
-			uls = self.queryset.filter(geom__distance_lte=(currentUserLocation, D(m=radius))).filter(~Q(id=ul.id)).filter(updated_date__gte=timeBeforeCurrentTime.strftime('%Y-%m-%d %H:%M:%S'))
-			
-			userIds = [oul.user_id for oul in uls]
-				
-			userProfiles = Profile.objects.filter(user_id__in=userIds)
-			pserializer = ProfileSerializer(userProfiles, many=True, fields=('user', 'first_name','last_name', 'email','profile_image'))
-			
-			return CustomeResponse(pserializer.data,status=status.HTTP_200_OK)
-		except ObjectDoesNotExist:
-			return CustomeResponse([],status=status.HTTP_404_NOT_FOUND)
+            ul = self.queryset.get(user_id=request.user.id, region=REGION)
+            ulserializer = UserLocationSerializer(ul, data=data, partial=True)
+        except MultipleObjectsReturned:
+            pass
+        except ObjectDoesNotExist:
+            data['user_id'] = request.user.id
+            data['region'] = REGION
+            ulserializer = UserLocationSerializer(data=data)
 
-	
+        if ulserializer.is_valid():
+            ulserializer.save()
+            return CustomeResponse({}, status=status.HTTP_204_NO_CONTENT)
 
-		
+        return CustomeResponse([], status=status.HTTP_400_BAD_REQUEST)
+
+    @list_route(methods=['GET'])
+    def nearuser(self, request):
+        try:
+            radius = 20  # in meter
+            ul = self.queryset.get(user_id=request.user.id, region=REGION)
+            currentUserLocation = 'POINT(%s %s)' % (
+                ul.geom.x, ul.geom.y)  # {"lat": ul.lat, "lon": ul.lon}
+            curTime = datetime.datetime.now()
+            timeSubtract = datetime.timedelta(minutes=30)
+            timeBeforeCurrentTime = curTime - timeSubtract
+
+            uls = self.queryset.filter(geom__distance_lte=(currentUserLocation, D(m=radius))).filter(
+                ~Q(id=ul.id)).filter(updated_date__gte=timeBeforeCurrentTime.strftime('%Y-%m-%d %H:%M:%S'))
+
+            userIds = [oul.user_id for oul in uls]
+
+            userProfiles = Profile.objects.filter(user_id__in=userIds)
+            pserializer = ProfileSerializer(userProfiles, many=True, fields=(
+                'user', 'first_name', 'last_name', 'email', 'profile_image'))
+
+            return CustomeResponse(pserializer.data, status=status.HTTP_200_OK)
+        except ObjectDoesNotExist:
+            return CustomeResponse([], status=status.HTTP_404_NOT_FOUND)

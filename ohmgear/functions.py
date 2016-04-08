@@ -1,6 +1,8 @@
 from django.db import connection, transaction
 from django.utils.six.moves.http_client import responses
 # For execute Raw Queries #####
+
+
 def sql_select(sql):
     cursor = connection.cursor()
     cursor.execute(sql)
@@ -8,31 +10,33 @@ def sql_select(sql):
     list = []
     i = 0
     for row in results:
-        dict = {} 
+        dict = {}
         field = 0
         while True:
-           try:
+            try:
                 dict[cursor.description[field][0]] = str(results[i][field])
-                field = field +1
-           except IndexError as e:
+                field = field + 1
+            except IndexError as e:
                 break
         i = i + 1
-        list.append(dict) 
+        list.append(dict)
     return list
 
 
 # ---------- Work for all api response -----------------#
 from django.template.response import SimpleTemplateResponse
 from rest_framework.response import Response
+
+
 class CustomeResponse(Response):
     """
     An HttpResponse that allows its data to be rendered into
     arbitrary media types.
     """
-    
+
     def __init__(self, data=None, status=None,
                  template_name=None, headers=None,
-                 exception=False, content_type=None,validate_errors=None,already_exist=None):
+                 exception=False, content_type=None, validate_errors=None, already_exist=None):
         """
         Alters the init arguments slightly.
         For example, drop 'template_name', and instead use 'data'.
@@ -41,61 +45,65 @@ class CustomeResponse(Response):
         For example being set automatically by the `APIView`.
         """
         super(Response, self).__init__(None, status=status)
-         
-        tempData = {}       
 
-        if status:   
-           tempData['status_code'] =  status
-        
-        
-        #-------- Condition for validate_errors ---------# 
+        tempData = {}
+
+        if status:
+            tempData['status_code'] = status
+
+        #-------- Condition for validate_errors ---------#
         errorStr = ''
         if validate_errors or already_exist:
             if 'msg' in data:
-              tempData['msg'] = data['msg']
+                tempData['msg'] = data['msg']
             else:
-                
-                if isinstance(data,dict):
+
+                if isinstance(data, dict):
                     for val in data.items():
-                       errorStr = errorStr +'$'+ str(val[0])+':'+str(val[1][0])
+                        errorStr = errorStr + '$' + \
+                            str(val[0]) + ':' + str(val[1][0])
                     errorStr = errorStr[1:]
                     tempData['msg'] = errorStr
                 else:
                     tempData['data'] = data[0]
-            if already_exist:   
-               tempData['status'] = True
+            if already_exist:
+                tempData['status'] = True
             else:
-               tempData['status'] = False 
+                tempData['status'] = False
         else:
-           tempData['data'] = data
-           tempData['status'] = True
-        #-------  End ----------------------------------------#        
-        
+            tempData['data'] = data
+            tempData['status'] = True
+        #-------  End ----------------------------------------#
+
         self.data = tempData
-        
+
         self.template_name = template_name
         self.exception = exception
-        self.content_type = content_type        
+        self.content_type = content_type
         if headers:
             for name, value in six.iteritems(headers):
                 self[name] = value
-                
-def rawResponse(msg=None,status=False,status_code=404):
-        data = {}
-        if msg:
-           data['data'] =  msg
-           data['status']= status
-           data['status_code'] = status_code    
-        return  data  
-        
+
+
+def rawResponse(msg=None, status=False, status_code=404):
+    data = {}
+    if msg:
+        data['data'] = msg
+        data['status'] = status
+        data['status_code'] = status_code
+    return data
+
 #------------------ End ----------------------------------#
 
 #---------------------------- File Uploads ---------------#
-def handle_uploaded_file(f,file,image_path=None):
-    name, extension = file.name.rsplit('.',1)
-    import uuid,os
+
+
+def handle_uploaded_file(f, file, image_path=None):
+    name, extension = file.name.rsplit('.', 1)
+    import uuid
+    import os
     filename = "%s.%s" % (uuid.uuid4(), extension)
-    path = image_path+filename
+    path = image_path + filename
     try:
         destination = open(filepath, 'wb+')
         for chunk in f.chunks():

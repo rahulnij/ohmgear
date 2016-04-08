@@ -1,5 +1,6 @@
 #--------- Import Python Modules -----------#
-import json,jsonschema
+import json
+import jsonschema
 import validictory
 from collections import OrderedDict
 #-------------------------------------------#
@@ -14,14 +15,14 @@ from django.conf import settings
 #-------------------------------------------#
 #------------------ Local app imports ------#
 from ohmgear.functions import CustomeResponse
-from serializer import ContactsSerializer,ContactsSerializerWithJson,FavoriteContactSerializer,AssociateContactSerializer,ContactMediaSerializer
+from serializer import ContactsSerializer, ContactsSerializerWithJson, FavoriteContactSerializer, AssociateContactSerializer, ContactMediaSerializer
 from ohmgear.json_default_data import BUSINESS_CARD_DATA_VALIDATION
-from models import Contacts,FavoriteContact,AssociateContact,ContactMedia
+from models import Contacts, FavoriteContact, AssociateContact, ContactMedia
 from ohmgear.token_authentication import ExpiringTokenAuthentication
 from apps.businesscards.views import BusinessViewSet
 
 from apps.folders.views import FolderViewSet
-from apps.folders.models import Folder,FolderContact
+from apps.folders.models import Folder, FolderContact
 from apps.folders.serializer import FolderContactSerializer
 import copy
 from django.db.models import Q
@@ -30,22 +31,23 @@ from django.db.models import Q
 
 #--------------------- Storing Contacts as a Bulk -----------------------#
 class storeContactsViewSet(viewsets.ModelViewSet):
-    
-      queryset = Contacts.objects.all()
-      serializer_class = ContactsSerializer
-      authentication_classes = (ExpiringTokenAuthentication,)
-      permission_classes = (IsAuthenticated,)      
-      
-      def list(self,request):
-        queryset = self.queryset.filter(user_id=request.user.id,businesscard_id__isnull=True) 
+
+    queryset = Contacts.objects.all()
+    serializer_class = ContactsSerializer
+    authentication_classes = (ExpiringTokenAuthentication,)
+    permission_classes = (IsAuthenticated,)
+
+    def list(self, request):
+        queryset = self.queryset.filter(
+            user_id=request.user.id, businesscard_id__isnull=True)
 #        serializer = self.serializer_class(queryset,many=True)
-        serializer = ContactsSerializerWithJson(queryset,many=True)
-        
+        serializer = ContactsSerializerWithJson(queryset, many=True)
+
         if serializer.data:
-            return CustomeResponse(serializer.data,status=status.HTTP_200_OK)
+            return CustomeResponse(serializer.data, status=status.HTTP_200_OK)
         else:
-            return CustomeResponse({"msg":"No Data found"},status=status.HTTP_400_BAD_REQUEST,validate_errors=True)
-        
+            return CustomeResponse({"msg": "No Data found"}, status=status.HTTP_400_BAD_REQUEST, validate_errors=True)
+
       def create(self, request):
           return CustomeResponse({'msg':'POST method not allowed'},status=status.HTTP_405_METHOD_NOT_ALLOWED,validate_errors=1)
       
@@ -86,585 +88,618 @@ class storeContactsViewSet(viewsets.ModelViewSet):
                     except validictory.SchemaError as error:
                        return CustomeResponse({'msg':error.message },status=status.HTTP_400_BAD_REQUEST,validate_errors=1)        
 #                    ---------------------- - End ----------------------------------------------------------- #
-                    if 'user_id' not in contact_temp:
-                        contact_temp['user_id'] = user_id.id
-                        contact_new.append(contact_temp)
-                    else:
-                        contact_new.append(contact_temp) 
-                    counter = counter + 1
-                    
-               if counter > NUMBER_OF_CONTACT:
-                    return CustomeResponse({'msg':"Max "+str(NUMBER_OF_CONTACT)+" allowed to upload"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
-               
-               
-               serializer = ContactsSerializer(data=contact_new,many=True)
-               if serializer.is_valid():
-                    contact_data = serializer.save()
-                    contact_id = contact_data[0].id        
-                    queryset = self.queryset.filter(user_id=request.user.id,businesscard_id__isnull=True,id=contact_id) 
+                if 'user_id' not in contact_temp:
+                    contact_temp['user_id'] = user_id.id
+                    contact_new.append(contact_temp)
+                else:
+                    contact_new.append(contact_temp)
+                counter = counter + 1
 
-                    
-                    #-------------------- Assign all contacts to folder -----------------#
-                    folder_contact_array = []
-                    
-                    for items in serializer.data:
-                        folder_contact_array.append({'user_id':user_id.id,'folder_id':folder_id,'contact_id':items['id']})
-  
-                    if  folder_contact_array:
-                            folder_contact_serializer = FolderContactSerializer(data=folder_contact_array,many=True)
-                            if folder_contact_serializer.is_valid():
-                               folder_contact_serializer.save() 
-                    #--------------------------- End ------------------------------------#
-                    serializer = ContactsSerializerWithJson(queryset,many=True)
-                    return CustomeResponse(serializer.data,status=status.HTTP_201_CREATED)
-               else:
-                    return CustomeResponse(serializer.errors,status=status.HTTP_201_CREATED)   
-      
-      def update(self, request, pk=None):
-         return CustomeResponse({'msg':"Update method does not allow"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)      
-      
-      def destroy(self, request, pk=None):
-          return CustomeResponse({'msg':'DELETE method not allowed'},status=status.HTTP_405_METHOD_NOT_ALLOWED,validate_errors=1)
-      
-      
-      def merge_contacts(self,request):
-          pass
-      
-      def find_duplicate(self,first_json,second_json):
-          
-               """ TODO : check optimization """
-               first_name = []
-               last_name = []               
-               email = []
-               phone = []
-               
-               try:
-                  first_name=[value['value'] for  value in first_json["side_first"]["basic_info"] if value['keyName'] == 'FirstName']
-               except:
-                  pass
-              
-               try:
-                  last_name=[value['value'] for  value in first_json["side_first"]["basic_info"] if value['keyName'] == 'LastName']
-               except:
-                  pass              
-              
-               try:
-                 email = [x['data'] for x in first_json["side_first"]["contact_info"]["email"]]
-               except:
-                 pass 
-                
-               try:    
-                  phone = [x['data'] for x in first_json["side_first"]["contact_info"]["phone"]]
-               except:
-                  pass
-               #--- add second side data -------#
-               try:
-                  email = email + [x['data'] for x in first_json["side_second"]["contact_info"]["email"]]
-               except:
-                  pass
-              
-               try:
-                  phone = phone + [x['data'] for x in first_json["side_second"]["contact_info"]["phone"]]              
-               except:
-                  pass
-              
+            if counter > NUMBER_OF_CONTACT:
+                return CustomeResponse({'msg': "Max " + str(NUMBER_OF_CONTACT) + " allowed to upload"}, status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
 
-               first_name_target = []
-               last_name_target = [] 
-               email_target = []
-               phone_target = []
-               
-               try:
-                  first_name_target=[value['value'] for  value in second_json["side_first"]["basic_info"] if value['keyName'] == 'FirstName']
-               except:
-                  pass
-              
-               try:
-                  last_name_target=[value['value'] for  value in second_json["side_first"]["basic_info"] if value['keyName'] == 'LastName']
-               except:
-                  pass                
-               
-               #--- add second side data -------#
-               try:
-                   email_target = [x['data'] for x in second_json["side_first"]["contact_info"]["email"]]
-               except:
-                   pass
-               
-               try:
-                   phone_target = [x['data'] for x in second_json["side_first"]["contact_info"]["phone"]]
-               except:
-                   pass
-               
-               try:
-                   email_target = email_target + [x['data'] for x in second_json["side_second"]["contact_info"]["email"]]
-               except:
-                   pass
-               try:
-                   phone_target = phone_target + [x['data'] for x in second_json["side_second"]["contact_info"]["phone"]]                  
-               except:
-                   pass                
-               #print email_target,phone_target
-               check_duplicate_1 = 0
-               for first_name_val in first_name:
-                   if first_name_val in first_name_target and first_name_val != []:
-                        check_duplicate_1 = 1 
-               
-               if not check_duplicate_1:         
-                for last_name_val in last_name:
-                    if last_name_val in last_name_target and last_name_val != []:
-                         check_duplicate_1 = 1                
+            serializer = ContactsSerializer(data=contact_new, many=True)
+            if serializer.is_valid():
+                contact_data = serializer.save()
+                contact_id = contact_data[0].id
+                queryset = self.queryset.filter(
+                    user_id=request.user.id, businesscard_id__isnull=True, id=contact_id)
 
-               check_duplicate_2 = 0
-               for email_val in email:
-                   if email_val in email_target and email_val != []:
-                        check_duplicate_2 = 1
-                        
-               if not check_duplicate_2:
-                for phone_val in phone:
-                    if phone_val in phone_target and phone_val != []:
-                         check_duplicate_2 = 1 
+                #-------------------- Assign all contacts to folder -----------------#
+                folder_contact_array = []
 
-               # Condition {First_Name OR Last_Name} AND {email OR phone OR instant_message}
-               #print check_duplicate_1,check_duplicate_2
-               if check_duplicate_1 and check_duplicate_2:
-                  return 1
-               else:
-                  return 0 
-      
-      #-------------- Not in use as duplicate task will be done at device side ----#
-      @list_route(methods=['post'],)
-      def get_duplicate_contacts(self, request):
-          user_id  = request.user.id
-          contacts = list(self.queryset.filter(user_id=user_id).values('id','businesscard_id','bcard_json_data').order_by("id"))
-          contacts_copy = contacts
-          #------------------- fetch contact json detail from qeuryset -----------------------------#
-          
-          finalContacts = []
-          count = 0
-          duplicate_contacts_ids = []
-          inner_loop = 0
-          
-          for value in contacts: 
-               check = 1
-               duplicateContacts = []
-               iterator = iter(contacts_copy)
-               try :
-                 while 1:
-                     value_copy = iterator.next() 
+                for items in serializer.data:
+                    folder_contact_array.append(
+                        {'user_id': user_id.id, 'folder_id': folder_id, 'contact_id': items['id']})
 
-                     if value["id"] != value_copy["id"] and value["id"] not in duplicate_contacts_ids:
-                        result = self.find_duplicate(value["bcard_json_data"],value_copy["bcard_json_data"])
-                        if result:
-                           if check == 1:
-                              finalContacts.append(value)
-                              inner_loop = inner_loop + 1
-                              check = 0
-                           duplicateContacts.append(json.loads(json.dumps(value_copy)))
-                           duplicate_contacts_ids.append(value_copy["id"])
-               except StopIteration, e :
-                      if count == inner_loop-1: 
-                         finalContacts[inner_loop-1]["duplicate"]=duplicateContacts
-                         count = count + 1
-               
-          return CustomeResponse(finalContacts,status=status.HTTP_200_OK)
-      
-      
-      
-      @list_route(methods=['post'],)
-      def merge(self,request):
-               
-               try:           
-                  user_id = request.user.id
-               except:
-                  user_id = None            
-               try:
-                  merge_contact_ids = request.data["merge_contact_ids"]
-                  target_contact_id = request.data["target_contact_id"]
-               except:
-                  merge_contact_ids = None
-                  target_contact_id = None
-                  
-               #------------------ Get the  target_bcard_id and merge_bcards_ids data ------------------------------#
-               if merge_contact_ids and target_contact_id and user_id:
-                    
-                    try:
-                       target_contact = Contacts.objects.get(id=target_contact_id,user_id= user_id)
-                    except:
-                       return CustomeResponse({"msg":"target_contact_id does not exist"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
-                   
-                    first_json = json.loads(json.dumps(target_contact.bcard_json_data))
-                    #---- make sure target_bcard_id not in merge_bcards_ids ---------------------------------------------#
-                    if target_contact_id not in merge_contact_ids:
-                    #-----------------------------------------------------------------------------------------------------#                    
-                        merge_contacts = Contacts.objects.filter(id__in=merge_contact_ids,user_id= user_id).exclude(businesscard_id__isnull=False).all()
-                        for temp in merge_contacts:
-                            contact_json_data = temp.bcard_json_data
-                            if contact_json_data:
-                               try: 
-                                second_json = json.loads(json.dumps(contact_json_data))
-                               except:
-                                second_json = {}   
-                               third_json = second_json.copy()
-                               card_object = BusinessViewSet()
-                               card_object.mergeDict(third_json, first_json)
-                               
-                               #------ assign the new json ----------------------------#
-                               target_contact.bcard_json_data = third_json
-                               target_contact.save(force_update=True)
-                               first_json = third_json
-                        if merge_contacts:
-                            #pass
-                            merge_contacts.delete()
-                        else:
-                           return CustomeResponse({"msg":"merge_contact_ids does not exist OR merge contact links with business card"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1) 
-                        #----------------------- End ---------------------------------------------#
-                        return CustomeResponse({"msg":"successfully merged"},status=status.HTTP_200_OK)
-                    else:
-                        return CustomeResponse({"msg":"Please provide correct target_contact_id"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)        
-               else:
-                    return CustomeResponse({"msg":"Please provide merge_contact_ids, target_contact_id"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
-    
-    
-    #----------------------Favorite Contact -------------------------------------------#
-        
-      @list_route(methods=['post'],)
-      def addFavoriteContact(self,request):
+                if folder_contact_array:
+                    folder_contact_serializer = FolderContactSerializer(
+                        data=folder_contact_array, many=True)
+                    if folder_contact_serializer.is_valid():
+                        folder_contact_serializer.save()
+                #--------------------------- End ------------------------------------#
+                serializer = ContactsSerializerWithJson(queryset, many=True)
+                return CustomeResponse(serializer.data, status=status.HTTP_201_CREATED)
+            else:
+                return CustomeResponse(serializer.errors, status=status.HTTP_201_CREATED)
+
+    def update(self, request, pk=None):
+        return CustomeResponse({'msg': "Update method does not allow"}, status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
+
+    def destroy(self, request, pk=None):
+        return CustomeResponse({'msg': 'DELETE method not allowed'}, status=status.HTTP_405_METHOD_NOT_ALLOWED, validate_errors=1)
+
+    def merge_contacts(self, request):
+        pass
+
+    def find_duplicate(self, first_json, second_json):
+        """ TODO : check optimization """
+        first_name = []
+        last_name = []
+        email = []
+        phone = []
+
         try:
-              user_id = request.user.id
+            first_name = [value['value'] for value in first_json[
+                "side_first"]["basic_info"] if value['keyName'] == 'FirstName']
+        except:
+            pass
+
+        try:
+            last_name = [value['value'] for value in first_json[
+                "side_first"]["basic_info"] if value['keyName'] == 'LastName']
+        except:
+            pass
+
+        try:
+            email = [x['data']
+                     for x in first_json["side_first"]["contact_info"]["email"]]
+        except:
+            pass
+
+        try:
+            phone = [x['data']
+                     for x in first_json["side_first"]["contact_info"]["phone"]]
+        except:
+            pass
+        #--- add second side data -------#
+        try:
+            email = email + [x['data']
+                             for x in first_json["side_second"]["contact_info"]["email"]]
+        except:
+            pass
+
+        try:
+            phone = phone + [x['data']
+                             for x in first_json["side_second"]["contact_info"]["phone"]]
+        except:
+            pass
+
+        first_name_target = []
+        last_name_target = []
+        email_target = []
+        phone_target = []
+
+        try:
+            first_name_target = [value['value'] for value in second_json[
+                "side_first"]["basic_info"] if value['keyName'] == 'FirstName']
+        except:
+            pass
+
+        try:
+            last_name_target = [value['value'] for value in second_json[
+                "side_first"]["basic_info"] if value['keyName'] == 'LastName']
+        except:
+            pass
+
+        #--- add second side data -------#
+        try:
+            email_target = [x['data'] for x in second_json[
+                "side_first"]["contact_info"]["email"]]
+        except:
+            pass
+
+        try:
+            phone_target = [x['data'] for x in second_json[
+                "side_first"]["contact_info"]["phone"]]
+        except:
+            pass
+
+        try:
+            email_target = email_target + \
+                [x['data']
+                    for x in second_json["side_second"]["contact_info"]["email"]]
+        except:
+            pass
+        try:
+            phone_target = phone_target + \
+                [x['data']
+                    for x in second_json["side_second"]["contact_info"]["phone"]]
+        except:
+            pass
+        # print email_target,phone_target
+        check_duplicate_1 = 0
+        for first_name_val in first_name:
+            if first_name_val in first_name_target and first_name_val != []:
+                check_duplicate_1 = 1
+
+        if not check_duplicate_1:
+            for last_name_val in last_name:
+                if last_name_val in last_name_target and last_name_val != []:
+                    check_duplicate_1 = 1
+
+        check_duplicate_2 = 0
+        for email_val in email:
+            if email_val in email_target and email_val != []:
+                check_duplicate_2 = 1
+
+        if not check_duplicate_2:
+            for phone_val in phone:
+                if phone_val in phone_target and phone_val != []:
+                    check_duplicate_2 = 1
+
+        # Condition {First_Name OR Last_Name} AND {email OR phone OR instant_message}
+        # print check_duplicate_1,check_duplicate_2
+        if check_duplicate_1 and check_duplicate_2:
+            return 1
+        else:
+            return 0
+
+    #-------------- Not in use as duplicate task will be done at device side ----#
+    @list_route(methods=['post'],)
+    def get_duplicate_contacts(self, request):
+        user_id = request.user.id
+        contacts = list(self.queryset.filter(user_id=user_id).values(
+            'id', 'businesscard_id', 'bcard_json_data').order_by("id"))
+        contacts_copy = contacts
+        #------------------- fetch contact json detail from qeuryset -----------------------------#
+
+        finalContacts = []
+        count = 0
+        duplicate_contacts_ids = []
+        inner_loop = 0
+
+        for value in contacts:
+            check = 1
+            duplicateContacts = []
+            iterator = iter(contacts_copy)
+            try:
+                while 1:
+                    value_copy = iterator.next()
+
+                    if value["id"] != value_copy["id"] and value["id"] not in duplicate_contacts_ids:
+                        result = self.find_duplicate(
+                            value["bcard_json_data"], value_copy["bcard_json_data"])
+                        if result:
+                            if check == 1:
+                                finalContacts.append(value)
+                                inner_loop = inner_loop + 1
+                                check = 0
+                            duplicateContacts.append(
+                                json.loads(json.dumps(value_copy)))
+                            duplicate_contacts_ids.append(value_copy["id"])
+            except StopIteration, e:
+                if count == inner_loop - 1:
+                    finalContacts[inner_loop -
+                                  1]["duplicate"] = duplicateContacts
+                    count = count + 1
+
+        return CustomeResponse(finalContacts, status=status.HTTP_200_OK)
+
+    @list_route(methods=['post'],)
+    def merge(self, request):
+
+        try:
+            user_id = request.user.id
+        except:
+            user_id = None
+        try:
+            merge_contact_ids = request.data["merge_contact_ids"]
+            target_contact_id = request.data["target_contact_id"]
+        except:
+            merge_contact_ids = None
+            target_contact_id = None
+
+        #------------------ Get the  target_bcard_id and merge_bcards_ids data ------------------------------#
+        if merge_contact_ids and target_contact_id and user_id:
+
+            try:
+                target_contact = Contacts.objects.get(
+                    id=target_contact_id, user_id=user_id)
+            except:
+                return CustomeResponse({"msg": "target_contact_id does not exist"}, status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
+
+            first_json = json.loads(json.dumps(target_contact.bcard_json_data))
+            #---- make sure target_bcard_id not in merge_bcards_ids ---------------------------------------------#
+            if target_contact_id not in merge_contact_ids:
+                #-----------------------------------------------------------------------------------------------------#
+                merge_contacts = Contacts.objects.filter(
+                    id__in=merge_contact_ids, user_id=user_id).exclude(businesscard_id__isnull=False).all()
+                for temp in merge_contacts:
+                    contact_json_data = temp.bcard_json_data
+                    if contact_json_data:
+                        try:
+                            second_json = json.loads(
+                                json.dumps(contact_json_data))
+                        except:
+                            second_json = {}
+                        third_json = second_json.copy()
+                        card_object = BusinessViewSet()
+                        card_object.mergeDict(third_json, first_json)
+
+                        #------ assign the new json ----------------------------#
+                        target_contact.bcard_json_data = third_json
+                        target_contact.save(force_update=True)
+                        first_json = third_json
+                if merge_contacts:
+                    # pass
+                    merge_contacts.delete()
+                else:
+                    return CustomeResponse({"msg": "merge_contact_ids does not exist OR merge contact links with business card"}, status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
+                #----------------------- End ---------------------------------------------#
+                return CustomeResponse({"msg": "successfully merged"}, status=status.HTTP_200_OK)
+            else:
+                return CustomeResponse({"msg": "Please provide correct target_contact_id"}, status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
+        else:
+            return CustomeResponse({"msg": "Please provide merge_contact_ids, target_contact_id"}, status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
+
+    #----------------------Favorite Contact -------------------------------------------#
+
+    @list_route(methods=['post'],)
+    def addFavoriteContact(self, request):
+        try:
+            user_id = request.user.id
         except:
             user_id = ''
-            return CustomeResponse({'msg':'user not found'},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
-        
+            return CustomeResponse({'msg': 'user not found'}, status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
+
         try:
             contact_id = request.data['foldercontact_id']
         except:
-            return CustomeResponse({'msg':'foldercontact_id not found'},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
-        
+            return CustomeResponse({'msg': 'foldercontact_id not found'}, status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
+
 #        data['user_id'] = request.user.id
         tempContainer = []
         for data in contact_id:
             tempData = {}
             tempData['user_id'] = request.user.id
-            tempData ['foldercontact_id'] =data
+            tempData['foldercontact_id'] = data
             tempContainer.append(tempData)
-        
-        
-        serializer = FavoriteContactSerializer(data=tempContainer, context={'request':request},many=True)
-       
+
+        serializer = FavoriteContactSerializer(data=tempContainer, context={
+                                               'request': request}, many=True)
+
         if serializer.is_valid():
             serializer.save()
         else:
-            return CustomeResponse(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
-        
-        return CustomeResponse(serializer.data,status=status.HTTP_200_OK)
-            
-    #------------------------Get all favorite contact of a user------------------------#    
-        
-      @list_route(methods=['get'],)
-      def getFavoriteContact(self,request): 
+            return CustomeResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-        try:
-            user_id = request.user.id            
-        except:
-             user_id = ''
-             return CustomeResponse({'msg':'user not found'},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
-             
-        try:
-            favoriteContactData =   FavoriteContact.objects.filter(user_id=user_id)
-        except:
-            return CustomeResponse({'msg':'server error please try again'},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
+        return CustomeResponse(serializer.data, status=status.HTTP_200_OK)
 
-        if favoriteContactData:
-            serializer = FavoriteContactSerializer(favoriteContactData,many=True)
-            return CustomeResponse(serializer.data,status=status.HTTP_200_OK)
-        else:
-            return CustomeResponse({'msg':'favorite contact not found for this user'},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
-          
-          
-    #--------------------Delete favorite Contact-----------------#
-    
-      @list_route(methods=['post'],)
-      def deleteFavoriteContact(self,request):
+    #------------------------Get all favorite contact of a user------------------------#
+
+    @list_route(methods=['get'],)
+    def getFavoriteContact(self, request):
+
         try:
             user_id = request.user.id
         except:
             user_id = ''
-            return CustomeResponse({'msg':'user not found'},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
-            
+            return CustomeResponse({'msg': 'user not found'}, status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
+
         try:
-            foldercontact_id =request.data['foldercontact_id']
+            favoriteContactData = FavoriteContact.objects.filter(
+                user_id=user_id)
         except:
-            return CustomeResponse({'msg':'Folder Contact_id not found'},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
-         
+            return CustomeResponse({'msg': 'server error please try again'}, status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
+
+        if favoriteContactData:
+            serializer = FavoriteContactSerializer(
+                favoriteContactData, many=True)
+            return CustomeResponse(serializer.data, status=status.HTTP_200_OK)
+        else:
+            return CustomeResponse({'msg': 'favorite contact not found for this user'}, status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
+
+    #--------------------Delete favorite Contact-----------------#
+
+    @list_route(methods=['post'],)
+    def deleteFavoriteContact(self, request):
         try:
-            favoriteContactData =  FavoriteContact.objects.filter(user_id=user_id,foldercontact_id__in=foldercontact_id)
+            user_id = request.user.id
         except:
-            return CustomeResponse({'msg':'Server error please try again'},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
-        
+            user_id = ''
+            return CustomeResponse({'msg': 'user not found'}, status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
+
+        try:
+            foldercontact_id = request.data['foldercontact_id']
+        except:
+            return CustomeResponse({'msg': 'Folder Contact_id not found'}, status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
+
+        try:
+            favoriteContactData = FavoriteContact.objects.filter(
+                user_id=user_id, foldercontact_id__in=foldercontact_id)
+        except:
+            return CustomeResponse({'msg': 'Server error please try again'}, status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
+
         if favoriteContactData:
             favoriteContactData.delete()
-            return CustomeResponse({'msg':'Remove from favorite successfully'},status=status.HTTP_200_OK)
+            return CustomeResponse({'msg': 'Remove from favorite successfully'}, status=status.HTTP_200_OK)
         else:
-            return CustomeResponse({'msg':'Favorite Contact cannot be deleted'},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
+            return CustomeResponse({'msg': 'Favorite Contact cannot be deleted'}, status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
 
-        
-    #---------------------------------------Associate Contact--------------------------------#    
-      
-        
-      #------------------Insert Associate Contact it will be 2 way process-----------#  
-      @list_route(methods=['post'],)
-      def addAssociateContact(self,request):
+    #---------------------------------------Associate Contact--------------------------------#
+
+    #------------------Insert Associate Contact it will be 2 way process-----------#
+    @list_route(methods=['post'],)
+    def addAssociateContact(self, request):
         try:
             user_id = request.user.id
         except:
             user_id = ''
-            return CustomeResponse({'msg':'user not found'},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
-        
+            return CustomeResponse({'msg': 'user not found'}, status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
+
         try:
-            associate_from  = request.data['associate']
-            associate_to      = request.data['associate_to']
-            
-            #  use copy.deepcopy main request.data will be same otherwise it will be override by all_contact
+            associate_from = request.data['associate']
+            associate_to = request.data['associate_to']
+
+            # use copy.deepcopy main request.data will be same otherwise it
+            # will be override by all_contact
             all_contact = copy.deepcopy(request.data['associate_to'])
-            
+
             all_contact.append(associate_from)
-            
+
         except:
-            return CustomeResponse({'msg':'Please Check json format'},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
-        
+            return CustomeResponse({'msg': 'Please Check json format'}, status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
+
         try:
-            associate_contact = FolderContact.objects.filter(user_id=user_id,id__in=all_contact).values()
-            user_contact  = []
+            associate_contact = FolderContact.objects.filter(
+                user_id=user_id, id__in=all_contact).values()
+            user_contact = []
             for data in associate_contact:
-                  contact = {}
-                  contact    =      data['id']
-                  user_contact.append(contact)
-                  
-            
+                contact = {}
+                contact = data['id']
+                user_contact.append(contact)
+
             if associate_from in user_contact:
-                #-------------intersect Associate_from and user_contact-----------# 
+                #-------------intersect Associate_from and user_contact-----------#
                 associate_contact = list(set(user_contact) & set(associate_to))
                 if not associate_contact:
-                    return CustomeResponse({'msg':'Associate Contact is not there'},status=status.HTTP_400_BAD_REQUEST,validate_errors=1) 
+                    return CustomeResponse({'msg': 'Associate Contact is not there'}, status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
                 tempContainer = []
-            
+
                 for contact in associate_contact:
                     tempData = {}
-                    newdata  = {}
+                    newdata = {}
                     tempData['associatefoldercontact_id'] = associate_from
-                    tempData['foldercontact_id']          = contact
-                    tempData['user_id']                   = request.user.id
-                    
+                    tempData['foldercontact_id'] = contact
+                    tempData['user_id'] = request.user.id
+
                     newdata['associatefoldercontact_id'] = contact
-                    newdata['foldercontact_id']          = associate_from
-                    newdata['user_id']                   = request.user.id
-                    
+                    newdata['foldercontact_id'] = associate_from
+                    newdata['user_id'] = request.user.id
+
                     tempContainer.append(tempData)
                     tempContainer.append(newdata)
-                                
-                serializer = AssociateContactSerializer(data=tempContainer,many=True)
+
+                serializer = AssociateContactSerializer(
+                    data=tempContainer, many=True)
                 if serializer.is_valid():
                     serializer.save()
-                    return CustomeResponse(serializer.data,status=status.HTTP_201_CREATED)
+                    return CustomeResponse(serializer.data, status=status.HTTP_201_CREATED)
                 else:
-                    return CustomeResponse(serializer.errors,status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
-    
+                    return CustomeResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
+
             else:
-                return CustomeResponse({'msg':'The contact from which to associate is not in user Contact'},status=status.HTTP_400_BAD_REQUEST,validate_errors=1) 
+                return CustomeResponse({'msg': 'The contact from which to associate is not in user Contact'}, status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
         except:
-            return CustomeResponse({'msg':'Contact not found'},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
-        
-      #---------------------------Get All associate Contact of a user----------------------#
-      
-      @list_route(methods=['post'])  
-      def getAssociateContact(self,request):  
+            return CustomeResponse({'msg': 'Contact not found'}, status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
+
+    #---------------------------Get All associate Contact of a user----------------------#
+
+    @list_route(methods=['post'])
+    def getAssociateContact(self, request):
         try:
-              user_id  = request.user.id
-            
+            user_id = request.user.id
+
         except:
-            user_id     =   ''
-            return CustomeResponse({'msg':'user not found'},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
-        
+            user_id = ''
+            return CustomeResponse({'msg': 'user not found'}, status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
+
         try:
             associate_folder_id = request.data['associatefoldercontact_id']
         except:
-            return CustomeResponse({'msg':'associatefoldercontact_id not found'},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
-            
+            return CustomeResponse({'msg': 'associatefoldercontact_id not found'}, status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
+
         try:
-            accociateContactData  = AssociateContact.objects.filter(associatefoldercontact_id=associate_folder_id)
+            accociateContactData = AssociateContact.objects.filter(
+                associatefoldercontact_id=associate_folder_id)
         except:
-            return CustomeResponse({'msg':'Server error please try again'},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
+            return CustomeResponse({'msg': 'Server error please try again'}, status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
         if accociateContactData:
-            serializer = AssociateContactSerializer(accociateContactData,many=True)
-            return CustomeResponse(serializer.data,status=status.HTTP_200_OK)
+            serializer = AssociateContactSerializer(
+                accociateContactData, many=True)
+            return CustomeResponse(serializer.data, status=status.HTTP_200_OK)
         else:
-            return CustomeResponse({'msg':'Assciate Contact not found'},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
-        
-        
-    #-------------------Delete Associate Contact to whom it is connected---------#    
-        
-      @list_route(methods=['post'])  
-      def deleteAssociateContact(self,request):       
+            return CustomeResponse({'msg': 'Assciate Contact not found'}, status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
+
+    #-------------------Delete Associate Contact to whom it is connected---------#
+
+    @list_route(methods=['post'])
+    def deleteAssociateContact(self, request):
         try:
             user_id = request.user.id
         except:
             user_id = ''
-            return CustomeResponse({'msg':'User not found'},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
-            
+            return CustomeResponse({'msg': 'User not found'}, status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
+
         try:
             associate_from = request.data['associate_from']
             associate_to = request.data['associate_to']
-            
+
         except:
-            return CustomeResponse({'msg':'Associate Contact not found'},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
-        
+            return CustomeResponse({'msg': 'Associate Contact not found'}, status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
+
         try:
-            associateContactData =AssociateContact.objects.filter(Q(user_id=user_id,associatefoldercontact_id__in=associate_from,foldercontact_id__in=associate_to) | Q(user_id=user_id,associatefoldercontact_id__in=associate_to,foldercontact_id__in=associate_from))
-        
+            associateContactData = AssociateContact.objects.filter(Q(user_id=user_id, associatefoldercontact_id__in=associate_from, foldercontact_id__in=associate_to) | Q(
+                user_id=user_id, associatefoldercontact_id__in=associate_to, foldercontact_id__in=associate_from))
+
         except:
-            return CustomeResponse({'msg':'Server try again'},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
-        
+            return CustomeResponse({'msg': 'Server try again'}, status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
+
         if associateContactData:
             associateContactData.delete()
-            return CustomeResponse({'msg':'Associate Contact delete successfully'},status=status.HTTP_200_OK)
+            return CustomeResponse({'msg': 'Associate Contact delete successfully'}, status=status.HTTP_200_OK)
         else:
-            return CustomeResponse({'msg':'Assciate Contact cannot be deleted'},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
-        
+            return CustomeResponse({'msg': 'Assciate Contact cannot be deleted'}, status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
+
 #------------------------------------Contact Images Upload------------------------#
+
+
 class ContactMediaViewSet(viewsets.ModelViewSet):
-    queryset  = ContactMedia.objects.all().order_by('front_back')
+    queryset = ContactMedia.objects.all().order_by('front_back')
     serializer_class = ContactMediaSerializer
     authentication_classes = (ExpiringTokenAuthentication,)
-    permission_classes = (IsAuthenticated,) 
-    
-    def list(self,request):
-            user_id = self.request.user.id
-            contact_id = self.request.QUERY_PARAMS.get('contact_id', None) 
-            if contact_id:
+    permission_classes = (IsAuthenticated,)
+
+    def list(self, request):
+        user_id = self.request.user.id
+        contact_id = self.request.QUERY_PARAMS.get('contact_id', None)
+        if contact_id:
                 #-------- Should be pass queryset to serializer but error occured ---#
-                self.queryset = self.queryset.filter(contact_id=contact_id,user_id=user_id)
-                if self.queryset: 
-                    data = {}
-                    data['all'] = []
-                    data['top'] = []
-                    i = 0 
-                    for items in self.queryset:
-                        print items
-                        if items.status == 1:
-                           data['top'].append({"image_id":items.id,"front_back":items.front_back,"img_url":str(settings.DOMAIN_NAME)+str(settings.MEDIA_URL)+str(items.img_url)})
-                        data['all'].append({"image_id":items.id,"front_back":items.front_back,"img_url":str(settings.DOMAIN_NAME)+str(settings.MEDIA_URL)+str(items.img_url)})
-                    return CustomeResponse(data,status=status.HTTP_200_OK)
-                else:
-                   return CustomeResponse({'msg':"Data not exist"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
+            self.queryset = self.queryset.filter(
+                contact_id=contact_id, user_id=user_id)
+            if self.queryset:
+                data = {}
+                data['all'] = []
+                data['top'] = []
+                i = 0
+                for items in self.queryset:
+                    print items
+                    if items.status == 1:
+                        data['top'].append({"image_id": items.id, "front_back": items.front_back, "img_url": str(
+                            settings.DOMAIN_NAME) + str(settings.MEDIA_URL) + str(items.img_url)})
+                    data['all'].append({"image_id": items.id, "front_back": items.front_back, "img_url": str(
+                        settings.DOMAIN_NAME) + str(settings.MEDIA_URL) + str(items.img_url)})
+                return CustomeResponse(data, status=status.HTTP_200_OK)
             else:
-                return CustomeResponse({'msg':"Without parameters does not support"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
-                            
-            
+                return CustomeResponse({'msg': "Data not exist"}, status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
+        else:
+            return CustomeResponse({'msg': "Without parameters does not support"}, status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
+
     #------------- Add image into business card gallary ---------------------#
-    
-    def create(self,request,call_from_function=None):
-#        return CustomeResponse({"msg":"POST method not allowed"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
+
+    def create(self, request, call_from_function=None):
+        # return CustomeResponse({"msg":"POST method not
+        # allowed"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
         data = request.data.copy()
-        data['status'] = 0 
+        data['status'] = 0
         data['user_id'] = self.request.user.id
-        serializer = ContactMediaSerializer(data = data,context={'request':request})
-        
+        serializer = ContactMediaSerializer(
+            data=data, context={'request': request})
+
         if serializer.is_valid():
             serializer.save()
             if call_from_function:
-               return json.loads(unicode(serializer.data))
+                return json.loads(unicode(serializer.data))
             else:
-               return CustomeResponse(serializer.data,status=status.HTTP_201_CREATED) 
+                return CustomeResponse(serializer.data, status=status.HTTP_201_CREATED)
         else:
             if call_from_function:
-               return serializer.errors
+                return serializer.errors
             else:
-              return CustomeResponse(serializer.errors,status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
+                return CustomeResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
     #----------------- End-------------------------------------------------------#
     #------------- Upload image after business card created ---------------------#
-    @list_route(methods=['post'],) 
-    def upload(self,request):
+
+    @list_route(methods=['post'],)
+    def upload(self, request):
         user_id = self.request.user.id
         try:
             contact_id = self.request.data["contact_id"]
         except:
-            return CustomeResponse({'msg':"provide contact_id"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)   
+            return CustomeResponse({'msg': "provide contact_id"}, status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
         try:
-          contact = Contacts.objects.get(id=contact_id,user_id=user_id)   
+            contact = Contacts.objects.get(id=contact_id, user_id=user_id)
         except:
-         return CustomeResponse({'msg':"Contact id does not exist"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)   
+            return CustomeResponse({'msg': "Contact id does not exist"}, status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
         #-------------- Save Image in image Gallary -------------------------------#
         data_new = {}
         data_new['bcard_image_frontend'] = ""
         data_new['bcard_image_backend'] = ""
         try:
-         if 'bcard_image_frontend' in request.data and  request.data['bcard_image_frontend']: 
-           #------------------ Set previous image 0 ----------------------------------------# 
-           ContactMedia.objects.filter(contact_id=contact,front_back=1).update(status=0)
-           bcard_image_frontend, created = ContactMedia.objects.update_or_create(user_id=self.request.user,contact_id=contact,img_url=request.data['bcard_image_frontend'],front_back=1,status=1)
-           #print bcard_image_frontend.img_url
-           data_new['bcard_image_frontend'] = str(settings.DOMAIN_NAME)+str(settings.MEDIA_URL)+str(bcard_image_frontend.img_url)                  
+            if 'bcard_image_frontend' in request.data and request.data['bcard_image_frontend']:
+                #------------------ Set previous image 0 ----------------------------------------#
+                ContactMedia.objects.filter(
+                    contact_id=contact, front_back=1).update(status=0)
+                bcard_image_frontend, created = ContactMedia.objects.update_or_create(
+                    user_id=self.request.user, contact_id=contact, img_url=request.data['bcard_image_frontend'], front_back=1, status=1)
+                # print bcard_image_frontend.img_url
+                data_new['bcard_image_frontend'] = str(
+                    settings.DOMAIN_NAME) + str(settings.MEDIA_URL) + str(bcard_image_frontend.img_url)
         except:
-           pass
+            pass
 
         try:
-         if 'bcard_image_backend' in request.data and  request.data['bcard_image_backend']:
-           ContactMedia.objects.filter(contact_id=contact,front_back=2).update(status=0)  
-           bcard_image_backend, created = ContactMedia.objects.update_or_create(user_id=self.request.user,contact_id=contact,img_url=request.data['bcard_image_backend'],front_back=2,status=1)
-           if bcard_image_backend:
-              data_new['bcard_image_backend'] = str(settings.DOMAIN_NAME)+str(settings.MEDIA_URL)+str(bcard_image_backend.img_url)                  
+            if 'bcard_image_backend' in request.data and request.data['bcard_image_backend']:
+                ContactMedia.objects.filter(
+                    contact_id=contact, front_back=2).update(status=0)
+                bcard_image_backend, created = ContactMedia.objects.update_or_create(
+                    user_id=self.request.user, contact_id=contact, img_url=request.data['bcard_image_backend'], front_back=2, status=1)
+                if bcard_image_backend:
+                    data_new['bcard_image_backend'] = str(
+                        settings.DOMAIN_NAME) + str(settings.MEDIA_URL) + str(bcard_image_backend.img_url)
 
         except:
-            pass 
-            
+            pass
+
         if data_new['bcard_image_frontend'] or data_new['bcard_image_backend']:
-           return CustomeResponse({"contact_id":contact_id,"bcard_image_frontend":data_new['bcard_image_frontend'],"bcard_image_backend":data_new['bcard_image_backend']},status=status.HTTP_201_CREATED)
+            return CustomeResponse({"contact_id": contact_id, "bcard_image_frontend": data_new['bcard_image_frontend'], "bcard_image_backend": data_new['bcard_image_backend']}, status=status.HTTP_201_CREATED)
         else:
-           return CustomeResponse({'msg':"Please upload media bcard_image_frontend or bcard_image_backend"},status=status.HTTP_200_OK)     
-        #-------------------------End-----------------------------------#        
+            return CustomeResponse({'msg': "Please upload media bcard_image_frontend or bcard_image_backend"}, status=status.HTTP_200_OK)
+        #-------------------------End-----------------------------------#
     #-------------------- Change image of business card -----------------------#
-    @list_route(methods=['post'],) 
-    def change(self,request):
+
+    @list_route(methods=['post'],)
+    def change(self, request):
         user_id = request.user.id
         try:
-          contact_id = request.data["contact_id"]
-          gallary_image_id = request.data["gallary_image_id"]
-          image_type = request.data["image_type"] # means it is 1 frontend or 2 backend 
+            contact_id = request.data["contact_id"]
+            gallary_image_id = request.data["gallary_image_id"]
+            # means it is 1 frontend or 2 backend
+            image_type = request.data["image_type"]
         except:
-          contact_id = None  
-          
+            contact_id = None
+
         if contact_id:
-          try:  
-           get_image = ContactMedia.objects.get(id=gallary_image_id,contact_id=contact_id,user_id=user_id)
-           print get_image
-           get_image.status = 1
-           get_image.front_back = image_type
-           get_image.save()
-           ContactMedia.objects.filter(contact_id=contact_id,front_back=image_type).exclude(id=gallary_image_id).update(status=0)
-           return CustomeResponse({"msg":"Business card image changed successfully."},status=status.HTTP_200_OK)
-          except:
-            return CustomeResponse({'msg':"provided contact_id,gallary_image_id not valid"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)  
+            try:
+                get_image = ContactMedia.objects.get(
+                    id=gallary_image_id, contact_id=contact_id, user_id=user_id)
+                print get_image
+                get_image.status = 1
+                get_image.front_back = image_type
+                get_image.save()
+                ContactMedia.objects.filter(contact_id=contact_id, front_back=image_type).exclude(
+                    id=gallary_image_id).update(status=0)
+                return CustomeResponse({"msg": "Business card image changed successfully."}, status=status.HTTP_200_OK)
+            except:
+                return CustomeResponse({'msg': "provided contact_id,gallary_image_id not valid"}, status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
         else:
-          return CustomeResponse({'msg':"Please provide contact_id,gallary_image_id"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)  
+            return CustomeResponse({'msg': "Please provide contact_id,gallary_image_id"}, status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
     #------------------------------ End ---------------------------------------#
-        
+
     def update(self, request, pk=None):
-         return CustomeResponse({'msg':"Update method does not allow"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
-    
-    @list_route(methods=['post'],) 
+        return CustomeResponse({'msg': "Update method does not allow"}, status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
+
+    @list_route(methods=['post'],)
     def delete(self, request):
-            
+
         try:
             user_id = request.user.id
             contact_id = request.data["contact_id"]
             pk = request.data["media_id"]
-            get_image = ContactMedia.objects.get(id=pk,contact_id=contact_id,user_id=user_id,status=1)
+            get_image = ContactMedia.objects.get(
+                id=pk, contact_id=contact_id, user_id=user_id, status=1)
             get_image.delete()
-            return CustomeResponse({'msg':"Media deleted successfully"},status=status.HTTP_200_OK)
+            return CustomeResponse({'msg': "Media deleted successfully"}, status=status.HTTP_200_OK)
         except:
-            return CustomeResponse({'msg':"Please provide correct contact_id,media id"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)            
-            
-            
-        
-        
-            
+            return CustomeResponse({'msg': "Please provide correct contact_id,media id"}, status=status.HTTP_400_BAD_REQUEST, validate_errors=1)

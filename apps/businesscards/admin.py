@@ -2,10 +2,11 @@ from django.contrib import admin
 
 # Register your models here.
 
-from .models import BusinessCardSkillAvailable ,BusinessCardIdentifier
+from .models import BusinessCardSkillAvailable, BusinessCardIdentifier
+
 
 class BusinessCardSkillAvailableAdmin(admin.ModelAdmin):
-    
+
     list_display = ('serial_number', 'skill_name')
     search_fields = ['skill_name']
     counter = 0
@@ -13,31 +14,32 @@ class BusinessCardSkillAvailableAdmin(admin.ModelAdmin):
     def serial_number(self, obj):
         self.counter = self.counter + 1
         return self.counter
-    
+
     list_per_page = 100
-    
-admin.site.register(BusinessCardSkillAvailable,BusinessCardSkillAvailableAdmin)
+
+admin.site.register(BusinessCardSkillAvailable,
+                    BusinessCardSkillAvailableAdmin)
 
 
 class BusinessCardIdentifierAdmin(admin.ModelAdmin):
-    
-    list_display = ('businesscard_name','identifier_name_display', 'created_date','updated_date')
+
+    list_display = ('businesscard_name', 'identifier_name_display',
+                    'created_date', 'updated_date')
     #search_fields = ['identifier']
     counter = 0
 
     def serial_number(self, obj):
         self.counter = self.counter + 1
         return self.counter
-    
+
     def identifier_name_display(self, obj):
-       return obj.identifier_id.identifier
+        return obj.identifier_id.identifier
     identifier_name_display.short_description = 'Identifier Name'
-    
+
     def businesscard_name(self, obj):
-       return obj.businesscard_id.name
+        return obj.businesscard_id.name
     businesscard_name.short_description = 'BusinessCard Name'
-    
-    
+
     list_per_page = 100
-    
-admin.site.register(BusinessCardIdentifier,BusinessCardIdentifierAdmin)
+
+admin.site.register(BusinessCardIdentifier, BusinessCardIdentifierAdmin)

@@ -1,7 +1,7 @@
 from base import *
 #DOMAIN_NAME = 'http://ohmgear.in'
 DOMAIN_NAME = 'http://ohmgear.clavax.us'
-SITE_ROOT="/home/ohmgear/ohmgear/"
+SITE_ROOT = "/home/ohmgear/ohmgear/"
 DEBUG = False
 ALLOWED_HOSTS = ['*']
 DATABASES = {
@@ -18,10 +18,10 @@ DATABASES = {
 DEFAULT_FROM_EMAIL = 'welcome@kinbow.com'
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_USE_TLS = True
-EMAIL_HOST = 'email-smtp.us-west-2.amazonaws.com'#'smtp.gmail.com'
+EMAIL_HOST = 'email-smtp.us-west-2.amazonaws.com'  # 'smtp.gmail.com'
 EMAIL_PORT = 587
-EMAIL_HOST_USER = 'AKIAJUDMRYODLOT4FMJQ'#'bhoopendra.ohmgear@gmail.com'
-EMAIL_HOST_PASSWORD = 'Atf+OJN+84eKW0jqqhp0MAzYsnB7Ra78ilfj8SHsb821' #'q@123456'
+EMAIL_HOST_USER = 'AKIAJUDMRYODLOT4FMJQ'  # 'bhoopendra.ohmgear@gmail.com'
+EMAIL_HOST_PASSWORD = 'Atf+OJN+84eKW0jqqhp0MAzYsnB7Ra78ilfj8SHsb821'  # 'q@123456'
 
 # CELERY STUFF
 INSTALLED_APPS += ("djcelery", )
@@ -38,4 +38,4 @@ CELERY_RESULT_BACKEND = 'redis://127.0.0.1:6379'
 CELERY_ACCEPT_CONTENT = ['application/json']
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
-CELERY_IMPORTS=("apps.email.views")
+CELERY_IMPORTS = ("apps.email.views")
