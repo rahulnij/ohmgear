@@ -1,21 +1,18 @@
-from django.shortcuts import get_object_or_404
-from rest_framework import viewsets
-from rest_framework.response import Response
-import rest_framework.status as status
-
-# Folder modules
-from apps.folders.models import Folder, FolderContact
-from apps.folders.serializer import FolderSerializer, FolderContactSerializer
-
-# Authentication modules
+# Django imports
 from rest_framework.permissions import IsAuthenticated
 from ohmgear.token_authentication import ExpiringTokenAuthentication
 from permissions import IsUserData
 from rest_framework.decorators import list_route
 
-
+# Third party imports
+from django.shortcuts import get_object_or_404
 from ohmgear.functions import CustomeResponse
-# create user and admin viewset or model
+from rest_framework import viewsets
+import rest_framework.status as status
+
+# Application modules
+from apps.folders.models import Folder
+from apps.folders.serializer import FolderSerializer, FolderContactSerializer
 
 
 class CheckAccess(viewsets.ModelViewSet):
@@ -40,7 +37,6 @@ class FolderViewSet(CheckAccess):
 
     def get_queryset(self):
         queryset = super(FolderViewSet, self).get_queryset()
-        #user = self.request.user
         return queryset
 
     def create(self, request, offline_data=None):
@@ -78,25 +74,3 @@ class FolderViewSet(CheckAccess):
         else:
             return CustomeResponse(folder_contact_serializer.errors, status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
 
-#	def list(self, request):
-#		queryset = self.get_queryset().all()
-#		if not queryset:
-#			return Response({'data not found'},status=status.HTTP_404_NOT_FOUND)
-#		else:
-#			folderSerializer = FolderSerializer(queryset,many=True)
-#			print queryset.values()
-#			return Response(folderSerializer.data)
-
-    # def retrieve(self, request, pk=None):
-
-    # 	folder = self.get_object(self.get_queryset(), pk=pk)
-    # 	folderSerializer =  FolderSerializer(folder)
-    # 	return Response(folderSerializer.data)
-
-    # def delete(self, request, pk=None):
-
-    # 	folder = get_object_or_404(self.get_queryset(), pk=pk)
-    # 	# if folder has contacts then user can not able to delete the folder
-
-    # 	folder.delete()
-    # 	return Response(status=status.HTTP_200_OK)

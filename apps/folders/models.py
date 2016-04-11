@@ -1,11 +1,14 @@
+
+# Third party imports
 from django.db import models
 from django.conf import settings
 from django.utils.translation import ugettext_lazy as _
+from datetime import datetime
+User = settings.AUTH_USER_MODEL
+
+# Application imports
 from apps.businesscards.models import BusinessCard
 from apps.contacts.models import Contacts
-from datetime import datetime
-
-User = settings.AUTH_USER_MODEL
 
 
 class FolderType(models.Model):
@@ -37,7 +40,7 @@ class Folder(models.Model):
         _('updated date'), default=datetime.now, blank=True)
 
     def __unicode__(self):
-        return '{"id":%d,"foldername":%s,"foldertype":%s }' % (self.id, self.foldername, self.foldertype)
+        return '{"id":%d,"foldername":%s,"foldertype":%s ,"businesscard_id":%s}' % (self.id, self.foldername, self.foldertype,self.businesscard_id)
 
 
 class FolderContact(models.Model):

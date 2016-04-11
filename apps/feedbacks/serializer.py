@@ -1,6 +1,7 @@
 from django.conf.urls import url, include
-from models import Feedbacks, FeedbackCategory, FeedbackCategorySubject, ContactUs
 from rest_framework import routers, serializers, viewsets
+
+from models import Feedbacks, FeedbackCategory, FeedbackCategorySubject, ContactUs
 
 
 class FeedbacksSerializer(serializers.ModelSerializer):

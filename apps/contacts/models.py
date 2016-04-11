@@ -1,15 +1,15 @@
+# Django imports
 from django.db import models
-from apps.businesscards.models import BusinessCard, BusinessCardTemplate
 from django.utils.translation import ugettext_lazy as _
-#from django_pgjson.fields import JsonField
 from django.contrib.postgres.fields import JSONField
 from django.conf import settings
-
-from simple_history.models import HistoricalRecords
 User = settings.AUTH_USER_MODEL
 
+# Application imports
+from apps.businesscards.models import BusinessCard, BusinessCardTemplate
+from simple_history.models import HistoricalRecords
+from apps.folders.models import FolderContact
 
-# Create your models here.
 
 class Contacts(models.Model):
 
@@ -54,14 +54,10 @@ class ContactMedia(models.Model):
     position = models.IntegerField(
         _("Position"), default=1)  # 1=Horizontal ,2=Vertical
     status = models.IntegerField(_("Status"), default=0)
-    #history = HistoricalRecords()
 
     def __unicode__(self):
         return '{"id:"%s","contact_id":"%s","user_id":"%s","status":"%s","front_back":"%s","img_url":"%s"}' % (
             self.id, self.contact_id, self.user_id, self.status, self.front_back, self.img_url)
-
-
-from apps.folders.models import FolderContact
 
 
 class FavoriteContact(models.Model):
