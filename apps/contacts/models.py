@@ -6,7 +6,7 @@ from django.conf import settings
 User = settings.AUTH_USER_MODEL
 
 # Application imports
-from apps.businesscards.models import BusinessCard, BusinessCardTemplate
+from apps.businesscards.models import BusinessCard # , BusinessCardTemplate
 from simple_history.models import HistoricalRecords
 
 

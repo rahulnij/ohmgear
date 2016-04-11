@@ -2,15 +2,16 @@
 from django.db import models
 from django.conf import settings
 from django.contrib.postgres.fields import JSONField
-User = settings.AUTH_USER_MODEL
 from django.utils.translation import ugettext_lazy as _
 
 # ----------------- Local app imports ------ #
 
 
 from apps.identifiers.models import Identifier
-from simple_history.models import HistoricalRecords
+# from simple_history.models import HistoricalRecords
 from apps.vacationcard.models import VacationCard
+
+User = settings.AUTH_USER_MODEL
 
 
 class BusinessCardTemplate(models.Model):
@@ -65,12 +66,14 @@ class BusinessCardIdentifier(models.Model):
 
     class Meta:
         db_table = 'ohmgear_businesscards_identifier'
+
     businesscard_id = models.ForeignKey(
         BusinessCard, db_column="businesscard_id")
     identifier_id = models.OneToOneField(
         Identifier,
         db_column="identifier_id",
-        related_name='businesscard_identifiers')
+        related_name='businesscard_identifiers'
+    )
     status = models.IntegerField(_("Status"), default=1)
     created_date = models.DateTimeField(
         _("Created Date"), auto_now_add=True, auto_now=False)
@@ -78,7 +81,8 @@ class BusinessCardIdentifier(models.Model):
         _("Updated Date"), auto_now_add=False, auto_now=True)
 
     def __unicode__(self):
-        return'{"id:"%s","businesscard_id":"%s","identifier_id":"%s","status":"%s"}' % (self.id, self.businesscard_id, self.identifier_id, self.status)
+        return'{"id:"%s","businesscard_id":"%s","identifier_id":"%s","status":"%s"}' % \
+            (self.id, self.businesscard_id, self.identifier_id, self.status)
 
     def bcard_data(self):
         bcarddata = BusinessCard.objects.filter(id=self.id)
@@ -93,6 +97,7 @@ class BusinessCardSkillAvailable(models.Model):
 
     class Meta:
         db_table = 'ohmgear_businesscards_businesscardavailableskills'
+
     skill_name = models.CharField(_("Skill Name"), null=True, max_length=50)
     status = models.IntegerField(_("Status"), default=1)
 
