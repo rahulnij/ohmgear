@@ -1,7 +1,7 @@
 from django.db import models
 from apps.businesscards.models import BusinessCard,BusinessCardTemplate
 from django.utils.translation import ugettext_lazy as _
-from django_pgjson.fields import JsonField
+from django.contrib.postgres.fields import JSONField
 from django.conf import settings
 
 from simple_history.models import HistoricalRecords
@@ -56,7 +56,7 @@ class ContactMedia(models.Model):
         return '{"id:"%s","contact_id":"%s","user_id":"%s","status":"%s","front_back":"%s","img_url":"%s"}' % (
             self.id, self.contact_id, self.user_id, self.status, self.front_back, self.img_url)
 
-
+from apps.folders.models import FolderContact
 class FavoriteContact(models.Model):
 
     class Meta:

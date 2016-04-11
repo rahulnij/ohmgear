@@ -4,7 +4,8 @@ from django.utils.translation import ugettext_lazy as _
 from apps.businesscards.models import BusinessCard
 from apps.contacts.models import Contacts
 from datetime import datetime
-
+from django.conf import settings
+User = settings.AUTH_USER_MODEL
 
 class FolderType(models.Model):
 
