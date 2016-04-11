@@ -1,8 +1,8 @@
+
 from rest_framework import serializers
 from apps.folders.serializer import FolderContactSerializer
 from models import Contacts, FavoriteContact, AssociateContact, ContactMedia
 from django.conf import settings
-# Serializers define the API representation.
 
 
 class ContactMediaSerializer(serializers.ModelSerializer):
@@ -17,8 +17,7 @@ class ContactMediaSerializer(serializers.ModelSerializer):
 
 
 class ContactsSerializer(serializers.ModelSerializer):
-    #bcard_json_data = serializers.CharField()
-    #contact_id = serializers.ReadOnlyField(source='contact_id.id')
+
     folder_contact_data = FolderContactSerializer(many=True, read_only=True)
     businesscard_media = ContactMediaSerializer(many=True, read_only=True)
 
@@ -33,11 +32,10 @@ class ContactsSerializer(serializers.ModelSerializer):
             'businesscard_media',
         )
 
-#------------- Used in fetch contact data -------------------#
-
+#   Used in fetch contact data
 
 class ContactsSerializerWithJson(serializers.ModelSerializer):
-    #bcard_json_data = serializers.CharField()
+
     bcard_json_data = serializers.SerializerMethodField(
         'clean_bcard_json_data')
     folder_contact_data = FolderContactSerializer(many=True, read_only=True)
@@ -50,12 +48,11 @@ class ContactsSerializerWithJson(serializers.ModelSerializer):
         media = ContactMedia.objects.filter(
             contact_id=obj.id, status=1).order_by('front_back')
         data = []
-        #i = 0
+
         for item in media:
             data.append({"img_url": str(settings.DOMAIN_NAME) +
                          str(settings.MEDIA_URL) +
                          str(item.img_url), "front_back": item.front_back})
-            #i = i + 1
         return data
 
     def clean_bcard_json_data(self, obj):
@@ -87,12 +84,11 @@ class FavoriteContactSerializer(serializers.ModelSerializer):
         media = ContactMedia.objects.filter(
             contact_id=obj.id, status=1).order_by('front_back')
         data = []
-        #i = 0
         for item in media:
             data.append({"img_url": str(settings.DOMAIN_NAME) +
                          str(settings.MEDIA_URL) +
                          str(item.img_url), "front_back": item.front_back})
-            #i = i + 1
+            
         return data
 
     class Meta:
