@@ -8,11 +8,10 @@ from rest_framework.decorators import list_route
 from django.shortcuts import get_object_or_404
 from ohmgear.functions import CustomeResponse
 from rest_framework import viewsets
-from rest_framework.response import Response
 import rest_framework.status as status
 
 # Application modules
-from apps.folders.models import Folder, FolderContact
+from apps.folders.models import Folder
 from apps.folders.serializer import FolderSerializer, FolderContactSerializer
 
 
@@ -38,7 +37,6 @@ class FolderViewSet(CheckAccess):
 
     def get_queryset(self):
         queryset = super(FolderViewSet, self).get_queryset()
-        #user = self.request.user
         return queryset
 
     def create(self, request, offline_data=None):

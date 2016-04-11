@@ -76,7 +76,7 @@ class IdentifierViewSet(viewsets.ModelViewSet):
     #--------------Method: POST create new Identifier -----------------------------#
     def create(self, request):
 
-        data = request.DATA.copy()
+        data = request.data.copy()
         data['user'] = request.user.id
         data['identifierlastdate'] = str(
             (datetime.date.today() + datetime.timedelta(3 * 365 / 12)).isoformat())

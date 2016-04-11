@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 #  Import Python Modules
 import json
 import validictory
@@ -5,21 +6,27 @@ from collections import OrderedDict
 
 # Third Party Imports #
 from django.shortcuts import render
+=======
+
+# Django imports
+import json
+import validictory
+
+# Third Party Imports
+>>>>>>> 1fdf0fde22a07eeea87b31d2dc73b9daf63251bf
 import rest_framework.status as status
-from rest_framework.decorators import api_view
-from rest_framework.decorators import detail_route, list_route
+from rest_framework.decorators import list_route
 from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated
 from django.conf import settings
 
-# Local app imports #
+# Application imports
 from ohmgear.functions import CustomeResponse
 from serializer import ContactsSerializer, ContactsSerializerWithJson, FavoriteContactSerializer, AssociateContactSerializer, ContactMediaSerializer
 from ohmgear.json_default_data import BUSINESS_CARD_DATA_VALIDATION
 from models import Contacts, FavoriteContact, AssociateContact, ContactMedia
 from ohmgear.token_authentication import ExpiringTokenAuthentication
 from apps.businesscards.views import BusinessViewSet
-
 from apps.folders.views import FolderViewSet
 from apps.folders.models import Folder, FolderContact
 from apps.folders.serializer import FolderContactSerializer
@@ -29,7 +36,7 @@ import ohmgear.settings.constant as constant
 # End
 
 
-#  Storing Contacts as a Bulk
+# Storing Contacts as a Bulk 
 class storeContactsViewSet(viewsets.ModelViewSet):
 
     queryset = Contacts.objects.all()
@@ -69,7 +76,8 @@ class storeContactsViewSet(viewsets.ModelViewSet):
 
         if contact:
             counter = 0
-            # Assign  first created business card to created default folder
+
+            # Assign  first created business card to created default folder 
             queryset_folder = Folder.objects.filter(
                 user_id=user_id, foldertype='PR').values()
             if not queryset_folder:
@@ -82,11 +90,12 @@ class storeContactsViewSet(viewsets.ModelViewSet):
             else:
                 folder_id = queryset_folder[0]['id']
 
-            # End
+            # ---------- End -------------- #
+
             contact_new = []
             for contact_temp in contact:
-                #                    print contact_temp
-                #                    # Validate the json data
+               
+                # --------------------  Validate the json data ------------- #
                 try:
                     validictory.validate(
                         contact_temp["bcard_json_data"],
@@ -97,7 +106,7 @@ class storeContactsViewSet(viewsets.ModelViewSet):
                 except validictory.SchemaError as error:
                     return CustomeResponse(
                         {'msg': error.message}, status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
-#                     # End
+
             if 'user_id' not in contact_temp:
                 contact_temp['user_id'] = user_id.id
                 contact_new.append(contact_temp)
@@ -121,7 +130,8 @@ class storeContactsViewSet(viewsets.ModelViewSet):
                 businesscard_id__isnull=True,
                 id=contact_id)
 
-            # Assign all contacts to folder
+
+            # -------------- Assign all contacts to folder ------------- #
             folder_contact_array = []
 
             for items in serializer.data:
@@ -134,6 +144,7 @@ class storeContactsViewSet(viewsets.ModelViewSet):
                 if folder_contact_serializer.is_valid():
                     folder_contact_serializer.save()
             # End
+           
             serializer = ContactsSerializerWithJson(queryset, many=True)
             return CustomeResponse(
                 serializer.data,
@@ -252,6 +263,7 @@ class storeContactsViewSet(viewsets.ModelViewSet):
         except:
             pass
         # add second side data
+
         try:
             email = email + [x['data']
                              for x in first_json["side_second"]["contact_info"]["email"]]
@@ -281,7 +293,8 @@ class storeContactsViewSet(viewsets.ModelViewSet):
         except:
             pass
 
-        # add second side data
+
+        # add second side data 
         try:
             email_target = [x['data'] for x in second_json[
                 "side_first"]["contact_info"]["email"]]
@@ -334,7 +347,8 @@ class storeContactsViewSet(viewsets.ModelViewSet):
         else:
             return 0
 
-    # Not in use as duplicate task will be done at device side
+
+    # Not in use as duplicate task will be done at device side 
     @list_route(methods=['post'],)
     def get_duplicate_contacts(self, request):
         user_id = request.user.id
@@ -390,7 +404,9 @@ class storeContactsViewSet(viewsets.ModelViewSet):
             merge_contact_ids = None
             target_contact_id = None
 
-        # Get the  target_bcard_id and merge_bcards_ids data
+
+        # Get the  target_bcard_id and merge_bcards_ids data 
+
         if merge_contact_ids and target_contact_id and user_id:
 
             try:
@@ -404,8 +420,10 @@ class storeContactsViewSet(viewsets.ModelViewSet):
                     validate_errors=1)
 
             first_json = json.loads(json.dumps(target_contact.bcard_json_data))
-            # make sure target_bcard_id not in merge_bcards_ids
+
+            # make sure target_bcard_id not in merge_bcards_ids 
             if target_contact_id not in merge_contact_ids:
+                
                 merge_contacts = Contacts.objects.filter(
                     id__in=merge_contact_ids, user_id=user_id).exclude(
                     businesscard_id__isnull=False).all()
@@ -421,7 +439,8 @@ class storeContactsViewSet(viewsets.ModelViewSet):
                         card_object = BusinessViewSet()
                         card_object.mergeDict(third_json, first_json)
 
-                        # assign the new json
+
+                        # assign the new json 
                         target_contact.bcard_json_data = third_json
                         target_contact.save(force_update=True)
                         first_json = third_json
@@ -434,6 +453,7 @@ class storeContactsViewSet(viewsets.ModelViewSet):
                             "msg": "merge_contact_ids does not exist OR merge contact links with business card"},
                         status=status.HTTP_400_BAD_REQUEST,
                         validate_errors=1)
+
                 # End
                 return CustomeResponse(
                     {"msg": "successfully merged"}, status=status.HTTP_200_OK)
@@ -450,7 +470,8 @@ class storeContactsViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_400_BAD_REQUEST,
                 validate_errors=1)
 
-    # Favorite Contact
+
+    # Favorite Contact 
 
     @list_route(methods=['post'],)
     def addFavoriteContact(self, request):
@@ -717,7 +738,8 @@ class ContactMediaViewSet(viewsets.ModelViewSet):
         user_id = self.request.user.id
         contact_id = self.request.QUERY_PARAMS.get('contact_id', None)
         if contact_id:
-                #  Should be pass queryset to serializer but error occured
+
+                # Should be pass queryset to serializer but error occured 
             self.queryset = self.queryset.filter(
                 contact_id=contact_id, user_id=user_id)
             if self.queryset:
@@ -739,7 +761,8 @@ class ContactMediaViewSet(viewsets.ModelViewSet):
             return CustomeResponse({'msg': "Without parameters does not support"},
                                    status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
 
-    # Add image into business card gallary
+
+    # Add image into business card gallary 
 
     def create(self, request, call_from_function=None):
         # return CustomeResponse({"msg":"POST method not
@@ -782,18 +805,20 @@ class ContactMediaViewSet(viewsets.ModelViewSet):
             return CustomeResponse({'msg': "Contact id does not exist"},
                                    status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
         #  Save Image in image Gallary
+
         data_new = {}
         data_new['bcard_image_frontend'] = ""
         data_new['bcard_image_backend'] = ""
         try:
             if 'bcard_image_frontend' in request.data and request.data[
                     'bcard_image_frontend']:
-                # Set previous image 0
+
+                #  Set previous image 0 
                 ContactMedia.objects.filter(
                     contact_id=contact, front_back=1).update(status=0)
                 bcard_image_frontend, created = ContactMedia.objects.update_or_create(
                     user_id=self.request.user, contact_id=contact, img_url=request.data['bcard_image_frontend'], front_back=1, status=1)
-                # print bcard_image_frontend.img_url
+                
                 data_new['bcard_image_frontend'] = str(
                     settings.DOMAIN_NAME) + str(settings.MEDIA_URL) + str(bcard_image_frontend.img_url)
         except:
@@ -824,6 +849,7 @@ class ContactMediaViewSet(viewsets.ModelViewSet):
                     'msg': "Please upload media bcard_image_frontend or bcard_image_backend"},
                 status=status.HTTP_200_OK)
         # End
+
     #  Change image of business card
 
     @list_route(methods=['post'],)
@@ -865,6 +891,7 @@ class ContactMediaViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_400_BAD_REQUEST,
                 validate_errors=1)
     # End
+
 
     def update(self, request, pk=None):
         return CustomeResponse({'msg': "Update method does not allow"},
