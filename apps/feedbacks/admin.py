@@ -23,16 +23,23 @@ class FeedbacksAdmin(admin.ModelAdmin):
 admin.site.register(Feedbacks, FeedbacksAdmin)
 
 
-class FeedbackCategorySubjectAdmin(admin.TabularInline):
+class FeedbackCategorySubjectAdmin(admin.ModelAdmin):
     model = FeedbackCategorySubject
+
+
+admin.site.register(FeedbackCategorySubject, FeedbackCategorySubjectAdmin)
 
 
 class FeedbackCategoryInline(admin.ModelAdmin):
     model = FeedbackCategory
-    inlines = [FeedbackCategorySubjectAdmin]
+    # inlines = [FeedbackCategorySubjectAdmin]
 
 
 admin.site.register(FeedbackCategory, FeedbackCategoryInline)
+
+
+class FeedbackCategoryAdmin(admin.ModelAdmin):
+    pass
 
 
 class ContactUsAdmin(admin.ModelAdmin):
