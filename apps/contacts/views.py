@@ -1,19 +1,10 @@
-<<<<<<< HEAD
 #  Import Python Modules
 import json
 import validictory
 from collections import OrderedDict
 
-# Third Party Imports #
-from django.shortcuts import render
-=======
-
-# Django imports
-import json
-import validictory
-
 # Third Party Imports
->>>>>>> 1fdf0fde22a07eeea87b31d2dc73b9daf63251bf
+from django.shortcuts import render
 import rest_framework.status as status
 from rest_framework.decorators import list_route
 from rest_framework import viewsets

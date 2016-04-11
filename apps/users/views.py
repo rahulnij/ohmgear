@@ -563,7 +563,10 @@ def useractivity(request, **kwargs):
                 # save password in case of forgot passord TODO  move this
                 # section from login section
                 try:
-                    reset_password_key = request.data['reset_password_key']
+                    profile = Profile.objects.select_related().get(reset_password_key=reset_password_key,user__email=username)
+                    profile.user.set_password(password)
+                    profile.user.update_password = False
+                    profile.user.save()
                 except:
                     return CustomeResponse(
                         {
