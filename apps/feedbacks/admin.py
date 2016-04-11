@@ -1,6 +1,7 @@
 
+
 from django.contrib import admin
-from .models import Feedbacks
+from .models import Feedbacks, FeedbackCategory, FeedbackCategorySubject, ContactUs
 
 
 class FeedbacksAdmin(admin.ModelAdmin):
@@ -20,3 +21,23 @@ class FeedbacksAdmin(admin.ModelAdmin):
     list_per_page = 100
 
 admin.site.register(Feedbacks, FeedbacksAdmin)
+
+
+class FeedbackCategorySubjectAdmin(admin.TabularInline):
+    model = FeedbackCategorySubject
+
+
+class FeedbackCategoryInline(admin.ModelAdmin):
+    model = FeedbackCategory
+    inlines = [FeedbackCategorySubjectAdmin]
+
+
+admin.site.register(FeedbackCategory, FeedbackCategoryInline)
+
+
+class ContactUsAdmin(admin.ModelAdmin):
+    model = ContactUs
+    # inlines = [FeedbackCategorySubjectAdmin]
+
+
+admin.site.register(ContactUs, ContactUsAdmin)
