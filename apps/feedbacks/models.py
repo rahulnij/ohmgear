@@ -1,12 +1,8 @@
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
 from django.conf import settings
-from simple_history.models import HistoricalRecords
-from django_pgjson.fields import JsonField
-User = settings.AUTH_USER_MODEL
 
-#from serializer import BusinessCardMediaSerializer
-# Create your models here.
+User = settings.AUTH_USER_MODEL
 
 
 class Feedbacks(models.Model):
