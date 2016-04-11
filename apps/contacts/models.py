@@ -1,14 +1,11 @@
-# Django imports
 from django.db import models
+from apps.businesscards.models import BusinessCard,BusinessCardTemplate
 from django.utils.translation import ugettext_lazy as _
-from django.contrib.postgres.fields import JSONField
+from django_pgjson.fields import JsonField
 from django.conf import settings
-User = settings.AUTH_USER_MODEL
 
-# Application imports
-from apps.businesscards.models import BusinessCard, BusinessCardTemplate
 from simple_history.models import HistoricalRecords
-from apps.folders.models import FolderContact
+User = settings.AUTH_USER_MODEL
 
 
 class Contacts(models.Model):
