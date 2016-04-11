@@ -1,10 +1,8 @@
 #  Import Python Modules
 import json
 import validictory
-from collections import OrderedDict
 
 # Third Party Imports
-from django.shortcuts import render
 import rest_framework.status as status
 from rest_framework.decorators import list_route
 from rest_framework import viewsets
@@ -23,7 +21,6 @@ from apps.folders.models import Folder, FolderContact
 from apps.folders.serializer import FolderContactSerializer
 import copy
 from django.db.models import Q
-import ohmgear.settings.constant as constant
 # End
 
 
@@ -81,12 +78,11 @@ class storeContactsViewSet(viewsets.ModelViewSet):
             else:
                 folder_id = queryset_folder[0]['id']
 
-            # ---------- End -------------- #
+            # End
 
             contact_new = []
             for contact_temp in contact:
-               
-                # --------------------  Validate the json data ------------- #
+                # Validate the json data
                 try:
                     validictory.validate(
                         contact_temp["bcard_json_data"],
@@ -121,8 +117,7 @@ class storeContactsViewSet(viewsets.ModelViewSet):
                 businesscard_id__isnull=True,
                 id=contact_id)
 
-
-            # -------------- Assign all contacts to folder ------------- #
+            # Assign all contacts to folder
             folder_contact_array = []
 
             for items in serializer.data:
@@ -135,7 +130,6 @@ class storeContactsViewSet(viewsets.ModelViewSet):
                 if folder_contact_serializer.is_valid():
                     folder_contact_serializer.save()
             # End
-           
             serializer = ContactsSerializerWithJson(queryset, many=True)
             return CustomeResponse(
                 serializer.data,
@@ -461,7 +455,6 @@ class storeContactsViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_400_BAD_REQUEST,
                 validate_errors=1)
 
-
     # Favorite Contact 
 
     @list_route(methods=['post'],)
@@ -752,9 +745,7 @@ class ContactMediaViewSet(viewsets.ModelViewSet):
             return CustomeResponse({'msg': "Without parameters does not support"},
                                    status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
 
-
     # Add image into business card gallary 
-
     def create(self, request, call_from_function=None):
         # return CustomeResponse({"msg":"POST method not
         # allowed"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
@@ -808,8 +799,7 @@ class ContactMediaViewSet(viewsets.ModelViewSet):
                 ContactMedia.objects.filter(
                     contact_id=contact, front_back=1).update(status=0)
                 bcard_image_frontend, created = ContactMedia.objects.update_or_create(
-                    user_id=self.request.user, contact_id=contact, img_url=request.data['bcard_image_frontend'], front_back=1, status=1)
-                
+                    user_id=self.request.user, contact_id=contact, img_url=request.data['bcard_image_frontend'], front_back=1, status=1) 
                 data_new['bcard_image_frontend'] = str(
                     settings.DOMAIN_NAME) + str(settings.MEDIA_URL) + str(bcard_image_frontend.img_url)
         except:
