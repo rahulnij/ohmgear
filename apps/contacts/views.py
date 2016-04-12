@@ -152,8 +152,6 @@ class storeContactsViewSet(viewsets.ModelViewSet):
             folder_contact_data = FolderContact.objects.select_related(
                 'folder_id').get(contact_id=pk, user_id=request.user.id)
             link_status = folder_contact_data.link_status
-            print "link_status"
-            print link_status
             get_folder_data = folder_contact_data.folder_id
             get_user_bcard_id = get_folder_data.businesscard_id.id
         except:
@@ -170,7 +168,6 @@ class storeContactsViewSet(viewsets.ModelViewSet):
         if folder_contact_data:
 
             if link_status == "1" or link_status == "0":
-                print "white or orange"
                 if contact_data:
                     contact_data.delete()
                     return CustomeResponse(
