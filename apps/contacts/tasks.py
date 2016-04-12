@@ -6,9 +6,14 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+MAX_WIDTH = 1920
+
 
 @app.task
-def resize_image(image_path, dim_x):
+def resize_image(image_path, dim_x, **kwargs):
+    '''
+    resize any image while maintaining aspect ratio
+    '''
     with open(image_path, 'r') as orig:
         im = Image.open(orig, mode='r')
         new_y = (float(dim_x) * float(im.height)) / float(im.width)
@@ -27,7 +32,8 @@ def resize_image(image_path, dim_x):
             logger.critical("Caught IOError in {}, {}".format(__file__, e))
             return
         f.close()
-
+        return new_img_path
+        
 
 @app.task
 def image_properties(image_path, img_id):
@@ -40,3 +46,23 @@ def image_properties(image_path, img_id):
             contact_media.position = 1
         else:
             contact_media.position = 2
+
+
+@app.task
+def resize_contact_media_image(**kwargs):
+    try:
+        contact_media = ContactMedia.objects.get(kwargs.get('pk'))
+    except ContactMedia.DoesNotExist as e:
+        logger.error("Caught DoesNotExist exception for ContactMedia with prmary key {}, in {}".format(
+            kwargs.get('pk'), __file__)
+        )
+        # TODO: Notify Sentry
+        return
+    new_img_path = resize_image(contact_media.img_url, MAX_WIDTH)
+    contact_media.img_url = new_img_path
+    try:
+        contact_media.save()
+    except Exception as e:
+        logger.critical("Caught Exception {} in {}".format(e, __file__))
+        # TODO: Notify Sentry
+
