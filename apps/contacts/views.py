@@ -1,11 +1,6 @@
 #  Import Python Modules
 import json
 import validictory
-from collections import OrderedDict
-
-# Django imports
-import json
-import validictory
 
 # Third Party Imports
 import rest_framework.status as status
@@ -26,7 +21,6 @@ from apps.folders.models import Folder, FolderContact
 from apps.folders.serializer import FolderContactSerializer
 import copy
 from django.db.models import Q
-import ohmgear.settings.constant as constant
 # End
 
 

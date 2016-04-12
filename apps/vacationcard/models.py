@@ -1,6 +1,5 @@
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
-#from django.db.models.User import User
 from django.conf import settings
 User = settings.AUTH_USER_MODEL
 

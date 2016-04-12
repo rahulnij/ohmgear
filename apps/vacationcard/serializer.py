@@ -1,5 +1,4 @@
 from django.conf.urls import url, include
-#from apps.identifiers.models import Identifier
 from models import VacationTrip, VacationCard
 from apps.businesscards.models import BusinessCardVacation
 from rest_framework import routers, serializers, viewsets
@@ -39,7 +38,7 @@ class VacationTripSerializer(serializers.ModelSerializer):
             self.count = 1
         start_time = datetime.strptime(
             str(data['trip_start_date']), '%Y-%m-%d')
-        end_date = datetime.strptime(str(data['trip_end_date']), '%Y-%m-%d')
+
         if self.local_date:
             for tempData in self.local_date:
                 if tempData['trip_start_date'] > start_time:
@@ -91,7 +90,7 @@ class VacationEditTripSerializer(serializers.ModelSerializer):
             self.count = 1
         start_time = datetime.strptime(
             str(data['trip_start_date']), '%Y-%m-%d')
-        end_date = datetime.strptime(str(data['trip_end_date']), '%Y-%m-%d')
+
         if self.local_date:
             for tempData in self.local_date:
                 if tempData['trip_start_date'] > start_time:
@@ -134,7 +133,7 @@ class VacationDuplicateSerializer(serializers.ModelSerializer):
 class VacationCardSerializer(serializers.ModelSerializer):
     attached_business_cards = serializers.IntegerField(
         source='businesscardvacation.count', read_only=True)
-   # business_vacation = BusinessCardSerializer(many=True,read_only=True)
+
     vacation_trips = VacationTripSerializer(many=True, read_only=True)
 
     class Meta:
@@ -164,7 +163,7 @@ from apps.businesscards.serializer import BusinessCardSerializer
 
 
 class SingleVacationCardSerializer(serializers.ModelSerializer):
-    #vacationbusinesscard = BusinessCardVacationSerializer(many=True,read_only=True)
+
     business_vacation = BusinessCardSerializer(many=True, read_only=True)
     vacation_trips = VacationTripSerializer(many=True, read_only=True)
 
