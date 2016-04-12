@@ -169,7 +169,7 @@ class storeContactsViewSet(viewsets.ModelViewSet):
 
         if folder_contact_data:
 
-            if link_status == 1 or 0:
+            if link_status == "1" or link_status == "0":
                 print "white or orange"
                 if contact_data:
                     contact_data.delete()
@@ -180,25 +180,18 @@ class storeContactsViewSet(viewsets.ModelViewSet):
                         {'msg': "Cannot be deleted"}, status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
 
             else:
-                print "not white or orange"
                 if link_status == 4:
 
                     try:
                         # find user contact_id with bcard_id and user_id
                         existing_contact_data = Contacts.objects.get(
                             businesscard_id=get_user_bcard_id, user_id=request.user.id)
-                        print "existing_contact_data"
-                        print existing_contact_data
                     except:
                         return CustomeResponse(
                             {'msg': "server error"}, status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
-                    
                     # get contact id of user
                     getcontact_id = existing_contact_data.id
-                    # update link status of user which is connected
                     # get user_id of contact which is to be deleted.
-                    print "getcontact_id"
-                    print getcontact_id
                     existing_user_id = existing_contact_data.user_id
                     new_contact_data = Contacts.objects.get(
                         id=pk)
@@ -210,7 +203,7 @@ class storeContactsViewSet(viewsets.ModelViewSet):
                         new_user_folder_contact_data.delete()
                         folder_contact_data.delete()
                         return CustomeResponse(
-                            {'msg': "Connected Contact has been deleted successfully"}, status=status.HTTP_200_OK)
+                            {'msg': "Both Connected Contact has been successfully"}, status=status.HTTP_200_OK)
 
                     else:
                         return CustomeResponse(
