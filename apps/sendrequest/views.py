@@ -119,15 +119,15 @@ class SendAcceptRequest(viewsets.ModelViewSet):
 
         except:
             return False
-    #-------------------------- End -------------------------------------------#
+    # End 
 
     @list_route(methods=['post'],)
     def invite_to_businesscard(self, request):
         user_id = request.user
         try:
-            receiver_business_card_id = request.DATA[
+            receiver_business_card_id = request.data[
                 'receiver_business_card_id']
-            sender_business_card_id = request.DATA['sender_business_card_id']
+            sender_business_card_id = request.data['sender_business_card_id']
             get_profile = Profile.objects.filter(user_id=user_id).values(
                 "first_name", "last_name").latest("id")
             user_name = str(get_profile["first_name"]) + \
@@ -178,7 +178,7 @@ class SendAcceptRequest(viewsets.ModelViewSet):
                 }},
         }
         message = json.dumps(message, ensure_ascii=False)
-        # ------------------------ End ---------------------------- #
+        #  End 
         # TODO If user install app more then one device then send the notification more then one device
         # --- End ---#
         response = client.publish(
@@ -218,9 +218,9 @@ class SendAcceptRequest(viewsets.ModelViewSet):
     def accept_businesscard(self, request):
         user_id = request.user
         try:
-            receiver_business_card_id = request.DATA[
+            receiver_business_card_id = request.data[
                 'receiver_business_card_id']
-            sender_business_card_id = request.DATA['sender_business_card_id']
+            sender_business_card_id = request.data['sender_business_card_id']
         except:
             return CustomeResponse(
                 {
@@ -273,7 +273,7 @@ class SendAcceptRequest(viewsets.ModelViewSet):
             receiver_folder=receiver_folder,
             receiver_business_card=receiver_business_card,
             sender_user_id=user_id)
-        # --------------------------------- End ------------------------------------------------------------- #
+        #  End 
 
         return CustomeResponse({"msg": "success"}, status=status.HTTP_200_OK)
 
