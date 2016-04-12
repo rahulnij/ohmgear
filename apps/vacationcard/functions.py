@@ -1,7 +1,6 @@
-from django.conf import settings
-#------------------ Return token if does not exit then create -------------------#
+# Return token if does not exit then create
 from models import VacationCard, VacationTrip
-from serializer import VacationTripSerializer, VacationEditTripSerializer, VacationDuplicateSerializer
+from serializer import VacationDuplicateSerializer
 from ohmgear.functions import CustomeResponse
 import rest_framework.status as status
 
@@ -10,7 +9,7 @@ def CreateDuplicateVacationCard(vacation_id=None, user_id=None):
 
     if vacation_id and user_id:
 
-        #-------------------- Duplicate Vacation card row ---------------------------#
+        # Duplicate Vacation card row
         try:
             vcards = VacationCard.objects.get(id=vacation_id, user_id=user_id)
         except:
@@ -18,9 +17,9 @@ def CreateDuplicateVacationCard(vacation_id=None, user_id=None):
         vcards.id = None
         vcards.save()
         vcards_id_new = vcards.id
-        #---------------------- End---------------------------------------------------#
+        # End
 
-        #--------------------- Duplicate Vacation Trip row ------------------------#
+        # Duplicate Vacation Trip row
         try:
 
             vacation_trip = VacationTrip.objects.filter(
@@ -44,17 +43,11 @@ def CreateDuplicateVacationCard(vacation_id=None, user_id=None):
                 if serializer.is_valid():
                     serializer.save()
                     return vcards_id_new
-                    # return
-                    # CustomeResponse(serializer.data,status=status.HTTP_201_CREATED)
+
                 else:
                     return CustomeResponse(serializer.errors, status=status.HTTP_201_CREATED)
 
         except:
             pass
-        #----------------------- End--------------------------------------------------#
+
         return vcards_id_new
-        #---------------------- End---------------------------------------------------#
-
-        #--------------- Return the new Vacation card with trip --------------------------------#
-
-        #------------------------- End -----------------------------------------------#

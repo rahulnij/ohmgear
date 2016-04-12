@@ -1,10 +1,7 @@
-from django.conf.urls import url, include
-#from apps.identifiers.models import Identifier
+
 from models import Identifier, LockIdentifier
-from rest_framework import routers, serializers, viewsets
+from rest_framework import serializers
 from functions import validate_identifier
-from ohmgear.functions import CustomeResponse
-import rest_framework.status as status
 
 from apps.businesscards.serializer import BusinessCardSerializer
 

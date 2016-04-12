@@ -34,6 +34,7 @@ class ContactsSerializer(serializers.ModelSerializer):
 
 #   Used in fetch contact data
 
+
 class ContactsSerializerWithJson(serializers.ModelSerializer):
 
     bcard_json_data = serializers.SerializerMethodField(

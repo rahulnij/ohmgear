@@ -1,19 +1,21 @@
-from django.shortcuts import render
-from rest_framework import routers, serializers, viewsets
-from models import Identifier, LockIdentifier
-from apps.businesscards.models import BusinessCardIdentifier
-from serializer import IdentifierSerializer, LockIdentifierSerializer, BusinessIdentifierSerializer
-from apps.businesscards.serializer import BusinessCardIdentifierSerializer
-from ohmgear.functions import CustomeResponse
-from rest_framework.decorators import api_view
-import rest_framework.status as status
-from datetime import date
-import datetime
-import random
-from functions import CreateSystemIdentifier
+
+# django imports
 from ohmgear.token_authentication import ExpiringTokenAuthentication
 from rest_framework.permissions import IsAuthenticated
-from rest_framework.decorators import detail_route, list_route
+from rest_framework.decorators import list_route
+from rest_framework import viewsets
+
+# third party imports
+from ohmgear.functions import CustomeResponse
+import rest_framework.status as status
+import datetime
+import random
+
+# application imports
+from models import Identifier, LockIdentifier
+from serializer import IdentifierSerializer, LockIdentifierSerializer, BusinessIdentifierSerializer
+from functions import CreateSystemIdentifier
+
 
 # Create your views here.
 
@@ -23,25 +25,21 @@ class IdentifierViewSet(viewsets.ModelViewSet):
     serializer_class = IdentifierSerializer
     authentication_classes = (ExpiringTokenAuthentication,)
     permission_classes = (IsAuthenticated,)
-    #--------------Method: GET-----------------------------#
 
     def list(self, request, **kwargs):
         if request.method == 'GET':
 
-            identifier = self.request.QUERY_PARAMS.get('identifier', None)
+            identifier = self.request.query_params.get('identifier', None)
 
-            # -----------check whether idnetifier is exist or not if not give suggested identifier--------#
+            # check whether idnetifier is exist or not if not give suggested identifier
             identifierdata = Identifier.objects.filter(
                 identifier=identifier).values()
 
-            # -----------Get all identifiers of the user--------#
-            user = self.request.QUERY_PARAMS.get('user', None)
-            #userdata = Identifier.objects.filter(user=user).values().order_by('-id')
-
+            # Get all identifiers of the user
+            user = self.request.query_params.get('user', None)
             userdata = Identifier.objects.select_related(
                 'businesscard_identifiers').filter(user=user).order_by('-id')
 
-           # queryset = VacationCard.objects.select_related().all().filter(user_id=user_id)
             serializer = BusinessIdentifierSerializer(userdata, many=True)
 
             if userdata:
@@ -64,7 +62,6 @@ class IdentifierViewSet(viewsets.ModelViewSet):
                             list.append(newidentifier)
                     return CustomeResponse({"msg": list}, status=status.HTTP_200_OK, validate_errors=True)
 
-    #--------------Method: GET retrieve single record-----------------------------#
     def retrieve(self, request, pk=None):
         queryset = self.queryset
         identifier = get_object_or_404(queryset, pk=pk)
@@ -73,28 +70,19 @@ class IdentifierViewSet(viewsets.ModelViewSet):
 
         return CustomeResponse(serializer.data, status=status.HTTP_200_OK)
 
-    #--------------Method: POST create new Identifier -----------------------------#
     def create(self, request):
 
         data = request.data.copy()
         data['user'] = request.user.id
         data['identifierlastdate'] = str(
             (datetime.date.today() + datetime.timedelta(3 * 365 / 12)).isoformat())
-        #serializer =  IdentifierSerializer(data=request.DATA,context={'request': request})
-
-        # print businesscard_id
-        #------ object value which can be change are mutable object value which cannot be change are immutable  -----------#
-        #mutable = request.POST._mutable
-        #request.POST._mutable = True
-        #request.DATA['identifierlastdate'] = str((datetime.date.today() + datetime.timedelta(3*365/12)).isoformat())
 
         if request.POST.get('identifiertype') == '1':
             pass
-#------------System identifier is done on refersh in another API-----------#
-            #request.POST['identifier'] =   CreateSystemIdentifier()
+
         else:
             pass
-        #request.POST._mutable = mutable
+
         serializer = IdentifierSerializer(
             data=data, context={'request': request, 'msg': 'not exist'})
 
@@ -127,7 +115,6 @@ class IdentifierViewSet(viewsets.ModelViewSet):
             return CustomeResponse({'msg': 'Invalid User'}, status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
 
 
-# class   LockidentifierViewSet(viewsets.Modelsets):
     @list_route(methods=['post'],)
     def lockidentifier(self, request):
         print request.POST.get('identifier')
@@ -135,13 +122,10 @@ class IdentifierViewSet(viewsets.ModelViewSet):
             user_id = request.user
         except:
             user_id = None
-        data = {}
-        #data = request.data.copy()
+        data = request.data.copy()
         data['user'] = request.user.id
-        data['identifier'] = request.POST.get('identifier')
-
         serializer = LockIdentifierSerializer(
-            data=data, context={'request': request, 'msg': 'not exist'})
+            data=data, context={'request': data, 'msg': 'not exist'})
 
         if serializer.is_valid():
             identifier_exist = Identifier.objects.filter(

@@ -24,7 +24,7 @@ from django.db.models import Q
 # End
 
 
-# Storing Contacts as a Bulk 
+# Storing Contacts as a Bulk
 class storeContactsViewSet(viewsets.ModelViewSet):
 
     queryset = Contacts.objects.all()
@@ -65,7 +65,7 @@ class storeContactsViewSet(viewsets.ModelViewSet):
         if contact:
             counter = 0
 
-            # Assign  first created business card to created default folder 
+            # Assign  first created business card to created default folder
             queryset_folder = Folder.objects.filter(
                 user_id=user_id, foldertype='PR').values()
             if not queryset_folder:
@@ -167,8 +167,7 @@ class storeContactsViewSet(viewsets.ModelViewSet):
 
         if folder_contact_data:
 
-            if link_status == 0:
-
+            if link_status == "1" or link_status == "0":
                 if contact_data:
                     contact_data.delete()
                     return CustomeResponse(
@@ -178,38 +177,50 @@ class storeContactsViewSet(viewsets.ModelViewSet):
                         {'msg': "Cannot be deleted"}, status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
 
             else:
-                bcard_id = get_user_bcard_id
-                try:
-                    # find user contact_id with bcard_id and user_id
-                    contact_data = Contacts.objects.get(
-                        businesscard_id=bcard_id, user_id=request.user.id)
-                except:
-                    return CustomeResponse(
-                        {'msg': "server error"}, status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
+                if link_status == 4:
 
-                # get contact id of user
-                getcontact_id = contact_data.id
-                # update link status of user which is connected
-                # get user_id of contact which is to be deleted.
-                existing_user_id = contact_data.user_id
-                new_contact_data = Contacts.objects.get(
-                    id=pk)
+                    try:
+                        # find user contact_id with bcard_id and user_id
+                        existing_contact_data = Contacts.objects.get(
+                            businesscard_id=get_user_bcard_id, user_id=request.user.id)
+                    except:
+                        return CustomeResponse(
+                            {'msg': "server error"}, status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
+                    # get contact id of user
+                    getcontact_id = existing_contact_data.id
+                    # get user_id of contact which is to be deleted.
+                    existing_user_id = existing_contact_data.user_id
+                    new_contact_data = Contacts.objects.get(
+                        id=pk)
 
-                # new_contact_user_id = new_contact_data.id
-                if existing_user_id != new_contact_data.user_id.id and folder_contact_data:
-                    new_user_folder_contact_data = FolderContact.objects.filter(
-                        contact_id=getcontact_id, user_id=new_contact_data.user_id.id).values()
-                    new_user_folder_contact_data.update(link_status=3)
-                    folderContactData.delete()
-                    return CustomeResponse(
-                        {'msg': "Contact has been deleted successfully"}, status=status.HTTP_200_OK)
+                    # new_contact_user_id = new_contact_data.id
+                    if existing_user_id != new_contact_data.user_id.id and folder_contact_data:
+                        new_user_folder_contact_data = FolderContact.objects.filter(
+                            contact_id=getcontact_id, user_id=new_contact_data.user_id.id)
+                        new_user_folder_contact_data.delete()
+                        folder_contact_data.delete()
+                        return CustomeResponse(
+                            {'msg': "Both Connected Contact has been successfully"}, status=status.HTTP_200_OK)
+
+                    else:
+                        return CustomeResponse(
+                            {
+                                'msg': "Contact caanot be deleted try again"},
+                            status=status.HTTP_400_BAD_REQUEST,
+                            validate_errors=1)
 
                 else:
-                    return CustomeResponse(
-                        {
-                            'msg': "Contact caanot be deleted try again"},
-                        status=status.HTTP_400_BAD_REQUEST,
-                        validate_errors=1)
+                    try:
+                        folder_contact_data = FolderContact.objects.filter(contact_id=pk, user_id=request.user.id)
+                        folder_contact_data.update(link_status=4,is_linked=0)
+                        return CustomeResponse(
+                            {'msg': "Connected Contact has been deleted successfully"}, status=status.HTTP_200_OK)
+                    except:
+                        return CustomeResponse(
+                            {
+                                'msg': "Server error"},
+                            status=status.HTTP_400_BAD_REQUEST,
+                            validate_errors=1)
         else:
             return CustomeResponse(
                 {'msg': "No contact found"}, status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
@@ -278,8 +289,7 @@ class storeContactsViewSet(viewsets.ModelViewSet):
         except:
             pass
 
-
-        # add second side data 
+        # add second side data
         try:
             email_target = [x['data'] for x in second_json[
                 "side_first"]["contact_info"]["email"]]
@@ -332,8 +342,7 @@ class storeContactsViewSet(viewsets.ModelViewSet):
         else:
             return 0
 
-
-    # Not in use as duplicate task will be done at device side 
+    # Not in use as duplicate task will be done at device side
     @list_route(methods=['post'],)
     def get_duplicate_contacts(self, request):
         user_id = request.user.id
@@ -389,8 +398,7 @@ class storeContactsViewSet(viewsets.ModelViewSet):
             merge_contact_ids = None
             target_contact_id = None
 
-
-        # Get the  target_bcard_id and merge_bcards_ids data 
+        # Get the  target_bcard_id and merge_bcards_ids data
 
         if merge_contact_ids and target_contact_id and user_id:
 
@@ -406,9 +414,9 @@ class storeContactsViewSet(viewsets.ModelViewSet):
 
             first_json = json.loads(json.dumps(target_contact.bcard_json_data))
 
-            # make sure target_bcard_id not in merge_bcards_ids 
+            # make sure target_bcard_id not in merge_bcards_ids
             if target_contact_id not in merge_contact_ids:
-                
+
                 merge_contacts = Contacts.objects.filter(
                     id__in=merge_contact_ids, user_id=user_id).exclude(
                     businesscard_id__isnull=False).all()
@@ -424,8 +432,7 @@ class storeContactsViewSet(viewsets.ModelViewSet):
                         card_object = BusinessViewSet()
                         card_object.mergeDict(third_json, first_json)
 
-
-                        # assign the new json 
+                        # assign the new json
                         target_contact.bcard_json_data = third_json
                         target_contact.save(force_update=True)
                         first_json = third_json
@@ -455,7 +462,7 @@ class storeContactsViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_400_BAD_REQUEST,
                 validate_errors=1)
 
-    # Favorite Contact 
+    # Favorite Contact
 
     @list_route(methods=['post'],)
     def addFavoriteContact(self, request):
@@ -723,7 +730,7 @@ class ContactMediaViewSet(viewsets.ModelViewSet):
         contact_id = self.request.QUERY_PARAMS.get('contact_id', None)
         if contact_id:
 
-                # Should be pass queryset to serializer but error occured 
+                # Should be pass queryset to serializer but error occured
             self.queryset = self.queryset.filter(
                 contact_id=contact_id, user_id=user_id)
             if self.queryset:
@@ -745,7 +752,7 @@ class ContactMediaViewSet(viewsets.ModelViewSet):
             return CustomeResponse({'msg': "Without parameters does not support"},
                                    status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
 
-    # Add image into business card gallary 
+    # Add image into business card gallary
     def create(self, request, call_from_function=None):
         # return CustomeResponse({"msg":"POST method not
         # allowed"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
@@ -795,11 +802,11 @@ class ContactMediaViewSet(viewsets.ModelViewSet):
             if 'bcard_image_frontend' in request.data and request.data[
                     'bcard_image_frontend']:
 
-                #  Set previous image 0 
+                #  Set previous image 0
                 ContactMedia.objects.filter(
                     contact_id=contact, front_back=1).update(status=0)
                 bcard_image_frontend, created = ContactMedia.objects.update_or_create(
-                    user_id=self.request.user, contact_id=contact, img_url=request.data['bcard_image_frontend'], front_back=1, status=1) 
+                    user_id=self.request.user, contact_id=contact, img_url=request.data['bcard_image_frontend'], front_back=1, status=1)
                 data_new['bcard_image_frontend'] = str(
                     settings.DOMAIN_NAME) + str(settings.MEDIA_URL) + str(bcard_image_frontend.img_url)
         except:
@@ -872,7 +879,6 @@ class ContactMediaViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_400_BAD_REQUEST,
                 validate_errors=1)
     # End
-
 
     def update(self, request, pk=None):
         return CustomeResponse({'msg': "Update method does not allow"},
