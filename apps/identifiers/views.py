@@ -122,12 +122,10 @@ class IdentifierViewSet(viewsets.ModelViewSet):
             user_id = request.user
         except:
             user_id = None
-        data = {}
+        data = request.data.copy()
         data['user'] = request.user.id
-        data['identifier'] = request.POST.get('identifier')
-
         serializer = LockIdentifierSerializer(
-            data=data, context={'request': request, 'msg': 'not exist'})
+            data=data, context={'request': data, 'msg': 'not exist'})
 
         if serializer.is_valid():
             identifier_exist = Identifier.objects.filter(
