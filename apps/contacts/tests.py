@@ -89,5 +89,5 @@ class TestContactModel(TestCase):
         biz_card = BusinessCard(user_id=self.user)
         contact = Contacts(businesscard_id=biz_card)
         contact_media = ContactMedia(user_id=self.user,
-            contact_id=contact, img_url='')
+			contact_id=contact, img_url='')
         self.assertIsInstance(contact_media, ContactMedia)
