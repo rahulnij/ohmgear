@@ -2,7 +2,17 @@ from django.contrib import admin
 
 # Register your models here.
 
-from .models import BusinessCardSkillAvailable, BusinessCardIdentifier
+from .models import (
+    BusinessCardSkillAvailable, 
+    BusinessCardIdentifier,
+    BusinessCard
+)
+
+
+class BusinessCardAdmin(admin.ModelAdmin):
+    pass
+
+admin.site.register(BusinessCard, BusinessCardAdmin)
 
 
 class BusinessCardSkillAvailableAdmin(admin.ModelAdmin):

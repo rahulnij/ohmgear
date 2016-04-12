@@ -75,38 +75,43 @@ class SendAcceptRequest(viewsets.ModelViewSet):
 
     def exchange_business_cards(self, **karg):
 
-            # Required data
-            # sender_folder
-            # sender_business_card object with contact_detail
-            # receiver_folder
-            # receiver_business_card object with contact_detail
-            # sender_user_id # we can also get this from sender_business_card
+            #-- Required data---#
+            #-- sender_folder
+            #-- sender_business_card object with contact_detail
+            #-- receiver_folder
+            #-- receiver_business_card object with contact_detail
+            #-- sender_user_id # we can also get this from sender_business_card
+
+        try:
+            receiver_contact_id = karg['receiver_business_card'].contact_detail
+        except:
+            receiver_contact_id = karg['receiver_contact_id']
+
+        try:
+            sender_contact_id = karg['sender_business_card'].contact_detail
+        except:
+            sender_contact_id = karg['sender_contact_id']
 
         try:
             try:
                 folder_sender = FolderContact.objects.get(
-                    folder_id=karg['sender_folder'],
-                    contact_id=karg['receiver_business_card'].contact_detail)
+                    folder_id=karg['sender_folder'], contact_id=receiver_contact_id)
             except:
                 folder_sender = FolderContact()
                 folder_sender.user_id = karg['sender_user_id']
                 folder_sender.folder_id = karg['sender_folder']
-                folder_sender.contact_id = karg[
-                    'receiver_business_card'].contact_detail
+                folder_sender.contact_id = receiver_contact_id
                 folder_sender.link_status = 2
                 folder_sender.save()
 
             try:
                 folder_receiver = FolderContact.objects.get(
-                    folder_id=karg['receiver_folder'],
-                    contact_id=karg['sender_business_card'].contact_detail)
+                    folder_id=karg['receiver_folder'], contact_id=sender_contact_id)
             except:
                 folder_receiver = FolderContact()
-                folder_receiver.user_id = karg[
-                    'receiver_business_card'].user_id
+                folder_receiver.user_id = receiver_contact_id.user_id
                 folder_receiver.folder_id = karg['receiver_folder']
-                folder_receiver.contact_id = karg[
-                    'sender_business_card'].contact_detail
+                folder_receiver.contact_id = sender_contact_id
                 folder_receiver.link_status = 2
                 folder_receiver.save()
 
@@ -114,7 +119,7 @@ class SendAcceptRequest(viewsets.ModelViewSet):
 
         except:
             return False
-    # -------------------------- End -------------------------------- #
+    # End 
 
     @list_route(methods=['post'],)
     def invite_to_businesscard(self, request):
@@ -173,7 +178,7 @@ class SendAcceptRequest(viewsets.ModelViewSet):
                 }}),
         }
         message = json.dumps(message, ensure_ascii=False)
-        # ------------------------ End ---------------------------- #
+        #  End 
         # TODO If user install app more then one device then send the notification more then one device
         # --- End ---#
         response = client.publish(
@@ -268,11 +273,11 @@ class SendAcceptRequest(viewsets.ModelViewSet):
             receiver_folder=receiver_folder,
             receiver_business_card=receiver_business_card,
             sender_user_id=user_id)
-        # --------------------------------- End ------------------------------------------------------------- #
+        #  End 
 
         return CustomeResponse({"msg": "success"}, status=status.HTTP_200_OK)
 
-    # send white contact invitation 
+    # send white contact invitation
     @list_route(methods=['post'],)
     def send_white_invitation(self, request):
 
@@ -307,11 +312,19 @@ class SendAcceptRequest(viewsets.ModelViewSet):
             data=data, context={'request': request, 'msg': 'not exist'})
         if serializer.is_valid():
             serializer.save()
-            BaseSendMail.delay(data, type='grey_invitation', key=activation_key,
-                               url=email_invit_url, first_name=fname, email=email)
-            return CustomeResponse(serializer.data, status=status.HTTP_201_CREATED)
+            BaseSendMail.delay(
+                data,
+                type='grey_invitation',
+                key=activation_key,
+                url=email_invit_url,
+                first_name=fname,
+                email=email)
+            return CustomeResponse(
+                serializer.data,
+                status=status.HTTP_201_CREATED)
         else:
-            return CustomeResponse({'msg': serializer.errors}, validate_errors=1)
+            return CustomeResponse(
+                {'msg': serializer.errors}, validate_errors=1)
 
     # yellow contacts
     @list_route(methods=['post'],)
@@ -325,9 +338,11 @@ class SendAcceptRequest(viewsets.ModelViewSet):
         queryset_folder = SendRequest.objects.filter(
             receiver_id=user_id, read_status=0).values()
         if queryset_folder:
-            return CustomeResponse({'msg': queryset_folder}, status=status.HTTP_201_CREATED)
+            return CustomeResponse(
+                {'msg': queryset_folder}, status=status.HTTP_201_CREATED)
         else:
-            return CustomeResponse({'msg': "data not found"}, validate_errors=1)
+            return CustomeResponse(
+                {'msg': "data not found"}, validate_errors=1)
 
 
 # needs to be optimized as per client provided form
@@ -346,6 +361,13 @@ class GreyInvitationViewSet(viewsets.ModelViewSet):
             sid = request.GET.get('sid').decode('base64', 'strict')
 
         except:
-            return CustomeResponse({'msg': "parameter(s) not found"}, status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
+            return CustomeResponse({'msg': "parameter(s) not found"},
+                                   status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
 
-        return render(request, 'sendrequest/index.html', {'email': email, 'fname': fname, 'lname': lname, 'cid': cid, 'sid': sid})
+        return render(request,
+                      'sendrequest/index.html',
+                      {'email': email,
+                       'fname': fname,
+                       'lname': lname,
+                       'cid': cid,
+                       'sid': sid})
