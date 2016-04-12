@@ -36,7 +36,7 @@ class IdentifierViewSet(viewsets.ModelViewSet):
                 identifier=identifier).values()
 
             # Get all identifiers of the user
-            user = self.request.QUERY_PARAMS.get('user', None)
+            user = self.request.query_params.get('user', None)
             userdata = Identifier.objects.select_related(
                 'businesscard_identifiers').filter(user=user).order_by('-id')
 
