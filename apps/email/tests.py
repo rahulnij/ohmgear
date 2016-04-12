@@ -1,6 +1,6 @@
 from rest_framework.test import APITestCase, APIClient
 from apps.users.functions import getToken
-
+from apps.email.views import BaseSendMail
 # Test api : create business card
 
 
@@ -8,10 +8,8 @@ class EmailCase(APITestCase):
     client = APIClient()
 
     fixtures = ['default']
-    
-    user_token = ''
 
-    user_id = 0
+    user_data = 0
 
     def setUp(self):
         """ create the user and get the token """
@@ -22,20 +20,14 @@ class EmailCase(APITestCase):
             "password": "1111",
             "user_type": 2,
             "status": 1}
-        response = self.client.post(url, data, format='json')        
-        self.user_token = getToken(response.data["data"]["id"])
-        self.user_id = response.data["data"]["id"]
+        response = self.client.post(url, data, format='json')
+        self.user_data = response.data["data"]
         """ End """
 
-
     def test_send_emai_to_user(self):
-        
-        auth_headers = {
-            'HTTP_AUTHORIZATION': 'Token ' + str(self.user_token),
-        }
-        """ call business list api """
-        response = self.client.post('/api/profile/%s/' 
-			% (self.user_id), '', format='json')
-        print response
-        self.assertEqual(response.status_code, 200)
 
+        """ send mail to created user """
+        send_mail = BaseSendMail.delay(
+            self.user_data,
+            type='test_email')
+        self.assertEqual(send_mail.state, 'PENDING')

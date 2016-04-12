@@ -164,6 +164,19 @@
       "created_date":"2015-09-03 00:00:00",
       "updated_date":"2015-09-03 00:00:00"
     }
+  },
+  {
+    "model": "email.emailtemplate",
+    "pk": 6,
+    "fields": {
+      "subject": "testing mail",
+      "content": "Hey this is test mail from kinbow.",
+      "slug": "test_email",
+      "status":"True",
+      "from_email": "",
+      "created_date":"2015-09-03 00:00:00",
+      "updated_date":"2015-09-03 00:00:00"
+    }
   }
   
   

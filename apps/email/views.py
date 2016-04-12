@@ -23,11 +23,12 @@ class BaseSendMail(Task):
     def run(self, user, type, **kwargs):
         if type:
             try:
-                email = EmailTemplate.objects.get(slug=type)
+                if type != 'test_email': 
+                    email = EmailTemplate.objects.get(slug=type)
             except:
                 return False
 
-                if type != 'grey_invitation':
+            if type != 'grey_invitation' and type != 'test_email':
                     user_id = user['id']
                     getdata = Profile.objects.get(user=user_id)
 
@@ -37,6 +38,7 @@ class BaseSendMail(Task):
                 getdata = Profile.objects.get(user=user_id)
                 activation_key = kwargs.get("key")
 
+                email_subject = email.subject
                 email_body = email.content.replace(
                     '%user_name%', getdata.first_name)
                 url = '/api/useractivity/?activation_key=' + \
@@ -47,6 +49,8 @@ class BaseSendMail(Task):
             if type == 'verify_email':
 
                 activation_key = kwargs.get("key")
+
+                email_subject = email.subject
                 email_body = email.content.replace(
                     '%user_name%', str(getdata.first_name))
                 url = '/api/users/emails/verify_email/?activation_code=' + \
@@ -61,30 +65,35 @@ class BaseSendMail(Task):
                     "email")).decode('base64', 'strict')
                 first_name = str(kwargs.get("first_name")
                                  ).decode('base64', 'strict')
+                email_subject = email.subject
                 email_body = email.content.replace('%user_name%', first_name)
                 url = kwargs.get('url')
                 email_body = email_body.replace(
                     '%url%', "<a href='" + url + "'>Link</a>")
-                print url
-                print email_body
 
             elif type == 'forgot_password':
-
+                
                 reset_password_key = kwargs.get("key")
+                email_subject = email.subject
                 email_body = email.content.replace(
                     '%user_name%', getdata.first_name)
                 url = reverse('forgot_password', args=[reset_password_key])
                 email_body = email_body.replace(
                     '%url%', "<a href='" + settings.DOMAIN_NAME + url + "'>Link</a>")
 
-            email.from_email = email.from_email if email.from_email else settings.DEFAULT_FROM_EMAIL
+            elif type == 'test_email':
+                # ------- not getting fixture default data here ------- #
+                email_subject = 'testing mail'
+                email_body = "Hey this is test mail from kinbow."
 
-            print email.from_email
-            print user['email']
+            try:
+                from_email = email.from_email if email.from_email else settings.DEFAULT_FROM_EMAIL
+            except:
+                from_email = ''   
 
-            send_mail(email.subject,
+            send_mail(email_subject,
                       email_body,
-                      email.from_email,
+                      from_email,
                       [user['email']],
                       fail_silently=False,
                       html_message=email_body)

@@ -120,9 +120,9 @@ class SendAcceptRequest(viewsets.ModelViewSet):
     def invite_to_businesscard(self, request):
         user_id = request.user
         try:
-            receiver_business_card_id = request.DATA[
+            receiver_business_card_id = request.data[
                 'receiver_business_card_id']
-            sender_business_card_id = request.DATA['sender_business_card_id']
+            sender_business_card_id = request.data['sender_business_card_id']
             get_profile = Profile.objects.filter(user_id=user_id).values(
                 "first_name", "last_name").latest("id")
             user_name = str(get_profile["first_name"]) + \
@@ -164,13 +164,13 @@ class SendAcceptRequest(viewsets.ModelViewSet):
         # Make json to send data
         message = {
             'default': 'request sent from ' + user_name + ' to accept businesscard.',
-            'APNS_SANDBOX': {
+            'APNS_SANDBOX': json.dumps({
                 'aps': {
                     'alert': 'Hi How are you'},
                 'data': {
                     'receiver_business_card_id': receiver_business_card_id,
                     'sender_business_card_id': sender_business_card_id,
-                }},
+                }}),
         }
         message = json.dumps(message, ensure_ascii=False)
         # ------------------------ End ---------------------------- #
@@ -213,9 +213,9 @@ class SendAcceptRequest(viewsets.ModelViewSet):
     def accept_businesscard(self, request):
         user_id = request.user
         try:
-            receiver_business_card_id = request.DATA[
+            receiver_business_card_id = request.data[
                 'receiver_business_card_id']
-            sender_business_card_id = request.DATA['sender_business_card_id']
+            sender_business_card_id = request.data['sender_business_card_id']
         except:
             return CustomeResponse(
                 {
@@ -288,8 +288,8 @@ class SendAcceptRequest(viewsets.ModelViewSet):
         data['email'] = request.user.email
         data['sender_user_id'] = request.user.id
         data['type'] = "b2g"
-        data['receiver_obj_id'] = request.DATA.get('receiver_obj_id')
-        data['message'] = request.DATA.get('message')
+        data['receiver_obj_id'] = request.data.get('receiver_obj_id')
+        data['message'] = request.data.get('message')
 
         email = data['message']['email'].encode('base64', 'strict')
         fname = data['message']['fname'].encode('base64', 'strict')

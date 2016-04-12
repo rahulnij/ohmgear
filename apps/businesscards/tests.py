@@ -34,7 +34,6 @@ class BusinessCardTestCase(APITestCase):
         }
         response = self.client.post(
             '/api/businesscard/', self.business_card_data, format='json', **auth_headers)
-        print response
         self.business_card_id = response.data["data"]["id"]
         
         """ End """
@@ -55,7 +54,7 @@ class BusinessCardTestCase(APITestCase):
         }
         response = self.client.put(
                 '/api/businesscard/%s/' %(self.business_card_id), self.business_card_data, format='json',**auth_headers)
-        print self.business_card_id,response      
+         
         self.assertEqual(response.status_code, 200)
 
 
