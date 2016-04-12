@@ -28,14 +28,14 @@ class IdentifierViewSet(viewsets.ModelViewSet):
     def list(self, request, **kwargs):
         if request.method == 'GET':
 
-            identifier = self.request.QUERY_PARAMS.get('identifier', None)
+            identifier = self.request.query_params.get('identifier', None)
 
             # -----------check whether idnetifier is exist or not if not give suggested identifier--------#
             identifierdata = Identifier.objects.filter(
                 identifier=identifier).values()
 
             # -----------Get all identifiers of the user--------#
-            user = self.request.QUERY_PARAMS.get('user', None)
+            user = self.request.query_params.get('user', None)
             #userdata = Identifier.objects.filter(user=user).values().order_by('-id')
 
             userdata = Identifier.objects.select_related(
