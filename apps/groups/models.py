@@ -48,6 +48,7 @@ class GroupMedia(models.Model):
 
     class Meta:
         db_table = 'ohmgear_group_media'
+        unique_together = ('group_id', 'user_id',)
     user_id = models.ForeignKey(User, db_column="user_id")
     group_id = models.ForeignKey(
         "Group", db_column='group_id')

@@ -85,9 +85,9 @@ class VacationCardViewSet(viewsets.ModelViewSet):
                 return CustomeResponse({'status': 'fail', 'msg': 'Please provide correct Json Format of vacation'}, status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
         else:
             try:
-                stops = request.DATA['vacation_trips']
-                vacation_name = request.DATA['vacation_name']
-                data = request.DATA
+                stops = request.data['vacation_trips']
+                vacation_name = request.data['vacation_name']
+                data = request.data
 
             except:
                 return CustomeResponse({'status': 'fail', 'msg': 'Please provide correct Json Format of vacation'}, status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
@@ -208,8 +208,8 @@ class VacationCardViewSet(viewsets.ModelViewSet):
             try:
                 vacation_id = pk
                 stops = request.data['vacation_trips']
-                vacation_name = request.DATA['vacation_name']
-                data = request.DATA
+                vacation_name = request.data['vacation_name']
+                data = request.data
             except:
                 return CustomeResponse({'status': 'fail', 'msg': 'Vacation id not found'}, status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
 
@@ -304,10 +304,10 @@ class BusinessCardVacationViewSet(viewsets.ModelViewSet):
             data=request.data, context={'request': request})
 
         bcard_id = request.data['businesscard_id']
-        vcard_id = request.DATA['vacationcard_id']
+        vcard_id = request.data['vacationcard_id']
 
-        business_id = request.DATA['businesscard_id']
-        vacation_id = request.DATA['vacationcard_id']
+        business_id = request.data['businesscard_id']
+        vacation_id = request.data['vacationcard_id']
 
         count = 0
         for b_id in business_id:
@@ -323,10 +323,10 @@ class BusinessCardVacationViewSet(viewsets.ModelViewSet):
                 else:
                     user_id = request.user.id
                     businessvacationcardserializer = BusinessCardVacationSerializer(
-                        data=request.DATA, context={'request': request})
-                    request.DATA['user_id'] = user_id
-                    request.DATA['businesscard_id'] = business_id[count]
-                    request.DATA['vacationcard_id'] = vacation_id[i]
+                        data=request.data, context={'request': request})
+                    request.data['user_id'] = user_id
+                    request.data['businesscard_id'] = business_id[count]
+                    request.data['vacationcard_id'] = vacation_id[i]
                     if businessvacationcardserializer.is_valid():
                         businessvacationcardserializer.save()
                     else:
@@ -343,8 +343,8 @@ class BusinessCardVacationViewSet(viewsets.ModelViewSet):
         # UnApply(Delete) multiple Businesscard to Vacation card
         user_id = request.user.id
 
-        vcard_id = request.DATA['vacationcard_id']
-        bcard_id = request.DATA['businesscard_id']
+        vcard_id = request.data['vacationcard_id']
+        bcard_id = request.data['businesscard_id']
 
         businesscardinfo = BusinessCardVacation.objects.filter(
             vacationcard_id=vcard_id, businesscard_id__in=bcard_id, user_id=user_id)
