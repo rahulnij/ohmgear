@@ -97,22 +97,30 @@ class SendAcceptRequest(viewsets.ModelViewSet):
                 folder_sender = FolderContact.objects.get(
                     folder_id=karg['sender_folder'], contact_id=receiver_contact_id)
             except:
+                # Note : We will change following code  and 
+                # call folder api:folder_contact_link from folder
+                # Or we can user FolderContactSerializer to insert data 
                 folder_sender = FolderContact()
                 folder_sender.user_id = karg['sender_user_id']
                 folder_sender.folder_id = karg['sender_folder']
                 folder_sender.contact_id = receiver_contact_id
                 folder_sender.link_status = 2
+                folder_sender.is_linked = 1
                 folder_sender.save()
 
             try:
                 folder_receiver = FolderContact.objects.get(
                     folder_id=karg['receiver_folder'], contact_id=sender_contact_id)
             except:
+                # Note : We will change following code  and 
+                # call folder api:folder_contact_link from folder
+                # Or we can user FolderContactSerializer to insert data 
                 folder_receiver = FolderContact()
                 folder_receiver.user_id = receiver_contact_id.user_id
                 folder_receiver.folder_id = karg['receiver_folder']
                 folder_receiver.contact_id = sender_contact_id
                 folder_receiver.link_status = 2
+                folder_sender.is_linked = 1
                 folder_receiver.save()
 
             return True
