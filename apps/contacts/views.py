@@ -200,7 +200,7 @@ class storeContactsViewSet(viewsets.ModelViewSet):
                         new_user_folder_contact_data.delete()
                         folder_contact_data.delete()
                         return CustomeResponse(
-                            {'msg': "Both Connected Contact has been successfully"}, status=status.HTTP_200_OK)
+                            {'msg': "Both Connected Contact has been delete successfully"}, status=status.HTTP_200_OK)
 
                     else:
                         return CustomeResponse(
