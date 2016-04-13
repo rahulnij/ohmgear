@@ -91,7 +91,7 @@ DATABASES = {
         'NAME': 'dev_db',
         'USER': 'root',
         'PASSWORD': 'jL56mbFuwK',
-        'HOST': 'kbsingpgresql.cg5v0c82f0c4.ap-southeast-1.rds.amazonaws.com',
+        'HOST': 'dev-kbsingpgresql.cg5v0c82f0c4.ap-southeast-1.rds.amazonaws.com',
         'PORT': '',
     },
     'userlocation': {
