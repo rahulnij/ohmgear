@@ -6,7 +6,7 @@ Installation of kinbow application on server:
 
 2) Now install the packages in this env :
 
-   pip install -r settings/base.txt    
+   pip install -r requirements/base.txt  -- file name will change according envionment   
    
 3) Create all tables in database according env setting :
 

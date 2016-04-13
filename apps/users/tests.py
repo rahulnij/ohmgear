@@ -4,7 +4,7 @@ from rest_framework.test import APITestCase, APIClient
 #           : social login
 
 
-class UserTests(APITestCase):
+class UserTestCase(APITestCase):
     client = APIClient()
 
     fixtures = ['default']

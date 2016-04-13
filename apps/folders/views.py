@@ -62,6 +62,12 @@ class FolderViewSet(CheckAccess):
 
             return CustomeResponse(folderSerializer.errors, status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
 
+
+    def destroy(self, request, pk=None):
+        return CustomeResponse({'msg': 'Delete method not allowed'},
+                               status=status.HTTP_405_METHOD_NOT_ALLOWED,
+                               validate_errors=1)         
+
     @list_route(methods=['post'],)
     def folder_contact_link(self, request):
 

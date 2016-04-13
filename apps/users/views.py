@@ -102,7 +102,7 @@ class UserViewSet(viewsets.ModelViewSet):
             profile.user_id = user_id.id
 
             # ---------- grey contact invite auth-token ---------- #
-            if 'from_web' in request.data:
+            if request.GET.get('from_web'):
                 #cid = contact_id , sid = sender_id
                 token = getToken(user_id.id)
                 cid = request.data['cid']
