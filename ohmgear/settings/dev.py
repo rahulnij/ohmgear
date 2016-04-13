@@ -1,8 +1,11 @@
+import djcelery
+
 from base import *
+
 
 DOMAIN_NAME = 'http://localhost:8000'
 
-ALLOWED_HOSTS = ['localhost', '*', '192.168.2.146:8100']
+ALLOWED_HOSTS = ['*']
 MIDDLEWARE_CLASSES += (
     'debug_toolbar.middleware.DebugToolbarMiddleware',
 )
@@ -59,21 +62,9 @@ LOGGING = {
 # CELERY STUFF
 INSTALLED_APPS += (
     "djcelery", "apps.test_purposes",
-    # "rest_framework_swagger",
-    # 'raven.contrib.django.raven_compat'
 )
 
-'''import raven
 
-RAVEN_CONFIG = {
-    'dsn': 'https://729dcf0cf35742559908b6eea18f6563:a91b624970fd49caba33b442ba37b499@app.getsentry.com/60299',
-    # If you are using git, you can also automatically configure the
-    # release based on the git info.
-    #'release': raven.fetch_git_sha(os.path.dirname(__file__)),
-}
-'''
-
-import djcelery
 djcelery.setup_loader()
 
 BROKER_URL = 'redis://localhost:6379'
@@ -86,22 +77,21 @@ CELERY_RESULT_BACKEND = 'redis://localhost:6379'
 CELERY_ACCEPT_CONTENT = ['application/json']
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
-#CELERY_TIMEZONE = 'Africa/Nairobi'
 
 
-#--------- UPLOAD URL PATHS -------------------#
+# UPLOAD URL PATHS
 BCARDS_TEMPLATE_IMAGE_URL = DOMAIN_NAME
-#--------- End --------------------------------#
+
 
 # Database
 # https://docs.djangoproject.com/en/1.8/ref/settings/#databases
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'ohmgear',
-        'USER': 'ohmgear',
-        'PASSWORD': 'ohmgear',
-        'HOST': 'localhost',
+        'NAME': 'dev_db',
+        'USER': 'root',
+        'PASSWORD': 'jL56mbFuwK',
+        'HOST': 'kbsingpgresql.cg5v0c82f0c4.ap-southeast-1.rds.amazonaws.com',
         'PORT': '',
     },
     'userlocation': {
@@ -115,11 +105,10 @@ DATABASES = {
 }
 
 
-DEFAULT_FROM_EMAIL = 'bhoopendra.ohmgear@gmail.com'
-# q@123456
+DEFAULT_FROM_EMAIL = 'welcome@kinbow.com'
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_USE_TLS = True
-EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_HOST = 'email-smtp.us-west-2.amazonaws.com'
 EMAIL_PORT = 587
-EMAIL_HOST_USER = 'bhoopendra.ohmgear@gmail.com'
-EMAIL_HOST_PASSWORD = 'q@123456'
+EMAIL_HOST_USER = 'AKIAJUDMRYODLOT4FMJQ'
+EMAIL_HOST_PASSWORD = 'Atf+OJN+84eKW0jqqhp0MAzYsnB7Ra78ilfj8SHsb821'
