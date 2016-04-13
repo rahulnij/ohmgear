@@ -5,7 +5,7 @@ from base import *
 
 DOMAIN_NAME = 'http://localhost:8000'
 
-ALLOWED_HOSTS = ['localhost', '*', '192.168.2.146:8100']
+ALLOWED_HOSTS = ['*']
 MIDDLEWARE_CLASSES += (
     'debug_toolbar.middleware.DebugToolbarMiddleware',
 )
@@ -88,10 +88,10 @@ BCARDS_TEMPLATE_IMAGE_URL = DOMAIN_NAME
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'ohmgear',
-        'USER': 'ohmgear',
-        'PASSWORD': 'ohmgear',
-        'HOST': 'localhost',
+        'NAME': 'dev_db',
+        'USER': 'root',
+        'PASSWORD': 'jL56mbFuwK',
+        'HOST': 'kbsingpgresql.cg5v0c82f0c4.ap-southeast-1.rds.amazonaws.com',
         'PORT': '',
     },
     'userlocation': {
