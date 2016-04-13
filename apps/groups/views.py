@@ -1,10 +1,8 @@
 # Third Party Imports
-from django.shortcuts import render
-from rest_framework import routers, serializers, viewsets
+from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated
-from rest_framework.decorators import api_view
 import rest_framework.status as status
-from rest_framework.decorators import detail_route, list_route
+from rest_framework.decorators import list_route
 from django.conf import settings
 # Local app imports
 from models import Group, GroupContacts, GroupMedia
@@ -15,6 +13,11 @@ from ohmgear.token_authentication import ExpiringTokenAuthentication
 
 
 class GroupViewSet(viewsets.ModelViewSet):
+    """
+    Create group.
+
+    Create group with operations.
+    """
 
     queryset = Group.objects.all()
     serializer_class = GroupSerializer
@@ -22,6 +25,11 @@ class GroupViewSet(viewsets.ModelViewSet):
     permission_classes = (IsAuthenticated,)
 
     def list(self, request):
+        """
+        Getting all group of a user.
+
+        Getting all group of a user.
+        """
         group_data = self.queryset.filter(user_id=request.user)
         try:
             serializer = self.serializer_class(group_data, many=True)
@@ -38,7 +46,11 @@ class GroupViewSet(viewsets.ModelViewSet):
                                    status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
 
     def create(self, request):
+        """
+        Create new group for a user.
 
+        Create new group for a user.
+        """
         # newdata = {}
         newdata = request.data.copy()
         newdata['user_id'] = request.user.id
@@ -57,6 +69,11 @@ class GroupViewSet(viewsets.ModelViewSet):
                 validate_errors=1)
 
     def update(self, request, pk=None):
+        """
+        Update group details.
+
+        update group details.
+        """
         try:
             group_data = self.queryset.get(user_id=request.user.id, id=pk)
         except:
@@ -65,8 +82,6 @@ class GroupViewSet(viewsets.ModelViewSet):
 
         if group_data:
             serializer = self.serializer_class(group_data, data=request.data)
-            print request.data
-            print "request.data"
             if serializer.is_valid():
                 serializer.save()
                 return CustomeResponse(
@@ -78,26 +93,13 @@ class GroupViewSet(viewsets.ModelViewSet):
             return CustomeResponse({'msg': 'Data cannot be updated'},
                                    status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
 
-        # try:
-        #     group_data = self.queryset.filter(user_id=request.user.id, id=pk)
-        #     print group_data
-        #     print "group_data"
-        #     print request.data['group_name']
-        # except:
-        #     return CustomeResponse(
-        #         {'msg': 'Data not found'}, status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
-
-        # if group_data:
-        #     group_data.update(group_name=request.data['group_name'])
-        #     return CustomeResponse(
-        #         {'msg': 'Data is updated'}, status=status.HTTP_200_OK)
-        # else:
-        #     return CustomeResponse({'msg': 'Data cannot be updated'},
-        # status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
-
     @list_route(methods=['post'],)
     def deletegroups(self, request):
+        """
+        Delete multiple groups.
 
+        If group is deleted than its Contacts will also deleted.
+        """
         try:
             user_id = request.user.id
         except:
@@ -124,16 +126,31 @@ class GroupViewSet(viewsets.ModelViewSet):
 
 
 class GroupContactsViewSet(viewsets.ModelViewSet):
+    """
+    Insert Contacts in group.
+
+    Insert multiple Contacts in group.
+    """
+
     queryset = GroupContacts.objects.all()
     serializer_class = GroupContactsSerializer
     authentication_classes = (ExpiringTokenAuthentication,)
     permisssion_classes = IsAuthenticated
 
     def list(self, request):
+        """
+        List method not allowed.
+
+        List method not allowed in contacts.
+        """
         return CustomeResponse({'msg': 'Get method bnot allowed'})
 
     def create(self, request):
+        """
+        Insert Contacts in group.
 
+        Insert  mutliple Contacts in group
+        """
         try:
             user_id = request.user.id
         except:
@@ -179,6 +196,11 @@ class GroupContactsViewSet(viewsets.ModelViewSet):
 
     @list_route(methods=['post'],)
     def delete(self, request):
+        """
+        Delete mutliple Contacts in group.
+
+        Delete mutliple Contacts in group
+        """
         try:
             user_id = request.user.id
         except:
@@ -186,7 +208,6 @@ class GroupContactsViewSet(viewsets.ModelViewSet):
 
         try:
             group_contact_id = request.data['group_contact_id']
-            print group_contact_id
         except:
             return CustomeResponse({'msg': 'group contact id not found'},
                                    status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
@@ -213,15 +234,35 @@ class GroupContactsViewSet(viewsets.ModelViewSet):
 
 
 class GroupMediaViewSet(viewsets.ModelViewSet):
+    """
+    Insert group Image in group.
+
+    Insert group Image in group.
+    """
+
     queryset = GroupMedia.objects.all()
     serializer_class = GroupMediaSerializer
     authentication_classes = (ExpiringTokenAuthentication,)
     permission_classes = (IsAuthenticated,)
 
+    def create():
+        """
+        Create method not allowed.
+
+        Create method not allowed
+        """
+        return CustomeResponse({'msg': "create method not allowed"},
+                               status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
+
     # End
     # Upload image after group created
     @list_route(methods=['post'],)
     def upload(self, request):
+        """
+        Upload image for a group.
+
+        Upload image for a group.
+        """
         user_id = self.request.user.id
         try:
             group_id = self.request.data["group_id"]
@@ -233,8 +274,8 @@ class GroupMediaViewSet(viewsets.ModelViewSet):
         except:
             return CustomeResponse({'msg': "Group id does not exist"},
                                    status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
-        #  Save Image in image Gallary
 
+        #  Save Image in image Gallary
         data_new = {}
         data_new['group_image'] = ""
         try:
@@ -255,71 +296,67 @@ class GroupMediaViewSet(viewsets.ModelViewSet):
         else:
             return CustomeResponse(
                 {
-                    'msg': "Please upload media group_image"},
+                    'msg': "Please upload media group_image or check whether it is already upload"},
                 status=status.HTTP_200_OK)
         # End
 
-    #  Change image of group
-
-    @list_route(methods=['post'],)
-    def change(self, request):
-        user_id = request.user.id
-        try:
-            contact_id = request.data["contact_id"]
-            gallary_image_id = request.data["gallary_image_id"]
-            # means it is 1 frontend or 2 backend
-            image_type = request.data["image_type"]
-        except:
-            contact_id = None
-
-        if contact_id:
-            try:
-                get_image = ContactMedia.objects.get(
-                    id=gallary_image_id, contact_id=contact_id, user_id=user_id)
-                print get_image
-                get_image.status = 1
-                get_image.front_back = image_type
-                get_image.save()
-                ContactMedia.objects.filter(
-                    contact_id=contact_id,
-                    front_back=image_type).exclude(
-                    id=gallary_image_id).update(
-                    status=0)
-                return CustomeResponse(
-                    {"msg": "Business card image changed successfully."}, status=status.HTTP_200_OK)
-            except:
-                return CustomeResponse(
-                    {
-                        'msg': "provided contact_id,gallary_image_id not valid"},
-                    status=status.HTTP_400_BAD_REQUEST,
-                    validate_errors=1)
-        else:
-            return CustomeResponse(
-                {
-                    'msg': "Please provide contact_id,gallary_image_id"},
-                status=status.HTTP_400_BAD_REQUEST,
-                validate_errors=1)
-    # End
-
+    # change image of group
+    # change group image
     def update(self, request, pk=None):
-        return CustomeResponse({'msg': "Update method does not allow"},
-                               status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
+        """
+        Update group image
 
-    @list_route(methods=['post'],)
-    def delete(self, request):
+        old group image will be deleted from folder as well
+        """
+        try:
+            group_data = self.queryset.get(
+                user_id=request.user.id, group_id=pk)
+            print group_data
+            print "group_data"
+        except:
+            return CustomeResponse(
+                {'msg': 'Data not found'}, status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
 
+        data = {}
+        data['img_url'] = request.data['group_image']
+        data['user_id'] = request.user.id
+        data['group_id'] = pk
+
+        if group_data:
+            serializer = self.serializer_class(group_data, data=data)
+            print serializer
+            print "serializer"
+            if serializer.is_valid():
+                group_data.img_url.delete(False)
+                serializer.save()
+                return CustomeResponse(
+                    serializer.data, status=status.HTTP_200_OK)
+            else:
+                return CustomeResponse(
+                    serializer.errors, status=status.HTTP_200_OK)
+        else:
+            return CustomeResponse({'msg': 'Data cannot be updated'},
+                                   status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
+
+    def destroy(self, request, pk):
+        """
+        Delete group image.
+
+        Also deleted image from folder by signal.
+        """
         try:
             user_id = request.user.id
-            contact_id = request.data["contact_id"]
-            pk = request.data["media_id"]
-            get_image = ContactMedia.objects.get(
-                id=pk, contact_id=contact_id, user_id=user_id, status=1)
+            group_id = pk
+            get_image = GroupMedia.objects.get(
+                group_id=group_id, user_id=user_id, status=1)
+            print get_image
+            print "get_image"
             get_image.delete()
             return CustomeResponse(
-                {'msg': "Media deleted successfully"}, status=status.HTTP_200_OK)
+                {'msg': "Group image deleted successfully"}, status=status.HTTP_200_OK)
         except:
             return CustomeResponse(
                 {
-                    'msg': "Please provide correct contact_id,media id"},
+                    'msg': "Please provide correct group_id,"},
                 status=status.HTTP_400_BAD_REQUEST,
                 validate_errors=1)
