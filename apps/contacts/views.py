@@ -34,7 +34,7 @@ class storeContactsViewSet(viewsets.ModelViewSet):
 
     def list(self, request):
         queryset = self.queryset.filter(
-            user_id=request.user.id, businesscard_id__isnull=True)
+            folder_contact_data__user_id=request.user.id)
 #        serializer = self.serializer_class(queryset,many=True)
         serializer = ContactsSerializerWithJson(queryset, many=True)
 

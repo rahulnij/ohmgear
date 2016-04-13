@@ -1,9 +1,12 @@
 from rest_framework import serializers
+from django.conf import settings
+
 from models import BusinessCard, BusinessCardIdentifier, BusinessCardSkillAvailable, BusinessCardAddSkill, BusinessCardHistory
 from apps.contacts.serializer import ContactsSerializerWithJson
 from apps.folders.models import FolderContact
 from apps.contacts.models import ContactMedia
-from django.conf import settings
+from apps.notes.models import Notes
+
 # Serializers define the API representation.
 
 
@@ -38,34 +41,26 @@ class BusinessCardHistorySerializer(serializers.ModelSerializer):
 
     class Meta:
         model = BusinessCardHistory
-        #fields = ('user_id','businesscard_id','id')
 
-#----------------- Main Business Card ----------------------------#
+# ----------------- Main Business Card ----------------------------#
 
 
 class BusinessCardSerializer(serializers.ModelSerializer):
 
     contact_detail = ContactsSerializerWithJson(read_only=True)
-#    media_detail    = serializers.SerializerMethodField('media')
 
-#    def media(self,instance):
-#        return instance.bcard_image_frontend()
-    #identifier_new = serializers.ReadOnlyField(source='*')
     media_detail = serializers.SerializerMethodField('bcard_image_frontend')
 
     def bcard_image_frontend(self, obj):
         media = ContactMedia.objects.filter(
             contact_id=obj.contact_detail.id, status=1).order_by('front_back')
         data = []
-        #i = 0
         for item in media:
             data.append({"img_url": str(settings.DOMAIN_NAME) +
                          str(settings.MEDIA_URL) +
                          str(item.img_url), "front_back": item.front_back})
-            #i = i + 1
         return data
 
-    #------------------------ End -----------------------------------------------------------#
     class Meta:
         model = BusinessCard
         fields = (
@@ -80,7 +75,7 @@ class BusinessCardSerializer(serializers.ModelSerializer):
             #'identifier_new',
         )
 
-#--------------- Business card serializer wit Identifier : reason : circular error in identifier error --#
+# --------------- Business card serializer wit Identifier : reason : circular error in identifier error --#
 from apps.identifiers.serializer import IdentifierSerializer
 
 
@@ -88,23 +83,29 @@ class BusinessCardWithIdentifierSerializer(serializers.ModelSerializer):
 
     contact_detail = ContactsSerializerWithJson(read_only=True)
     media_detail = serializers.SerializerMethodField('bcard_image_frontend')
+    # business_identifier should be businesscard_identifier
     business_identifier = IdentifierSerializer(many=True, read_only=True)
+    business_notes = serializers.SerializerMethodField('fetch_notes')
 
     def bcard_image_frontend(self, obj):
         media = ContactMedia.objects.filter(
             contact_id=obj.contact_detail.id, status=1).order_by('front_back')
         data = []
-        #i = 0
         for item in media:
             data.append({"img_url": str(settings.DOMAIN_NAME) +
                          str(settings.MEDIA_URL) +
                          str(item.img_url), "front_back": item.front_back})
-            #i = i + 1
         return data
-#    def media(self,instance):
-#        return instance.bcard_image_frontend()
-    #identifier_new = serializers.ReadOnlyField(source='*')
-    #------------------------ End -----------------------------------------------------------#
+
+    def fetch_notes(self, obj):
+        notes = Notes.objects.filter(contact_id=obj.contact_detail.id)
+        data = []
+        for item in notes:
+            if item.bcard_side_no == 1:
+                data.append({'note_frontend': str(item.note)})
+            elif item.bcard_side_no == 2:
+                data.append({'note_backend': str(item.note)})
+        return data
 
     class Meta:
         model = BusinessCard
@@ -118,7 +119,7 @@ class BusinessCardWithIdentifierSerializer(serializers.ModelSerializer):
             'contact_detail',
             'media_detail',
             'business_identifier',
-            #'identifier_new',
+            'business_notes',
         )
 
 
@@ -134,12 +135,10 @@ class SearchBusinessCardWithIdentifierSerializer(serializers.ModelSerializer):
         media = ContactMedia.objects.filter(
             contact_id=obj.contact_detail.id, status=1).order_by('front_back')
         data = []
-        #i = 0
         for item in media:
             data.append({"img_url": str(settings.DOMAIN_NAME) +
                          str(settings.MEDIA_URL) +
                          str(item.img_url), "front_back": item.front_back})
-            #i = i + 1
         return data
 
     def folder_contact(self, obj):
@@ -151,11 +150,6 @@ class SearchBusinessCardWithIdentifierSerializer(serializers.ModelSerializer):
             link_status=0).values()
         return folder
 
-
-#    def media(self,instance):
-#        return instance.bcard_image_frontend()
-    #identifier_new = serializers.ReadOnlyField(source='*')
-    #------------------------ End -----------------------------------------------------------#
     class Meta:
         model = BusinessCard
         fields = (
@@ -169,7 +163,6 @@ class SearchBusinessCardWithIdentifierSerializer(serializers.ModelSerializer):
             'media_detail',
             'business_identifier',
             'folder_contact_detail'
-            #'identifier_new',
         )
 
 
