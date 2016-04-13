@@ -336,7 +336,7 @@ class SendAcceptRequest(viewsets.ModelViewSet):
             user_id = None
 
         queryset_folder = SendRequest.objects.filter(
-            receiver_id=user_id, read_status=0).values()
+            receiver_obj_id=user_id, read_status=0).values()
         if queryset_folder:
             return CustomeResponse(
                 {'msg': queryset_folder}, status=status.HTTP_201_CREATED)
