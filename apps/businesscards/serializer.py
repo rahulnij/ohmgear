@@ -64,12 +64,12 @@ class BusinessCardSerializer(serializers.ModelSerializer):
 
     def fetch_notes(self, obj):
         notes = Notes.objects.filter(contact_id=obj.contact_detail.id)
-        data = []
+        data = {}
         for item in notes:
             if item.bcard_side_no == 1:
-                data.append({'note_frontend': str(item.note)})
+                data['note_frontend'] = str(item.note)
             elif item.bcard_side_no == 2:
-                data.append({'note_backend': str(item.note)})
+                data['note_backend'] = str(item.note)
         return data        
 
     class Meta:
@@ -110,13 +110,13 @@ class BusinessCardWithIdentifierSerializer(serializers.ModelSerializer):
 
     def fetch_notes(self, obj):
         notes = Notes.objects.filter(contact_id=obj.contact_detail.id)
-        data = []
+        data = {}
         for item in notes:
             if item.bcard_side_no == 1:
-                data.append({'note_frontend': str(item.note)})
+                data['note_frontend'] = str(item.note)
             elif item.bcard_side_no == 2:
-                data.append({'note_backend': str(item.note)})
-        return data
+                data['note_backend'] = str(item.note)
+        return data 
 
     class Meta:
         model = BusinessCard
