@@ -587,26 +587,29 @@ class BusinessViewSet(viewsets.ModelViewSet):
                 user = request.user
                 # -------------- Save Notes ------------ #
                 data_new = serializer.data.copy()
-                try:
-                    from apps.notes.models import Notes
-                    if request.data['note_frontend']:                        
-                        note_frontend_obj = Notes(
-                            user_id=user,
-                            contact_id=contact,
-                            note=request.data['note_frontend'],
-                            bcard_side_no=1)
-                        note_frontend_obj.save()
-                    if "note_backend" in request.data and request.data[
-                            'note_backend']:
-                        note_frontend_obj = Notes(
-                            user_id=user,
-                            contact_id=contact,
-                            note=request.data['note_backend'],
-                            bcard_side_no=2)
-                        note_frontend_obj.save()
-                except:
-                    pass
-                data_new["business_notes"] = serializer.fetch_notes(bcards)    
+
+                if "business_notes" in request.data:
+                    try:
+                        from apps.notes.models import Notes
+                        if "note_frontend" in request.data["business_notes"] and request.data[
+                                "business_notes"]['note_frontend']:
+                            note_frontend_obj = Notes(
+                                user_id=user,
+                                contact_id=contact,
+                                note=request.data["business_notes"]['note_frontend'],
+                                bcard_side_no=1)
+                            note_frontend_obj.save()
+                        if "note_backend" in request.data["business_notes"] and request.data[
+                                "business_notes"]['note_backend']:
+                            note_frontend_obj = Notes(
+                                user_id=user,
+                                contact_id=contact,
+                                note=request.data["business_notes"]['note_backend'],
+                                bcard_side_no=2)
+                            note_frontend_obj.save()
+                    except:
+                        pass
+                data_new["business_notes"] = serializer.fetch_notes(bcards)
                 # -------------------------End------------ #
 
                 # Assign  first created business card to created default folder
@@ -685,10 +688,10 @@ class BusinessViewSet(viewsets.ModelViewSet):
                 # -------------- Save Notes --------------- #
                 data_new = serializer.data.copy()
                 # try:
-                if "note_frontend" in request.data or "note_backend" in request.data:
+                if "business_notes" in request.data:
                     from apps.notes.models import Notes
-                    if request.data['note_frontend'] or request.data[
-                            'note_backend']:
+                    if "note_frontend" in request.data["business_notes"] and request.data["business_notes"][
+                            'note_frontend']:
                         try:
                             note_frontend_obj = Notes.objects.get(
                                 user_id=user,
@@ -699,10 +702,10 @@ class BusinessViewSet(viewsets.ModelViewSet):
                                 user_id=user,
                                 contact_id=contact,
                                 bcard_side_no=1)
-                        note_frontend_obj.note = request.data['note_frontend']
+                        note_frontend_obj.note = request.data["business_notes"]['note_frontend']
                         note_frontend_obj.save()
 
-                    if "note_backend" in request.data and request.data[
+                    if "note_backend" in request.data["business_notes"] and request.data["business_notes"][
                             'note_backend']:
                         try:
                             note_frontend_obj = Notes.objects.get(
@@ -714,7 +717,7 @@ class BusinessViewSet(viewsets.ModelViewSet):
                                 user_id=user,
                                 contact_id=contact,
                                 bcard_side_no=2)
-                        note_frontend_obj.note = request.data['note_backend']
+                        note_frontend_obj.note = request.data["business_notes"]['note_backend']
                         note_frontend_obj.save()
 
                 # except:
