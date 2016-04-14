@@ -124,6 +124,15 @@ class GroupViewSet(viewsets.ModelViewSet):
             return CustomeResponse({'msg': 'group cannot be deleted'},
                                    status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
 
+    def destroy(self, request, pk=None):
+        """
+        Destroy method not allowed
+
+        Delete not allowed as we can delete mutliple groups.
+        """
+        return CustomeResponse(
+            {'msg': 'delete method not allowed'}, status=status.HTTP_400_BAD_REQUEST)
+
 
 class GroupContactsViewSet(viewsets.ModelViewSet):
     """
@@ -155,9 +164,8 @@ class GroupContactsViewSet(viewsets.ModelViewSet):
             user_id = request.user.id
         except:
             user_id = ''
-
         try:
-            group_contacts = request.data['group_contacts']
+            group_contacts = request.data['folder_contact_id']
         except:
             return CustomeResponse({'msg': 'group contacts not found'},
                                    status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
@@ -165,8 +173,8 @@ class GroupContactsViewSet(viewsets.ModelViewSet):
         temp_container = []
         for contacts in group_contacts:
             data = {}
-            data['folder_contact_id'] = contacts['folder_contact_id']
-            data['group_id'] = contacts['group_id']
+            data['folder_contact_id'] = contacts
+            data['group_id'] = request.data['group_id']
             data['user_id'] = user_id
             group_contact_data_exist = self.queryset.filter(
                 user_id=request.user,
@@ -182,7 +190,7 @@ class GroupContactsViewSet(viewsets.ModelViewSet):
             temp_container.append(data)
 
         serializer = self.serializer_class(
-            data=temp_container, many=True, context={'contact_data': 1})
+            data=temp_container, many=True)
         if serializer.is_valid():
             serializer.save()
             return CustomeResponse(
@@ -245,7 +253,16 @@ class GroupMediaViewSet(viewsets.ModelViewSet):
     authentication_classes = (ExpiringTokenAuthentication,)
     permission_classes = (IsAuthenticated,)
 
-    def create():
+    def list(self, request):
+        """
+        List method not allowed.
+
+        List method not allowed
+        """
+        return CustomeResponse({'msg': "list method not allowed"},
+                               status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
+
+    def create(self, request):
         """
         Create method not allowed.
 
@@ -276,28 +293,38 @@ class GroupMediaViewSet(viewsets.ModelViewSet):
                                    status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
 
         #  Save Image in image Gallary
-        data_new = {}
-        data_new['group_image'] = ""
+        media_exist = ''
         try:
-            if 'group_image' in request.data and request.data[
-                    'group_image']:
-
-                group_image, created = GroupMedia.objects.update_or_create(
-                    user_id=self.request.user, group_id=group, img_url=request.data['group_image'], status=1)
-                data_new['group_image'] = str(
-                    settings.DOMAIN_NAME) + str(settings.MEDIA_URL) + str(group_image.img_url)
+            media_exist = GroupMedia.objects.get(group_id=group_id)
         except:
             pass
-
-        if data_new['group_image']:
-            return CustomeResponse({"group_id": group_id,
-                                    "group_image": data_new['group_image']},
-                                   status=status.HTTP_201_CREATED)
+        if media_exist:
+            return CustomeResponse({'msg': "GroupMedia already exist"},
+                                   status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
         else:
-            return CustomeResponse(
-                {
-                    'msg': "Please upload media group_image or check whether it is already upload"},
-                status=status.HTTP_200_OK)
+
+            data_new = {}
+            data_new['group_image'] = ""
+            try:
+                if 'group_image' in request.data and request.data[
+                        'group_image']:
+
+                    group_image, created = GroupMedia.objects.update_or_create(
+                        user_id=self.request.user, group_id=group, img_url=request.data['group_image'], status=1)
+                    data_new['group_image'] = str(
+                        settings.DOMAIN_NAME) + str(settings.MEDIA_URL) + str(group_image.img_url)
+            except:
+                pass
+
+            if data_new['group_image']:
+                return CustomeResponse({"group_id": group_id,
+                                        "group_image": data_new['group_image']},
+                                       status=status.HTTP_201_CREATED)
+            else:
+                return CustomeResponse(
+                    {
+                        'msg': "Please upload media group_image or check whether it is already upload"},
+                    status=status.HTTP_200_OK)
         # End
 
     # change image of group
