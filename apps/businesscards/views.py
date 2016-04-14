@@ -596,8 +596,6 @@ class BusinessViewSet(viewsets.ModelViewSet):
                             contact_id=contact,
                             note=request.data['note_frontend'],
                             bcard_side_no=1)
-                        data_new['note_frontend'] = request.data[
-                            'note_frontend']
                 except:
                     pass
                 # -------------------------End------------ #
@@ -610,8 +608,7 @@ class BusinessViewSet(viewsets.ModelViewSet):
                     offline_data = {}
                     offline_data['businesscard_id'] = business.id
                     offline_data['foldername'] = 'PR Folder'
-                    folder_view = folder_view(request, offline_data)
-                    folder_id = folder_view.data['data']['id']
+                    folder_view = folder_view(request, offline_data)                    
                     data_new["folder_info"] = folder_view.data['data']
                 else:
                     queryset_folder.update(businesscard_id=business.id)
@@ -690,8 +687,7 @@ class BusinessViewSet(viewsets.ModelViewSet):
                                 contact_id=contact,
                                 note=request.data['note_frontend'],
                                 bcard_side_no=1)
-                            data_new['note_frontend'] = request.data[
-                                'note_frontend']
+                            
                         if "note_backend" in request.data and request.data[
                                 'note_backend']:
                             data = Notes.objects.update_or_create(
@@ -699,8 +695,7 @@ class BusinessViewSet(viewsets.ModelViewSet):
                                 contact_id=contact,
                                 note=request.data['note_frontend'],
                                 bcard_side_no=2)
-                            data_new['note_backend'] = request.data[
-                                'note_backend']
+                            
                 except:
                     pass
             else:

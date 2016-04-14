@@ -50,6 +50,7 @@ class BusinessCardSerializer(serializers.ModelSerializer):
     contact_detail = ContactsSerializerWithJson(read_only=True)
 
     media_detail = serializers.SerializerMethodField('bcard_image_frontend')
+    business_notes = serializers.SerializerMethodField('fetch_notes')
 
     def bcard_image_frontend(self, obj):
         media = ContactMedia.objects.filter(
@@ -60,6 +61,16 @@ class BusinessCardSerializer(serializers.ModelSerializer):
                          str(settings.MEDIA_URL) +
                          str(item.img_url), "front_back": item.front_back})
         return data
+
+    def fetch_notes(self, obj):
+        notes = Notes.objects.filter(contact_id=obj.contact_detail.id)
+        data = []
+        for item in notes:
+            if item.bcard_side_no == 1:
+                data.append({'note_frontend': str(item.note)})
+            elif item.bcard_side_no == 2:
+                data.append({'note_backend': str(item.note)})
+        return data        
 
     class Meta:
         model = BusinessCard
@@ -72,7 +83,7 @@ class BusinessCardSerializer(serializers.ModelSerializer):
             'user_id',
             'contact_detail',
             'media_detail',
-            #'identifier_new',
+            'business_notes'
         )
 
 # --------------- Business card serializer wit Identifier : reason : circular error in identifier error --#
