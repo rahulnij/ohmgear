@@ -6,7 +6,7 @@ class UserLocation(models.Model):
     class Meta:
         unique_together = ('user_id', 'region')
         db_table = 'ohmgear_user_location'
-        app_label = 'user location'
+        app_label = 'userlocation'
 
     user_id = models.IntegerField()
     region = models.CharField(max_length=4)
