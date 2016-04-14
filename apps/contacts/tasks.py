@@ -1,5 +1,5 @@
 from PIL import Image
-from .celery import app
+#from .celery import app
 from .models import ContactMedia
 from os import path
 import logging
@@ -7,7 +7,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-@app.task
+#@app.task
 def resize_image(image_path, dim_x):
     with open(image_path, 'r') as orig:
         im = Image.open(orig, mode='r')
@@ -29,7 +29,7 @@ def resize_image(image_path, dim_x):
         f.close()
 
 
-@app.task
+#@app.task
 def image_properties(image_path, img_id):
     contact_media = ContactMedia.objects.get(pk=img_id)
     with open(image_path) as f:
