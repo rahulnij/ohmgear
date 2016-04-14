@@ -591,16 +591,14 @@ class BusinessViewSet(viewsets.ModelViewSet):
                 if "business_notes" in request.data:
                     try:
                         from apps.notes.models import Notes
-                        if "note_frontend" in request.data["business_notes"] and request.data[
-                                "business_notes"]['note_frontend']:
+                        if "note_frontend" in request.data["business_notes"]:
                             note_frontend_obj = Notes(
                                 user_id=user,
                                 contact_id=contact,
                                 note=request.data["business_notes"]['note_frontend'],
                                 bcard_side_no=1)
                             note_frontend_obj.save()
-                        if "note_backend" in request.data["business_notes"] and request.data[
-                                "business_notes"]['note_backend']:
+                        if "note_backend" in request.data["business_notes"]:
                             note_frontend_obj = Notes(
                                 user_id=user,
                                 contact_id=contact,
@@ -690,8 +688,7 @@ class BusinessViewSet(viewsets.ModelViewSet):
                 # try:
                 if "business_notes" in request.data:
                     from apps.notes.models import Notes
-                    if "note_frontend" in request.data["business_notes"] and request.data["business_notes"][
-                            'note_frontend']:
+                    if "note_frontend" in request.data["business_notes"]:
                         try:
                             note_frontend_obj = Notes.objects.get(
                                 user_id=user,
@@ -705,8 +702,7 @@ class BusinessViewSet(viewsets.ModelViewSet):
                         note_frontend_obj.note = request.data["business_notes"]['note_frontend']
                         note_frontend_obj.save()
 
-                    if "note_backend" in request.data["business_notes"] and request.data["business_notes"][
-                            'note_backend']:
+                    if "note_backend" in request.data["business_notes"]:
                         try:
                             note_frontend_obj = Notes.objects.get(
                                 user_id=user,
