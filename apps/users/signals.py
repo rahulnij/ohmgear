@@ -46,6 +46,5 @@ def delete_old_image(sender, instance, *args, **kwargs):
 def delete_old_group_image(sender, instance, *args, **kwargs):
     if instance.pk:
         existing_image = GroupMedia.objects.get(pk=instance.pk)
-        print existing_image
         if instance.img_url or existing_image.img_url != instance.img_url:
             existing_image.img_url.delete(False)

@@ -15,8 +15,6 @@ class GroupSerializer(serializers.ModelSerializer):
     def group_image(self, obj):
         media = GroupMedia.objects.filter(
             group_id=obj.id, status=1)
-        print "media"
-        print media
         data = []
 
         for item in media:
