@@ -4,33 +4,30 @@ import validictory
 import collections
 # ------------------------------------------- #
 # ------------ Third Party Imports ---------- #
-from django.shortcuts import render
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import viewsets
 import rest_framework.status as status
-from django.core.exceptions import ValidationError
 from django.shortcuts import get_object_or_404
 from django.conf import settings
 from rest_framework.views import APIView
-from rest_framework.decorators import detail_route, list_route
+from rest_framework.decorators import list_route
+from django.core.exceptions import ObjectDoesNotExist
 # ------------------------------------------- #
 # ----------------- Local app imports ------ #
 from models import BusinessCard, BusinessCardTemplate, BusinessCardIdentifier, Identifier, BusinessCardSkillAvailable, BusinessCardAddSkill, BusinessCardHistory
 from serializer import BusinessCardSerializer, BusinessCardIdentifierSerializer, BusinessCardSkillAvailableSerializer, BusinessCardAddSkillSerializer, BusinessCardSummarySerializer, BusinessCardHistorySerializer
 from apps.contacts.serializer import ContactsSerializer
 from apps.contacts.models import Contacts, ContactMedia
-from apps.identifiers.models import Identifier
-from apps.identifiers.serializer import IdentifierSerializer, BusinessIdentifierSerializer
+from apps.identifiers.serializer import BusinessIdentifierSerializer
 from ohmgear.token_authentication import ExpiringTokenAuthentication
-from ohmgear.functions import CustomeResponse, handle_uploaded_file, rawResponse
+from ohmgear.functions import CustomeResponse, rawResponse
 from ohmgear.json_default_data import BUSINESS_CARD_DATA_VALIDATION
 from apps.users.models import User
 from apps.vacationcard.models import VacationCard
-from apps.vacationcard.serializer import VacationCardSerializer
 from apps.folders.views import FolderViewSet
 from apps.sendrequest.views import SendAcceptRequest
 from apps.folders.models import Folder, FolderContact
-from apps.folders.serializer import FolderSerializer, FolderContactSerializer
+from apps.folders.serializer import FolderSerializer
 from serializer import BusinessCardWithIdentifierSerializer
 import re
 # ---------------------------End------------- #
@@ -584,20 +581,32 @@ class BusinessViewSet(viewsets.ModelViewSet):
                 business = serializer.save()
                 contact_serializer.validated_data['businesscard_id'] = business
                 contact_serializer = contact_serializer.save()
-                contact = Contacts.objects.get(businesscard_id=business.id)
+
+                bcards = BusinessCard.objects.get(id=business.id)
+                contact = bcards.contact_detail
                 user = request.user
                 # -------------- Save Notes ------------ #
                 data_new = serializer.data.copy()
                 try:
-                    if request.data['note_frontend']:
-                        from apps.notes.models import Notes
-                        data = Notes.objects.update_or_create(
+                    from apps.notes.models import Notes
+                    if request.data['note_frontend']:                        
+                        note_frontend_obj = Notes(
                             user_id=user,
                             contact_id=contact,
                             note=request.data['note_frontend'],
                             bcard_side_no=1)
+                        note_frontend_obj.save()
+                    if "note_backend" in request.data and request.data[
+                            'note_backend']:
+                        note_frontend_obj = Notes(
+                            user_id=user,
+                            contact_id=contact,
+                            note=request.data['note_backend'],
+                            bcard_side_no=2)
+                        note_frontend_obj.save()
                 except:
                     pass
+                data_new["business_notes"] = serializer.fetch_notes(bcards)    
                 # -------------------------End------------ #
 
                 # Assign  first created business card to created default folder
@@ -608,7 +617,7 @@ class BusinessViewSet(viewsets.ModelViewSet):
                     offline_data = {}
                     offline_data['businesscard_id'] = business.id
                     offline_data['foldername'] = 'PR Folder'
-                    folder_view = folder_view(request, offline_data)                    
+                    folder_view = folder_view(request, offline_data)
                     data_new["folder_info"] = folder_view.data['data']
                 else:
                     queryset_folder.update(businesscard_id=business.id)
@@ -675,29 +684,42 @@ class BusinessViewSet(viewsets.ModelViewSet):
                 user = User.objects.get(id=user_id)
                 # -------------- Save Notes --------------- #
                 data_new = serializer.data.copy()
-                try:
+                # try:
+                if "note_frontend" in request.data or "note_backend" in request.data:
+                    from apps.notes.models import Notes
                     if request.data['note_frontend'] or request.data[
                             'note_backend']:
-
-                        from apps.notes.models import Notes
-                        if "note_frontend" in request.data and request.data[
-                                'note_frontend']:
-                            data = Notes.objects.update_or_create(
+                        try:
+                            note_frontend_obj = Notes.objects.get(
                                 user_id=user,
                                 contact_id=contact,
-                                note=request.data['note_frontend'],
                                 bcard_side_no=1)
-                            
-                        if "note_backend" in request.data and request.data[
-                                'note_backend']:
-                            data = Notes.objects.update_or_create(
+                        except ObjectDoesNotExist:
+                            note_frontend_obj = Notes(
                                 user_id=user,
                                 contact_id=contact,
-                                note=request.data['note_frontend'],
+                                bcard_side_no=1)
+                        note_frontend_obj.note = request.data['note_frontend']
+                        note_frontend_obj.save()
+
+                    if "note_backend" in request.data and request.data[
+                            'note_backend']:
+                        try:
+                            note_frontend_obj = Notes.objects.get(
+                                user_id=user,
+                                contact_id=contact,
                                 bcard_side_no=2)
-                            
-                except:
-                    pass
+                        except ObjectDoesNotExist:
+                            note_frontend_obj = Notes(
+                                user_id=user,
+                                contact_id=contact,
+                                bcard_side_no=2)
+                        note_frontend_obj.note = request.data['note_backend']
+                        note_frontend_obj.save()
+
+                # except:
+                #    pass
+                data_new["business_notes"] = serializer.fetch_notes(bcards)
             else:
                 return CustomeResponse(
                     contact_serializer.errors,
