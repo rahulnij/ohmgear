@@ -179,9 +179,11 @@ class TestContactModel(TestCase):
     def test_contact_media_create(self):
         contact_media = ContactMedia(user_id=self.user,
             contact_id=self.contact, 
-            img_url=''
-        )	
+            img_url='./images/IMG_0684.JPG'
+        )
+        contact_media.save()
         self.assertIsInstance(contact_media, ContactMedia)
+        self.assertEqual(contact_media.img_url, './images/IMG_0684.JPG')
 
     def tearDown(self):
         self.user.delete()
