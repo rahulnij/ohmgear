@@ -6,10 +6,16 @@ import sys
 from django.db.models.signals import post_save, pre_save, pre_delete
 from django.forms.models import model_to_dict
 from apps.groups.models import GroupMedia
+# TODO, move image to common lib
+from apps.contacts.tasks import resize_image, MAX_WIDTH
 from django.dispatch import receiver
 
 from models import Profile
 from apps.email.views import BaseSendMail
+
+from logging import getLogger
+
+log = getLogger(__name__)
 
 
 # Create profile at the time of registration
@@ -22,7 +28,7 @@ def register_profile(sender, **kwargs):
             user_new = model_to_dict(profile.user)
             try:
                 # condition for not calling at the time of run test cases
-                if not 'test' in sys.argv:
+                if 'test' not in sys.argv:
                     BaseSendMail.delay(
                         user_new,
                         type='account_confirmation',
@@ -35,12 +41,29 @@ post_save.connect(register_profile, sender=Profile,
 # End
 
 
+@receiver(post_save, sender=Profile)
+def resize_profile_image(sender, instance, *args, **kwargs):
+    try:
+        obj = Profile.objects.get(pk=instance.pk)
+        img_resized = resize_image(obj.image_path, MAX_WIDTH)
+        obj.image_path = img_resized
+        try:
+            obj.save()
+        except Exception as e:
+            log.critical("Unhandled exception in {}, {}".format(__name__, e))
+            # TODO, notify Sentry
+    except Profile.ObjectDoesNotExist as e:
+        log.error("Exception getting profile object: {}".format(e))
+        # TODO, notify Sentry
+
+
 @receiver(pre_save, sender=Profile)
 def delete_old_image(sender, instance, *args, **kwargs):
     if instance.pk:
         existing_image = Profile.objects.get(pk=instance.pk)
         if instance.profile_image and existing_image.profile_image != instance.profile_image:
             existing_image.profile_image.delete(False)
+
 
 @receiver(pre_delete, sender=GroupMedia)
 def delete_old_group_image(sender, instance, *args, **kwargs):

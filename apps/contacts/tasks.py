@@ -7,10 +7,11 @@ import logging
 logger = logging.getLogger(__name__)
 
 MAX_WIDTH = 1920
+THUMB_WIDTH = 50
 
 
 @app.task
-def resize_image(image_path, dim_x, **kwargs):
+def resize_image(image_path, dim_x, append_str='_resized', **kwargs):
     '''
     resize any image while maintaining aspect ratio
     '''
@@ -20,7 +21,7 @@ def resize_image(image_path, dim_x, **kwargs):
         new_im = im.resize((dim_x, int(new_y)))
         img_path, img_name = path.split(image_path)
         _, img_ext = img_name.split('.')
-        new_img_path = path.join(img_path, img_name + '_resized' + img_ext)
+        new_img_path = path.join(img_path, img_name + append_str + img_ext)
         try:
             f = open(new_img_path, 'w')
         except IOError as e:
@@ -65,4 +66,27 @@ def resize_contact_media_image(**kwargs):
     except Exception as e:
         logger.critical("Caught Exception {} in {}".format(e, __file__))
         # TODO: Notify Sentry
+
+
+@app.task
+def thumbnail(cls, **kwargs):
+    """
+    given any image, resize to 50 * n pixles
+    so that aspect ratio is maintained
+    """
+    try:
+        obj = cls.objects.get(kwargs.get('pk'))
+    except cls.DoesNotExist as e:
+        logger.error("Caught DoesNotExist exception for {} with prmary key {}, in {}".format(
+            cls, kwargs.get('pk'), __file__)
+        )
+        # TODO: Notify Sentry
+        return
+    thumb_img_path = resize_image(obj.image_path, THUMB_WIDTH, append_str='_thumb')
+    obj.img_url = thumb_img_path
+    try:
+        obj.save()
+    except Exception as e:
+        logger.critical("Caught Exception {} in {}".format(e, __file__))
+        # TODO -- notify Sentry
 
