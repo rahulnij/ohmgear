@@ -4,7 +4,7 @@ set -e
 # set -x
 
 WORKON_HOME=/var/www/python/envs
-$WORKON_HOME/ohmgear/bin/activate
+. $WORKON_HOME/ohmgear/bin/activate
 
 #mkvirtualenv ohmgear_jenkins
 
