@@ -1,7 +1,7 @@
 #!/bin/bash
 
 set -e
-set -x
+# set -x
 
 export WORKON_HOME=/var/www/python/envs
 . /usr/local/bin/virtualenvwrapper.sh
