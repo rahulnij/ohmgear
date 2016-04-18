@@ -39,6 +39,7 @@ class GroupSerializer(serializers.ModelSerializer):
             'description',
             'attached_group_contacts',
             'group_media',
+            'user_id',
             'group_data')
 
 
