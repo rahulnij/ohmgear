@@ -21,6 +21,7 @@ from apps.folders.models import Folder, FolderContact
 from apps.folders.serializer import FolderContactSerializer
 import copy
 from django.db.models import Q
+import ohmgear.settings.constant as constant
 # End
 
 
@@ -143,8 +144,44 @@ class storeContactsViewSet(viewsets.ModelViewSet):
         return CustomeResponse({'msg': "Update method does not allow"},
                                status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
 
-    # Destroy method will delete Contacts from Contact and folder_contact
-    #  if it is white contact other wise will be delete from  folder contact
+    @list_route(['post'],)
+    def limitedaccess(self, request):
+        """
+        Limited Access to the contact will not get any update.
+
+        Limited Access to the contact which is linked.
+        """
+        try:
+            user_id = request.user.id
+            link_status = constant.LINK_STATUS
+            # print link_status.BLUE
+        except:
+            user_id = ''
+        try:
+            contact_id = request.data['foldercontact_id']
+        except:
+            return CustomeResponse(
+                {'msg': 'folder_id not found'}, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            folder_contact_data = FolderContact.objects.filter(
+                contact_id=contact_id, user_id=user_id)
+            is_linked = folder_contact_data[0].is_linked
+        except:
+            return CustomeResponse(
+                {'msg': 'Contact data not found'}, status=status.HTTP_400_BAD_REQUEST)
+        if folder_contact_data and is_linked == 1:
+            folder_contact_data.update(
+                link_status=link_status.get('BLUE'), is_linked=0)
+            return CustomeResponse(
+                {"msg": "Contact has limited_access now."}, status=status.HTTP_200_OK)
+        else:
+            return CustomeResponse(
+                {"msg": "Check your Contact is is_linked or not."}, status=status.HTTP_400_BAD_REQUEST)
+
+
+
+    # Destroy method will delete Contacts from Contact and folder_contact,
+    #  if it is white contact ,other wise will be delete from  folder contact
     # and that contact which is deleted having connection with cureent user
     # then link_status will be change
     def destroy(self, request, pk=None):
@@ -154,6 +191,7 @@ class storeContactsViewSet(viewsets.ModelViewSet):
             link_status = folder_contact_data.link_status
             get_folder_data = folder_contact_data.folder_id
             get_user_bcard_id = get_folder_data.businesscard_id.id
+            link_status_cons = constant.LINK_STATUS
         except:
             return CustomeResponse(
                 {'msg': "server error"}, status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
@@ -167,7 +205,8 @@ class storeContactsViewSet(viewsets.ModelViewSet):
 
         if folder_contact_data:
 
-            if link_status == "1" or link_status == "0":
+            if link_status == link_status_cons.get(
+                    'ORANGE') or link_status == link_status_cons.get('WHITE'):
                 if contact_data:
                     contact_data.delete()
                     return CustomeResponse(
@@ -177,7 +216,7 @@ class storeContactsViewSet(viewsets.ModelViewSet):
                         {'msg': "Cannot be deleted"}, status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
 
             else:
-                if link_status == 4:
+                if link_status == link_status_cons.get('DELETED'):
 
                     try:
                         # find user contact_id with bcard_id and user_id
@@ -211,8 +250,10 @@ class storeContactsViewSet(viewsets.ModelViewSet):
 
                 else:
                     try:
-                        folder_contact_data = FolderContact.objects.filter(contact_id=pk, user_id=request.user.id)
-                        folder_contact_data.update(link_status=4,is_linked=0)
+                        folder_contact_data = FolderContact.objects.filter(
+                            contact_id=pk, user_id=request.user.id)
+                        folder_contact_data.update(
+                            link_status=link_status_cons.get('DELETED'), is_linked=0)
                         return CustomeResponse(
                             {'msg': "Connected Contact has been deleted successfully"}, status=status.HTTP_200_OK)
                     except:
