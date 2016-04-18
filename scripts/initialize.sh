@@ -4,7 +4,7 @@ set -e
 set -x
 
 export WORKON_HOME=/var/www/python/envs
-source /usr/local/bin/virtualenvwrapper.sh
+. /usr/local/bin/virtualenvwrapper.sh
 
 #mkvirtualenv ohmgear_jenkins
 
