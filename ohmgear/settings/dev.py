@@ -67,13 +67,13 @@ INSTALLED_APPS += (
 
 djcelery.setup_loader()
 
-BROKER_URL = 'redis://localhost:6379'
-BROKER_HOST = 'localhost'
+BROKER_URL = 'redis://dev-kbsingredis.peu3xj.0001.apse1.cache.amazonaws.com'
+BROKER_HOST = 'dev-kbsingredis.peu3xj.0001.apse1.cache.amazonaws.com'
 BROKER_PORT = '6379'
 BROKER_USER = 'guest'
 BROKER_PASSWORD = 'guest'
 
-CELERY_RESULT_BACKEND = 'redis://localhost:6379'
+CELERY_RESULT_BACKEND = 'redis://dev-kbsingredis.peu3xj.0001.apse1.cache.amazonaws.com:6379'
 CELERY_ACCEPT_CONTENT = ['application/json']
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'

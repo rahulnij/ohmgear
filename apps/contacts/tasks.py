@@ -1,5 +1,5 @@
 from PIL import Image
-# from .celery import app
+from apps.celery import celery_app as app
 from .models import ContactMedia
 from os import path
 import logging
