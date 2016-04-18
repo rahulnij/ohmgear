@@ -11,9 +11,9 @@ class Group(models.Model):
 
     class Meta:
         db_table = 'ohmgear_groups_group'
-        unique_together = ('group_name', 'user_id',)
+        unique_together = ('group_name', 'user_id')
     group_name = models.CharField(_("Group Name"), max_length=60)
-    description = models.TextField("Description")
+    description = models.TextField("Description",null=True)
     user_id = models.ForeignKey(User, db_column="user_id")
     status = models.IntegerField(_('status'), default=1)
     created_date = models.DateTimeField(

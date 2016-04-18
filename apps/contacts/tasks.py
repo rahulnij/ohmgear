@@ -10,7 +10,7 @@ MAX_WIDTH = 1920
 THUMB_WIDTH = 50
 
 
-@app.task
+# @app.task
 def resize_image(image_path, dim_x, append_str='_resized', **kwargs):
     '''
     resize any image while maintaining aspect ratio
@@ -36,7 +36,7 @@ def resize_image(image_path, dim_x, append_str='_resized', **kwargs):
         return new_img_path
         
 
-@app.task
+# @app.task
 def image_properties(image_path, img_id):
     contact_media = ContactMedia.objects.get(pk=img_id)
     with open(image_path) as f:
@@ -49,7 +49,7 @@ def image_properties(image_path, img_id):
             contact_media.position = 2
 
 
-@app.task
+# @app.task
 def resize_contact_media_image(**kwargs):
     try:
         contact_media = ContactMedia.objects.get(kwargs.get('pk'))
@@ -68,7 +68,7 @@ def resize_contact_media_image(**kwargs):
         # TODO: Notify Sentry
 
 
-@app.task
+# @app.task
 def thumbnail(cls, **kwargs):
     """
     given any image, resize to 50 * n pixles
