@@ -10,5 +10,6 @@ export WORKON_HOME=/var/www/python/envs
 
 workon ohmgear
 
+pep8 * > pep8.log || true
 #pip install -r requirements/
 
