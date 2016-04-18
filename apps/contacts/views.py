@@ -158,7 +158,7 @@ class storeContactsViewSet(viewsets.ModelViewSet):
         except:
             user_id = ''
         try:
-            contact_id = request.data['foldercontact_id']
+            contact_id = request.data['contact_id']
         except:
             return CustomeResponse(
                 {'msg': 'folder_id not found'}, status=status.HTTP_400_BAD_REQUEST)
