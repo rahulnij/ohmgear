@@ -11,5 +11,6 @@ WORKON_HOME=/var/www/python/envs
 #workon ohmgear
 
 pep8 * > pep8.log || true
+pylint * >  pylint.log || true
 #pip install -r requirements/
 
