@@ -62,10 +62,22 @@ LOGGING = {
 # CELERY STUFF
 INSTALLED_APPS += (
     "djcelery", "apps.test_purposes",
+    'django_nose'
     # "rest_framework_swagger",
     # 'raven.contrib.django.raven_compat'
 )
-
+TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
+NOSE_ARGS = [
+    '--with-coverage',  # activate coverage report
+    '--with-doctest',  # activate doctest: find and run docstests
+    '--verbosity=2',   # verbose output
+    '--with-xunit',    # enable XUnit plugin
+    '--xunit-file=testreport.xml',  # the XUnit report file
+    '--cover-xml',     # produle XML coverage info
+    '--cover-xml-file=coverage.xml',  # the coverage info file
+    # You may also specify the packages to be covered here
+    # '--cover-package=examples'
+]
 '''import raven
 
 RAVEN_CONFIG = {

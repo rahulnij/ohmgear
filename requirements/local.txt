@@ -3,3 +3,5 @@ pep8==1.7.0
 autopep8==1.2.2
 pylint==1.5.5
 pep8-naming==0.3.3
+django-nose==1.4.3
+coverage==4.1b2
