@@ -73,13 +73,12 @@ NOSE_ARGS = [
     '--verbosity=2',   # verbose output
     '--with-xunit',    # enable XUnit plugin
     '--xunit-file=testreport.xml',  # the XUnit report file
-    '--cover-html',
-    '--cover-html-dir=coverage_dir'
     '--cover-xml',     # produle XML coverage info
     '--cover-xml-file=coverage.xml',  # the coverage info file
     # You may also specify the packages to be covered here
     '--cover-package=users,notes,businesscards,contacts,identifiers',
-
+    '--cover-html',
+    '--cover-html-dir=coverage_dir'
 ]
 '''import raven
 
