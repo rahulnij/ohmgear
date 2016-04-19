@@ -63,7 +63,7 @@ class BusinessCardTestCase(APITestCase):
 
         """ End """
 
-    def test_check_the_ created_notes(self):
+    def test_check_the_created_notes(self):
 
         auth_headers = {
             'HTTP_AUTHORIZATION': 'Token ' + str(self.user_token),
@@ -75,7 +75,7 @@ class BusinessCardTestCase(APITestCase):
             '',
             format='json',
             **auth_headers)
-        check = 0
-        if response.data["data"]["business_notes"]
+
+        self.assertEqual(response.data["data"]["business_notes"], {})
 
         self.assertEqual(response.status_code, 200)
