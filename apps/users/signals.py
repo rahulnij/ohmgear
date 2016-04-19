@@ -8,11 +8,13 @@ from django.forms.models import model_to_dict
 from django.core.exceptions import ObjectDoesNotExist
 from apps.groups.models import GroupMedia
 # TODO, move image to common lib
-from apps.contacts.tasks import resize_image, MAX_WIDTH
+from common.image_lib import resize_image, MAX_WIDTH
 from django.dispatch import receiver
 
 from models import Profile
 from apps.email.views import BaseSendMail
+
+from ohmgear.settings.local import BASE_DIR
 
 from logging import getLogger
 
@@ -52,7 +54,7 @@ def resize_profile_image(sender, instance, *args, **kwargs):
         Till then i have commented this code
         """
         if obj.profile_image.name:
-            img_resized = resize_image(obj.profile_image, MAX_WIDTH)
+            img_resized = resize_image(BASE_DIR + str(obj.profile_image.url), MAX_WIDTH)
             obj.image_path = img_resized
             try:
                 obj.save()
