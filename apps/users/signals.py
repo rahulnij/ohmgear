@@ -51,13 +51,14 @@ def resize_profile_image(sender, instance, *args, **kwargs):
         not exists please correct this.
         Till then i have commented this code
         """
-        # img_resized = resize_image(obj.image_path, MAX_WIDTH)
-        # obj.image_path = img_resized
-        try:
-            obj.save()
-        except Exception as e:
-            log.critical("Unhandled exception in {}, {}".format(__name__, e))
-            # TODO, notify Sentry
+        if obj.profile_image.name:
+            img_resized = resize_image(obj.profile_image, MAX_WIDTH)
+            obj.image_path = img_resized
+            try:
+                obj.save()
+            except Exception as e:
+                log.critical("Unhandled exception in {}, {}".format(__name__, e))
+                # TODO, notify Sentry
     except ObjectDoesNotExist as e:
         log.error("Exception getting profile object: {}".format(e))
         # TODO, notify Sentry

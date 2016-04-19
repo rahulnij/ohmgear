@@ -185,6 +185,15 @@ class TestContactModel(TestCase):
         self.assertIsInstance(contact_media, ContactMedia)
         self.assertEqual(contact_media.img_url, './images/IMG_0684.JPG')
 
+    def test_create_error(self):
+        new_user = User(email='joe2@test.com', password='123werty')    
+        new_user.save()
+        biz_card = BusinessCard(user_id=new_user)
+        with self.assertRaises(ValueError):
+            new_contact = Contacts(businesscard_id=biz_card,
+                user_id=new_user.id)
+        # new_contact.save()
+
     def tearDown(self):
         self.user.delete()
         self.biz_card.delete()

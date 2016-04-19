@@ -30,8 +30,10 @@ class BusinessCardTestCase(APITestCase):
         """ create the business card with notes"""
 
         self.business_card_data = {
-            "note_frontend": "side first",
-            "note_backend": "side second",
+            "business_notes": {
+                "note_frontend": "side first",
+                "note_backend": "side second"
+            },
             "bcard_json_data":
                 '{"side_first": {"basic_info": [{"value": "MyBusinesscar", "isUpper": "1", \
                 "keyName": "CardName", "indexPos": "0", "placeHolder": "NAME THIS CARD (Required)"}, \
@@ -63,7 +65,7 @@ class BusinessCardTestCase(APITestCase):
 
         """ End """
 
-    def test_check_thecreatednotes(self):
+    def test_check_the_created_notes(self):
 
         auth_headers = {
             'HTTP_AUTHORIZATION': 'Token ' + str(self.user_token),
@@ -75,7 +77,9 @@ class BusinessCardTestCase(APITestCase):
             '',
             format='json',
             **auth_headers)
+
         check = 0
+        print ">>>>>>>>>>>>>>>>>>>>>>>>", response
         if "note_frontend" in response.data["data"]["business_notes"]:
             if response.data["data"]["business_notes"]["note_frontend"] == "side first" and response.data[
                     "data"]["business_notes"]["note_backend"] == "side second":
