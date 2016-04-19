@@ -249,3 +249,30 @@ class BusinessCardIdentifierSerializer(serializers.ModelSerializer):
                         "Businesscard can have 1 identifier only")
 
         return attrs
+
+
+class CountContactInBusinesscardSerializer(serializers.ModelSerializer):
+    """
+    How many contacts businesscard contains
+
+    Also contact_detail of contacts
+    """
+    folder_contact_detail = serializers.SerializerMethodField('folder_contact')
+
+    def folder_contact(self, obj):
+        user = self.context.get("request")
+        user_id = user
+        folder = FolderContact.objects.select_related().filter(
+            user_id=user_id).values()
+        return {"data": folder, "count": folder.count()}
+
+    class Meta:
+        model = BusinessCard
+        fields = (
+            'id',
+            'name',
+            'is_active',
+            'status',
+            'user_id',
+            'folder_contact_detail',
+        )

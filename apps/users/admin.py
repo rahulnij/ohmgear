@@ -68,7 +68,7 @@ class UserAdmin(admin.ModelAdmin):
     def get_readonly_fields(self, request, obj=None):
         if obj:  # editing an existing object
             return self.readonly_fields + ('password', 'user_type')
-            # return self.readonly_fields  
+        return self.readonly_fields  
     
     def get_status(self, obj):
         if obj.status:

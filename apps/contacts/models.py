@@ -6,7 +6,7 @@ from django.conf import settings
 User = settings.AUTH_USER_MODEL
 
 # Application imports
-from apps.businesscards.models import BusinessCard # , BusinessCardTemplate
+from apps.businesscards.models import BusinessCard  # , BusinessCardTemplate
 from simple_history.models import HistoricalRecords
 
 
@@ -43,7 +43,7 @@ class ContactMedia(models.Model):
     contact_id = models.ForeignKey(
         "Contacts", db_column='contact_id', related_name='businesscard_media')
     img_url = models.ImageField(
-        _("Image Url"), upload_to='uploads/bcards_gallary/', max_length=254)
+        _("Image Url"), upload_to='uploads/bcards_gallery/', max_length=254)
     created_date = models.DateTimeField(
         _("Created Date"), auto_now_add=True, auto_now=False)
     updated_date = models.DateTimeField(
@@ -59,6 +59,8 @@ class ContactMedia(models.Model):
             self.id, self.contact_id, self.user_id, self.status, self.front_back, self.img_url)
 
 from apps.folders.models import FolderContact
+
+
 class FavoriteContact(models.Model):
 
     class Meta:

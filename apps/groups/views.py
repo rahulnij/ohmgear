@@ -9,6 +9,8 @@ from models import Group, GroupContacts, GroupMedia
 from serializer import GroupSerializer, GroupContactsSerializer, GroupMediaSerializer
 from ohmgear.functions import CustomeResponse
 from ohmgear.token_authentication import ExpiringTokenAuthentication
+from apps.businesscards.serializer import CountContactInBusinesscardSerializer
+from apps.businesscards.models import BusinessCard
 # Create your views here.
 
 
@@ -54,7 +56,6 @@ class GroupViewSet(viewsets.ModelViewSet):
         # newdata = {}
         newdata = request.data.copy()
         newdata['user_id'] = request.user.id
-        print newdata
         serializer = self.serializer_class(
             data=newdata, context={'request': request})
         if serializer.is_valid():
@@ -132,6 +133,31 @@ class GroupViewSet(viewsets.ModelViewSet):
         """
         return CustomeResponse(
             {'msg': 'delete method not allowed'}, status=status.HTTP_400_BAD_REQUEST)
+
+    @list_route(methods=['post'],)
+    def getbusinesscardcarddetails(self, request):
+        """
+        Get number of contacts in business created.
+        """
+        try:
+            user_id = request.user.id
+            bcard_id = request.data['bcard_id']
+        except:
+            user_id = ''
+            bcard_id = ''
+        if bcard_id:
+            queryset = BusinessCard.objects.filter(id=bcard_id)
+
+            serializer = CountContactInBusinesscardSerializer(
+                queryset, many=True, context={'request': user_id})
+            return CustomeResponse(serializer.data, status=status.HTTP_200_OK)
+
+        else:
+            return CustomeResponse(
+                {
+                    'msg': 'GET method not allowed without business card id'},
+                status=status.HTTP_405_METHOD_NOT_ALLOWED,
+                validate_errors=1)
 
 
 class GroupContactsViewSet(viewsets.ModelViewSet):

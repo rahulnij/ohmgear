@@ -43,7 +43,7 @@ class CardSummary(APIView):
     queryset = BusinessCard.objects.all()
 
     def get(self, request):
-        bcard_id = self.request.QUERY_PARAMS.get('bcard_id', None)
+        bcard_id = self.request.query_params.get('bcard_id', None)
         if bcard_id:
             queryset = self.queryset.filter(id=bcard_id)
 
@@ -306,7 +306,7 @@ class BusinessCardHistoryViewSet(viewsets.ModelViewSet):
 
     def list(self, request):
 
-        bid = self.request.QUERY_PARAMS.get('bid', None)
+        bid = self.request.query_params.get('bid', None)
         if bid:
             self.queryset = self.queryset.filter(
                 businesscard_id=bid).order_by('updated_date').values()
@@ -354,7 +354,7 @@ class BusinessCardSkillAvailableViewSet(viewsets.ModelViewSet):
     serializer_class = BusinessCardSkillAvailableSerializer
 
     def list(self, request):
-        skill = self.request.QUERY_PARAMS.get('skill', None)
+        skill = self.request.query_params.get('skill', None)
         if skill:
             self.queryset = self.queryset.filter(skill_name__istartswith=skill)
         serializer = self.serializer_class(self.queryset, many=True)

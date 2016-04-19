@@ -6,7 +6,15 @@ from models import Group, GroupContacts, GroupMedia
 from rest_framework import routers, serializers, viewsets
 from django.conf import settings
 
+
+class GroupContactsSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = GroupContacts
+
+
 class GroupSerializer(serializers.ModelSerializer):
+    group_data = GroupContactsSerializer(many=True, read_only=True)
     attached_group_contacts = serializers.IntegerField(
         source='group_data.count', read_only=True)
     group_media = serializers.SerializerMethodField(
@@ -30,13 +38,9 @@ class GroupSerializer(serializers.ModelSerializer):
             'group_name',
             'description',
             'attached_group_contacts',
-            'group_media')
-
-
-class GroupContactsSerializer(serializers.ModelSerializer):
-
-    class Meta:
-        model = GroupContacts
+            'group_media',
+            'user_id',
+            'group_data')
 
 
 class GroupMediaSerializer(serializers.ModelSerializer):
