@@ -321,7 +321,6 @@ class UserViewSet(viewsets.ModelViewSet):
                     tempdata['setting_id'] = data.id
                     tempdata['value'] = data.value_type
                     tempContainer.append(tempdata)
-                print tempContainer
                 serializer = UserSignupSettingSerializer(
                     data=tempContainer, many=True)
                 if serializer.is_valid():
@@ -486,18 +485,12 @@ class SocialLoginViewSet(viewsets.ModelViewSet):
 def useractivity(request, **kwargs):
     msg = {}
     if request.method == 'GET':
-        try:
-            activation_key = kwargs['activation_key']
-        except:
-            activation_key = None
 
-        try:
-            reset_password_key = kwargs['reset_password_key']
-        except:
-            reset_password_key = None
+        activation_key = request.query_params.get('activation_key', None)  
+        reset_password_key = request.query_params.get('reset_password_key', None)
 
-          # get the activation key and activate the account : Process after
-          # registration
+        # get the activation key and activate the account : Process after
+        # registration
         if activation_key:
             user_profile = get_object_or_404(
                 Profile, activation_key=activation_key)

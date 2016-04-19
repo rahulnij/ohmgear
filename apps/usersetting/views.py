@@ -35,15 +35,15 @@ class UserSettingViewSet(viewsets.ModelViewSet):
     #-----------------get particular setting value of user by key--------#
     def getsettingvalue(self, request):
         try:
-            getkey = request.DATA['key']
+            getkey = request.data['key']
             user_id = request.user.id
         except:
-            return CustomeResponse({"msg": "Key not found"}, status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
+            return CustomeResponse({"msg": "Please provide the key"}, status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
         try:
             usersettingvalue = get_setting_value_by_key(getkey, user_id)
 
         except:
-            return CustomeResponse({"msg": "DATA not found"}, status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
+            return CustomeResponse({"msg": "Key not found"}, status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
         if usersettingvalue:
             serializer = UserSettingSerializer(usersettingvalue)
             return CustomeResponse(serializer.data, status=status.HTTP_200_OK)
