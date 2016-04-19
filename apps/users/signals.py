@@ -51,7 +51,7 @@ def resize_profile_image(sender, instance, *args, **kwargs):
         not exists please correct this.
         Till then i have commented this code
         """
-        img_resized = resize_image(obj.image_path, MAX_WIDTH)
+        # img_resized = resize_image(obj.image_path, MAX_WIDTH)
         # obj.image_path = img_resized
         try:
             obj.save()
