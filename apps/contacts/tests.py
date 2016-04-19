@@ -1,5 +1,8 @@
 import json
-
+from StringIO import StringIO
+from PIL import Image
+from django.core.files.base import File
+import re
 from rest_framework.test import APITestCase, APIClient
 from django.test import TestCase
 from .models import(
@@ -13,6 +16,14 @@ from apps.users.models import User  # UserType
 from apps.users.functions import getToken
 
 # Test api : create business card
+
+
+def create_image_file(name='test.png', ext='png', size=(5000, 5000), color=(5, 150, 100)):
+    file_obj = StringIO()
+    image = Image.new("RGBA", size=size, color=color)
+    image.save(file_obj, ext)
+    file_obj.seek(0)
+    return File(file_obj, name=name)
 
 
 class ContactTestCase(APITestCase):
@@ -179,22 +190,37 @@ class TestContactModel(TestCase):
     def test_contact_media_create(self):
         contact_media = ContactMedia(user_id=self.user,
             contact_id=self.contact, 
-            img_url='./images/IMG_0684.JPG'
+            img_url=create_image_file()
         )
         contact_media.save()
         self.assertIsInstance(contact_media, ContactMedia)
-        self.assertEqual(contact_media.img_url, './images/IMG_0684.JPG')
+        self.assertRegexpMatches(contact_media.img_url.url, re.compile(r'.*bcards_gallery/*test.*\.png'))
 
     def test_create_error(self):
         new_user = User(email='joe2@test.com', password='123werty')    
         new_user.save()
         biz_card = BusinessCard(user_id=new_user)
+        biz_card.save()
         with self.assertRaises(ValueError):
             new_contact = Contacts(businesscard_id=biz_card,
                 user_id=new_user.id)
-        # new_contact.save()
+            new_contact.save()
 
     def tearDown(self):
         self.user.delete()
         self.biz_card.delete()
         self.contact.delete()
+
+
+class TestContactMedai(TestCase):
+    def setUp(self):
+        self.user = User(
+            email="joe@test.com",
+            password="qwerty"
+        )
+        self.user.save()
+        self.biz_card = BusinessCard(user_id=self.user)
+        self.biz_card.save()
+        self.contact = Contacts(businesscard_id=self.biz_card,
+            user_id=self.user)
+        self.contact.save()

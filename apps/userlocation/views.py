@@ -54,7 +54,7 @@ class UserLocationViewSet(viewsets.ModelViewSet):
             ul = self.queryset.get(user_id=request.user.id, region=REGION)
             currentUserLocation = 'POINT(%s %s)' % (
                 ul.geom.x, ul.geom.y)  # {"lat": ul.lat, "lon": ul.lon}
-            curTime = datetime.datetime.now()
+            curTime = datetime.datetime.utcnow()
             timeSubtract = datetime.timedelta(minutes=30)
             timeBeforeCurrentTime = curTime - timeSubtract
 

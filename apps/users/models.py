@@ -201,9 +201,43 @@ class Profile(models.Model):
     # ------------- End -------------------------------------------#
 
     def __unicode__(self):
-        return "id: {}, mobile_number: {}, user: {}".format(
-            self.id, self.mobile_number, self.user
-        )
+        return """
+            {   "id":"%s",
+                "dob":"%s",
+                "prefix":"%s",
+                "middle":"%s",
+                "suffix":"%s",
+                "gender":"%s",
+                "address":"%s",
+                "mobile_number":"%s",
+                "user":"%s",
+                "income_group":"%s",
+                "business_type":"%s",
+                "first_time_login":"%s",
+                "first_name":"%s",
+                "last_name":"%s",
+                "nick_name":"%s",
+                "headline":"%s",
+                "profile_image":"%s"}""" % \
+            (
+                self.id,
+                self.dob,
+                self.gender,
+                self.address,
+                self.mobile_number,
+                self.user,
+                self.income_group,
+                self.business_type,
+                self.first_time_login,
+                self.first_name,
+                self.last_name,
+                self.nick_name,
+                self.headline,
+                self.profile_image.url,
+                self.prefix,
+                self.middle,
+                self.suffix
+            ) 
 
 
 class SocialLogin(models.Model):

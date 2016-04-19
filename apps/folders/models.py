@@ -7,6 +7,7 @@ from datetime import datetime
 from django.conf import settings
 User = settings.AUTH_USER_MODEL
 
+
 class FolderType(models.Model):
 
     class Meta:
@@ -31,12 +32,13 @@ class Folder(models.Model):
     businesscard_id = models.ForeignKey(BusinessCard, verbose_name=_(
         'business card'), null=True, blank=True, db_column='businesscard_id')
     created_date = models.DateTimeField(
-        _('created date'), default=datetime.now, blank=True)
+        _('created date'), default=datetime.utcnow, blank=True)
     updated_date = models.DateTimeField(
-        _('updated date'), default=datetime.now, blank=True)
+        _('updated date'), default=datetime.utcnow, blank=True)
 
     def __unicode__(self):
-        return '{"id":%d,"foldername":%s,"foldertype":%s ,"businesscard_id":%s}' % (self.id, self.foldername, self.foldertype,self.businesscard_id)
+        return '{"id":%d,"foldername":%s,"foldertype":%s ,"businesscard_id":%s}' % \
+            (self.id, self.foldername, self.foldertype, self.businesscard_id)
 
 
 class FolderContact(models.Model):
@@ -68,7 +70,8 @@ class FolderContact(models.Model):
         _('updated date'), auto_now_add=False, auto_now=True)
 
     def __unicode__(self):
-        return '{"id":%d,"folder_id":%d,"contact_id":%d,"link_status":%d,"is_linked":%d}' % (self.id, self.folder_id.id, self.contact_id.id, self.link_status, self.is_linked)
+        return '{"id":%d,"folder_id":%d,"contact_id":%d,"link_status":%d,"is_linked":%d}' % \
+            (self.id, self.folder_id.id, self.contact_id.id, self.link_status, self.is_linked)
 
 
 class MatchContact(models.Model):
@@ -88,4 +91,5 @@ class MatchContact(models.Model):
         _('updated date'), auto_now_add=False, auto_now=True)
 
     def __unicode__(self):
-        return '{"id":%d,"user_id":%d,"folder_contact_id":%d,"businesscard_id":%d,"created_date":%s,"updated_date":%s}' % (self.id, self.user_id.id, self.folder_contact_id.id, self.businesscard_id.id, self.created_date, self.updated_date)
+        return '{"id":%d,"user_id":%d,"folder_contact_id":%d,"businesscard_id":%d}' % \
+            (self.id, self.user_id.id, self.folder_contact_id.id, self.businesscard_id.id)
