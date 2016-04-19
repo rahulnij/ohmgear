@@ -6,7 +6,7 @@ set -e
 WORKON_HOME=/var/www/python/envs
 . $WORKON_HOME/ohmgear/bin/activate
 
-./manage.py test --settings='ohmgear.settings.local'
+./manage.py test --settings='ohmgear.settings.local_jenkin'
 
 pep8 apps/ ohmgear/ > pep8.log || true
 pylint --rcfile=pylint.cfg -f parseable apps/ ohmgear/ > pylint.log || true
