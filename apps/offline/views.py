@@ -1,27 +1,18 @@
-#------------ Import Python Modules -----------#
 
-#-------------------------------------------#
-
-#------------ Third Party Imports ----------#
-from django.shortcuts import render
+# Third Party Imports
 from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated
-from rest_framework.decorators import detail_route, list_route
+from rest_framework.decorators import list_route
 import rest_framework.status as status
-#-------------------------------------------#
 
-#------------ Local app imports ------#
+
+# Application imports
 from apps.businesscards.views import BusinessViewSet, BusinessCardIdentifierViewSet
 from apps.vacationcard.views import VacationCardViewSet
 from apps.businesscards.models import BusinessCard
-from apps.usersetting.models import Setting, UserSetting
-from apps.usersetting.serializer import UserSignupSettingSerializer
+from apps.usersetting.models import UserSetting
 from ohmgear.functions import CustomeResponse
 from ohmgear.token_authentication import ExpiringTokenAuthentication
-#-------------------------------------------#
-
-# Create your views here.
-#---------------------------- Update data on server ----------------------------#
 
 
 class OfflineSendReceiveDataViewSet(viewsets.ModelViewSet):
@@ -36,8 +27,6 @@ class OfflineSendReceiveDataViewSet(viewsets.ModelViewSet):
 
     @list_route(methods=['post'],)
     def send(self, request):
-        # data format {"businesscard": [{"operation": "add","json_data": [{},
-        # {}]}, {     "operation": "update","json_data": [{}, {}]}] }
 
         try:
             user_id = request.user.id
@@ -56,11 +45,11 @@ class OfflineSendReceiveDataViewSet(viewsets.ModelViewSet):
             position = 0
             for raw_data in businesscard:
 
-                #-----------------  Create the business card ---------------------------#
+                # Create the business card
                 if raw_data["operation"] == 'add':
                     business_data = []
                     if raw_data["json_data"]:
-                        #------------- execute all business card-----------------------#
+                        # execute all business card
                         for items in raw_data["json_data"]:
                             data = {}
                             data['user_id'] = user_id
@@ -70,12 +59,11 @@ class OfflineSendReceiveDataViewSet(viewsets.ModelViewSet):
                             except:
                                 data['bcard_json_data'] = ''
 
-                            #------------- Local business card id --------------#
+                            # Local business card id
                             try:
                                 local_business_id = items['local_business_id']
                             except:
                                 local_business_id = ''
-                            #-------------------- End --------------------------#
 
                             business_card_response = business_card_class_create(
                                 request, 1, data)
@@ -93,13 +81,13 @@ class OfflineSendReceiveDataViewSet(viewsets.ModelViewSet):
                                     {"local_business_id": local_business_id, "bcard_id": business_card_response["data"]})
                         businesscard_copy['businesscard'][
                             position]['json_data'] = business_data
-                #------------------- End -----------------------------------------------#
+                # End
 
-                #-----------------  Update the business card ---------------------------#
+                # Update the business card
                 if raw_data["operation"] == 'update':
                     business_data = []
                     if raw_data["json_data"]:
-                        #------------- execute all business card-----------------------#
+                        # execute all business card
                         for items in raw_data["json_data"]:
                             data = {}
                             data['user_id'] = user_id
@@ -109,19 +97,19 @@ class OfflineSendReceiveDataViewSet(viewsets.ModelViewSet):
                             except:
                                 data['bcard_json_data'] = ''
 
-                            #------------- Local business card id --------------#
+                            # Local business card id
                             try:
                                 local_business_id = items['local_business_id']
                             except:
                                 local_business_id = ''
-                            #-------------------- End --------------------------#
+                            # End
 
-                            #------------- Local business card id --------------#
+                            # Local business card id
                             try:
                                 data['bcard_id'] = items['bcard_id']
                             except:
                                 data['bcard_id'] = ''
-                            #-------------------- End --------------------------#
+                            # End
                             if data['bcard_id']:
                                 business_card_response = business_card_class_update(
                                     request, None, 1, data)
@@ -147,15 +135,13 @@ class OfflineSendReceiveDataViewSet(viewsets.ModelViewSet):
 
                 position = position + 1
 
-        # Link identifier to business card
-        # data format {"link_bcard_to_identifier":[{},{}]}
         if 'link_bcard_to_identifier' in request.data:
 
             link_bcard_to_identifier = request.data['link_bcard_to_identifier']
             link_bcard_to_identifier_class = BusinessCardIdentifierViewSet()
             bcard_link_data = []
             for items in link_bcard_to_identifier:
-                #data = {}
+
                 items['user_id'] = user_id
 
                 response = link_bcard_to_identifier_class.create(
@@ -170,9 +156,9 @@ class OfflineSendReceiveDataViewSet(viewsets.ModelViewSet):
         return CustomeResponse(businesscard_copy, status=status.HTTP_200_OK)
 
     @list_route(methods=["post"],)
-    # update multiple settings in case of offline----------#
+    # update multiple settings in case of offline
     def updatemultiplerecord(self, request):
-        #data format {"DISPLAY_CONTACT_NAME_AS":"1","LANGUAGE":"1"} -------#
+
         getkey = request.DATA
         updated_settings = []
         non_updated_settings = []
@@ -187,10 +173,7 @@ class OfflineSendReceiveDataViewSet(viewsets.ModelViewSet):
 
     @list_route(methods=['post'],)
     def sendVactionCard(self, request):
-        # data format {"vacationcard": [{"operation": "add","json_data":
-        # [{"vacation_name":"Us vacation123","vacation":
-        # [{"country":"ankurgumber","vacation_type":"confrence","contact_no":"8800362589","state":"Haryana","city":"gzb","notes":"hsfdjdfjfsed","trip_start_date":"2015-08-10","trip_end_date":"2015-11-28"}]},
-        # {}]}, {     "operation": "update","json_data": [{}, {}]}] }
+
         try:
             user_id = request.user.id
 
@@ -214,11 +197,11 @@ class OfflineSendReceiveDataViewSet(viewsets.ModelViewSet):
             position = 0
             for raw_data in vacation_card:
                 # i=0
-                #-----------------  Create the Vacation card ---------------------------#
+                # Create the Vacation card
                 if raw_data["operation"] == 'add':
                     vacation_data = []
                     if raw_data["json_data"]:
-                        #------------- execute all vacation card-----------------------#
+                        # execute all vacation card
                         vcard_data = []
                         stop_data = []
                         for items in raw_data["json_data"]:
@@ -229,13 +212,13 @@ class OfflineSendReceiveDataViewSet(viewsets.ModelViewSet):
                             except:
                                 data['vacation_name'] = ''
 
-                            #------------- Local vacation card id --------------#
+                            # Local vacation card id
                             try:
                                 data['vacation_trips'] = items[
                                     'vacation_trips']
                             except:
                                 data['vacation_trips'] = ''
-                            #-------------------- End --------------------------#
+                            # End
                             try:
                                 local_vacation_id = items['local_vacation_id']
                             except:
@@ -246,12 +229,8 @@ class OfflineSendReceiveDataViewSet(viewsets.ModelViewSet):
                             vacation_card_response = vacation_card_response.data
                             if vacation_card_response["status"]:
                                 try:
-
-                                    #vcard ={}
                                     vcard_id = vacation_card_response
-                                    #vcard= vcard_id
-                                    # vcard_data.append(vcard)
-                                    # vcard.append(vcard_id)
+
                                 except:
                                     vcard_id = vacation_card_response
 
@@ -264,13 +243,13 @@ class OfflineSendReceiveDataViewSet(viewsets.ModelViewSet):
                             # i=i+1
                         vacationcard_copy['vacationcard'][
                             position]['json_data'] = vacation_data
-                #------------------- End -----------------------------------------------#
+                # End
 
-                #-----------------  Update the vacation card ---------------------------#
+                # Update the vacation card
                 if raw_data["operation"] == 'update':
                     vacation_data = []
                     if raw_data["json_data"]:
-                        #------------- execute all vacation card-----------------------#
+                        # execute all vacation card
                         for items in raw_data["json_data"]:
 
                             data = {}
@@ -280,26 +259,26 @@ class OfflineSendReceiveDataViewSet(viewsets.ModelViewSet):
                             except:
                                 data['vacation_name'] = ''
 
-                            #------------- Local vacation card id --------------#
+                            # Local vacation card id
                             try:
                                 data['vacation_trips'] = items[
                                     'vacation_trips']
                             except:
                                 data['vacation_trips'] = ''
 
-                            #------------- Local vacation card id --------------#
+                            # Local vacation card id
                             try:
                                 local_vacation_id = items['local_vacation_id']
                             except:
                                 local_vacation_id = ''
-                            #-------------------- End --------------------------#
+                            # End
 
-                            #------------- Local vacation card id --------------#
+                            # Local vacation card id
                             try:
                                 data['vcard_id'] = items['vcard_id']
                             except:
                                 data['vcard_id'] = ''
-                            #-------------------- End --------------------------#
+                            # End
                             if data['vcard_id']:
 
                                 vacation_card_response = vacation_card_class_update(
@@ -310,10 +289,7 @@ class OfflineSendReceiveDataViewSet(viewsets.ModelViewSet):
                                     try:
                                         vcard = {}
                                         vcard_id = vacation_card_response
-                                        #vcard= vcard_id
-                                        # vcard_data.append(vcard)
-                                # vcard.append(vcard_id)
-                                        #vcard_id = vacation_card_response["data"]["id"]
+
                                     except:
                                         print "except"
                                         vcard_id = vacation_card_response
@@ -332,12 +308,10 @@ class OfflineSendReceiveDataViewSet(viewsets.ModelViewSet):
         return CustomeResponse(vacationcard_copy, status=status.HTTP_200_OK)
 
 
-#---------------------------- End ----------------------------------------------#
+# End
 
 
-#---------------------------  Fetch data from server ---------------------------#
+#  Fetch data from server
     @list_route(methods=['get'],)
     def receive(self, request):
         pass
-
-#---------------------------  End ----------------------------------------------#
