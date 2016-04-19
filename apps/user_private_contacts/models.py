@@ -11,7 +11,7 @@ class UserPrivateContactsDetails(models.Model):
         db_table = 'ohmgear_contacts_contact_copy'
     contact_id = models.OneToOneField(
         BusinessCard, related_name='private_contact_detail', db_column="contact_id")
-    private_json_data = JsonField(null=True)
+    # private_json_data = JsonField(null=True)
     user_id = models.ForeignKey(User, db_column="user_id")
     created_date = models.DateTimeField(
         _("Created Date"), auto_now_add=True, auto_now=False)
