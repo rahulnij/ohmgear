@@ -63,7 +63,7 @@ class BusinessCardTestCase(APITestCase):
 
         """ End """
 
-    def test_check_the_ created_notes(self):
+    def test_check_thecreatednotes(self):
 
         auth_headers = {
             'HTTP_AUTHORIZATION': 'Token ' + str(self.user_token),
@@ -76,6 +76,9 @@ class BusinessCardTestCase(APITestCase):
             format='json',
             **auth_headers)
         check = 0
-        if response.data["data"]["business_notes"]
+        if "note_frontend" in response.data["data"]["business_notes"]:
+            if response.data["data"]["business_notes"]["note_frontend"] == "side first" and response.data[
+                    "data"]["business_notes"]["note_backend"] == "side second":
+                check = 1
 
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(check, 1)
