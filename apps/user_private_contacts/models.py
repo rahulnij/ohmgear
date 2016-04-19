@@ -3,8 +3,7 @@ from apps.businesscards.models import BusinessCard
 from apps.users.models import User
 
 # It is the the extra information added by user in other users contact--------#
-
-
+'''
 class UserPrivateContactsDetails(models.Model):
 
     class Meta:
@@ -20,3 +19,4 @@ class UserPrivateContactsDetails(models.Model):
 
     def __unicode__(self):
         return '{"id":"%s","contact_id":"%s","private_json_data":"%s"}' % (self.id, self.contact_id, self.private_json_data)
+'''
