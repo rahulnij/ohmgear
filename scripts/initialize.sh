@@ -6,11 +6,7 @@ set -e
 WORKON_HOME=/var/www/python/envs
 . $WORKON_HOME/ohmgear/bin/activate
 
-#mkvirtualenv ohmgear_jenkins
+pep8 apps/ ohmgear/ > pep8.log || true
+pylint apps/ ohmgear >  pylint.log || true
 
-#workon ohmgear
-
-pep8 * > pep8.log || true
-pylint * >  pylint.log || true
-#pip install -r requirements/
 
