@@ -76,7 +76,7 @@ NOSE_ARGS = [
     '--cover-xml',     # produle XML coverage info
     '--cover-xml-file=coverage.xml',  # the coverage info file
     # You may also specify the packages to be covered here
-    # '--cover-package=examples'
+    '--cover-package=users,notes,businesscards,contacts,identifiers'
 ]
 '''import raven
 
