@@ -178,8 +178,6 @@ class storeContactsViewSet(viewsets.ModelViewSet):
             return CustomeResponse(
                 {"msg": "Check your Contact is is_linked or not."}, status=status.HTTP_400_BAD_REQUEST)
 
-
-
     # Destroy method will delete Contacts from Contact and folder_contact,
     #  if it is white contact ,other wise will be delete from  folder contact
     # and that contact which is deleted having connection with cureent user
