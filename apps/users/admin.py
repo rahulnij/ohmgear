@@ -93,6 +93,12 @@ class ProfileAdmin(admin.ModelAdmin):
     model = Profile
     raw_id_fields = ('user',)
     search_fields = ('user__email',)
+        # code to display selected fields from the database
+    list_display = ('first_name', 'last_name','user_id_display','mobile_number','admin_thumbnail')
+
+    def user_id_display(self, obj):
+       return obj.user.email
+    user_id_display.short_description = 'User Email'
 
 
 # class UserProfileAdmin(admin.TabularInline):
