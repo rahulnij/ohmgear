@@ -1,13 +1,14 @@
 from django.db import models
+from django.core.exceptions import ObjectDoesNotExist
 from django.contrib.auth.models import BaseUserManager, AbstractBaseUser
 from django.utils import timezone
-from django.contrib.auth.hashers import make_password
+# from django.contrib.auth.hashers import make_password
 from django.utils.translation import ugettext_lazy as _
-#from django_pgjson.fields import JsonField
+# from django_pgjson.fields import JsonField
 from django.contrib.postgres.fields import JSONField
-import datetime
-from datetime import timedelta
-from django.utils.html import format_html
+# import datetime
+# from datetime import timedelta
+# from django.utils.html import format_html
 from django.conf import settings
 
 
