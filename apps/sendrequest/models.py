@@ -22,13 +22,17 @@ class SendRequest(models.Model):
         ("b2b", "bcard to bcard"),
         ("b2g", "bcard to grey card"),
     )
-    request_type = models.CharField(max_length=50, default="b2b", choices=RequestType)
+    request_type = models.CharField(
+        max_length=50,
+        default="b2b",
+        choices=RequestType)
 
     sender_user_id = models.ForeignKey(
         User,
         db_column="sender_user_id",
         related_name='srequest_sender_user_id')
-    sender_business_card_id = models.ForeignKey(BusinessCard, db_column="sender_business_card_id")
+    sender_business_card_id = models.ForeignKey(
+        BusinessCard, db_column="sender_business_card_id")
 
     receiver_user_id = models.ForeignKey(
         User,
@@ -36,10 +40,12 @@ class SendRequest(models.Model):
         related_name='srequest_receiver_user_id',
         null=True,
         blank=True)
-    receiver_bcard_or_contact_id = models.PositiveIntegerField(default=0, blank=True)
+    receiver_bcard_or_contact_id = models.PositiveIntegerField(
+        default=0, blank=True)
 
     message = models.CharField(max_length=200, blank=True, null=True)
-    status = models.BooleanField(default=0)
+    request_status = models.SmallIntegerField(
+        default=0, choices=AcceptedStatus)
     created_date = models.DateTimeField(
         _("Created Date"), auto_now_add=True, auto_now=False)
     updated_date = models.DateField(

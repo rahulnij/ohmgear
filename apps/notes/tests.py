@@ -79,7 +79,6 @@ class BusinessCardTestCase(APITestCase):
             **auth_headers)
 
         check = 0
-        print ">>>>>>>>>>>>>>>>>>>>>>>>", response
         if "note_frontend" in response.data["data"]["business_notes"]:
             if response.data["data"]["business_notes"]["note_frontend"] == "side first" and response.data[
                     "data"]["business_notes"]["note_backend"] == "side second":
