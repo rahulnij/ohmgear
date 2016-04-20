@@ -14,7 +14,8 @@ from django.dispatch import receiver
 from models import Profile
 from apps.email.views import BaseSendMail
 
-from ohmgear.settings.local import BASE_DIR
+from django.conf import settings
+
 
 from logging import getLogger
 
@@ -22,7 +23,6 @@ log = getLogger(__name__)
 
 
 # Create profile at the time of registration
-
 
 def register_profile(sender, **kwargs):
     if kwargs.get('created'):
@@ -49,17 +49,20 @@ def resize_profile_image(sender, instance, *args, **kwargs):
     try:
         obj = Profile.objects.get(pk=instance.pk)
         """
-        Rahul: image_path(i think you might need this "profile_image:) 
+        Rahul: image_path(i think you might need this "profile_image:)
         not exists please correct this.
         Till then i have commented this code
         """
         if obj.profile_image.name:
-            img_resized = resize_image(BASE_DIR + str(obj.profile_image.url), MAX_WIDTH)
+            img_resized = resize_image(
+                settings.BASE_DIR + str(obj.profile_image.url), MAX_WIDTH)
             obj.image_path = img_resized
             try:
                 obj.save()
             except Exception as e:
-                log.critical("Unhandled exception in {}, {}".format(__name__, e))
+                log.critical(
+                    "Unhandled exception in {}, {}".format(
+                        __name__, e))
                 # TODO, notify Sentry
     except ObjectDoesNotExist as e:
         log.error("Exception getting profile object: {}".format(e))
