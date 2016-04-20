@@ -8,7 +8,7 @@ from django.forms.models import model_to_dict
 from django.core.exceptions import ObjectDoesNotExist
 from apps.groups.models import GroupMedia
 # TODO, move image to common lib
-from common.image_lib import resize_image, MAX_WIDTH
+from common.image_lib import resize_image, image_dimensions, MAX_WIDTH
 from django.dispatch import receiver
 
 from models import Profile
@@ -54,13 +54,15 @@ def resize_profile_image(sender, instance, *args, **kwargs):
         Till then i have commented this code
         """
         if obj.profile_image.name:
-            img_resized = resize_image(BASE_DIR + str(obj.profile_image.url), MAX_WIDTH)
-            obj.image_path = img_resized
-            try:
-                obj.save()
-            except Exception as e:
-                log.critical("Unhandled exception in {}, {}".format(__name__, e))
-                # TODO, notify Sentry
+            width, height = image_dimensions(BASE_DIR + str(obj.profile_image.url))
+            if width > MAX_WIDTH:
+                img_resized = resize_image(BASE_DIR + str(obj.profile_image.url), MAX_WIDTH)
+                obj.image_path = img_resized
+                try:
+                    obj.save()
+                except Exception as e:
+                    log.critical("Unhandled exception in {}, {}".format(__name__, e))
+                    # TODO, notify Sentry
     except ObjectDoesNotExist as e:
         log.error("Exception getting profile object: {}".format(e))
         # TODO, notify Sentry

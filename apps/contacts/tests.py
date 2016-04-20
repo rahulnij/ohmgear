@@ -212,7 +212,7 @@ class TestContactModel(TestCase):
         self.contact.delete()
 
 
-class TestContactMedai(TestCase):
+class TestContactMedia(TestCase):
     def setUp(self):
         self.user = User(
             email="joe@test.com",
