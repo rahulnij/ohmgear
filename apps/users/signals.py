@@ -8,7 +8,7 @@ from django.forms.models import model_to_dict
 from django.core.exceptions import ObjectDoesNotExist
 from apps.groups.models import GroupMedia
 # TODO, move image to common lib
-from common.image_lib import resize_image, MAX_WIDTH
+# from common.image_lib import resize_image, MAX_WIDTH
 from django.dispatch import receiver
 
 from models import Profile
