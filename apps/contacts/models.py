@@ -75,8 +75,15 @@ class ContactMedia(models.Model):
     status = models.IntegerField(_("Status"), default=0)
 
     def __unicode__(self):
-        return '{"id:"%s","contact_id":"%s","user_id":"%s","status":"%s","front_back":"%s","img_url":"%s"}' % (
-            self.id, self.contact_id, self.user_id, self.status, self.front_back, self.img_url)
+        return """
+            {"id:"%s",
+            "contact_id":"%s",
+            "user_id":"%s",
+            "status":"%s",
+            "front_back":"%s",
+            "img_url":"%s"
+            }""" % (
+            self.id, self.contact_id, self.user_id, self.status, self.front_back, self.img_url.url)
 
 from apps.folders.models import FolderContact
 

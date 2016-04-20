@@ -48,5 +48,4 @@ class IdentifierTestCase(APITestCase):
             "identifiertype": 1}
         response = self.client.post(
             '/api/identifiers/', data, format='json', **auth_headers)
-        print response
         self.assertEqual(response.status_code, 201)

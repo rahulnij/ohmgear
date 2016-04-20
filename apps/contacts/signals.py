@@ -2,7 +2,10 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 import logging
 from .models import ContactMedia
-from .tasks import resize_contact_media_image
+from ohmgear.common.image_lib import resize_image, MAX_WIDTH
+from ohmgear.settings.local import BASE_DIR
+
+# from .tasks import resize_contact_media_image
 
 logger = logging.getLogger(__name__)
 
@@ -16,7 +19,15 @@ def resize_handler(*args, **kwargs):
         # TODO, notify Sentry
         return
 
-    resize_contact_media_image.apply_async(kwargs={'pk': obj.pk})
+    # resize_contact_media_image.apply_async(kwargs={'pk': obj.pk})
+    img_resized = resize_image(BASE_DIR + str(obj.img_url), MAX_WIDTH)
+    obj.img_url = img_resized
+    try:
+        obj.save()
+    except Exception as e:
+        logger.critical("Unhandled exception in {}, {}".format(__name__, e))
+        return
+    
 
 post_save.connect(resize_handler, sender=ContactMedia)
 

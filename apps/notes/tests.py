@@ -7,7 +7,7 @@ class BusinessCardTestCase(APITestCase):
     client = APIClient()
 
     fixtures = ['default']
-    
+
     user_token = ''
 
     business_card_id = ''
@@ -30,9 +30,11 @@ class BusinessCardTestCase(APITestCase):
         """ create the business card with notes"""
 
         self.business_card_data = {
-            "note_frontend": "side first", 
-            "note_backend": "side second", 
-            "bcard_json_data": 
+            "business_notes": {
+                "note_frontend": "side first",
+                "note_backend": "side second"
+            },
+            "bcard_json_data":
                 '{"side_first": {"basic_info": [{"value": "MyBusinesscar", "isUpper": "1", \
                 "keyName": "CardName", "indexPos": "0", "placeHolder": "NAME THIS CARD (Required)"}, \
                 {"value": "Detail Check", "isUpper": "1", "keyName": "FirstName", "indexPos": "2", \
@@ -55,21 +57,32 @@ class BusinessCardTestCase(APITestCase):
             'HTTP_AUTHORIZATION': 'Token ' + str(self.user_token)
         }
         response = self.client.post(
-            '/api/businesscard/', 
-            self.business_card_data, 
-            format='json', **auth_headers
-        )
+            '/api/businesscard/',
+            self.business_card_data,
+            format='json',
+            **auth_headers)
         self.business_card_id = response.data["data"]["id"]
 
+        """ End """
+
     def test_check_the_created_notes(self):
+
         auth_headers = {
             'HTTP_AUTHORIZATION': 'Token ' + str(self.user_token),
         }
         """ call business list api """
         response = self.client.get(
-            '/api/businesscard/%s/' % (self.business_card_id), '', format='json', **auth_headers
-        )
-        check = 0
-        # if response.data["data"]["business_notes"]
+            '/api/businesscard/%s/' %
+            (self.business_card_id),
+            '',
+            format='json',
+            **auth_headers)
 
-        self.assertEqual(response.status_code, 200)
+        check = 0
+        print ">>>>>>>>>>>>>>>>>>>>>>>>", response
+        if "note_frontend" in response.data["data"]["business_notes"]:
+            if response.data["data"]["business_notes"]["note_frontend"] == "side first" and response.data[
+                    "data"]["business_notes"]["note_backend"] == "side second":
+                check = 1
+
+        self.assertEqual(check, 1)

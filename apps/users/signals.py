@@ -5,13 +5,16 @@ import sys
 
 from django.db.models.signals import post_save, pre_save, pre_delete
 from django.forms.models import model_to_dict
+from django.core.exceptions import ObjectDoesNotExist
 from apps.groups.models import GroupMedia
 # TODO, move image to common lib
-from apps.contacts.tasks import resize_image, MAX_WIDTH
+from common.image_lib import resize_image, MAX_WIDTH
 from django.dispatch import receiver
 
 from models import Profile
 from apps.email.views import BaseSendMail
+
+from ohmgear.settings.local import BASE_DIR
 
 from logging import getLogger
 
@@ -45,14 +48,20 @@ post_save.connect(register_profile, sender=Profile,
 def resize_profile_image(sender, instance, *args, **kwargs):
     try:
         obj = Profile.objects.get(pk=instance.pk)
-        img_resized = resize_image(obj.image_path, MAX_WIDTH)
-        obj.image_path = img_resized
-        try:
-            obj.save()
-        except Exception as e:
-            log.critical("Unhandled exception in {}, {}".format(__name__, e))
-            # TODO, notify Sentry
-    except Profile.ObjectDoesNotExist as e:
+        """
+        Rahul: image_path(i think you might need this "profile_image:) 
+        not exists please correct this.
+        Till then i have commented this code
+        """
+        if obj.profile_image.name:
+            img_resized = resize_image(BASE_DIR + str(obj.profile_image.url), MAX_WIDTH)
+            obj.image_path = img_resized
+            try:
+                obj.save()
+            except Exception as e:
+                log.critical("Unhandled exception in {}, {}".format(__name__, e))
+                # TODO, notify Sentry
+    except ObjectDoesNotExist as e:
         log.error("Exception getting profile object: {}".format(e))
         # TODO, notify Sentry
 

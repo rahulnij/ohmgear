@@ -4,5 +4,5 @@ import views
 from rest_framework import routers
 
 router = routers.DefaultRouter()
-router.register(r'user/location', views.UserLocationViewSet)
+router.register(r'api/user/location', views.UserLocationViewSet)
 urlpatterns = router.urls

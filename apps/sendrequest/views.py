@@ -60,12 +60,12 @@ class SendAcceptRequest(viewsets.ModelViewSet):
         try:
             notification = SendRequest()
 
-            notification.type = karg['type']
+            notification.request_type = karg['type']
             notification.sender_user_id = karg['sender_user_id']
-            notification.sender_obj_id = karg['sender_obj_id']
+            notification.sender_business_card_id = karg['sender_obj_id']
 
             notification.receiver_user_id = karg['receiver_user_id']
-            notification.receiver_obj_id = karg['receiver_obj_id']
+            notification.receiver_bcard_or_contact_id = karg['receiver_obj_id']
 
             notification.message = karg['message']
             notification.save()

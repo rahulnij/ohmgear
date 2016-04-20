@@ -48,7 +48,7 @@ class VacationCardViewSet(viewsets.ModelViewSet):
                 counter = counter + 1
 
             if serializer.data:
-                return CustomeResponse(serializer.data, status=status.HTTP_201_CREATED)
+                return CustomeResponse(serializer.data, status=status.HTTP_200_OK)
             else:
                 return CustomeResponse({'msg': "No records found."}, status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
 
@@ -239,7 +239,7 @@ class VacationCardViewSet(viewsets.ModelViewSet):
                 vacationtrip.delete()
                 serializer.save(user_id=request.user)
 
-                return CustomeResponse(serializer.data, status=status.HTTP_201_CREATED)
+                return CustomeResponse(serializer.data, status=status.HTTP_200_OK)
 
             else:
                 #
