@@ -70,7 +70,7 @@ class BusinessCardSerializer(serializers.ModelSerializer):
                 data['note_frontend'] = str(item.note)
             elif item.bcard_side_no == 2:
                 data['note_backend'] = str(item.note)
-        return data        
+        return data
 
     class Meta:
         model = BusinessCard
@@ -116,7 +116,7 @@ class BusinessCardWithIdentifierSerializer(serializers.ModelSerializer):
                 data['note_frontend'] = str(item.note)
             elif item.bcard_side_no == 2:
                 data['note_backend'] = str(item.note)
-        return data 
+        return data
 
     class Meta:
         model = BusinessCard
@@ -262,8 +262,9 @@ class CountContactInBusinesscardSerializer(serializers.ModelSerializer):
     def folder_contact(self, obj):
         user = self.context.get("request")
         user_id = user
-        folder = FolderContact.objects.select_related().filter(
-            user_id=user_id).values()
+        folder = FolderContact.objects.select_related(
+            'folder_id').filter(folder_id__businesscard_id=obj.id, user_id=user_id).values()
+        print folder
         return {"data": folder, "count": folder.count()}
 
     class Meta:
