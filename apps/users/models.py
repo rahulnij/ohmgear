@@ -8,6 +8,7 @@ from django.contrib.postgres.fields import JSONField
 import datetime
 from datetime import timedelta
 from django.utils.html import format_html
+from django.conf import settings
 
 
 class CustomUserManager(BaseUserManager):
@@ -198,6 +199,15 @@ class Profile(models.Model):
     #------------ field for first time login ---------------------#
     first_time_login = models.BooleanField(default=True)
     #------------- End -------------------------------------------#
+
+# display profile image of user
+    def admin_thumbnail(self):
+        if self.profile_image :
+            return u'<img src="%s%s" style="width: 50px;height:50px;border-radius: 15px;" />' % (settings.DOMAIN_NAME +'/media/',self.profile_image)
+        else:
+            return 'N/A'
+    admin_thumbnail.short_description = 'Profile Thumbnail'
+    admin_thumbnail.allow_tags = True
 
     def __unicode__(self):
         return '{"id":"%s","dob":"%s","prefix":"%s","middle":"%s","suffix":"%s","gender":"%s","address":"%s","mobile_number":"%s","user":"%s","income_group":"%s","business_type":"%s","first_time_login":"%s","first_name":"%s","last_name":"%s","nick_name":"%s","headline":"%s","profile_image":"%s"}' % (
