@@ -9,7 +9,7 @@ from django.contrib.postgres.fields import JSONField
 # import datetime
 # from datetime import timedelta
 # from django.utils.html import format_html
-
+from django.conf import settings
 
 
 class CustomUserManager(BaseUserManager):
