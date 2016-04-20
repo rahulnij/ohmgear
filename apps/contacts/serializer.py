@@ -1,7 +1,7 @@
 
 from rest_framework import serializers
 from apps.folders.serializer import FolderContactSerializer
-from models import Contacts, FavoriteContact, AssociateContact, ContactMedia
+from models import Contacts, FavoriteContact, AssociateContact, ContactMedia,PrivateContact
 from django.conf import settings
 
 
@@ -33,6 +33,13 @@ class ContactsSerializer(serializers.ModelSerializer):
         )
 
 #   Used in fetch contact data
+
+
+class PrivateContactSerializer(serializers.ModelSerializer):
+
+    class Meta(object):
+        """Private Contact data"""
+        model = PrivateContact
 
 
 class ContactsSerializerWithJson(serializers.ModelSerializer):
@@ -89,7 +96,7 @@ class FavoriteContactSerializer(serializers.ModelSerializer):
             data.append({"img_url": str(settings.DOMAIN_NAME) +
                          str(settings.MEDIA_URL) +
                          str(item.img_url), "front_back": item.front_back})
-            
+
         return data
 
     class Meta:

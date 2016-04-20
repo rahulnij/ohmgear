@@ -11,9 +11,9 @@ from django.conf import settings
 
 # Application imports
 from ohmgear.functions import CustomeResponse
-from serializer import ContactsSerializer, ContactsSerializerWithJson, FavoriteContactSerializer, AssociateContactSerializer, ContactMediaSerializer
+from serializer import ContactsSerializer, ContactsSerializerWithJson, FavoriteContactSerializer, AssociateContactSerializer, ContactMediaSerializer, PrivateContactSerializer
 from ohmgear.json_default_data import BUSINESS_CARD_DATA_VALIDATION
-from models import Contacts, FavoriteContact, AssociateContact, ContactMedia
+from models import Contacts, FavoriteContact, AssociateContact, ContactMedia, PrivateContact
 from ohmgear.token_authentication import ExpiringTokenAuthentication
 from apps.businesscards.views import BusinessViewSet
 from apps.folders.views import FolderViewSet
@@ -141,8 +141,107 @@ class storeContactsViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_201_CREATED)
 
     def update(self, request, pk=None):
-        return CustomeResponse({'msg': "Update method does not allow"},
-                               status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
+
+        try:
+            link_status_cons = constant.LINK_STATUS
+            validictory.validate(
+                request.data["bcard_json_data"], BUSINESS_CARD_DATA_VALIDATION)
+        except validictory.ValidationError as error:
+            return CustomeResponse(
+                {'msg': error.message}, status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
+        except validictory.SchemaError as error:
+            return CustomeResponse(
+                {'msg': error.message}, status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
+        except:
+            return CustomeResponse(
+                {
+                    'msg': "Please provide contact_json_data in json format"},
+                status=status.HTTP_400_BAD_REQUEST,
+                validate_errors=1)
+        #  End
+        data = request.data.copy()
+        data['user_id'] = request.user.id
+        try:
+            # contact =
+            # Contacts.objects.select_related('folder_contact_data').filter(id=pk)
+            folder_contact_data = FolderContact.objects.select_related(
+                'contact_id').get(id=pk, user_id=request.user.id)
+            contact_data = folder_contact_data.contact_id
+            link_status = folder_contact_data.link_status
+
+        except:
+            return CustomeResponse({'msg': 'record not found'},
+                                   status=status.HTTP_404_NOT_FOUND, validate_errors=1)
+        if link_status == link_status_cons.get(
+                'ORANGE') or link_status == link_status_cons.get('WHITE'):
+            # contact = Contacts.objects.get(id=pk)
+            contact_serializer = ContactsSerializer(
+                contact_data, data=data, context={'request': request})
+            if contact_serializer.is_valid():
+                contact_serializer.save()
+                data_new = contact_serializer.data.copy()
+            else:
+                return CustomeResponse(
+                    contact_serializer.errors,
+                    status=status.HTTP_400_BAD_REQUEST,
+                    validate_errors=1)
+
+            return CustomeResponse(data_new, status=status.HTTP_200_OK)
+        else:
+            newdata = {"data": data, "pk": pk, "user_id": request.user.id}
+            self.privatecontact(newdata)
+            return CustomeResponse({'msg': 'private contact data'},
+                                   status=status.HTTP_404_NOT_FOUND, validate_errors=1)
+
+    # Pending work remaining
+    def privatecontact(newdata):
+        """
+        Private Contact contains additional contact_info
+
+        If there is connection with that contact.
+        """
+
+        print "****"
+        print newdata['data']
+        try:
+            validictory.validate(
+                newdata["data"], BUSINESS_CARD_DATA_VALIDATION)
+        except validictory.ValidationError as error:
+            print error
+            return CustomeResponse(
+                {'msg': error.message}, status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
+        except validictory.SchemaError as error:
+            return CustomeResponse(
+                {'msg': error.message}, status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
+        except:
+            return CustomeResponse(
+                {
+                    'msg': "Please provide contact_json_data in json format"},
+                status=status.HTTP_400_BAD_REQUEST,
+                validate_errors=1)
+        #  End
+
+        print "tesdt"
+        private_contact_data = PrivateContact.objects.get(
+            foldercontact_id=newdata['pk'])
+        print private_contact_data
+        print "%%%"
+        if not private_contact_data:
+
+            newdata = {
+                "foldercontact_id": newdata['pk'],
+                "bcard_json_data": newdata['data'],
+                "user_id": newdata['user_id']}
+            print newdata
+            print "####"
+            serializer = PrivateContactSerializer(
+                data=newdata, context={'request': request})
+            if serializer.is_valid():
+                serializer.save()
+                return CustomeResponse(status=status.HTTP_201_CREATED)
+            else:
+                return CustomeResponse(
+                    {"msg": "server error"}, status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
 
     @list_route(['post'],)
     def limitedaccess(self, request):

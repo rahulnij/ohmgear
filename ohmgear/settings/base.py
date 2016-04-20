@@ -70,7 +70,6 @@ PROJECT_APPS = (
     'apps.awsserver',
     # 'common.image_lib',
 
-
 )
 
 INSTALLED_APPS = DJANGO_APPS + PROJECT_APPS
