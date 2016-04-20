@@ -11,9 +11,9 @@ from django.conf import settings
 
 # Application imports
 from ohmgear.functions import CustomeResponse
-from serializer import ContactsSerializer, ContactsSerializerWithJson, FavoriteContactSerializer, AssociateContactSerializer, ContactMediaSerializer
+from serializer import ContactsSerializer, ContactsSerializerWithJson, FavoriteContactSerializer, AssociateContactSerializer, ContactMediaSerializer, PrivateContactSerializer
 from ohmgear.json_default_data import BUSINESS_CARD_DATA_VALIDATION
-from models import Contacts, FavoriteContact, AssociateContact, ContactMedia
+from models import Contacts, FavoriteContact, AssociateContact, ContactMedia, PrivateContact
 from ohmgear.token_authentication import ExpiringTokenAuthentication
 from apps.businesscards.views import BusinessViewSet
 from apps.folders.views import FolderViewSet
@@ -141,8 +141,115 @@ class storeContactsViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_201_CREATED)
 
     def update(self, request, pk=None):
-        return CustomeResponse({'msg': "Update method does not allow"},
-                               status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
+
+        try:
+            link_status_cons = constant.LINK_STATUS
+            validictory.validate(
+                request.data["bcard_json_data"], BUSINESS_CARD_DATA_VALIDATION)
+        except validictory.ValidationError as error:
+            return CustomeResponse(
+                {'msg': error.message}, status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
+        except validictory.SchemaError as error:
+            return CustomeResponse(
+                {'msg': error.message}, status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
+        except:
+            return CustomeResponse(
+                {
+                    'msg': "Please provide contact_json_data in json format"},
+                status=status.HTTP_400_BAD_REQUEST,
+                validate_errors=1)
+        #  End
+        data = request.data.copy()
+        data['user_id'] = request.user.id
+        try:
+            # contact =
+            # Contacts.objects.select_related('folder_contact_data').filter(id=pk)
+            folder_contact_data = FolderContact.objects.select_related(
+                'contact_id').get(id=pk, user_id=request.user.id)
+            contact_data = folder_contact_data.contact_id
+            link_status = folder_contact_data.link_status
+
+        except:
+            return CustomeResponse({'msg': 'record not found'},
+                                   status=status.HTTP_404_NOT_FOUND, validate_errors=1)
+        if link_status == link_status_cons.get(
+                'ORANGE') or link_status == link_status_cons.get('WHITE'):
+            # contact = Contacts.objects.get(id=pk)
+            contact_serializer = ContactsSerializer(
+                contact_data, data=data, context={'request': request})
+            if contact_serializer.is_valid():
+                contact_serializer.save()
+                data_new = contact_serializer.data.copy()
+            else:
+                return CustomeResponse(
+                    contact_serializer.errors,
+                    status=status.HTTP_400_BAD_REQUEST,
+                    validate_errors=1)
+
+            return CustomeResponse(data_new, status=status.HTTP_200_OK)
+        else:
+            newdata = {"data": data, "pk": pk, "user_id": request.user.id}
+            self.privatecontact(request, newdata)
+            return CustomeResponse({'msg': 'private contact data'},
+                                   status=status.HTTP_404_NOT_FOUND, validate_errors=1)
+
+    #Pending work remaining
+    def privatecontact(newdata):
+        """
+        Private Contact contains additional contact_info
+
+        If there is connection with that contact.
+        """
+
+        print "****"
+        print newdata['data']
+        try:
+            link_status_cons = constant.LINK_STATUS
+            validictory.validate(
+                newdata["data"], BUSINESS_CARD_DATA_VALIDATION)
+        except validictory.ValidationError as error:
+            print error
+            return CustomeResponse(
+                {'msg': error.message}, status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
+        except validictory.SchemaError as error:
+            return CustomeResponse(
+                {'msg': error.message}, status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
+        except:
+            return CustomeResponse(
+                {
+                    'msg': "Please provide contact_json_data in json format"},
+                status=status.HTTP_400_BAD_REQUEST,
+                validate_errors=1)
+        #  End
+
+        print "tesdt"
+        private_contact_data=PrivateContact.objects.get(
+            foldercontact_id = newdata['pk'])
+        print private_contact_data
+        print "%%%"
+        if not private_contact_data:
+
+            newdata={
+    "foldercontact_id": newdata['pk'],
+    "bcard_json_data": newdata['data'],
+     "user_id": newdata['user_id']}
+            print newdata
+            print "####"
+            serializer = PrivateContactSerializer(
+                data = newdata, context = {'request': request})
+            if serializer.is_valid():
+                serializer.save()
+                return CustomeResponse(status = status.HTTP_201_CREATED)
+            else:
+                return CustomeResponse(
+                    {"msg": "server error"}, status = status.HTTP_400_BAD_REQUEST, validate_errors = 1)
+
+
+
+
+
+
+
 
     @list_route(['post'],)
     def limitedaccess(self, request):
@@ -152,54 +259,54 @@ class storeContactsViewSet(viewsets.ModelViewSet):
         Limited Access to the contact which is linked.
         """
         try:
-            user_id = request.user.id
-            link_status = constant.LINK_STATUS
+            user_id=request.user.id
+            link_status=constant.LINK_STATUS
             # print link_status.BLUE
         except:
-            user_id = ''
+            user_id=''
         try:
-            contact_id = request.data['contact_id']
+            contact_id=request.data['contact_id']
         except:
             return CustomeResponse(
-                {'msg': 'folder_id not found'}, status=status.HTTP_400_BAD_REQUEST)
+                {'msg': 'folder_id not found'}, status = status.HTTP_400_BAD_REQUEST)
         try:
-            folder_contact_data = FolderContact.objects.filter(
-                contact_id=contact_id, user_id=user_id)
-            is_linked = folder_contact_data[0].is_linked
+            folder_contact_data=FolderContact.objects.filter(
+                contact_id = contact_id, user_id = user_id)
+            is_linked=folder_contact_data[0].is_linked
         except:
             return CustomeResponse(
-                {'msg': 'Contact data not found'}, status=status.HTTP_400_BAD_REQUEST)
+                {'msg': 'Contact data not found'}, status = status.HTTP_400_BAD_REQUEST)
         if folder_contact_data and is_linked == 1:
             folder_contact_data.update(
-                link_status=link_status.get('BLUE'), is_linked=0)
+                link_status = link_status.get('BLUE'), is_linked = 0)
             return CustomeResponse(
-                {"msg": "Contact has limited_access now."}, status=status.HTTP_200_OK)
+                {"msg": "Contact has limited_access now."}, status = status.HTTP_200_OK)
         else:
             return CustomeResponse(
-                {"msg": "Check your Contact is is_linked or not."}, status=status.HTTP_400_BAD_REQUEST)
+                {"msg": "Check your Contact is is_linked or not."}, status = status.HTTP_400_BAD_REQUEST)
 
     # Destroy method will delete Contacts from Contact and folder_contact,
     #  if it is white contact ,other wise will be delete from  folder contact
     # and that contact which is deleted having connection with cureent user
     # then link_status will be change
-    def destroy(self, request, pk=None):
+    def destroy(self, request, pk = None):
         try:
-            folder_contact_data = FolderContact.objects.select_related(
-                'folder_id').get(contact_id=pk, user_id=request.user.id)
-            link_status = folder_contact_data.link_status
-            get_folder_data = folder_contact_data.folder_id
-            get_user_bcard_id = get_folder_data.businesscard_id.id
-            link_status_cons = constant.LINK_STATUS
+            folder_contact_data=FolderContact.objects.select_related(
+                'folder_id').get(contact_id = pk, user_id = request.user.id)
+            link_status=folder_contact_data.link_status
+            get_folder_data=folder_contact_data.folder_id
+            get_user_bcard_id=get_folder_data.businesscard_id.id
+            link_status_cons=constant.LINK_STATUS
         except:
             return CustomeResponse(
-                {'msg': "server error"}, status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
+                {'msg': "server error"}, status = status.HTTP_400_BAD_REQUEST, validate_errors = 1)
 
         try:
-            contact_data = Contacts.objects.filter(
-                id=pk, user_id=request.user.id)
+            contact_data=Contacts.objects.filter(
+                id = pk, user_id = request.user.id)
         except:
             return CustomeResponse(
-                {'msg': "server error"}, status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
+                {'msg': "server error"}, status = status.HTTP_400_BAD_REQUEST, validate_errors = 1)
 
         if folder_contact_data:
 
@@ -208,86 +315,86 @@ class storeContactsViewSet(viewsets.ModelViewSet):
                 if contact_data:
                     contact_data.delete()
                     return CustomeResponse(
-                        {'msg': "Contact has been deleted successfully"}, status=status.HTTP_200_OK)
+                        {'msg': "Contact has been deleted successfully"}, status = status.HTTP_200_OK)
                 else:
                     return CustomeResponse(
-                        {'msg': "Cannot be deleted"}, status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
+                        {'msg': "Cannot be deleted"}, status = status.HTTP_400_BAD_REQUEST, validate_errors = 1)
 
             else:
                 if link_status == link_status_cons.get('DELETED'):
 
                     try:
                         # find user contact_id with bcard_id and user_id
-                        existing_contact_data = Contacts.objects.get(
-                            businesscard_id=get_user_bcard_id, user_id=request.user.id)
+                        existing_contact_data=Contacts.objects.get(
+                            businesscard_id = get_user_bcard_id, user_id = request.user.id)
                     except:
                         return CustomeResponse(
-                            {'msg': "server error"}, status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
+                            {'msg': "server error"}, status = status.HTTP_400_BAD_REQUEST, validate_errors = 1)
                     # get contact id of user
-                    getcontact_id = existing_contact_data.id
+                    getcontact_id=existing_contact_data.id
                     # get user_id of contact which is to be deleted.
-                    existing_user_id = existing_contact_data.user_id
-                    new_contact_data = Contacts.objects.get(
-                        id=pk)
+                    existing_user_id=existing_contact_data.user_id
+                    new_contact_data=Contacts.objects.get(
+                        id = pk)
 
                     # new_contact_user_id = new_contact_data.id
                     if existing_user_id != new_contact_data.user_id.id and folder_contact_data:
-                        new_user_folder_contact_data = FolderContact.objects.filter(
-                            contact_id=getcontact_id, user_id=new_contact_data.user_id.id)
+                        new_user_folder_contact_data=FolderContact.objects.filter(
+                            contact_id = getcontact_id, user_id = new_contact_data.user_id.id)
                         new_user_folder_contact_data.delete()
                         folder_contact_data.delete()
                         return CustomeResponse(
-                            {'msg': "Both Connected Contact has been delete successfully"}, status=status.HTTP_200_OK)
+                            {'msg': "Both Connected Contact has been delete successfully"}, status = status.HTTP_200_OK)
 
                     else:
                         return CustomeResponse(
                             {
                                 'msg': "Contact caanot be deleted try again"},
-                            status=status.HTTP_400_BAD_REQUEST,
-                            validate_errors=1)
+                            status = status.HTTP_400_BAD_REQUEST,
+                            validate_errors = 1)
 
                 else:
                     try:
-                        folder_contact_data = FolderContact.objects.filter(
-                            contact_id=pk, user_id=request.user.id)
+                        folder_contact_data=FolderContact.objects.filter(
+                            contact_id = pk, user_id = request.user.id)
                         folder_contact_data.update(
-                            link_status=link_status_cons.get('DELETED'), is_linked=0)
+                            link_status = link_status_cons.get('DELETED'), is_linked = 0)
                         return CustomeResponse(
-                            {'msg': "Connected Contact has been deleted successfully"}, status=status.HTTP_200_OK)
+                            {'msg': "Connected Contact has been deleted successfully"}, status = status.HTTP_200_OK)
                     except:
                         return CustomeResponse(
                             {
                                 'msg': "Server error"},
-                            status=status.HTTP_400_BAD_REQUEST,
-                            validate_errors=1)
+                            status = status.HTTP_400_BAD_REQUEST,
+                            validate_errors = 1)
         else:
             return CustomeResponse(
-                {'msg': "No contact found"}, status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
+                {'msg': "No contact found"}, status = status.HTTP_400_BAD_REQUEST, validate_errors = 1)
 
     def merge_contacts(self, request):
         pass
 
     def find_duplicate(self, first_json, second_json):
         """ TODO : check optimization """
-        first_name = []
-        last_name = []
-        email = []
-        phone = []
+        first_name=[]
+        last_name=[]
+        email=[]
+        phone=[]
 
         try:
-            first_name = [value['value'] for value in first_json[
+            first_name=[value['value'] for value in first_json[
                 "side_first"]["basic_info"] if value['keyName'] == 'FirstName']
         except:
             pass
 
         try:
-            last_name = [value['value'] for value in first_json[
+            last_name=[value['value'] for value in first_json[
                 "side_first"]["basic_info"] if value['keyName'] == 'LastName']
         except:
             pass
 
         try:
-            email = [x['data']
+            email=[x['data']
                      for x in first_json["side_first"]["contact_info"]["email"]]
         except:
             pass

@@ -34,6 +34,26 @@ class Contacts(models.Model):
         return '{"id":"%s","bcard_json_data":"%s","businesscard_id":"%s"}' % (
             self.id, self.bcard_json_data, self.businesscard_id)
 
+from apps.folders.models import FolderContact
+class PrivateContact(models.Model):
+
+    class Meta:
+        """Private Table for contact"""
+        db_table = 'ohmgear_contacts_privatecontact'
+        unique_together = ('foldercontact_id', 'user_id')
+    bcard_json_data = JSONField(null=True)
+    foldercontact_id = models.ForeignKey(
+        FolderContact, db_column='foldercontact_id')
+    user_id = models.ForeignKey(User, db_column="user_id")
+    created_date = models.DateTimeField(
+        _("Created Date"), auto_now_add=True, auto_now=False)
+    updated_date = models.DateTimeField(
+        _("Updated Date"), auto_now_add=False, auto_now=True)
+
+    def __unicode__(self):
+        return '{"id":"%s","bcard_json_data":"%s"}' % (
+            self.id, self.bcard_json_data, self.user_id)
+
 
 class ContactMedia(models.Model):
 
