@@ -1,13 +1,14 @@
 from django.db import models
+from django.core.exceptions import ObjectDoesNotExist
 from django.contrib.auth.models import BaseUserManager, AbstractBaseUser
 from django.utils import timezone
-from django.contrib.auth.hashers import make_password
+# from django.contrib.auth.hashers import make_password
 from django.utils.translation import ugettext_lazy as _
-#from django_pgjson.fields import JsonField
+# from django_pgjson.fields import JsonField
 from django.contrib.postgres.fields import JSONField
-import datetime
-from datetime import timedelta
-from django.utils.html import format_html
+# import datetime
+# from datetime import timedelta
+# from django.utils.html import format_html
 
 
 class CustomUserManager(BaseUserManager):
@@ -24,11 +25,11 @@ class CustomUserManager(BaseUserManager):
         email = self.normalize_email(email)
         user = self.model(email=email, **extra_fields)
         try:
-          user.user_type = UserType.objects.get(id=1)
+            user.user_type = UserType.objects.get(id=1)
         except ObjectDoesNotExist:
-          user.user_type = 1  
+            user.user_type = 1  
         user.status = 1
-        #----------- Hashing password is done in model --------#
+        # ----------- Hashing password is done in model --------#
         user.password = password
         user.save(using=self._db)
         return user
@@ -39,7 +40,7 @@ class CustomUserManager(BaseUserManager):
     def create_superuser(self, email, password=None, **extra_fields):
         return self._create_user(email, password, **extra_fields)
 
-#------------------ Look up Table -------------------#
+# ------------------ Look up Table -------------------#
 
 
 class BusinessType(models.Model):
@@ -87,7 +88,7 @@ class UserType(models.Model):
         # return '{"id":"%s","user_type":"%s"}'%(self.id,self.user_type)
         return (self.user_type)
 
-#----------------------- End -----------------------------------------------------------------#
+# ----------------------- End -------------------------------------------#
 
 
 class User(AbstractBaseUser):
@@ -119,7 +120,7 @@ class User(AbstractBaseUser):
     update_password = True
     update_email = True
     USERNAME_FIELD = 'email'
-    #REQUIRED_FIELDS = ['first_name']
+    # REQUIRED_FIELDS = ['first_name']
 
     def get_full_name(self):
         # The user is identified by their email address
@@ -193,15 +194,50 @@ class Profile(models.Model):
         null=True)
     activation_key = models.CharField(max_length=40, blank=True)
     key_expires = models.DateTimeField(auto_now_add=True)
-    #------------ field for forgot passoword ---------------------#
+    # ------------ field for forgot passoword ---------------------#
     reset_password_key = models.CharField(max_length=40, null=True)
-    #------------ field for first time login ---------------------#
+    # ------------ field for first time login ---------------------#
     first_time_login = models.BooleanField(default=True)
-    #------------- End -------------------------------------------#
+    # ------------- End -------------------------------------------#
 
     def __unicode__(self):
-        return '{"id":"%s","dob":"%s","prefix":"%s","middle":"%s","suffix":"%s","gender":"%s","address":"%s","mobile_number":"%s","user":"%s","income_group":"%s","business_type":"%s","first_time_login":"%s","first_name":"%s","last_name":"%s","nick_name":"%s","headline":"%s","profile_image":"%s"}' % (
-            self.id, self.dob, self.gender, self.address, self.mobile_number, self.user, self.income_group, self.business_type, self.first_time_login, self.first_name, self.last_name, self.nick_name, self.headline, self.profile_image, self.prefix, self.middle, self.suffix)
+        return """
+            {   "id":"%s",
+                "dob":"%s",
+                "prefix":"%s",
+                "middle":"%s",
+                "suffix":"%s",
+                "gender":"%s",
+                "address":"%s",
+                "mobile_number":"%s",
+                "user":"%s",
+                "income_group":"%s",
+                "business_type":"%s",
+                "first_time_login":"%s",
+                "first_name":"%s",
+                "last_name":"%s",
+                "nick_name":"%s",
+                "headline":"%s",
+                "profile_image":"%s"}""" % \
+            (
+                self.id,
+                self.dob,
+                self.gender,
+                self.address,
+                self.mobile_number,
+                self.user,
+                self.income_group,
+                self.business_type,
+                self.first_time_login,
+                self.first_name,
+                self.last_name,
+                self.nick_name,
+                self.headline,
+                self.profile_image.url,
+                self.prefix,
+                self.middle,
+                self.suffix
+            ) 
 
 
 class SocialLogin(models.Model):
