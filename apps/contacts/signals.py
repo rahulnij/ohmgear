@@ -3,7 +3,8 @@ from django.dispatch import receiver
 import logging
 from .models import ContactMedia
 from ohmgear.common.image_lib import resize_image, image_dimensions, MAX_WIDTH
-from ohmgear.settings.local import BASE_DIR
+from django.conf import settings
+
 
 # from .tasks import resize_contact_media_image
 
@@ -20,9 +21,9 @@ def resize_handler(*args, **kwargs):
         return
 
     # resize_contact_media_image.apply_async(kwargs={'pk': obj.pk})
-    img_width, img_height = image_dimensions(BASE_DIR + str(obj.img_url))
+    img_width, img_height = image_dimensions(settings.BASE_DIR + str(obj.img_url))
     if img_width > MAX_WIDTH:
-        img_resized = resize_image(BASE_DIR + str(obj.img_url), MAX_WIDTH)
+        img_resized = resize_image(settings.BASE_DIR + str(obj.img_url), MAX_WIDTH)
         obj.img_url = img_resized
         try:
             obj.save()

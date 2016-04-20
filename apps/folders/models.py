@@ -56,7 +56,7 @@ class FolderContact(models.Model):
 
     user_id = models.ForeignKey(User, null=False, db_column='user_id')
 
-    folder_id = models.ForeignKey(Folder, db_column='folder_id')
+    folder_id = models.ForeignKey(Folder, db_column='folder_id', related_name='folder_data')
     contact_id = models.ForeignKey(
         Contacts, db_column='contact_id', related_name='folder_contact_data')
 

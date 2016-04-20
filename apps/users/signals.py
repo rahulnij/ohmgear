@@ -7,14 +7,14 @@ from django.db.models.signals import post_save, pre_save, pre_delete
 from django.forms.models import model_to_dict
 from django.core.exceptions import ObjectDoesNotExist
 from apps.groups.models import GroupMedia
-# TODO, move image to common lib
 from common.image_lib import resize_image, image_dimensions, MAX_WIDTH
 from django.dispatch import receiver
 
 from models import Profile
 from apps.email.views import BaseSendMail
 
-from ohmgear.settings.local import BASE_DIR
+from django.conf import settings
+
 
 from logging import getLogger
 
@@ -22,7 +22,6 @@ log = getLogger(__name__)
 
 
 # Create profile at the time of registration
-
 
 def register_profile(sender, **kwargs):
     if kwargs.get('created'):
@@ -49,14 +48,14 @@ def resize_profile_image(sender, instance, *args, **kwargs):
     try:
         obj = Profile.objects.get(pk=instance.pk)
         """
-        Rahul: image_path(i think you might need this "profile_image:) 
+        Rahul: image_path(i think you might need this "profile_image:)
         not exists please correct this.
         Till then i have commented this code
         """
         if obj.profile_image.name:
-            width, height = image_dimensions(BASE_DIR + str(obj.profile_image.url))
+            width, height = image_dimensions(settings.BASE_DIR + str(obj.profile_image.url))
             if width > MAX_WIDTH:
-                img_resized = resize_image(BASE_DIR + str(obj.profile_image.url), MAX_WIDTH)
+                img_resized = resize_image(settings.BASE_DIR + str(obj.profile_image.url), MAX_WIDTH)
                 obj.image_path = img_resized
                 try:
                     obj.save()
