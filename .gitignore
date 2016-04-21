@@ -7,3 +7,4 @@ static
 media
 *.*~
 **/migrations
+.local_env_setting
