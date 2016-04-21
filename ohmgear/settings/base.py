@@ -68,8 +68,7 @@ PROJECT_APPS = (
     'apps.userlocation',
     'apps.sendrequest',
     'apps.awsserver',
-    #'common.image_lib',
-
+    'common.image_lib',
 
 )
 

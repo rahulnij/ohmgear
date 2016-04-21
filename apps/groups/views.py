@@ -134,19 +134,19 @@ class GroupViewSet(viewsets.ModelViewSet):
         return CustomeResponse(
             {'msg': 'delete method not allowed'}, status=status.HTTP_400_BAD_REQUEST)
 
-    @list_route(methods=['post'],)
+    @list_route(methods=['get'],)
     def getbusinesscardcarddetails(self, request):
         """
-        Get number of contacts in business created.
+        Get all business cards of users with number of contacts in business created.
+
+        Contacts Details also with count contacts in businesscards 
         """
         try:
             user_id = request.user.id
-            bcard_id = request.data['bcard_id']
         except:
             user_id = ''
-            bcard_id = ''
-        if bcard_id:
-            queryset = BusinessCard.objects.filter(id=bcard_id)
+        if user_id:
+            queryset = BusinessCard.objects.filter(user_id=request.user.id, status=1)
 
             serializer = CountContactInBusinesscardSerializer(
                 queryset, many=True, context={'request': user_id})
