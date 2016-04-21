@@ -287,7 +287,7 @@ class BusinessCardVacationViewSet(viewsets.ModelViewSet):
 
     def list(self, request):
 
-        vacation_id = self.request.QUERY_PARAMS.get('vacationcard_id', None)
+        vacation_id = self.request.query_params.get('vacationcard_id', None)
         user_id = request.user.id
         queryset = VacationCard.objects.select_related(
         ).all().filter(user_id=user_id, id=vacation_id)

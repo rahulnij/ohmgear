@@ -675,7 +675,7 @@ class UserEmailViewSet(viewsets.ModelViewSet):
     def get_permissions(self):
         # Your logic should be all here
         if self.request.method == 'GET':
-            activation_code = self.request.QUERY_PARAMS.get(
+            activation_code = self.request.query_params.get(
                 'activation_code', '')
             if activation_code:
                 self.authentication_classes = []
@@ -777,7 +777,7 @@ class UserEmailViewSet(viewsets.ModelViewSet):
     @list_route(methods=['get'],)
     def verify_email(self, request):
 
-        activation_code = self.request.QUERY_PARAMS.get('activation_code', '')
+        activation_code = self.request.query_params.get('activation_code', '')
         user_email = UserEmail.objects.select_related(
             'user_id').get(verification_code=activation_code)
         data = {}
@@ -877,7 +877,7 @@ class UserEmailViewSet(viewsets.ModelViewSet):
         try:
             user_id = request.user.id
 
-            # userEmailId = self.request.QUERY_PARAMS.get('id')
+            # userEmailId = self.request.query_params.get('id')
             userEmailId = request.data['userEmailId']
         except:
             userEmailId = ''

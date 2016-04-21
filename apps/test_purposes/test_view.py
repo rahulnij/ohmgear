@@ -30,7 +30,7 @@ class FtestViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         queryset = self.queryset
-        user_id = self.request.QUERY_PARAMS.get('user_id', None)
+        user_id = self.request.query_params.get('user_id', None)
         if user_id is not None:
             queryset = queryset.filter(user_id=user_id)
         return queryset

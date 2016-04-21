@@ -58,7 +58,7 @@ class FeedbackCategorySubjectViewSet(viewsets.ModelViewSet):
 
     def list(self, request, pk=None):
         queryset = self.queryset
-        category_id = self.request.QUERY_PARAMS.get('category_id', None)
+        category_id = self.request.query_params.get('category_id', None)
 
         if category_id is not None:
             queryset = FeedbackCategorySubject.objects.filter(
