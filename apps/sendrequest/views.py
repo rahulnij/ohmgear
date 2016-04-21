@@ -130,7 +130,7 @@ class SendAcceptRequest(viewsets.ModelViewSet):
                 folder_receiver.folder_id = karg['receiver_folder']
                 folder_receiver.contact_id = sender_contact_id
                 folder_receiver.link_status = 2
-                folder_sender.is_linked = 1
+                folder_receiver.is_linked = 1
                 folder_receiver.save()
 
             return True
@@ -326,14 +326,15 @@ class SendAcceptRequest(viewsets.ModelViewSet):
         data = {}
         data['email'] = request.user.email
         data['sender_user_id'] = request.user.id
-        data['type'] = "b2g"
-        data['receiver_obj_id'] = request.data.get('receiver_obj_id')
+        data['sender_business_card_id'] = ''
+        data['reques_type'] = "b2g"
+        data['receiver_bcard_or_contact_id'] = request.data.get('receiver_bcard_or_contact_id')
         data['message'] = request.data.get('message')
 
         email = data['message']['email'].encode('base64', 'strict')
         fname = data['message']['fname'].encode('base64', 'strict')
         lname = data['message']['lname'].encode('base64', 'strict')
-        contactId = str(data['receiver_obj_id']).encode('base64', 'strict')
+        contactId = str(data['receiver_bcard_or_contact_id']).encode('base64', 'strict')
         sid = str(data['sender_user_id']).encode('base64', 'strict')
 
         salt = hashlib.sha1(str(random.random())).hexdigest()[:5]

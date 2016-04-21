@@ -1054,14 +1054,20 @@ class WhiteCardViewSet(viewsets.ModelViewSet):
                         id=cid).update(
                         businesscard_id=offline_data['businesscard_id'],
                         user_id=from_white_contact)
+
                     receiver_folder_id = Folder.objects.get(
                         id=receiver_folder.id)
+
                     receiver_contact_id = Contacts.objects.get(id=cid)
+
                     sender_data = FolderContact.objects.filter(
                         user_id=sid, contact_id=cid)
+
                     sender_folder_id = Folder.objects.get(
                         id=sender_data[0].folder_id.id)
+
                     sender_businesscard_id = sender_folder_id.businesscard_id
+                    
                     sender_contact_id = Contacts.objects.get(
                         businesscard_id=sender_businesscard_id)
 
