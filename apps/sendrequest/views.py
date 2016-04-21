@@ -1,23 +1,17 @@
 # --------- Import Python Modules ----------- #
-from django.shortcuts import render
-from rest_framework import viewsets
-from rest_framework.decorators import detail_route, list_route
-from rest_framework.permissions import IsAuthenticated
-import rest_framework.status as status
-import boto3
 
-# ------------ Third Party Imports ---------- #
-from ohmgear.functions import CustomeResponse
-from ohmgear.token_authentication import ExpiringTokenAuthentication
-from django.conf import settings
-from apps.awsserver.models import AwsDeviceToken
-import ohmgear.settings.aws as aws
-from django.shortcuts import render
+import boto3
 import hashlib
-import datetime
 import random
 import json
-
+# ------------ Third Party Imports ---------- #
+from django.shortcuts import render
+from rest_framework import viewsets
+from rest_framework.decorators import list_route
+from rest_framework.permissions import IsAuthenticated
+import rest_framework.status as status
+from django.conf import settings
+from django.core.exceptions import ObjectDoesNotExist
 
 # ----------------- Local app imports ------ #
 from apps.email.views import BaseSendMail
@@ -26,7 +20,10 @@ from models import SendRequest
 from apps.businesscards.models import BusinessCard
 from apps.users.models import Profile
 from apps.folders.models import Folder, FolderContact
-
+from apps.awsserver.models import AwsDeviceToken
+import ohmgear.settings.aws as aws
+from ohmgear.functions import CustomeResponse
+from ohmgear.token_authentication import ExpiringTokenAuthentication
 # ---------------------------End------------- #
 
 
@@ -53,53 +50,66 @@ class SendAcceptRequest(viewsets.ModelViewSet):
     def insert_notification(self, **karg):
         # Required data
         # sender_user_id
-        # sender_obj_id
+        # sender_business_card_id  => Object of business card
         # receiver_user_id
-        # receiver_obj_id
+        # receiver_bcard_or_contact_id
         # message
+        # request_type
         try:
             notification = SendRequest()
 
-            notification.request_type = karg['type']
+            notification.request_type = karg['request_type']
             notification.sender_user_id = karg['sender_user_id']
-            notification.sender_business_card_id = karg['sender_obj_id']
+            notification.sender_business_card_id = karg[
+                'sender_business_card_id']
 
             notification.receiver_user_id = karg['receiver_user_id']
-            notification.receiver_bcard_or_contact_id = karg['receiver_obj_id']
+            notification.receiver_bcard_or_contact_id = karg[
+                'receiver_bcard_or_contact_id']
 
             notification.message = karg['message']
             notification.save()
             return True
-        except:
-            return False
+        except TypeError as e:
+            return str(e)
+        except Exception as e:
+            return str(e)
 
     def exchange_business_cards(self, **karg):
 
-            #-- Required data---#
-            #-- sender_folder
-            #-- sender_business_card object with contact_detail
-            #-- receiver_folder
-            #-- receiver_business_card object with contact_detail
-            #-- sender_user_id # we can also get this from sender_business_card
+        # Required data
+        # sender_folder
+        # sender_business_card object with contact_detail
+        # receiver_folder
+        # receiver_business_card object with contact_detail
+        # sender_user_id # we can also get this from sender_business_card
 
         try:
             receiver_contact_id = karg['receiver_business_card'].contact_detail
         except:
-            receiver_contact_id = karg['receiver_contact_id']
+            # from white contact request directly sending receiver_contact_id
+            try:
+                receiver_contact_id = karg['receiver_contact_id']
+            except KeyError as e:
+                return str(e)
 
         try:
             sender_contact_id = karg['sender_business_card'].contact_detail
         except:
-            sender_contact_id = karg['sender_contact_id']
+            # from white contact request directly sending receiver_contact_id
+            try:
+                sender_contact_id = karg['sender_contact_id']
+            except KeyError as e:
+                return str(e)
 
         try:
             try:
                 folder_sender = FolderContact.objects.get(
                     folder_id=karg['sender_folder'], contact_id=receiver_contact_id)
             except:
-                # Note : We will change following code  and 
+                # Note : We will change following code  and
                 # call folder api:folder_contact_link from folder
-                # Or we can user FolderContactSerializer to insert data 
+                # Or we can user FolderContactSerializer to insert data
                 folder_sender = FolderContact()
                 folder_sender.user_id = karg['sender_user_id']
                 folder_sender.folder_id = karg['sender_folder']
@@ -112,9 +122,9 @@ class SendAcceptRequest(viewsets.ModelViewSet):
                 folder_receiver = FolderContact.objects.get(
                     folder_id=karg['receiver_folder'], contact_id=sender_contact_id)
             except:
-                # Note : We will change following code  and 
+                # Note : We will change following code  and
                 # call folder api:folder_contact_link from folder
-                # Or we can user FolderContactSerializer to insert data 
+                # Or we can user FolderContactSerializer to insert data
                 folder_receiver = FolderContact()
                 folder_receiver.user_id = receiver_contact_id.user_id
                 folder_receiver.folder_id = karg['receiver_folder']
@@ -125,9 +135,11 @@ class SendAcceptRequest(viewsets.ModelViewSet):
 
             return True
 
-        except:
-            return False
-    # End 
+        except TypeError as e:
+            return str(e)
+        except Exception as e:
+            return str(e)
+    # End
 
     @list_route(methods=['post'],)
     def invite_to_businesscard(self, request):
@@ -149,7 +161,7 @@ class SendAcceptRequest(viewsets.ModelViewSet):
 
         # check from_business_card_id belongs to user_id
         try:
-            BusinessCard.objects.filter(
+            sender_business_card = BusinessCard.objects.filter(
                 user_id=user_id.id, id=sender_business_card_id).latest("id")
             receiver_business_card = BusinessCard.objects.filter(
                 id=receiver_business_card_id).exclude(
@@ -186,7 +198,7 @@ class SendAcceptRequest(viewsets.ModelViewSet):
                 }}),
         }
         message = json.dumps(message, ensure_ascii=False)
-        #  End 
+        #  End
         # TODO If user install app more then one device then send the notification more then one device
         # --- End ---#
         response = client.publish(
@@ -197,26 +209,31 @@ class SendAcceptRequest(viewsets.ModelViewSet):
             }
         )
         # Insert into Notification Table
-        type = 'b2b'
-        sender_obj_id = sender_business_card_id
+        request_type = 'b2b'
         receiver_obj_id = receiver_business_card_id
         message = 'request sent from ' + user_name + ' to accept businesscard.'
         # Before inser check request already sent
         already_sent_request = SendRequest.objects.filter(
-            type=type,
+            request_type=request_type,
             sender_user_id=user_id,
-            sender_obj_id=sender_obj_id,
+            sender_business_card_id=sender_business_card,
             receiver_user_id=receiver_business_card.user_id,
-            receiver_obj_id=receiver_obj_id)
+            receiver_bcard_or_contact_id=receiver_obj_id)
         # ----------------------- End------------------------ #
         if not already_sent_request:
-            self.insert_notification(
-                type=type,
+            insert_notification = self.insert_notification(
+                request_type=request_type,
                 sender_user_id=user_id,
-                sender_obj_id=sender_obj_id,
+                sender_business_card_id=sender_business_card,
                 receiver_user_id=receiver_business_card.user_id,
-                receiver_obj_id=receiver_obj_id,
+                receiver_bcard_or_contact_id=receiver_obj_id,
                 message=message)
+            if insert_notification is not True:
+                return CustomeResponse(
+                    {
+                        'msg': insert_notification},
+                    status=status.HTTP_400_BAD_REQUEST,
+                    validate_errors=1)
         # --------- End----------------------------------------------- #
         return CustomeResponse(response, status=status.HTTP_200_OK)
 
@@ -229,10 +246,11 @@ class SendAcceptRequest(viewsets.ModelViewSet):
             receiver_business_card_id = request.data[
                 'receiver_business_card_id']
             sender_business_card_id = request.data['sender_business_card_id']
+            request_id = request.data['request_id']
         except:
             return CustomeResponse(
                 {
-                    'msg': "Please provide sender_business_card_id,receiver_business_card_id"},
+                    'msg': "Please provide sender_business_card_id,receiver_business_card_id,request_id"},
                 status=status.HTTP_400_BAD_REQUEST,
                 validate_errors=1)
 
@@ -248,13 +266,9 @@ class SendAcceptRequest(viewsets.ModelViewSet):
                 status=status.HTTP_400_BAD_REQUEST,
                 validate_errors=1)
 
-        sender_contact_id = sender_business_card.contact_detail.id
-        receiver_contact_id = receiver_business_card.contact_detail.id
-
         try:
             sender_folder = Folder.objects.get(
                 businesscard_id=sender_business_card_id)
-            sender_folder_id = sender_folder.id
         except:
             return CustomeResponse(
                 {
@@ -265,7 +279,6 @@ class SendAcceptRequest(viewsets.ModelViewSet):
         try:
             receiver_folder = Folder.objects.get(
                 businesscard_id=receiver_business_card_id)
-            receiver_folder_id = receiver_folder.id
         except:
             return CustomeResponse(
                 {
@@ -275,14 +288,27 @@ class SendAcceptRequest(viewsets.ModelViewSet):
 
         # Now we are inserting data in folder contact table for making
         # connection
-        self.exchange_business_cards(
+        exchange_business_cards = self.exchange_business_cards(
             sender_folder=sender_folder,
             sender_business_card=sender_business_card,
             receiver_folder=receiver_folder,
             receiver_business_card=receiver_business_card,
             sender_user_id=user_id)
-        #  End 
+        if exchange_business_cards is not True:
+            return CustomeResponse(
+                {
+                    'msg': exchange_business_cards},
+                status=status.HTTP_400_BAD_REQUEST,
+                validate_errors=1)
+        #  End
 
+        #  Update the SendRequest status
+        try:
+            send_request_obj = SendRequest.objects.get(id=request_id)
+            send_request_obj.request_status = 1
+            send_request_obj.save()
+        except ObjectDoesNotExist as e:
+            pass
         return CustomeResponse({"msg": "success"}, status=status.HTTP_200_OK)
 
     # send white contact invitation
