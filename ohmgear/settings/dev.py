@@ -3,7 +3,7 @@ import djcelery
 from base import *
 
 
-DOMAIN_NAME = 'http://localhost:8000'
+DOMAIN_NAME = 'http://sgdev.kinbow.com'
 
 ALLOWED_HOSTS = ['*']
 MIDDLEWARE_CLASSES += (
