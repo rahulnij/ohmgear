@@ -1,0 +1,10 @@
+[
+	{
+		"model": "businesscards.businesscardskillavailable",
+		"pk": 1,
+		"fields": {
+			"skill_name": "English"
+		}
+	}
+
+]

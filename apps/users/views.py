@@ -108,8 +108,8 @@ class UserViewSet(viewsets.ModelViewSet):
                 cid = request.data['cid']
                 sid = request.data['sid']
                 from apps.sendrequest.models import SendRequest
-                SendRequest.objects.filter(sender_user_id=sid, receiver_obj_id=cid).update(
-                    read_status=1, receiver_user_id=user_id.id)
+                SendRequest.objects.filter(sender_user_id=sid, receiver_bcard_or_contact_id=cid).update(
+                    request_status=1, receiver_user_id=user_id.id)
                 business_card_class_create = WhiteCardViewSet.as_view(
                     {'post': 'create'})
 
@@ -675,7 +675,7 @@ class UserEmailViewSet(viewsets.ModelViewSet):
     def get_permissions(self):
         # Your logic should be all here
         if self.request.method == 'GET':
-            activation_code = self.request.QUERY_PARAMS.get(
+            activation_code = self.request.query_params.get(
                 'activation_code', '')
             if activation_code:
                 self.authentication_classes = []
@@ -777,7 +777,7 @@ class UserEmailViewSet(viewsets.ModelViewSet):
     @list_route(methods=['get'],)
     def verify_email(self, request):
 
-        activation_code = self.request.QUERY_PARAMS.get('activation_code', '')
+        activation_code = self.request.query_params.get('activation_code', '')
         user_email = UserEmail.objects.select_related(
             'user_id').get(verification_code=activation_code)
         data = {}
@@ -877,7 +877,7 @@ class UserEmailViewSet(viewsets.ModelViewSet):
         try:
             user_id = request.user.id
 
-            # userEmailId = self.request.QUERY_PARAMS.get('id')
+            # userEmailId = self.request.query_params.get('id')
             userEmailId = request.data['userEmailId']
         except:
             userEmailId = ''

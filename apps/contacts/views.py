@@ -865,7 +865,7 @@ class ContactMediaViewSet(viewsets.ModelViewSet):
 
     def list(self, request):
         user_id = self.request.user.id
-        contact_id = self.request.QUERY_PARAMS.get('contact_id', None)
+        contact_id = self.request.query_params.get('contact_id', None)
         if contact_id:
 
                 # Should be pass queryset to serializer but error occured

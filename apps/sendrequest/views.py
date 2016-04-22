@@ -322,20 +322,37 @@ class SendAcceptRequest(viewsets.ModelViewSet):
             user_id = request.user
         except:
             user_id = None
+        try:
+            data = {}
+            sender_folder_id = FolderContact.objects.filter(
+                user_id=request.user.id, contact_id=request.data.get(
+                    'receiver_bcard_or_contact_id')).values_list('folder_id', flat=True)[0]
 
-        data = {}
-        data['email'] = request.user.email
-        data['sender_user_id'] = request.user.id
-        data['sender_business_card_id'] = ''
-        data['reques_type'] = "b2g"
-        data['receiver_bcard_or_contact_id'] = request.data.get('receiver_bcard_or_contact_id')
-        data['message'] = request.data.get('message')
+            sender_business_card_id = Folder.objects.filter(
+                id=sender_folder_id).values_list('businesscard_id', flat=True)[0]
 
-        email = data['message']['email'].encode('base64', 'strict')
-        fname = data['message']['fname'].encode('base64', 'strict')
-        lname = data['message']['lname'].encode('base64', 'strict')
-        contactId = str(data['receiver_bcard_or_contact_id']).encode('base64', 'strict')
-        sid = str(data['sender_user_id']).encode('base64', 'strict')
+            data['email'] = request.user.email
+            data['sender_user_id'] = request.user.id
+            data['receiver_user_id'] = ''
+            data['sender_business_card_id'] = sender_business_card_id
+            data['request_type'] = "b2g"
+            data['receiver_bcard_or_contact_id'] = request.data.get(
+                'receiver_bcard_or_contact_id')
+            data['message'] = request.data.get('message')
+
+            email = data['message']['email'].encode('base64', 'strict')
+            fname = data['message']['fname'].encode('base64', 'strict')
+            lname = data['message']['lname'].encode('base64', 'strict')
+            contactId = str(data['receiver_bcard_or_contact_id']
+                            ).encode('base64', 'strict')
+            sid = str(data['sender_user_id']).encode('base64', 'strict')
+
+        except:
+            return CustomeResponse(
+                {
+                    'msg': "Please provide receiver_bcard_or_contact_id"},
+                status=status.HTTP_400_BAD_REQUEST,
+                validate_errors=1)
 
         salt = hashlib.sha1(str(random.random())).hexdigest()[:5]
         activation_key = hashlib.sha1(salt + email).hexdigest()[:10]

@@ -186,21 +186,18 @@ class BusinessCardSummarySerializer(serializers.HyperlinkedModelSerializer):
     business_identifier = IdentifierSerializer(many=True, read_only=True)
     business_vacation = VacationCardSerializer(many=True, read_only=True)
     contact_detail = ContactsSerializerWithJson(read_only=True)
-    #business_media = serializers.CharField(source='bcard_image_frontend')
     business_media = serializers.SerializerMethodField('bcard_image_frontend')
 
     def bcard_image_frontend(self, obj):
         media = ContactMedia.objects.filter(
             contact_id=obj.contact_detail.id, status=1).order_by('front_back')
         data = []
-        #i = 0
         for item in media:
             data.append({"img_url": str(settings.DOMAIN_NAME) +
                          str(settings.MEDIA_URL) +
                          str(item.img_url), "front_back": item.front_back})
-            #i = i + 1
         return data
-    #------------------------ End -----------------------------------------------------------#
+    # ------------------------ End -------------- #
 
     class Meta:
         model = BusinessCard
@@ -216,7 +213,6 @@ class BusinessCardSummarySerializer(serializers.HyperlinkedModelSerializer):
 
 
 class BusinessCardIdentifierSerializer(serializers.ModelSerializer):
-    #identifier_link_business = IdentifierSerializer(many=True,read_only=True)
 
     bcard_detail = serializers.SerializerMethodField('bcard_data')
 
@@ -229,8 +225,7 @@ class BusinessCardIdentifierSerializer(serializers.ModelSerializer):
                   'status', 'bcard_detail')
 
     def validate(self, attrs):
-        # print "dataattaat"
-        msg = {}
+
         value = attrs
         businesscardid = value['businesscard_id']
         businesscardid = businesscardid.id
@@ -262,8 +257,8 @@ class CountContactInBusinesscardSerializer(serializers.ModelSerializer):
     def folder_contact(self, obj):
         user = self.context.get("request")
         user_id = user
-        folder = FolderContact.objects.select_related(
-            'folder_id').filter(folder_id__businesscard_id=obj.id, user_id=user_id).values()
+        folder = FolderContact.objects.select_related('folder_id').filter(
+            folder_id__businesscard_id=obj.id, user_id=user_id).values()
         print folder
         return {"data": folder, "count": folder.count()}
 
