@@ -3,6 +3,8 @@ from rest_framework import viewsets
 from rest_framework.decorators import list_route
 from rest_framework.permissions import IsAuthenticated
 import rest_framework.status as status
+from logging import getLogger
+from django.conf import settings
 
 # Third Party Imports
 import boto3
@@ -13,6 +15,9 @@ from ohmgear.token_authentication import ExpiringTokenAuthentication
 from models import AwsDeviceToken
 
 import ohmgear.settings.aws as aws
+
+logger = getLogger(__name__)
+ravenclient = getattr(settings, "RAVEN_CLIENT", None)
 
 
 class AwsActivity(viewsets.ModelViewSet):
@@ -40,7 +45,10 @@ class AwsActivity(viewsets.ModelViewSet):
         try:
             device_token = request.DATA['device_token']
             device_type = request.DATA['device_type'].lower()
-        except:
+        except Exception as e:
+            logger.error("Caught Exception in {}, {}".format(__file__, e))
+            ravenclient.captureException()
+
             return CustomeResponse(
                 {'msg': "Please provide device_token,device_type"},
                 status=status.HTTP_400_BAD_REQUEST,
@@ -48,8 +56,7 @@ class AwsActivity(viewsets.ModelViewSet):
             )
 
         if device_type == 'apns':
-            platform_application_arn = aws.AWS_PLATEFORM_APPLICATION_ARN[
-                "APNS"]
+            platform_application_arn = aws.AWS_PLATEFORM_APPLICATION_ARN["APNS"]
         elif device_type == 'gcm':
             platform_application_arn = aws.AWS_PLATEFORM_APPLICATION_ARN["GCM"]
         else:
@@ -57,25 +64,39 @@ class AwsActivity(viewsets.ModelViewSet):
                                    status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
 
         if device_token and user_id and device_type:
-            client = boto3.client('sns', **aws.AWS_CREDENTIAL)
+            try:
+                client = boto3.client('sns', **aws.AWS_CREDENTIAL)
+            except Exception as e:
+                logger.critical("Caught Exception in {}, {}".format(__file__, e))
+                ravenclient.captureException()
             # TODO Need to check device token already exist or not
             # End
-
-            response = client.create_platform_endpoint(
-                PlatformApplicationArn=platform_application_arn,
-                Token=device_token,
-                CustomUserData='',
-                Attributes={}
-            )
-            if "EndpointArn" in response:
-                AwsDeviceToken.objects.update_or_create(
-                    device_token=device_token,
-                    aws_plateform_endpoint_arn=response["EndpointArn"],
-                    user_id=user_id,
-                    device_type=device_type
+            try:
+                response = client.create_platform_endpoint(
+                    PlatformApplicationArn=platform_application_arn,
+                    Token=device_token,
+                    CustomUserData='',
+                    Attributes={}
                 )
+            except Exception as e:
+                logger.critical("Caught Exception in {}, {}".format(__file__, e))
+                ravenclient.captureException()
 
-            return CustomeResponse(response, status=status.HTTP_200_OK)
+                return CustomeResponse(
+                    {'msg': "Internal Error"},
+                    status=status.HTTP_400_BAD_REQUEST,
+                    validate_errors=1
+                )
+            else:    
+                if "EndpointArn" in response:
+                    AwsDeviceToken.objects.update_or_create(
+                        device_token=device_token,
+                        aws_plateform_endpoint_arn=response["EndpointArn"],
+                        user_id=user_id,
+                        device_type=device_type
+                    )
+
+                return CustomeResponse(response, status=status.HTTP_200_OK)
         else:
             return CustomeResponse(
                 {'msg': "Please provide device_token,device_type and user token"},
