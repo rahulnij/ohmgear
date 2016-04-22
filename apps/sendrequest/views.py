@@ -27,7 +27,7 @@ from ohmgear.functions import CustomeResponse
 from ohmgear.token_authentication import ExpiringTokenAuthentication
 import logging
 # ---------------------------End------------- #
-
+logger = logging.getLogger(__name__)
 
 class SendAcceptRequest(viewsets.ModelViewSet):
 
@@ -333,6 +333,7 @@ class SendAcceptRequest(viewsets.ModelViewSet):
         except:
             user_id = None
         if user_exist:
+            logger.debug("email for grey contact already exists")
             return CustomeResponse(
                 {
                     'msg': "email already exists"},
