@@ -106,6 +106,9 @@ class SendAcceptRequest(viewsets.ModelViewSet):
             try:
                 folder_sender = FolderContact.objects.get(
                     folder_id=karg['sender_folder'], contact_id=receiver_contact_id)
+                folder_sender.link_status = 2
+                folder_sender.is_linked = 1
+                folder_sender.save()
             except:
                 # Note : We will change following code  and
                 # call folder api:folder_contact_link from folder
@@ -121,6 +124,9 @@ class SendAcceptRequest(viewsets.ModelViewSet):
             try:
                 folder_receiver = FolderContact.objects.get(
                     folder_id=karg['receiver_folder'], contact_id=sender_contact_id)
+                folder_receiver.link_status = 2
+                folder_receiver.is_linked = 1
+                folder_receiver.save()
             except:
                 # Note : We will change following code  and
                 # call folder api:folder_contact_link from folder
@@ -411,6 +417,7 @@ class GreyInvitationViewSet(viewsets.ModelViewSet):
             lname = request.GET.get('lname').decode('base64', 'strict')
             cid = request.GET.get('cid').decode('base64', 'strict')
             sid = request.GET.get('sid').decode('base64', 'strict')
+            domain_name = str(settings.DOMAIN_NAME)
 
         except:
             return CustomeResponse({'msg': "parameter(s) not found"},
@@ -422,4 +429,5 @@ class GreyInvitationViewSet(viewsets.ModelViewSet):
                        'fname': fname,
                        'lname': lname,
                        'cid': cid,
-                       'sid': sid})
+                       'sid': sid,
+                       'domain_name': domain_name})
