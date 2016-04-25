@@ -58,13 +58,15 @@ logger = logging.getLogger(__name__)
 
 
 class UserViewSet(viewsets.ModelViewSet):
+    """User view."""
+
     queryset = User.objects.all()
     serializer_class = UserSerializer
     authentication_classes = (ExpiringTokenAuthentication,)
     permission_classes = (IsAuthenticated,)
 
     def get_permissions(self):
-
+        """Get permissions."""
         if self.request.method == 'POST':
             self.authentication_classes = []
             self.permission_classes = []
@@ -74,6 +76,7 @@ class UserViewSet(viewsets.ModelViewSet):
         return super(viewsets.ModelViewSet, self).get_permissions()
 
     def set_password(self, request, user_id):
+        """Reset user password."""
         try:
             user = get_user_model().objects.get(id=user_id)
             user.set_password(request.data['password'])
@@ -92,9 +95,15 @@ class UserViewSet(viewsets.ModelViewSet):
                 by primary key {}".
                 format(__file__, user_id)
             )
+        except Exception:
+            logger.critical(
+                "Caught exception in {}".format(__file__),
+                exc_info=True
+            )
         return False
 
     def list(self, request):
+        """Not allowed user listing."""
         return CustomeResponse(
             {'msg': 'GET method not allowed'},
             status=status.HTTP_405_METHOD_NOT_ALLOWED,
@@ -102,8 +111,9 @@ class UserViewSet(viewsets.ModelViewSet):
         )
 
     def retrieve(self, request, pk=None):
-        queryset = self.queryset
+        """Retrieve a user detail."""
         try:
+            queryset = self.queryset
             user = get_object_or_404(queryset, pk=pk)
             serializer = self.serializer_class(
                 user, context={'request': request})
@@ -115,16 +125,28 @@ class UserViewSet(viewsets.ModelViewSet):
                     self.__class__, pk, __file__
                 )
             )
+            return CustomeResponse(
+                {
+                    "msg": "User does not exist."
+                },
+                status=status.HTTP_404_NOT_FOUND,
+                validate_errors=1
+            )
+        except Exception:
+            logger.critical(
+                "Caught exception in {}".format(__file__),
+                exc_info=True
+            )
         return CustomeResponse(
             {
-                "msg": "User does not exist."
+                "msg": "Can not process request."
             },
-            status=status.HTTP_404_NOT_FOUND,
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             validate_errors=1
         )
 
-    # Method: POST create new user
     def create(self, request, fromsocial=None):
+        """Create new user."""
         try:
             serializer = UserSerializer(
                 data=request.data, context={'request': request})
@@ -163,7 +185,11 @@ class UserViewSet(viewsets.ModelViewSet):
                         {'post': 'create'})
 
                     business_card_class_create(
-                        request, from_white_contact=user_id.id, cid=cid, sid=sid)
+                        request,
+                        from_white_contact=user_id.id,
+                        cid=cid,
+                        sid=sid
+                    )
 
                 if 'first_name' in request.data:
                     profile.first_name = request.data['first_name']
@@ -189,38 +215,57 @@ class UserViewSet(viewsets.ModelViewSet):
             logger.critical("Caught Exception ", exc_info=True)
 
         return CustomeResponse(
-            serializer.errors,
+            {
+                "msg": "Can not process request."
+            },
             status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             validate_errors=1
         )
 
     def update(self, request, pk=None):
+        """Update user."""
         try:
             messages = User.objects.get(id=pk)
         except ObjectDoesNotExist:
+            logger.error(
+                "Caught ObjectDoesNotExist exception for {}, primary key {},\
+                in {}".format(
+                    self.__class__, pk, __file__
+                )
+            )
             return CustomeResponse(
                 {'msg': 'record not found'},
                 status=status.HTTP_404_NOT_FOUND,
                 validate_errors=1
             )
+        try:
+            serializer = UserSerializer(
+                messages,
+                data=request.data,
+                partial=True,
+                context={
+                    'request': request})
+            if serializer.is_valid():
+                serializer.save()
 
-        serializer = UserSerializer(
-            messages,
-            data=request.data,
-            partial=True,
-            context={
-                'request': request})
-        if serializer.is_valid():
-            serializer.save()
+                return CustomeResponse(
+                    serializer.data,
+                    status=status.HTTP_201_CREATED)
+            else:
+                return CustomeResponse(
+                    serializer.errors,
+                    status=status.HTTP_400_BAD_REQUEST,
+                    validate_errors=1)
+        except Exception:
+            logger.critical("Caught Exception ", exc_info=True)
 
-            return CustomeResponse(
-                serializer.data,
-                status=status.HTTP_201_CREATED)
-        else:
-            return CustomeResponse(
-                serializer.errors,
-                status=status.HTTP_400_BAD_REQUEST,
-                validate_errors=1)
+        return CustomeResponse(
+            {
+                "msg": "Can not process request."
+            },
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            validate_errors=1
+        )
 
     @list_route(methods=['post'],)
     def changepassword(self, request):
@@ -230,7 +275,13 @@ class UserViewSet(viewsets.ModelViewSet):
             old_password = request.data['old_password']
             password = request.data['password']
             confirmpassword = request.data['confirm_password']
-        except:
+        except KeyError:
+            logger.error(
+                "Caught KeyError exception: Old_password/password/confirm_password \
+                is required  , in {}".format(
+                    __file__
+                )
+            )
             return CustomeResponse(
                 {
                     'msg': 'Old_password,password and confirm_password \
@@ -240,41 +291,52 @@ class UserViewSet(viewsets.ModelViewSet):
                 validate_errors=1
             )
 
-        userdata = User.objects.filter(id=request.user.id).values()
-        email = userdata[0]['email']
+        try:
+            userdata = User.objects.filter(id=request.user.id).values()
+            email = userdata[0]['email']
 
-        if old_password:
-            user = authenticate_frontend(username=email, password=old_password)
-            if user and not None:
-                if password == confirmpassword:
-                    user = User.objects.get(id=user_id)
-                    user.set_password(password)
-                    user.update_password = False
-                    user.save()
-                    return CustomeResponse(
-                        {
-                            'msg': "Password changed successfully"
-                        },
-                        status=status.HTTP_200_OK
-                    )
+            if old_password:
+                user = authenticate_frontend(username=email, password=old_password)
+                if user and not None:
+                    if password == confirmpassword:
+                        user = User.objects.get(id=user_id)
+                        user.set_password(password)
+                        user.update_password = False
+                        user.save()
+                        return CustomeResponse(
+                            {
+                                'msg': "Password changed successfully"
+                            },
+                            status=status.HTTP_200_OK
+                        )
+                    else:
+                        return CustomeResponse(
+                            {
+                                'msg': "password and confirm password are not same"
+                            },
+                            status=status.HTTP_401_UNAUTHORIZED,
+                            validate_errors=1
+                        )
                 else:
-                    return CustomeResponse(
-                        {
-                            'msg': "password and confirm password are not same"
-                        },
-                        status=status.HTTP_401_UNAUTHORIZED,
-                        validate_errors=1
-                    )
+                    msg = 'Old Password is wrong'
+                    return CustomeResponse({'msg': msg},
+                                           status=status.HTTP_401_UNAUTHORIZED,
+                                           validate_errors=1)
             else:
-                msg = 'Old Password is wrong'
+                msg = 'Must include "old_Password".'
                 return CustomeResponse({'msg': msg},
                                        status=status.HTTP_401_UNAUTHORIZED,
                                        validate_errors=1)
-        else:
-            msg = 'Must include "old_Password".'
-            return CustomeResponse({'msg': msg},
-                                   status=status.HTTP_401_UNAUTHORIZED,
-                                   validate_errors=1)
+        except Exception:
+            logger.critical("Caught Exception ", exc_info=True)
+
+        return CustomeResponse(
+            {
+                "msg": "Can not process request."
+            },
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            validate_errors=1
+        )
 
     @list_route(methods=['get'],)
     def getConnectedAccounts(self, request):
