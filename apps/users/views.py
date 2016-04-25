@@ -1,10 +1,11 @@
 """
- Developer Name: Sajid
- Creation Date: 2015/08/04
- Notes: View File
+Developer Name: Sajid.
+
+Creation Date: 2015/08/04
+Notes: View File
 """
 
-# --------- Import Python Modules ----------- #
+# Import Python Modules
 from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated
 import rest_framework.status as status
@@ -17,8 +18,11 @@ from django.contrib.auth import get_user_model
 from django.forms.models import model_to_dict
 from rest_framework.decorators import api_view
 from rest_framework.decorators import list_route
+from django.core.exceptions import ObjectDoesNotExist
+from django.http import Http404
+import logging
 
-#------------------ Local app imports ------#
+# Local app imports
 import datetime
 import random
 import hashlib
@@ -28,14 +32,29 @@ import hashlib
 from apps.usersetting.models import Setting
 from apps.usersetting.serializer import UserSignupSettingSerializer
 from apps.email.views import BaseSendMail
-from apps.businesscards.models import BusinessCard
-from apps.businesscards.views import BusinessViewSet
-
-
 from apps.businesscards.views import WhiteCardViewSet
-from models import User, Profile, SocialLogin, ConnectedAccount, UserEmail
-from serializer import UserSerializer, ProfileSerializer, SocialLoginSerializer, ConnectedAccountsSerializer, UserEmailSerializer
-from functions import getToken, checkEmail, createConnectedAccount, CreatePinNumber
+from models import (
+    User,
+    Profile,
+    SocialLogin,
+    ConnectedAccount,
+    UserEmail
+)
+from serializer import (
+    UserSerializer,
+    ProfileSerializer,
+    SocialLoginSerializer,
+    ConnectedAccountsSerializer,
+    UserEmailSerializer
+)
+from functions import (
+    getToken,
+    checkEmail,
+    createConnectedAccount,
+    CreatePinNumber
+)
+
+logger = logging.getLogger(__name__)
 
 
 class UserViewSet(viewsets.ModelViewSet):
@@ -45,7 +64,7 @@ class UserViewSet(viewsets.ModelViewSet):
     permission_classes = (IsAuthenticated,)
 
     def get_permissions(self):
-        # Your logic should be all here
+
         if self.request.method == 'POST':
             self.authentication_classes = []
             self.permission_classes = []
@@ -60,82 +79,125 @@ class UserViewSet(viewsets.ModelViewSet):
             user.set_password(request.data['password'])
             user.save()
             return True
-        except:
-            return False
+        except ObjectDoesNotExist:
+            logger.error(
+                "Caught ObjectDoesNotExist exception for {}, primary key {},\
+                in {}".format(
+                    self.__class__, user_id, __file__
+                )
+            )
+        except KeyError:
+            logger.error(
+                "Caught KeyError exception, password not given in {} \
+                by primary key {}".
+                format(__file__, user_id)
+            )
+        return False
 
     def list(self, request):
-        return CustomeResponse({'msg': 'GET method not allowed'},
-                               status=status.HTTP_405_METHOD_NOT_ALLOWED,
-                               validate_errors=1)
+        return CustomeResponse(
+            {'msg': 'GET method not allowed'},
+            status=status.HTTP_405_METHOD_NOT_ALLOWED,
+            validate_errors=1
+        )
 
     def retrieve(self, request, pk=None):
         queryset = self.queryset
-        user = get_object_or_404(queryset, pk=pk)
-        serializer = self.serializer_class(user, context={'request': request})
-        return CustomeResponse(serializer.data, status=status.HTTP_200_OK)
+        try:
+            user = get_object_or_404(queryset, pk=pk)
+            serializer = self.serializer_class(
+                user, context={'request': request})
+            return CustomeResponse(serializer.data, status=status.HTTP_200_OK)
+        except Http404:
+            logger.error(
+                "Caught Http404(ObjectDoesNotExist) exception for {}, primary key {},\
+                in {}".format(
+                    self.__class__, pk, __file__
+                )
+            )
+        return CustomeResponse(
+            {
+                "msg": "User does not exist."
+            },
+            status=status.HTTP_404_NOT_FOUND,
+            validate_errors=1
+        )
 
-    # --------------Method: POST create new user ----------------------------- #
+    # Method: POST create new user
     def create(self, request, fromsocial=None):
+        try:
+            serializer = UserSerializer(
+                data=request.data, context={'request': request})
 
-        serializer = UserSerializer(
-            data=request.data, context={'request': request})
+            request.POST._mutable = True
+            pin_no = CreatePinNumber()
+            request.data['pin_number'] = pin_no
 
-        request.POST._mutable = True
-        pin_no = CreatePinNumber()
-        request.data['pin_number'] = pin_no
+            if serializer.is_valid():
 
-        if serializer.is_valid():
+                # enable/desable signal
+                if fromsocial:
+                    self._disable_signals = True
+                # ------------ End ----------------------------------- #
+                user_id = serializer.save()
 
-            # enable/desable signal
-            if fromsocial:
-                self._disable_signals = True
-            # ------------ End ----------------------------------- #
-            user_id = serializer.save()
+                # create the profile
+                salt = hashlib.sha1(str(random.random())).hexdigest()[:5]
+                activation_key = hashlib.sha1(salt + user_id.email).hexdigest()
+                key_expires = datetime.datetime.today() + datetime.timedelta(2)
+                profile = Profile()
+                profile.activation_key = activation_key
+                profile.key_expires = key_expires
+                profile.user_id = user_id.id
 
-            # create the profile
-            salt = hashlib.sha1(str(random.random())).hexdigest()[:5]
-            activation_key = hashlib.sha1(salt + user_id.email).hexdigest()
-            key_expires = datetime.datetime.today() + datetime.timedelta(2)
-            profile = Profile()
-            profile.activation_key = activation_key
-            profile.key_expires = key_expires
-            profile.user_id = user_id.id
+                # grey contact invite auth-token
+                if request.GET.get('from_web'):
+                    cid = request.data['cid']
+                    sid = request.data['sid']
+                    from apps.sendrequest.models import SendRequest
+                    SendRequest.objects.filter(
+                        sender_user_id=sid, receiver_bcard_or_contact_id=cid)\
+                        .update(
+                        request_status=1, receiver_user_id=user_id.id)
+                    business_card_class_create = WhiteCardViewSet.as_view(
+                        {'post': 'create'})
 
-            # ---------- grey contact invite auth-token ---------- #
-            if request.GET.get('from_web'):
-                #cid = contact_id , sid = sender_id
-                token = getToken(user_id.id)
-                cid = request.data['cid']
-                sid = request.data['sid']
-                from apps.sendrequest.models import SendRequest
-                SendRequest.objects.filter(sender_user_id=sid, receiver_bcard_or_contact_id=cid).update(
-                    request_status=1, receiver_user_id=user_id.id)
-                business_card_class_create = WhiteCardViewSet.as_view(
-                    {'post': 'create'})
+                    business_card_class_create(
+                        request, from_white_contact=user_id.id, cid=cid, sid=sid)
 
-                business_card_class_create(
-                    request, from_white_contact=user_id.id, cid=cid, sid=sid)
+                if 'first_name' in request.data:
+                    profile.first_name = request.data['first_name']
 
-            if request.data.has_key('first_name'):
-                profile.first_name = request.data['first_name']
+                if 'last_name' in request.data:
+                    profile.last_name = request.data['last_name']
 
-            if request.data.has_key('last_name'):
-                profile.last_name = request.data['last_name']
+                profile.save()
+                # ---------------- End ------------------------ #
 
-            profile.save()
-            # ---------------- End ------------------------ #
-
-            if not fromsocial:
-                return CustomeResponse(serializer.data, status=status.HTTP_201_CREATED)
+                if not fromsocial:
+                    return CustomeResponse(
+                        serializer.data, status=status.HTTP_201_CREATED)
+                else:
+                    return serializer.data
             else:
-                return serializer.data
-        else:
-            return CustomeResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
+                return CustomeResponse(
+                    serializer.errors,
+                    status=status.HTTP_400_BAD_REQUEST,
+                    validate_errors=1
+                )
+        except Exception:
+            logger.critical("Caught Exception ", exc_info=True)
+
+        return CustomeResponse(
+            serializer.errors,
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            validate_errors=1
+        )
 
     def update(self, request, pk=None):
         try:
             messages = User.objects.get(id=pk)
-        except:
+        except ObjectDoesNotExist:
             return CustomeResponse(
                 {'msg': 'record not found'},
                 status=status.HTTP_404_NOT_FOUND,
@@ -162,6 +224,7 @@ class UserViewSet(viewsets.ModelViewSet):
 
     @list_route(methods=['post'],)
     def changepassword(self, request):
+        """Reset user password."""
         try:
             user_id = request.user.id
             old_password = request.data['old_password']
@@ -169,7 +232,10 @@ class UserViewSet(viewsets.ModelViewSet):
             confirmpassword = request.data['confirm_password']
         except:
             return CustomeResponse(
-                {'msg': 'Old_password,password and confirm_password are missing'},
+                {
+                    'msg': 'Old_password,password and confirm_password \
+                    are missing'
+                },
                 status=status.HTTP_400_BAD_REQUEST,
                 validate_errors=1
             )
@@ -186,10 +252,16 @@ class UserViewSet(viewsets.ModelViewSet):
                     user.update_password = False
                     user.save()
                     return CustomeResponse(
-                        {'msg': "Password changed successfully"}, status=status.HTTP_200_OK)
+                        {
+                            'msg': "Password changed successfully"
+                        },
+                        status=status.HTTP_200_OK
+                    )
                 else:
                     return CustomeResponse(
-                        {'msg': "password and confirm password are not same"},
+                        {
+                            'msg': "password and confirm password are not same"
+                        },
                         status=status.HTTP_401_UNAUTHORIZED,
                         validate_errors=1
                     )
@@ -204,11 +276,9 @@ class UserViewSet(viewsets.ModelViewSet):
                                    status=status.HTTP_401_UNAUTHORIZED,
                                    validate_errors=1)
 
-    """
-        Connects account of user i.e FB or Linkedin
-    """
     @list_route(methods=['get'],)
     def getConnectedAccounts(self, request):
+        """Retrieve user connected accounts i.e FB or Linkedin."""
         try:
             user_id = request.user
         except:
@@ -231,7 +301,7 @@ class UserViewSet(viewsets.ModelViewSet):
     @list_route(methods=['post'],)
     def connectedaccounts(self, request):
         social_type = constant.SOCIAL_TYPE
-        social_type_exist = social_type.has_key(request.data['social_type_id'])
+        social_type_exist = request.data['social_type_id'] in social_type
 
         if not social_type_exist:
             return CustomeResponse(
@@ -273,8 +343,7 @@ class UserViewSet(viewsets.ModelViewSet):
             user_id = request.user
 
             social_type = constant.SOCIAL_TYPE
-            social_type_exist = social_type.has_key(
-                request.data['social_type_id'])
+            social_type_exist = request.data['social_type_id'] in social_type
             if not social_type_exist:
                 return CustomeResponse(
                     {"msg": "social_type is not there"},
@@ -283,8 +352,13 @@ class UserViewSet(viewsets.ModelViewSet):
                 )
         except:
             user_id = None
-            return CustomeResponse({"msg": "social_type_id is mandatory"},
-                                   status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
+            return CustomeResponse(
+                {
+                    "msg": "social_type_id is mandatory"
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+                validate_errors=1
+            )
 
         try:
             for key, social_id in social_type.iteritems():
@@ -298,7 +372,11 @@ class UserViewSet(viewsets.ModelViewSet):
 
         if sociallogin is not None:
             return CustomeResponse(
-                {"msg": "This account is cannot be deleted because you have sign up with this account"})
+                {
+                    "msg": "This account is cannot be deleted because you have \
+                    sign up with this account"
+                }
+            )
 
         connecteddata = ConnectedAccount.objects.filter(
             user_id=user_id, social_type_id=social_type_id)
@@ -332,15 +410,23 @@ class UserViewSet(viewsets.ModelViewSet):
                         serializer.errors, status=status.HTTP_201_CREATED)
 
         except:
-            return CustomeResponse({'msg': 'provide status active'},
-                                   status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
+            return CustomeResponse(
+                {'msg': 'provide status active'},
+                status=status.HTTP_400_BAD_REQUEST,
+                validate_errors=1
+            )
 
     def partial_update(self, request, pk=None):
         pass
 
     def destroy(self, request, pk=None):
-        return CustomeResponse({'msg': 'DELETE method not allowed'},
-                               status=status.HTTP_405_METHOD_NOT_ALLOWED, flag=1)
+        return CustomeResponse(
+            {
+                'msg': 'DELETE method not allowed'
+            },
+            status=status.HTTP_405_METHOD_NOT_ALLOWED,
+            flag=1
+        )
 
 
 class ProfileViewSet(viewsets.ModelViewSet):
@@ -365,13 +451,19 @@ class ProfileViewSet(viewsets.ModelViewSet):
         try:
             user_id = request.user.id
             messages = Profile.objects.get(user_id=user_id)
-            if request.data.has_key('profile_image'):
+            if 'profile_image' in request.data:
                 profile_image = request.data['profile_image']
             else:
                 profile_image = messages.profile_image
         except:
             return CustomeResponse(
-                {'msg': 'record not found'}, status=status.HTTP_404_NOT_FOUND, validate_errors=1)
+                {
+                    'msg': 'record not found'
+                },
+                status=status.HTTP_404_NOT_FOUND,
+                validate_errors=1
+            )
+
         serializer = ProfileSerializer(
             messages,
             data=request.data,
@@ -405,7 +497,12 @@ class ProfileViewSet(viewsets.ModelViewSet):
                 {'msg': 'Image is deleted'}, status=status.HTTP_200_OK)
         else:
             return CustomeResponse(
-                {'msg': 'server error'}, status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
+                {
+                    'msg': 'server error'
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+                validate_errors=1
+            )
 
 
 class SocialLoginViewSet(viewsets.ModelViewSet):
@@ -416,10 +513,21 @@ class SocialLoginViewSet(viewsets.ModelViewSet):
         try:
             if request.data['status'] is 0:
                 return CustomeResponse(
-                    {'msg': 'provide status active'}, status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
+                    {
+                        'msg': 'provide status active'
+                    },
+                    status=status.HTTP_400_BAD_REQUEST,
+                    validate_errors=1
+                )
         except:
-            return CustomeResponse({'msg': 'provide status active'},
-                                   status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
+            return CustomeResponse(
+                {
+                    'msg': 'provide status active'
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+                validate_errors=1
+            )
+
         serializer = UserSerializer(
             data=request.data, context={
                 'request': request, 'msg': 'not exist'})
@@ -446,9 +554,9 @@ class SocialLoginViewSet(viewsets.ModelViewSet):
                 # Call the userviewset for create the user
                 user_view_obj = UserViewSet()
                 data = user_view_obj.create(request, 1)
-                #----------- End ------------#
+                # End
                 social_id = request.POST.get('social_id', '')
-                # social_type_id for fb its 2---------------#
+                # social_type_id for fb its 2
 
                 social_type = constant.SOCIAL_TYPE
                 social_type_exist = request.data['social_type'] in social_type
@@ -470,7 +578,7 @@ class SocialLoginViewSet(viewsets.ModelViewSet):
                     data['token'] = token
                 except:
                     data['token'] = ''
-                    #---------------- End ---------------------#
+                    # End
                 return CustomeResponse(data, status=status.HTTP_201_CREATED)
 
             else:
@@ -486,8 +594,9 @@ def useractivity(request, **kwargs):
     msg = {}
     if request.method == 'GET':
 
-        activation_key = request.query_params.get('activation_key', None)  
-        reset_password_key = request.query_params.get('reset_password_key', None)
+        activation_key = request.query_params.get('activation_key', None)
+        reset_password_key = request.query_params.get(
+            'reset_password_key', None)
 
         # get the activation key and activate the account : Process after
         # registration
@@ -527,17 +636,27 @@ def useractivity(request, **kwargs):
                     reset_password_key
                 return response
             else:
-                return CustomeResponse({'msg': 'This url is used in app only'},
-                                       status=status.HTTP_401_UNAUTHORIZED, validate_errors=1)
-        return CustomeResponse({'msg': 'Please provide correct parameters'},
-                               status=status.HTTP_401_UNAUTHORIZED, validate_errors=1)
+                return CustomeResponse(
+                    {
+                        'msg': 'This url is used in app only'
+                    },
+                    status=status.HTTP_401_UNAUTHORIZED,
+                    validate_errors=1
+                )
+        return CustomeResponse(
+            {
+                'msg': 'Please provide correct parameters'
+            },
+            status=status.HTTP_401_UNAUTHORIZED,
+            validate_errors=1
+        )
 
     if request.method == 'POST':
         try:
             op = request.data['op']
         except:
             op = None
-        # ----------- Login ------------------#
+        # Login
         if op == 'login':
             try:
                 username = request.data['username']
@@ -556,7 +675,10 @@ def useractivity(request, **kwargs):
                 # save password in case of forgot passord TODO  move this
                 # section from login section
                 try:
-                    profile = Profile.objects.select_related().get(reset_password_key=reset_password_key,user__email=username)
+                    profile = Profile.objects.select_related().get(
+                        reset_password_key=reset_password_key,
+                        user__email=username
+                    )
                     profile.user.set_password(password)
                     profile.user.update_password = False
                     profile.user.save()
@@ -574,11 +696,21 @@ def useractivity(request, **kwargs):
                     if user.status != 1:
                         msg = 'User account is disabled.'
                         return CustomeResponse(
-                            {'msg': msg}, status=status.HTTP_401_UNAUTHORIZED, validate_errors=1)
+                            {
+                                'msg': msg
+                            },
+                            status=status.HTTP_401_UNAUTHORIZED,
+                            validate_errors=1
+                        )
                 else:
                     msg = 'Unable to log in with provided credentials.'
                     return CustomeResponse(
-                        {'msg': msg}, status=status.HTTP_401_UNAUTHORIZED, validate_errors=1)
+                        {
+                            'msg': msg
+                        },
+                        status=status.HTTP_401_UNAUTHORIZED,
+                        validate_errors=1
+                    )
                     # raise exceptions.ValidationError(msg)
             else:
                 msg = 'Must include "username" and "password".'
@@ -597,9 +729,9 @@ def useractivity(request, **kwargs):
             except:
                 pass
             user['token'] = token
-            #------------- End -----------------#
+            # End
             return CustomeResponse(user, status=status.HTTP_200_OK)
-        # ----------- restet password and send the email------------------#
+        # restet password and send the email
         elif op == 'reset_password':
             try:
                 email = request.data['email']
@@ -607,7 +739,9 @@ def useractivity(request, **kwargs):
                 email = None
             try:
                 profile = Profile.objects.select_related().get(
-                    user__email=request.data['email'], user__user_type__in=[2, 3])
+                    user__email=request.data['email'],
+                    user__user_type__in=[2, 3]
+                )
             except:
                 profile = ''
             if email:
@@ -625,7 +759,12 @@ def useractivity(request, **kwargs):
                 else:
                     msg = 'This email id does not exist.'
                     return CustomeResponse(
-                        {'msg': msg}, status=status.HTTP_401_UNAUTHORIZED, validate_errors=1)
+                        {
+                            'msg': msg
+                        },
+                        status=status.HTTP_401_UNAUTHORIZED,
+                        validate_errors=1
+                    )
                     # raise exceptions.ValidationError(msg)
                 # raise exceptions.ValidationError(msg)
             else:
@@ -642,7 +781,9 @@ def useractivity(request, **kwargs):
             except:
                 email = None
             try:
-                profile = Profile.objects.select_related().get(user__email=email)
+                profile = Profile.objects.select_related().get(
+                    user__email=email
+                )
             except:
                 profile = ''
 
@@ -656,14 +797,21 @@ def useractivity(request, **kwargs):
                     {'msg': "email sent"}, status=status.HTTP_200_OK)
             else:
                 return CustomeResponse(
-                    {'msg': "email does not exist"}, status=status.HTTP_401_UNAUTHORIZED, validate_errors=1)
+                    {
+                        'msg': "email does not exist"
+                    },
+                    status=status.HTTP_401_UNAUTHORIZED,
+                    validate_errors=1
+                )
 
         else:
             return CustomeResponse(
                 {
-                    'msg': 'Please provide operation parameter op'},
+                    'msg': 'Please provide operation parameter op'
+                },
                 status=status.HTTP_401_UNAUTHORIZED,
-                validate_errors=1)
+                validate_errors=1
+            )
 
 
 class UserEmailViewSet(viewsets.ModelViewSet):
@@ -712,17 +860,14 @@ class UserEmailViewSet(viewsets.ModelViewSet):
                 return CustomeResponse(data, status=status.HTTP_200_OK)
             else:
                 data.append(default_email)
-                defaultEmail = User.objects.filter(id=user_id)
-                serializer = UserSerializer(defaultEmail, many=True)
+                # Rahul: who did this code?
+                # defaultEmail = User.objects.filter(id=user_id)
+                # serializer = UserSerializer(defaultEmail, many=True)
                 return CustomeResponse(data, status=status.HTTP_200_OK)
         else:
             return CustomeResponse(default_email, status=status.HTTP_200_OK)
 
     def create(self, request):
-        try:
-            user_id = request.user
-        except:
-            user_id = None
         data = {}
         data['user_id'] = request.user.id
         data['email'] = request.data.get('email')
@@ -761,18 +906,32 @@ class UserEmailViewSet(viewsets.ModelViewSet):
                 BaseSendMail.delay(
                     data, type='verify_email', key=activation_key)
                 return CustomeResponse(
-                    {'msg': 'verification code sent'}, status=status.HTTP_200_OK)
+                    {
+                        'msg': 'verification code sent'
+                    },
+                    status=status.HTTP_200_OK
+                )
             else:
                 return CustomeResponse(
                     {'msg': 'server error'}, validate_errors=1)
 
             if not data['email']:
                 return CustomeResponse(
-                    {"msg": "email is not there"}, status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
+                    {
+                        "msg": "email is not there"
+                    },
+                    status=status.HTTP_400_BAD_REQUEST,
+                    validate_errors=1
+                )
         except:
             data['email'] = None
-            return CustomeResponse({"msg": "email is mandatory"},
-                                   status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
+            return CustomeResponse(
+                {
+                    "msg": "email is mandatory"
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+                validate_errors=1
+            )
 
     @list_route(methods=['get'],)
     def verify_email(self, request):
@@ -790,8 +949,13 @@ class UserEmailViewSet(viewsets.ModelViewSet):
             checkUserEmail = User.objects.filter(
                 email=userEmailAdded)  # check email user table if exist
         except:
-            return CustomeResponse({"msg": "email is not there"},
-                                   status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
+            return CustomeResponse(
+                {
+                    "msg": "email is not there"
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+                validate_errors=1
+            )
 
         if user_email:
             if isVerified == 0:
@@ -812,7 +976,11 @@ class UserEmailViewSet(viewsets.ModelViewSet):
                     User.objects.filter(id=request.user.id).update(
                         email=userEmailAdded)
                     return CustomeResponse(
-                        {'msg': 'email set to default'}, status=status.HTTP_200_OK)
+                        {
+                            'msg': 'email set to default'
+                        },
+                        status=status.HTTP_200_OK
+                    )
                 else:
                     return CustomeResponse(
                         {'msg': 'email cannot be replaced'}, validate_errors=1)
@@ -823,7 +991,12 @@ class UserEmailViewSet(viewsets.ModelViewSet):
 
             if not userEmail:
                 return CustomeResponse(
-                    {"msg": "email is not there"}, status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
+                    {
+                        "msg": "email is not there"
+                    },
+                    status=status.HTTP_400_BAD_REQUEST,
+                    validate_errors=1
+                )
 
             elif request.device:
                 from django.http import HttpResponse
@@ -844,7 +1017,6 @@ class UserEmailViewSet(viewsets.ModelViewSet):
         data = {}
         data['id'] = request.user.id
         data['ueid'] = request.data.get('useremail_id')
-        userEmail = request.user.email
 
         try:
             # set default status(2) of all emails to 1
@@ -863,14 +1035,23 @@ class UserEmailViewSet(viewsets.ModelViewSet):
                 BaseSendMail.delay(
                     data, type='verify_email', key=activation_key)
                 return CustomeResponse(
-                    {'msg': 'verification code sent'}, status=status.HTTP_200_OK)
+                    {
+                        'msg': 'verification code sent'
+                    },
+                    status=status.HTTP_200_OK
+                )
             else:
                 return CustomeResponse(
                     {'msg': 'server error'}, validate_errors=1)
 
         except:
-            return CustomeResponse({"msg": "email is not there"},
-                                   status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
+            return CustomeResponse(
+                {
+                    "msg": "email is not there"
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+                validate_errors=1
+            )
 
     @list_route(methods=['post'],)
     def deleteEmail(self, request, pk=None):
@@ -888,7 +1069,12 @@ class UserEmailViewSet(viewsets.ModelViewSet):
                 id=request.data['userEmailId'])
         except:
             return CustomeResponse(
-                {'msg': 'Email not found'}, status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
+                {
+                    'msg': 'Email not found'
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+                validate_errors=1
+            )
 
         if count > 0:
             if userEmail:
@@ -905,4 +1091,9 @@ class UserEmailViewSet(viewsets.ModelViewSet):
 
         else:
             return CustomeResponse(
-                {'msg': 'server error'}, status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
+                {
+                    'msg': 'server error'
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+                validate_errors=1
+            )
