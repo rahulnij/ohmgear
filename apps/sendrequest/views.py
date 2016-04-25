@@ -19,13 +19,15 @@ from apps.sendrequest.serializer import SendRequestSerializer
 from models import SendRequest
 from apps.businesscards.models import BusinessCard
 from apps.users.models import Profile
+from apps.users.models import User
 from apps.folders.models import Folder, FolderContact
 from apps.awsserver.models import AwsDeviceToken
 import ohmgear.settings.aws as aws
 from ohmgear.functions import CustomeResponse
 from ohmgear.token_authentication import ExpiringTokenAuthentication
+import logging
 # ---------------------------End------------- #
-
+logger = logging.getLogger(__name__)
 
 class SendAcceptRequest(viewsets.ModelViewSet):
 
@@ -106,6 +108,9 @@ class SendAcceptRequest(viewsets.ModelViewSet):
             try:
                 folder_sender = FolderContact.objects.get(
                     folder_id=karg['sender_folder'], contact_id=receiver_contact_id)
+                folder_sender.link_status = 2
+                folder_sender.is_linked = 1
+                folder_sender.save()
             except:
                 # Note : We will change following code  and
                 # call folder api:folder_contact_link from folder
@@ -121,6 +126,9 @@ class SendAcceptRequest(viewsets.ModelViewSet):
             try:
                 folder_receiver = FolderContact.objects.get(
                     folder_id=karg['receiver_folder'], contact_id=sender_contact_id)
+                folder_receiver.link_status = 2
+                folder_receiver.is_linked = 1
+                folder_receiver.save()
             except:
                 # Note : We will change following code  and
                 # call folder api:folder_contact_link from folder
@@ -315,53 +323,78 @@ class SendAcceptRequest(viewsets.ModelViewSet):
     @list_route(methods=['post'],)
     def send_white_invitation(self, request):
 
-        authentication_classes = (ExpiringTokenAuthentication,)
-        permission_classes = (IsAuthenticated,)
-
         try:
+            data = {}
             user_id = request.user
+            data['message'] = request.data.get('message')
+            email = data['message']['email']
+            user_exist = User.objects.filter(
+                email=data['message']['email'])
         except:
             user_id = None
-
-        data = {}
-        data['email'] = request.user.email
-        data['sender_user_id'] = request.user.id
-        data['sender_business_card_id'] = ''
-        data['reques_type'] = "b2g"
-        data['receiver_bcard_or_contact_id'] = request.data.get('receiver_bcard_or_contact_id')
-        data['message'] = request.data.get('message')
-
-        email = data['message']['email'].encode('base64', 'strict')
-        fname = data['message']['fname'].encode('base64', 'strict')
-        lname = data['message']['lname'].encode('base64', 'strict')
-        contactId = str(data['receiver_bcard_or_contact_id']).encode('base64', 'strict')
-        sid = str(data['sender_user_id']).encode('base64', 'strict')
-
-        salt = hashlib.sha1(str(random.random())).hexdigest()[:5]
-        activation_key = hashlib.sha1(salt + email).hexdigest()[:10]
-        email_invit_url = str(settings.DOMAIN_NAME) + "/api/greyrequest/invite_registration" + "/?email=" + \
-            email + "&fname=" + fname + "&lname=" + \
-            lname + "&cid=" + contactId + "&sid=" + sid
-        print email_invit_url
-        serializer = SendRequestSerializer(
-            data=data, context={'request': request, 'msg': 'not exist'})
-        if serializer.is_valid():
-            serializer.save()
-            BaseSendMail.delay(
-                data,
-                type='grey_invitation',
-                key=activation_key,
-                url=email_invit_url,
-                first_name=fname,
-                email=email)
+        if user_exist:
+            logger.debug("email for grey contact already exists")
             return CustomeResponse(
-                serializer.data,
-                status=status.HTTP_201_CREATED)
+                {
+                    'msg': "email already exists"},
+                status=status.HTTP_400_BAD_REQUEST,
+                validate_errors=1)
         else:
-            return CustomeResponse(
-                {'msg': serializer.errors}, validate_errors=1)
+            try:
+                sender_folder_id = FolderContact.objects.filter(
+                    user_id=request.user.id, contact_id=request.data.get(
+                        'receiver_bcard_or_contact_id')).values_list('folder_id', flat=True)[0]
 
-    # yellow contacts
+                sender_business_card_id = Folder.objects.filter(
+                    id=sender_folder_id).values_list('businesscard_id', flat=True)[0]
+
+                data['email'] = request.user.email
+                data['sender_user_id'] = request.user.id
+                data['receiver_user_id'] = ''
+                data['sender_business_card_id'] = sender_business_card_id
+                data['request_type'] = "b2g"
+                data['receiver_bcard_or_contact_id'] = request.data.get(
+                    'receiver_bcard_or_contact_id')
+
+                email = data['message']['email'].encode('base64', 'strict')
+                fname = data['message']['fname'].encode('base64', 'strict')
+                lname = data['message']['lname'].encode('base64', 'strict')
+                contactId = str(data['receiver_bcard_or_contact_id']
+                                ).encode('base64', 'strict')
+                sid = str(data['sender_user_id']).encode('base64', 'strict')
+
+            except:
+                return CustomeResponse(
+                    {
+                        'msg': "Please provide receiver_bcard_or_contact_id"},
+                    status=status.HTTP_400_BAD_REQUEST,
+                    validate_errors=1)
+
+            salt = hashlib.sha1(str(random.random())).hexdigest()[:5]
+            activation_key = hashlib.sha1(salt + email).hexdigest()[:10]
+            email_invit_url = str(settings.DOMAIN_NAME) + "/api/greyrequest/invite_registration" + "/?email=" + \
+                email + "&fname=" + fname + "&lname=" + \
+                lname + "&cid=" + contactId + "&sid=" + sid
+
+            serializer = SendRequestSerializer(
+                data=data, context={'request': request, 'msg': 'not exist'})
+            if serializer.is_valid():
+                serializer.save()
+                BaseSendMail.delay(
+                    data,
+                    type='grey_invitation',
+                    key=activation_key,
+                    url=email_invit_url,
+                    first_name=fname,
+                    email=email)
+                return CustomeResponse(
+                    serializer.data,
+                    status=status.HTTP_201_CREATED)
+            else:
+                return CustomeResponse(
+                    {'msg': serializer.errors}, validate_errors=1)
+
+        # yellow contacts
     @list_route(methods=['post'],)
     def rest_invitation(self, request):
 
@@ -394,6 +427,7 @@ class GreyInvitationViewSet(viewsets.ModelViewSet):
             lname = request.GET.get('lname').decode('base64', 'strict')
             cid = request.GET.get('cid').decode('base64', 'strict')
             sid = request.GET.get('sid').decode('base64', 'strict')
+            domain_name = str(settings.DOMAIN_NAME)
 
         except:
             return CustomeResponse({'msg': "parameter(s) not found"},
@@ -405,4 +439,5 @@ class GreyInvitationViewSet(viewsets.ModelViewSet):
                        'fname': fname,
                        'lname': lname,
                        'cid': cid,
-                       'sid': sid})
+                       'sid': sid,
+                       'domain_name': domain_name})

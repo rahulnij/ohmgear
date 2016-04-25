@@ -17,6 +17,7 @@ https://docs.djangoproject.com/en/1.8/ref/settings/
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 import os
+from raven import Client
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -176,6 +177,8 @@ STATIC_ROOT = os.path.join(MEDIA_ROOT, 'static')
 
 STATICFILES_DIRS = ()
 
+SENTRY_STRING = ''
+RAVEN_CLIENT = Client(SENTRY_STRING)
 
 BCARDS_TEMPLATE_IMAGE = os.path.join(MEDIA_ROOT, 'bcards_template_image')
 CKEDITOR_JQUERY_URL = '//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js'

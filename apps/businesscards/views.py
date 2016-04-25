@@ -12,10 +12,26 @@ from django.conf import settings
 from rest_framework.views import APIView
 from rest_framework.decorators import list_route
 from django.core.exceptions import ObjectDoesNotExist
+from logging import getLogger
 # ------------------------------------------- #
 # ----------------- Local app imports ------ #
-from models import BusinessCard, BusinessCardTemplate, BusinessCardIdentifier, Identifier, BusinessCardSkillAvailable, BusinessCardAddSkill, BusinessCardHistory
-from serializer import BusinessCardSerializer, BusinessCardIdentifierSerializer, BusinessCardSkillAvailableSerializer, BusinessCardAddSkillSerializer, BusinessCardSummarySerializer, BusinessCardHistorySerializer
+from models import (
+    BusinessCard, 
+    # BusinessCardTemplate, 
+    BusinessCardIdentifier, 
+    Identifier, 
+    BusinessCardSkillAvailable, 
+    BusinessCardAddSkill, 
+    BusinessCardHistory
+)
+from serializer import (
+    BusinessCardSerializer, 
+    BusinessCardIdentifierSerializer, 
+    BusinessCardSkillAvailableSerializer, 
+    BusinessCardAddSkillSerializer, 
+    BusinessCardSummarySerializer, 
+    BusinessCardHistorySerializer
+)
 from apps.contacts.serializer import ContactsSerializer
 from apps.contacts.models import Contacts, ContactMedia
 from apps.identifiers.serializer import BusinessIdentifierSerializer
@@ -30,7 +46,9 @@ from apps.folders.models import Folder, FolderContact
 from apps.folders.serializer import FolderSerializer
 from serializer import BusinessCardWithIdentifierSerializer
 import re
-# ---------------------------End------------- #
+
+logger = getLogger(__name__)
+ravenclient = getattr(settings, 'RAVEN_CLIENT', None)
 
 
 # ---------------- Business Card Summary ---------------------- #
@@ -95,7 +113,10 @@ class BusinessCardIdentifierViewSet(viewsets.ModelViewSet):
     def create(self, request, call_from_function=None, offline_data=None):
         try:
             op = request.data['op']
-        except:
+        except KeyError as e:
+            logger.error("Caught KeyError in {}, {}".format(__file__, e))
+            ravenclient.captureException()
+
             op = None
         if op == 'change':
             businesscard_id = request.data['businesscard_id']
@@ -152,8 +173,9 @@ class BusinessCardIdentifierViewSet(viewsets.ModelViewSet):
             return CustomeResponse({'msg': "Card is not attached"},
                                    status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
 
-    # -------Delete Identifiers it will first inactive the businesscard than delete the linking of identifier with businesscard in businesscard_identifier table
-    # than delete the identifeirs in identifier table ------------ #
+    # Delete Identifiers it will first inactive the businesscard then delete the linking 
+    # of identifier with businesscard in businesscard_identifier table
+    # then delete the identifeirs in identifier table ------------ #
     def destroy(self, request, pk=None):
 
         identifier_data = Identifier.objects.filter(id=pk)
@@ -188,14 +210,20 @@ class BusinessCardIdentifierViewSet(viewsets.ModelViewSet):
         try:
             user_id = request.user.id
 
-        except:
+        except Exception as e:
+            logger.error("Caught exception in {}, {}".format(__file__, e))
+            ravenclient.captureException()
+
             user_id = ''
             return CustomeResponse(
                 {'msg': "user not found"}, status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
 
         try:
             value = request.data['name']
-        except:
+        except KeyError as e:
+            logger.error("Caught KeyError in {}, {}".format(__file__), e)
+            ravenclient.captureException()
+
             value = ''
             return CustomeResponse({'msg': "Please provide name"},
                                    status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
@@ -389,7 +417,10 @@ class BusinessCardSkillAvailableViewSet(viewsets.ModelViewSet):
             serializer = BusinessCardSkillAvailableSerializer(
                 skillsAvailable, many=True)
             return CustomeResponse(serializer.data, status=status.HTTP_200_OK)
-        except:
+        except Exception as e:
+            logger.error("Caught Exception in {}, {}".format(__file__, e))
+            ravenclient.captureException()
+
             return CustomeResponse({"msg": "email is mandatory"},
                                    status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
 
@@ -531,8 +562,9 @@ class BusinessViewSet(viewsets.ModelViewSet):
                     elif item['front_back'] == 2:
                         data['bcard_image_backend'] = str(
                             settings.DOMAIN_NAME) + str(settings.MEDIA_URL) + str(item['img_url'])
-            except:
-                pass
+            except Exception as e:
+                logger.error("Caught Exception in {}, {}".format(__file__, e))
+                ravenclient.captureException()
 
         if call_from_function:
             return data
@@ -544,16 +576,24 @@ class BusinessViewSet(viewsets.ModelViewSet):
 
         try:
             user_id = request.user.id
-        except:
+        except Exception as e:
+            logger.error("Caught Exception in {}, {}".format(__file__, e))
+            ravenclient.captureException()
             user_id = None
     # -------------------- First Validate the json contact data --------------- #
         try:
             validictory.validate(
                 request.data["bcard_json_data"], BUSINESS_CARD_DATA_VALIDATION)
         except validictory.ValidationError as error:
+            logger.error("Caught validictory.ValidationError in {}, {}".format(__file__, error))
+            ravenclient.captureException()
+
             return CustomeResponse(
                 {'msg': error.message}, status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
         except validictory.SchemaError as error:
+            logger.error("Caught validictory.ValidationError in {}, {}".format(__file__, error))
+            ravenclient.captureException()
+
             return CustomeResponse(
                 {'msg': error.message}, status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
         except:
@@ -605,8 +645,10 @@ class BusinessViewSet(viewsets.ModelViewSet):
                                 note=request.data["business_notes"]['note_backend'],
                                 bcard_side_no=2)
                             note_frontend_obj.save()
-                    except:
-                        pass
+                    except Exception as e:
+                        logger.error("Caught Exception in {}, {}".format(__file__, e))
+                        ravenclient.captureException()
+                        
                 data_new["business_notes"] = serializer.fetch_notes(bcards)
                 # -------------------------End------------ #
 
@@ -811,7 +853,7 @@ class BusinessViewSet(viewsets.ModelViewSet):
 
                 s[k] = result
             else:
-                # ------------- If the key is blank in first business card then second business card value assign to it ----- #
+                # ----- If the key is blank in first business card then second business card value assign to it
                 if not v and s.get(k, {}):
                     pass
                 else:
@@ -898,11 +940,15 @@ class BusinessViewSet(viewsets.ModelViewSet):
 
         try:
             user_id = request.user.id
-        except:
+        except Exception as e:
+            logger.error("Caught Exception in {}, {}".format(__file__, e))
+            ravenclient.captureException()
             user_id = None
         try:
             bcard_ids = request.data["bcard_ids"]
-        except:
+        except Exception as e:
+            logger.error("Caught Exception in {}, {}".format(__file__, e))
+            ravenclient.captureException()
             bcard_ids = None
 
         if bcard_ids and user_id:
@@ -919,7 +965,10 @@ class BusinessViewSet(viewsets.ModelViewSet):
                             "msg": "business card does not exists."},
                         status=status.HTTP_400_BAD_REQUEST,
                         validate_errors=1)
-            except:
+            except Exception as e:
+                logger.error("Caught Exception in {}, {}".format(__file__, e))
+                ravenclient.captureException()
+                
                 return CustomeResponse(
                     {
                         "msg": "some problem occured on server side during delete business cards"},
@@ -934,11 +983,16 @@ class BusinessViewSet(viewsets.ModelViewSet):
 
         try:
             user_id = request.user.id
-        except:
+        except Exception as e:
+            logger.error("Caught Exception in {}, {}".format(__file__, e))
+            ravenclient.captureException()
+
             user_id = None
         try:
             bcards_id = request.data["bcards_ids"]
-        except:
+        except Exception as e:
+            logger.error("Caught Exception in {}, {}".format(__file__, e))
+            ravenclient.captureException()
             bcards_id = None
         if bcards_id:
             try:
@@ -947,7 +1001,9 @@ class BusinessViewSet(viewsets.ModelViewSet):
                     is_active=0, status=0)
                 return CustomeResponse(
                     {"msg": "Business cards has been inactive"}, status=status.HTTP_200_OK)
-            except:
+            except Exception as e:
+                logger.error("Caught Exception in {}, {}".format(__file__, e))
+                ravenclient.captureException()
                 return CustomeResponse(
                     {
                         "msg": "some problem occured on server side during inactive business cards"},
@@ -997,7 +1053,9 @@ class BusinessViewSet(viewsets.ModelViewSet):
                         status=status.HTTP_400_BAD_REQUEST,
                         validate_errors=1)
 
-            except:
+            except Exception as e:
+                logger.error("Caught Exception in {}, {}".format(__file__, e))
+                ravenclient.captureException()
                 return CustomeResponse(
                     {
                         "msg": "some problem occured during server side during Reactive business card "},

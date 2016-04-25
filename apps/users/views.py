@@ -108,8 +108,8 @@ class UserViewSet(viewsets.ModelViewSet):
                 cid = request.data['cid']
                 sid = request.data['sid']
                 from apps.sendrequest.models import SendRequest
-                SendRequest.objects.filter(sender_user_id=sid, receiver_obj_id=cid).update(
-                    read_status=1, receiver_user_id=user_id.id)
+                SendRequest.objects.filter(sender_user_id=sid, receiver_bcard_or_contact_id=cid).update(
+                    request_status=1, receiver_user_id=user_id.id)
                 business_card_class_create = WhiteCardViewSet.as_view(
                     {'post': 'create'})
 
