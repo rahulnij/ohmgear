@@ -6,11 +6,20 @@ from rest_framework.decorators import list_route
 from django.conf import settings
 # Local app imports
 from models import Group, GroupContacts, GroupMedia
-from serializer import GroupSerializer, GroupContactsSerializer, GroupMediaSerializer
+from serializer import (
+    GroupSerializer,
+    GroupContactsSerializer,
+    GroupMediaSerializer
+)
 from ohmgear.functions import CustomeResponse
 from ohmgear.token_authentication import ExpiringTokenAuthentication
 from apps.businesscards.serializer import CountContactInBusinesscardSerializer
 from apps.businesscards.models import BusinessCard
+from django.http import Http404
+from django.core.exceptions import ObjectDoesNotExist
+import logging
+logger = logging.getLogger(__name__)
+
 # Create your views here.
 
 
@@ -35,17 +44,35 @@ class GroupViewSet(viewsets.ModelViewSet):
         group_data = self.queryset.filter(user_id=request.user)
         try:
             serializer = self.serializer_class(group_data, many=True)
-        except:
-            return CustomeResponse(
-                {
-                    'msg': 'server error please try after some time'},
-                status=status.HTTP_400_BAD_REQUEST,
-                validate_errors=1)
-        if serializer.data:
-            return CustomeResponse(serializer.data, status=status.HTTP_200_OK)
-        else:
-            return CustomeResponse({'msg': 'Data not found for this user'},
-                                   status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
+            if serializer.data:
+                return CustomeResponse(
+                    serializer.data, status=status.HTTP_200_OK)
+        except ObjectDoesNotExist:
+            logger.error(
+                "Caught ObjectDoesNotExist exception for {}, user_id {},\
+                in {}".format(
+                    self.__class__, user_id, __file__
+                )
+            )
+        except Http404:
+            logger.error(
+                "Caught Http404(ObjectDoesNotExist) exception for {},\
+                in {}".format(
+                    self.__class, __file__
+                )
+            )
+        except Exception:
+            logger.critical(
+                "Caught exception in {}".format(__file__),
+                exc_info=True
+            )
+        return CustomeResponse(
+            {
+                "msg": "Can not process request."
+            },
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            validate_errors=1
+        )
 
     def create(self, request):
         """
@@ -53,21 +80,23 @@ class GroupViewSet(viewsets.ModelViewSet):
 
         Create new group for a user.
         """
-        # newdata = {}
-        newdata = request.data.copy()
-        newdata['user_id'] = request.user.id
-        serializer = self.serializer_class(
-            data=newdata, context={'request': request})
-        if serializer.is_valid():
-            serializer.save(user_id=request.user)
-            return CustomeResponse(
-                serializer.data,
-                status=status.HTTP_201_CREATED)
-        else:
-            return CustomeResponse(
-                serializer.errors,
-                status=status.HTTP_400_BAD_REQUEST,
-                validate_errors=1)
+        try:
+            newdata = request.data.copy()
+            newdata['user_id'] = request.user.id
+            serializer = self.serializer_class(
+                data=newdata, context={'request': request})
+            if serializer.is_valid():
+                serializer.save(user_id=request.user)
+                return CustomeResponse(
+                    serializer.data,
+                    status=status.HTTP_201_CREATED)
+            else:
+                return CustomeResponse(
+                    serializer.errors,
+                    status=status.HTTP_400_BAD_REQUEST,
+                    validate_errors=1)
+        except Exception:
+            logger.critical("Caught Exception ", exc_info=True)
 
     def update(self, request, pk=None):
         """
@@ -77,22 +106,31 @@ class GroupViewSet(viewsets.ModelViewSet):
         """
         try:
             group_data = self.queryset.get(user_id=request.user.id, id=pk)
-        except:
+        except ObjectDoesNotExist:
+            logger.error(
+                "Caught ObjectDoesNotExist exception for {}, primary key {},\
+                in {}".format(
+                    self.__class__, pk, __file__
+                )
+            )
             return CustomeResponse(
                 {'msg': 'Data not found'}, status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
-
-        if group_data:
-            serializer = self.serializer_class(group_data, data=request.data)
-            if serializer.is_valid():
-                serializer.save()
-                return CustomeResponse(
-                    serializer.data, status=status.HTTP_200_OK)
+        try:
+            if group_data:
+                serializer = self.serializer_class(
+                    group_data, data=request.data)
+                if serializer.is_valid():
+                    serializer.save()
+                    return CustomeResponse(
+                        serializer.data, status=status.HTTP_200_OK)
+                else:
+                    return CustomeResponse(
+                        serializer.errors, status=status.HTTP_200_OK)
             else:
-                return CustomeResponse(
-                    serializer.errors, status=status.HTTP_200_OK)
-        else:
-            return CustomeResponse({'msg': 'Data cannot be updated'},
-                                   status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
+                return CustomeResponse({'msg': 'Data cannot be updated'},
+                                       status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
+        except Exception:
+            logger.critical("Caught Exception ", exc_info=True)
 
     @list_route(methods=['post'],)
     def deletegroups(self, request):
@@ -103,27 +141,41 @@ class GroupViewSet(viewsets.ModelViewSet):
         """
         try:
             user_id = request.user.id
-        except:
-            user_id = ''
-
-        try:
             group_id = request.data['group_id']
-        except:
+        except KeyError:
+            logger.error(
+                "Caught KeyError exception: group_id \
+                is required  , in {}".format(
+                    __file__
+                )
+            )
             return CustomeResponse({'msg': 'group_id not found'},
                                    status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
         try:
             group_data = self.queryset.filter(user_id=user_id, id__in=group_id)
-        except:
+        except ObjectDoesNotExist:
+            logger.error(
+                "Caught ObjectDoesNotExist exception for {}, primary key {},\
+                in {}".format(
+                    self.__class__, pk, __file__
+                )
+            )
             return CustomeResponse(
                 {'msg': 'group not found'}, status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
-
-        if group_data:
-            group_data.delete()
-            return CustomeResponse(
-                {'msg': 'group deleted successfully'}, status=status.HTTP_200_OK)
-        else:
-            return CustomeResponse({'msg': 'group cannot be deleted'},
-                                   status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
+        try:
+            if group_data:
+                group_data.delete()
+                return CustomeResponse(
+                    {'msg': 'group deleted successfully'}, status=status.HTTP_200_OK)
+        except Exception:
+            logger.critical("Caught Exception ", exc_info=True)
+        return CustomeResponse(
+            {
+                "msg": "Can not process request."
+            },
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            validate_errors=1
+        )
 
     def destroy(self, request, pk=None):
         """
@@ -139,25 +191,44 @@ class GroupViewSet(viewsets.ModelViewSet):
         """
         Get all business cards of users with number of contacts in business created.
 
-        Contacts Details also with count contacts in businesscards 
+        Contacts Details also with count contacts in businesscards
         """
         try:
             user_id = request.user.id
-        except:
-            user_id = ''
-        if user_id:
-            queryset = BusinessCard.objects.filter(user_id=request.user.id, status=1)
-
-            serializer = CountContactInBusinesscardSerializer(
-                queryset, many=True, context={'request': user_id})
-            return CustomeResponse(serializer.data, status=status.HTTP_200_OK)
-
-        else:
+        except KeyError:
+            logger.error(
+                "Caught KeyError exception: user.id \
+                is required  , in {}".format(
+                    __file__
+                )
+            )
             return CustomeResponse(
-                {
-                    'msg': 'GET method not allowed without business card id'},
-                status=status.HTTP_405_METHOD_NOT_ALLOWED,
-                validate_errors=1)
+                {'msg': 'user not found'}, status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
+        try:
+            if user_id:
+                queryset = BusinessCard.objects.filter(
+                    user_id=request.user.id, status=1)
+
+                serializer = CountContactInBusinesscardSerializer(
+                    queryset, many=True, context={'request': user_id})
+                return CustomeResponse(
+                    serializer.data, status=status.HTTP_200_OK)
+
+            else:
+                return CustomeResponse(
+                    serializer.errors,
+                    status=status.HTTP_400_BAD_REQUEST,
+                    validate_errors=1)
+
+        except Exception:
+            logger.critical("Caught Exception ", exc_info=True)
+        return CustomeResponse(
+            {
+                "msg": "Can not process request."
+            },
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            validate_errors=1
+        )
 
 
 class GroupContactsViewSet(viewsets.ModelViewSet):
@@ -188,45 +259,58 @@ class GroupContactsViewSet(viewsets.ModelViewSet):
         """
         try:
             user_id = request.user.id
-        except:
-            user_id = ''
-        try:
             group_contacts = request.data['folder_contact_id']
-        except:
+        except KeyError:
+            logger.error(
+                "Caught KeyError exception: folder_contact_id\
+                is required  , in {}".format(
+                    __file__
+                )
+            )
             return CustomeResponse({'msg': 'group contacts not found'},
                                    status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
+        try:
+            temp_container = []
+            temp_container = []
+            for contacts in group_contacts:
+                data = {}
+                data['folder_contact_id'] = contacts
+                data['group_id'] = request.data['group_id']
+                data['user_id'] = user_id
+                group_contact_data_exist = self.queryset.filter(
+                    user_id=request.user,
+                    folder_contact_id=data['folder_contact_id'],
+                    group_id=data['group_id'])
+                if group_contact_data_exist:
+                    return CustomeResponse(
+                        {
+                            'msg': 'contact is already added with this user'},
+                        status=status.HTTP_400_BAD_REQUEST,
+                        validate_errors=1)
 
-        temp_container = []
-        for contacts in group_contacts:
-            data = {}
-            data['folder_contact_id'] = contacts
-            data['group_id'] = request.data['group_id']
-            data['user_id'] = user_id
-            group_contact_data_exist = self.queryset.filter(
-                user_id=request.user,
-                folder_contact_id=data['folder_contact_id'],
-                group_id=data['group_id'])
-            if group_contact_data_exist:
+                temp_container.append(data)
+
+            serializer = self.serializer_class(
+                data=temp_container, many=True)
+            if serializer.is_valid():
+                serializer.save()
                 return CustomeResponse(
-                    {
-                        'msg': 'contact is already added with this user'},
+                    serializer.data,
+                    status=status.HTTP_201_CREATED)
+            else:
+                return CustomeResponse(
+                    serializer.errors,
                     status=status.HTTP_400_BAD_REQUEST,
                     validate_errors=1)
-
-            temp_container.append(data)
-
-        serializer = self.serializer_class(
-            data=temp_container, many=True)
-        if serializer.is_valid():
-            serializer.save()
-            return CustomeResponse(
-                serializer.data,
-                status=status.HTTP_201_CREATED)
-        else:
-            return CustomeResponse(
-                serializer.errors,
-                status=status.HTTP_400_BAD_REQUEST,
-                validate_errors=1)
+        except Exception:
+            logger.critical("Caught Exception ", exc_info=True)
+        return CustomeResponse(
+            {
+                "msg": "Can not process request."
+            },
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            validate_errors=1
+        )
 
     @list_route(methods=['post'],)
     def delete(self, request):
@@ -242,28 +326,47 @@ class GroupContactsViewSet(viewsets.ModelViewSet):
 
         try:
             group_contact_id = request.data['group_contact_id']
-        except:
+        except KeyError:
+            logger.error(
+                "Caught KeyError exception: group_contact_id \
+                is required  , in {}".format(
+                    __file__
+                )
+            )
             return CustomeResponse({'msg': 'group contact id not found'},
                                    status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
 
         try:
             group_contact_data = self.queryset.filter(
                 user_id=user_id, id__in=group_contact_id)
-
-        except:
+        except ObjectDoesNotExist:
+            logger.error(
+                "Caught ObjectDoesNotExist exception for {}, group_contact_id {},\
+                in {}".format(
+                    self.__class__, user_id, __file__
+                )
+            )
             return CustomeResponse({'msg': 'group contact data not found'},
                                    status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
+        try:
+            if group_contact_data:
+                group_contact_data.delete()
+                return CustomeResponse(
+                    {'msg': 'contact deleted successfully'}, status=status.HTTP_200_OK)
+        except Exception:
+            logger.critical(
+                "Caught exception in {}".format(__file__),
+                exc_info=True
+            )
+        return CustomeResponse(
+            {
+                "msg": "Can not process request."
+            },
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            validate_errors=1
+        )
 
-        if group_contact_data:
-            group_contact_data.delete()
-            return CustomeResponse(
-                {'msg': 'contact deleted successfully'}, status=status.HTTP_200_OK)
-        else:
-            return CustomeResponse(
-                {
-                    'msg': 'contact cannot be deleted for this user'},
-                status=status.HTTP_400_BAD_REQUEST,
-                validate_errors=1)
+
 # Adding group image in group
 
 
@@ -309,14 +412,26 @@ class GroupMediaViewSet(viewsets.ModelViewSet):
         user_id = self.request.user.id
         try:
             group_id = self.request.data["group_id"]
-        except:
-            return CustomeResponse({'msg': "provide group_id"},
-                                   status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
+        except KeyError:
+            logger.error(
+                "Caught KeyError exception, group_id not given in {} \
+                by primary key {}".
+                format(__file__, user_id)
+            )
+        return CustomeResponse({'msg': "provide group_id"},
+                               status=status.HTTP_400_BAD_REQUEST,
+                               validate_errors=1)
         try:
             group = Group.objects.get(id=group_id, user_id=user_id)
-        except:
-            return CustomeResponse({'msg': "Group id does not exist"},
-                                   status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
+        except ObjectDoesNotExist:
+            logger.error(
+                "Caught ObjectDoesNotExist exception for {}, primary key {},\
+                in {}".format(
+                    self.__class__, user_id, __file__
+                )
+            )
+        return CustomeResponse({'msg': "Group id does not exist"},
+                               status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
 
         #  Save Image in image Gallary
         media_exist = ''
@@ -324,33 +439,52 @@ class GroupMediaViewSet(viewsets.ModelViewSet):
             media_exist = GroupMedia.objects.get(group_id=group_id)
         except:
             pass
-        if media_exist:
-            return CustomeResponse({'msg': "GroupMedia already exist"},
-                                   status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
-        else:
 
-            data_new = {}
-            data_new['group_image'] = ""
-            try:
-                if 'group_image' in request.data and request.data[
-                        'group_image']:
-
-                    group_image, created = GroupMedia.objects.update_or_create(
-                        user_id=self.request.user, group_id=group, img_url=request.data['group_image'], status=1)
-                    data_new['group_image'] = str(
-                        settings.DOMAIN_NAME) + str(settings.MEDIA_URL) + str(group_image.img_url)
-            except:
-                pass
-
-            if data_new['group_image']:
-                return CustomeResponse({"group_id": group_id,
-                                        "group_image": data_new['group_image']},
-                                       status=status.HTTP_201_CREATED)
+        try:
+            if media_exist:
+                return CustomeResponse({'msg': "GroupMedia already exist"},
+                                       status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
             else:
-                return CustomeResponse(
-                    {
-                        'msg': "Please upload media group_image or check whether it is already upload"},
-                    status=status.HTTP_200_OK)
+
+                data_new = {}
+                data_new['group_image'] = ""
+                try:
+                    if 'group_image' in request.data and request.data[
+                            'group_image']:
+
+                        group_image, created = GroupMedia.objects.update_or_create(
+                            user_id=self.request.user, group_id=group, img_url=request.data['group_image'], status=1)
+                        data_new['group_image'] = str(
+                            settings.DOMAIN_NAME) + str(settings.MEDIA_URL) + str(group_image.img_url)
+                except KeyError:
+                    logger.error(
+                        "Caught KeyError exception, password not given in {} \
+                        by primary key {}".
+                        format(__file__, user_id)
+                    )
+
+                if data_new['group_image']:
+                    return CustomeResponse({"group_id": group_id,
+                                            "group_image": data_new['group_image']},
+                                           status=status.HTTP_201_CREATED)
+                else:
+                    return CustomeResponse(
+                        {
+                            'msg': "Please upload media group_image or check whether it is already upload"},
+                        status=status.HTTP_200_OK)
+        except Exception:
+            logger.critical(
+                "Caught exception in {}".format(__file__),
+                exc_info=True
+            )
+        return CustomeResponse(
+            {
+                "msg": "Can not process request."
+            },
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            validate_errors=1
+        )
+
         # End
 
     # change image of group
@@ -364,32 +498,49 @@ class GroupMediaViewSet(viewsets.ModelViewSet):
         try:
             group_data = self.queryset.get(
                 user_id=request.user.id, group_id=pk)
-            print group_data
-            print "group_data"
-        except:
-            return CustomeResponse(
-                {'msg': 'Data not found'}, status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
+        except ObjectDoesNotExist:
+            logger.error(
+                "Caught ObjectDoesNotExist exception for {}, primary key {},\
+                in {}".format(
+                    self.__class__, user_id, __file__
+                )
+            )
+        return CustomeResponse(
+            {'msg': 'Data not found'}, status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
+        try:
 
-        data = {}
-        data['img_url'] = request.data['group_image']
-        data['user_id'] = request.user.id
-        data['group_id'] = pk
+            data = {}
+            data['img_url'] = request.data['group_image']
+            data['user_id'] = request.user.id
+            data['group_id'] = pk
 
-        if group_data:
-            serializer = self.serializer_class(group_data, data=data)
-            print serializer
-            print "serializer"
-            if serializer.is_valid():
-                group_data.img_url.delete(False)
-                serializer.save()
-                return CustomeResponse(
-                    serializer.data, status=status.HTTP_200_OK)
+            if group_data:
+                serializer = self.serializer_class(group_data, data=data)
+                print serializer
+                print "serializer"
+                if serializer.is_valid():
+                    group_data.img_url.delete(False)
+                    serializer.save()
+                    return CustomeResponse(
+                        serializer.data, status=status.HTTP_200_OK)
+                else:
+                    return CustomeResponse(
+                        serializer.errors, status=status.HTTP_200_OK)
             else:
-                return CustomeResponse(
-                    serializer.errors, status=status.HTTP_200_OK)
-        else:
-            return CustomeResponse({'msg': 'Data cannot be updated'},
-                                   status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
+                return CustomeResponse({'msg': 'Data cannot be updated'},
+                                       status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
+        except Exception:
+            logger.critical(
+                "Caught exception in {}".format(__file__),
+                exc_info=True
+            )
+        return CustomeResponse(
+            {
+                "msg": "Can not process request."
+            },
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            validate_errors=1
+        )
 
     def destroy(self, request, pk):
         """
@@ -400,16 +551,45 @@ class GroupMediaViewSet(viewsets.ModelViewSet):
         try:
             user_id = request.user.id
             group_id = pk
+        except KeyError:
+            logger.error(
+                "Caught KeyError exception, group_id not given in {} \
+                by primary key {}".
+                format(__file__, user_id)
+            )
+        return CustomeResponse(
+            {
+                'msg': "Please provide correct group_id,"},
+            status=status.HTTP_400_BAD_REQUEST,
+            validate_errors=1)
+        try:
+
             get_image = GroupMedia.objects.get(
                 group_id=group_id, user_id=user_id, status=1)
-            print get_image
-            print "get_image"
-            get_image.delete()
-            return CustomeResponse(
-                {'msg': "Group image deleted successfully"}, status=status.HTTP_200_OK)
-        except:
-            return CustomeResponse(
-                {
-                    'msg': "Please provide correct group_id,"},
-                status=status.HTTP_400_BAD_REQUEST,
-                validate_errors=1)
+        except ObjectDoesNotExist:
+            logger.error(
+                "Caught ObjectDoesNotExist exception for {}, primary key {},\
+                in {}".format(
+                    self.__class__, user_id, __file__
+                )
+            )
+        return CustomeResponse(
+            {
+                'msg': "Image not found"},
+            status=status.HTTP_400_BAD_REQUEST,
+            validate_errors=1)
+        try:
+            if get_image:
+                get_image.delete()
+                return CustomeResponse(
+                    {'msg': "Group image deleted successfully"}, status=status.HTTP_200_OK)
+        except Exception:
+            logger.critical(
+                "Caught exception in {}".format(__file__),
+                exc_info=True
+            )
+        return CustomeResponse(
+            {
+                'msg': "Please provide correct group_id,"},
+            status=status.HTTP_400_BAD_REQUEST,
+            validate_errors=1)
