@@ -74,24 +74,24 @@ class AwsActivity(viewsets.ModelViewSet):
                 ravenclient.captureException()
             # TODO Need to check device token already exist or not
             # End
-            try:
-                response = client.create_platform_endpoint(
+            #try:
+            response = client.create_platform_endpoint(
                     PlatformApplicationArn=platform_application_arn,
                     Token=device_token,
                     CustomUserData='',
                     Attributes={}
                 )
-            except Exception as e:
-                logger.critical(
-                    "Caught Exception in {}, {}".format(
-                        __file__, e))
-                ravenclient.captureException()
+            # except Exception as e:
+            #     logger.critical(
+            #         "Caught Exception in {}, {}".format(
+            #             __file__, e))
+            #     ravenclient.captureException()
 
-                return CustomeResponse(
-                    {'msg': "Internal Error"},
-                    status=status.HTTP_400_BAD_REQUEST,
-                    validate_errors=1
-                )
+            #     return CustomeResponse(
+            #         {'msg': "Internal Error"},
+            #         status=status.HTTP_400_BAD_REQUEST,
+            #         validate_errors=1
+            #     )
             if "EndpointArn" in response:
                 AwsDeviceToken.objects.update_or_create(
                     device_token=device_token,

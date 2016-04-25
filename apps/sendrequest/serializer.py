@@ -38,8 +38,13 @@ class SendRequestSerializer(serializers.ModelSerializer):
         filter_type = self.context.get("filter_type")
         if filter_type is not 'received':
             try:
-                get_contact_data = Contacts.objects.get(
-                    id=obj.sender_business_card_id.contact_detail.id)
+                if obj.request_type == 'b2b':
+                    contact_id = obj.receiver_bcard_or_contact_id.contact_detail.id
+                else:
+                    contact_id = obj.receiver_bcard_or_contact_id
+
+                    get_contact_data = Contacts.objects.get(
+                        id=contact_id)
             except Contacts.DoesNotExist as e:
                 logger.error(
                     "Object DoesNotExist: Contacts: {}, {}".format(
