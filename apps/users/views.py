@@ -296,7 +296,8 @@ class UserViewSet(viewsets.ModelViewSet):
             email = userdata[0]['email']
 
             if old_password:
-                user = authenticate_frontend(username=email, password=old_password)
+                user = authenticate_frontend(
+                    username=email, password=old_password)
                 if user and not None:
                     if password == confirmpassword:
                         user = User.objects.get(id=user_id)
@@ -312,11 +313,9 @@ class UserViewSet(viewsets.ModelViewSet):
                     else:
                         return CustomeResponse(
                             {
-                                'msg': "password and confirm password are not same"
-                            },
+                                'msg': "password and confirm password are not same"},
                             status=status.HTTP_401_UNAUTHORIZED,
-                            validate_errors=1
-                        )
+                            validate_errors=1)
                 else:
                     msg = 'Old Password is wrong'
                     return CustomeResponse({'msg': msg},
@@ -342,65 +341,87 @@ class UserViewSet(viewsets.ModelViewSet):
     def getConnectedAccounts(self, request):
         """Retrieve user connected accounts i.e FB or Linkedin."""
         try:
-            user_id = request.user
-        except:
-            user_id = None
+            user_id = request.user.id
+            userConnectedData = ConnectedAccount.objects.select_related(
+                "social_type_id").filter(user_id=user_id)
 
-        user_id = request.user.id
-        userConnectedData = ConnectedAccount.objects.select_related(
-            "social_type_id").filter(user_id=user_id)
+            if userConnectedData:
+                serializer = ConnectedAccountsSerializer(
+                    userConnectedData, many=True)
+                return CustomeResponse(
+                    serializer.data,
+                    status=status.HTTP_201_CREATED)
+            else:
+                return CustomeResponse(
+                    {'msg': "Data not found"}, validate_errors=1)
+        except Exception:
+            logger.critical("Caught Exception ", exc_info=True)
 
-        if userConnectedData:
-            serializer = ConnectedAccountsSerializer(
-                userConnectedData, many=True)
-            return CustomeResponse(
-                serializer.data,
-                status=status.HTTP_201_CREATED)
-        else:
-            return CustomeResponse(
-                {'msg': "Data not found"}, validate_errors=1)
+        return CustomeResponse(
+            {
+                "msg": "Can not process request."
+            },
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            validate_errors=1
+        )
 
     @list_route(methods=['post'],)
     def connectedaccounts(self, request):
-        social_type = constant.SOCIAL_TYPE
-        social_type_exist = request.data['social_type_id'] in social_type
-
-        if not social_type_exist:
+        """Create user connected account."""
+        social_types = constant.SOCIAL_TYPE
+        try:
+            social_type = request.data['social_type_id']
+            social_type_exist = social_type in social_types
+            if not social_type_exist:
+                logger.warning("Unknow social_type {}, in {}".foramt(
+                    social_type,
+                    __file__
+                )
+                )
+                return CustomeResponse(
+                    {"msg": "Unknow social_type_id."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                    validate_errors=1
+                )
+        except KeyError:
+            logger.error(
+                "Caught KeyError exception, social_type not given in \
+                {}.".format(__file__)
+            )
             return CustomeResponse(
-                {"msg": "social_type is not there"},
+                {"msg": "social_type_id is required."},
                 status=status.HTTP_400_BAD_REQUEST,
                 validate_errors=1
             )
 
         try:
-            for key, social_id in social_type.iteritems():
-                if key == request.data['social_type_id']:
+            social_type_id = social_types[social_type]
+            user_id = request.user.id
+            connected_account = createConnectedAccount(user_id, social_type_id)
+            if connected_account:
+                return CustomeResponse(
+                    {"msg": "User connected."},
+                    status=status.HTTP_201_CREATED
+                )
+            else:
+                return CustomeResponse(
+                    {'msg': "User is already connected"},
+                    validate_errors=1
+                )
+        except Exception:
+            logger.critical("Caught Exception ", exc_info=True)
 
-                    user_id = request.user
-                    social_type_id = social_id
-                    user_id = request.user.id
-                    datas = createConnectedAccount(user_id, social_type_id)
-                    if datas:
-                        return CustomeResponse(
-                            {"msg": "user is connected"},
-                            status=status.HTTP_201_CREATED
-                        )
-                    else:
-                        return CustomeResponse(
-                            {'msg': "user is already connected"},
-                            validate_errors=1
-                        )
-        except:
-            user_id = None
-            return CustomeResponse(
-                {"msg": "social_type_id is not there"},
-                status=status.HTTP_400_BAD_REQUEST,
-                validate_erros=1
-            )
+        return CustomeResponse(
+            {
+                "msg": "Can not process request."
+            },
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            validate_errors=1
+        )
 
     @list_route(methods=['post'],)
     def deleteConnectedAccounts(self, request):
-
+        """Delete user connected account."""
         try:
             user_id = request.user
 
@@ -412,8 +433,7 @@ class UserViewSet(viewsets.ModelViewSet):
                     status=status.HTTP_400_BAD_REQUEST,
                     validate_errors=1
                 )
-        except:
-            user_id = None
+        except KeyError:
             return CustomeResponse(
                 {
                     "msg": "social_type_id is mandatory"
@@ -1119,13 +1139,10 @@ class UserEmailViewSet(viewsets.ModelViewSet):
     def deleteEmail(self, request, pk=None):
         try:
             user_id = request.user.id
-
-            # userEmailId = self.request.query_params.get('id')
             userEmailId = request.data['userEmailId']
-        except:
+        except KeyError:
             userEmailId = ''
         try:
-            # checkEmail=UserEmail.objects.filter(user_id=user_id)
             count = UserEmail.objects.filter(user_id=user_id).count()
             userEmail = UserEmail.objects.filter(
                 id=request.data['userEmailId'])
