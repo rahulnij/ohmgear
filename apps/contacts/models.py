@@ -85,6 +85,15 @@ class ContactMedia(models.Model):
             }""" % (
             self.id, self.contact_id, self.user_id, self.status, self.front_back, self.img_url.url)
 
+# display profile image of user
+    def admin_thumbnail(self):
+        if self.img_url :
+            return u'<img src="%s%s" style="width: 50px;height:50px;border-radius: 15px;" />' % (settings.DOMAIN_NAME +'/media/',self.img_url)
+        else:
+            return 'N/A'
+    admin_thumbnail.short_description = 'BusinessCard Thumbnail'
+    admin_thumbnail.allow_tags = True
+
 from apps.folders.models import FolderContact
 
 

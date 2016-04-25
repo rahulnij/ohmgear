@@ -10,8 +10,21 @@ from .models import (
 
 
 class BusinessCardAdmin(admin.ModelAdmin):
-    pass
+    list_display = ('serial_number', 'user_email')
+    counter = 0
 
+    def user_email(self, obj):
+        return obj.user_id.email
+
+    def image(self, obj):
+        return obj
+
+
+    def serial_number(self, obj):
+        self.counter = self.counter + 1
+        return self.counter
+    
+    list_per_page = 100
 admin.site.register(BusinessCard, BusinessCardAdmin)
 
 
