@@ -26,7 +26,7 @@ class Contacts(models.Model):
     user_id = models.ForeignKey(User, db_column="user_id")
     created_date = models.DateTimeField(
         _("Created Date"), auto_now_add=True, auto_now=False)
-    updated_date = models.DateField(
+    updated_date = models.DateTimeField(
         _("Updated Date"), auto_now_add=False, auto_now=True)
     history = HistoricalRecords()
 
@@ -35,6 +35,8 @@ class Contacts(models.Model):
             self.id, self.bcard_json_data, self.businesscard_id)
 
 from apps.folders.models import FolderContact
+
+
 class PrivateContact(models.Model):
 
     class Meta:
@@ -82,8 +84,12 @@ class ContactMedia(models.Model):
             "status":"%s",
             "front_back":"%s",
             "img_url":"%s"
-            }""" % (
-            self.id, self.contact_id, self.user_id, self.status, self.front_back, self.img_url.url)
+            }""" % ( self.id,
+                     self.contact_id,
+                     self.user_id,
+                     self.status,
+                     self.front_back,
+                     self.img_url.url)
 
 from apps.folders.models import FolderContact
 

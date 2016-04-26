@@ -4,6 +4,7 @@ from rest_framework import serializers
 
 from models import SendRequest
 from apps.contacts.models import Contacts
+from apps.businesscards.models import BusinessCard
 # Serializers define the API representation.
 
 logger = logging.getLogger(__name__)
@@ -38,8 +39,21 @@ class SendRequestSerializer(serializers.ModelSerializer):
         filter_type = self.context.get("filter_type")
         if filter_type is not 'received':
             try:
+                if obj.request_type == 'b2b':
+                    try:
+                        business_card = BusinessCard.objects.get(
+                            id=obj.receiver_bcard_or_contact_id)
+                    except BusinessCard.DoesNotExist as e:
+                        logger.error(
+                            "Object DoesNotExist: Contacts: {}, {}".format(
+                                business_card.id, e))
+                        return data
+                    contact_id = business_card.contact_detail.id
+                else:
+                    contact_id = obj.receiver_bcard_or_contact_id
+
                 get_contact_data = Contacts.objects.get(
-                    id=obj.sender_business_card_id.contact_detail.id)
+                    id=contact_id)
             except Contacts.DoesNotExist as e:
                 logger.error(
                     "Object DoesNotExist: Contacts: {}, {}".format(
