@@ -16,7 +16,7 @@ from ohmgear.token_authentication import ExpiringTokenAuthentication
 from apps.businesscards.serializer import CountContactInBusinesscardSerializer
 from apps.businesscards.models import BusinessCard
 from django.http import Http404
-from django.core.exceptions import ObjectDoesNotExist
+from django.core.exceptions import DoesNotExist
 import logging
 logger = logging.getLogger(__name__)
 
@@ -43,9 +43,9 @@ class GroupViewSet(viewsets.ModelViewSet):
         """
         try:
             group_data = self.queryset.filter(user_id=request.user)
-        except ObjectDoesNotExist:
+        except DoesNotExist:
             logger.error(
-                "Caught ObjectDoesNotExist exception for {}, user_id {},\
+                "Caught DoesNotExist exception for {}, user_id {},\
                 in {}".format(
                     self.__class__, user_id, __file__
                 )
@@ -55,16 +55,16 @@ class GroupViewSet(viewsets.ModelViewSet):
             if serializer.data:
                 return CustomeResponse(
                     serializer.data, status=status.HTTP_200_OK)
-        except ObjectDoesNotExist:
+        except DoesNotExist:
             logger.error(
-                "Caught ObjectDoesNotExist exception for {}, user_id {},\
+                "Caught DoesNotExist exception for {}, user_id {},\
                 in {}".format(
                     self.__class__, user_id, __file__
                 )
             )
         except Http404:
             logger.error(
-                "Caught Http404(ObjectDoesNotExist) exception for {},\
+                "Caught Http404(DoesNotExist) exception for {},\
                 in {}".format(
                     self.__class, __file__
                 )
@@ -128,9 +128,9 @@ class GroupViewSet(viewsets.ModelViewSet):
         """
         try:
             group_data = self.queryset.get(user_id=request.user.id, id=pk)
-        except ObjectDoesNotExist:
+        except DoesNotExist:
             logger.error(
-                "Caught ObjectDoesNotExist exception for {}, primary key {},\
+                "Caught DoesNotExist exception for {}, primary key {},\
                 in {}".format(
                     self.__class__, pk, __file__
                 )
@@ -182,9 +182,9 @@ class GroupViewSet(viewsets.ModelViewSet):
                                    status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
         try:
             group_data = self.queryset.filter(user_id=user_id, id__in=group_id)
-        except ObjectDoesNotExist:
+        except DoesNotExist:
             logger.error(
-                "Caught ObjectDoesNotExist exception for {}, primary key {},\
+                "Caught DoesNotExist exception for {}, primary key {},\
                 in {}".format(
                     self.__class__, __file__
                 )
@@ -368,9 +368,9 @@ class GroupContactsViewSet(viewsets.ModelViewSet):
         try:
             group_contact_data = self.queryset.filter(
                 user_id=user_id, id__in=group_contact_id)
-        except ObjectDoesNotExist:
+        except DoesNotExist:
             logger.error(
-                "Caught ObjectDoesNotExist exception for {}, group_contact_id {},\
+                "Caught DoesNotExist exception for {}, group_contact_id {},\
                 in {}".format(
                     self.__class__, user_id, __file__
                 )
@@ -452,9 +452,9 @@ class GroupMediaViewSet(viewsets.ModelViewSet):
                                    validate_errors=1)
         try:
             group = Group.objects.get(id=group_id, user_id=user_id)
-        except ObjectDoesNotExist:
+        except DoesNotExist:
             logger.error(
-                "Caught ObjectDoesNotExist exception for {}, primary key {},\
+                "Caught DoesNotExist exception for {}, primary key {},\
                 in {}".format(
                     self.__class__, user_id, __file__
                 )
@@ -530,9 +530,9 @@ class GroupMediaViewSet(viewsets.ModelViewSet):
         try:
             group_data = self.queryset.get(
                 user_id=request.user.id, group_id=pk)
-        except ObjectDoesNotExist:
+        except DoesNotExist:
             logger.error(
-                "Caught ObjectDoesNotExist exception for {}, primary key {},\
+                "Caught DoesNotExist exception for {}, primary key {},\
                 in {}".format(
                     self.__class__, user_id, __file__
                 )
@@ -584,7 +584,7 @@ class GroupMediaViewSet(viewsets.ModelViewSet):
         try:
             user_id = request.user.id
             group_id = pk
-        except KeyError:
+        except KeyError::
             logger.error(
                 "Caught KeyError exception, group_id not given in {} \
                 by primary key {}".
@@ -599,9 +599,9 @@ class GroupMediaViewSet(viewsets.ModelViewSet):
 
             get_image = GroupMedia.objects.get(
                 group_id=group_id, user_id=user_id, status=1)
-        except ObjectDoesNotExist:
+        except DoesNotExist:
             logger.error(
-                "Caught ObjectDoesNotExist exception for {}, primary key {},\
+                "Caught DoesNotExist exception for {}, primary key {},\
                 in {}".format(
                     self.__class__, user_id, __file__
                 )
