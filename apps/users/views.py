@@ -18,7 +18,6 @@ from django.contrib.auth import get_user_model
 from django.forms.models import model_to_dict
 from rest_framework.decorators import api_view
 from rest_framework.decorators import list_route
-from django.core.exceptions import ObjectDoesNotExist
 from django.http import Http404
 import logging
 
@@ -82,9 +81,9 @@ class UserViewSet(viewsets.ModelViewSet):
             user.set_password(request.data['password'])
             user.save()
             return True
-        except ObjectDoesNotExist:
+        except user.DoesNotExist:
             logger.error(
-                "Caught ObjectDoesNotExist exception for {}, primary key {},\
+                "Caught DoesNotExist exception for {}, primary key {},\
                 in {}".format(
                     self.__class__, user_id, __file__
                 )
@@ -120,7 +119,7 @@ class UserViewSet(viewsets.ModelViewSet):
             return CustomeResponse(serializer.data, status=status.HTTP_200_OK)
         except Http404:
             logger.error(
-                "Caught Http404(ObjectDoesNotExist) exception for {}, primary key {},\
+                "Caught Http404(DoesNotExist) exception for {}, primary key {},\
                 in {}".format(
                     self.__class__, pk, __file__
                 )
@@ -226,9 +225,9 @@ class UserViewSet(viewsets.ModelViewSet):
         """Update user."""
         try:
             messages = User.objects.get(id=pk)
-        except ObjectDoesNotExist:
+        except User.DoesNotExist:
             logger.error(
-                "Caught ObjectDoesNotExist exception for {}, primary key {},\
+                "Caught DoesNotExist exception for {}, primary key {},\
                 in {}".format(
                     self.__class__, pk, __file__
                 )
@@ -1136,22 +1135,40 @@ class UserEmailViewSet(viewsets.ModelViewSet):
             )
 
     @list_route(methods=['post'],)
-    def deleteEmail(self, request, pk=None):
+    def deleteEmail(self, request):
+        """Delete user email other than default email"""
         try:
             user_id = request.user.id
-            userEmailId = request.data['userEmailId']
+            user_email_id = request.data['userEmailId']
         except KeyError:
-            userEmailId = ''
-        try:
-            count = UserEmail.objects.filter(user_id=user_id).count()
-            userEmail = UserEmail.objects.filter(
-                id=request.data['userEmailId'])
-        except:
+            logger.error(
+                "Caught KeyError exception, userEmailId not given in {} \
+                by primary key {}".
+                format(__file__, user_id)
+            )
             return CustomeResponse(
                 {
-                    'msg': 'Email not found'
+                    'msg': 'userEmailId is required.'
                 },
                 status=status.HTTP_400_BAD_REQUEST,
+                validate_errors=1
+            )
+
+        try:
+            count = UserEmail.objects.filter(user_id=user_id).count()
+            userEmail = UserEmail.objects.get(id=user_email_id)
+        except UserEmail.DoesNotExist:
+            logger.error(
+                "Caught DoesNotExist exception for {}, userEmailId {},\
+                in {}".format(
+                    self.__class__, user_email_id, __file__
+                )
+            )
+            return CustomeResponse(
+                {
+                    'msg': 'userEmailId does not exist.'
+                },
+                status=status.HTTP_404_NOT_FOUND,
                 validate_errors=1
             )
 
