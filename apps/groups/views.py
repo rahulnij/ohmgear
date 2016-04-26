@@ -16,7 +16,7 @@ from ohmgear.token_authentication import ExpiringTokenAuthentication
 from apps.businesscards.serializer import CountContactInBusinesscardSerializer
 from apps.businesscards.models import BusinessCard
 from django.http import Http404
-from django.core.exceptions import DoesNotExist
+from django.core.exceptions import ObjectDoesNotExist
 import logging
 logger = logging.getLogger(__name__)
 
@@ -584,7 +584,7 @@ class GroupMediaViewSet(viewsets.ModelViewSet):
         try:
             user_id = request.user.id
             group_id = pk
-        except KeyError::
+        except KeyError:
             logger.error(
                 "Caught KeyError exception, group_id not given in {} \
                 by primary key {}".
