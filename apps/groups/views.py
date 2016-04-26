@@ -41,7 +41,15 @@ class GroupViewSet(viewsets.ModelViewSet):
 
         Getting all group of a user.
         """
-        group_data = self.queryset.filter(user_id=request.user)
+        try:
+            group_data = self.queryset.filter(user_id=request.user)
+        except ObjectDoesNotExist:
+            logger.error(
+                "Caught ObjectDoesNotExist exception for {}, user_id {},\
+                in {}".format(
+                    self.__class__, user_id, __file__
+                )
+            )
         try:
             serializer = self.serializer_class(group_data, many=True)
             if serializer.data:
@@ -60,6 +68,13 @@ class GroupViewSet(viewsets.ModelViewSet):
                 in {}".format(
                     self.__class, __file__
                 )
+            )
+            return CustomeResponse(
+                {
+                    "msg": "Group does not exist."
+                },
+                status=status.HTTP_404_NOT_FOUND,
+                validate_errors=1
             )
         except Exception:
             logger.critical(
@@ -97,6 +112,13 @@ class GroupViewSet(viewsets.ModelViewSet):
                     validate_errors=1)
         except Exception:
             logger.critical("Caught Exception ", exc_info=True)
+        return CustomeResponse(
+            {
+                "msg": "Can not process request."
+            },
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            validate_errors=1
+        )
 
     def update(self, request, pk=None):
         """
@@ -131,6 +153,13 @@ class GroupViewSet(viewsets.ModelViewSet):
                                        status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
         except Exception:
             logger.critical("Caught Exception ", exc_info=True)
+        return CustomeResponse(
+            {
+                "msg": "Can not process request."
+            },
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            validate_errors=1
+        )
 
     @list_route(methods=['post'],)
     def deletegroups(self, request):
@@ -157,7 +186,7 @@ class GroupViewSet(viewsets.ModelViewSet):
             logger.error(
                 "Caught ObjectDoesNotExist exception for {}, primary key {},\
                 in {}".format(
-                    self.__class__, pk, __file__
+                    self.__class__, __file__
                 )
             )
             return CustomeResponse(
@@ -418,9 +447,9 @@ class GroupMediaViewSet(viewsets.ModelViewSet):
                 by primary key {}".
                 format(__file__, user_id)
             )
-        return CustomeResponse({'msg': "provide group_id"},
-                               status=status.HTTP_400_BAD_REQUEST,
-                               validate_errors=1)
+            return CustomeResponse({'msg': "provide group_id"},
+                                   status=status.HTTP_400_BAD_REQUEST,
+                                   validate_errors=1)
         try:
             group = Group.objects.get(id=group_id, user_id=user_id)
         except ObjectDoesNotExist:
@@ -430,8 +459,8 @@ class GroupMediaViewSet(viewsets.ModelViewSet):
                     self.__class__, user_id, __file__
                 )
             )
-        return CustomeResponse({'msg': "Group id does not exist"},
-                               status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
+            return CustomeResponse({'msg': "Group id does not exist"},
+                                   status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
 
         #  Save Image in image Gallary
         media_exist = ''
@@ -462,6 +491,9 @@ class GroupMediaViewSet(viewsets.ModelViewSet):
                         by primary key {}".
                         format(__file__, user_id)
                     )
+                    return CustomeResponse({'msg': "provide group_image"},
+                                           status=status.HTTP_400_BAD_REQUEST,
+                                           validate_errors=1)
 
                 if data_new['group_image']:
                     return CustomeResponse({"group_id": group_id,
@@ -505,8 +537,9 @@ class GroupMediaViewSet(viewsets.ModelViewSet):
                     self.__class__, user_id, __file__
                 )
             )
-        return CustomeResponse(
-            {'msg': 'Data not found'}, status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
+            return CustomeResponse({'msg': 'Data not found'},
+                                   status=status.HTTP_400_BAD_REQUEST,
+                                   validate_errors=1)
         try:
 
             data = {}
@@ -557,11 +590,11 @@ class GroupMediaViewSet(viewsets.ModelViewSet):
                 by primary key {}".
                 format(__file__, user_id)
             )
-        return CustomeResponse(
-            {
-                'msg': "Please provide correct group_id,"},
-            status=status.HTTP_400_BAD_REQUEST,
-            validate_errors=1)
+            return CustomeResponse(
+                {
+                    'msg': "Please provide correct group_id,"},
+                status=status.HTTP_400_BAD_REQUEST,
+                validate_errors=1)
         try:
 
             get_image = GroupMedia.objects.get(
@@ -573,11 +606,11 @@ class GroupMediaViewSet(viewsets.ModelViewSet):
                     self.__class__, user_id, __file__
                 )
             )
-        return CustomeResponse(
-            {
-                'msg': "Image not found"},
-            status=status.HTTP_400_BAD_REQUEST,
-            validate_errors=1)
+            return CustomeResponse(
+                {
+                    'msg': "Image not found"},
+                status=status.HTTP_400_BAD_REQUEST,
+                validate_errors=1)
         try:
             if get_image:
                 get_image.delete()
