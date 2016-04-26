@@ -1,13 +1,16 @@
+"""user location view."""
+
 # Import Python Modules
 import datetime
 # Third Party Imports
 from django.contrib.gis.measure import D
-from django.core.exceptions import MultipleObjectsReturned, ObjectDoesNotExist
 from django.db.models import Q
 from rest_framework import viewsets
 from rest_framework.decorators import list_route
 from rest_framework.permissions import IsAuthenticated
 import rest_framework.status as status
+import logging
+
 # Local app imports
 from models import UserLocation
 from apps.users.models import Profile
@@ -16,9 +19,13 @@ from serializer import UserLocationSerializer
 from apps.users.serializer import ProfileSerializer
 from ohmgear.settings.constant import REGION
 from ohmgear.functions import CustomeResponse
+from ohmgear.settings.constant import RADAR_RADIUS
+
+logger = logging.getLogger(__name__)
 
 
 class UserLocationViewSet(viewsets.ModelViewSet):
+    """Store user geography location and get user list near by to a user."""
 
     queryset = UserLocation.objects.all()
     serializer_class = UserLocationSerializer
@@ -26,47 +33,111 @@ class UserLocationViewSet(viewsets.ModelViewSet):
     permission_classes = (IsAuthenticated,)
 
     def create(self, request):
+        """Insert user current location and store one only one location."""
         data = {}
         try:
+            try:
+                user_id = request.user.id
+                data['geom'] = 'POINT(%s %s)' % (
+                    request.data['lon'],
+                    request.data['lat']
+                )
 
-            data['geom'] = 'POINT(%s %s)' % (
-                request.data['lon'], request.data['lat'])
+                ul = self.queryset.get(user_id=user_id, region=REGION)
+                ulserializer = UserLocationSerializer(
+                    ul,
+                    data=data,
+                    partial=True
+                )
+            except UserLocation.MultipleObjectsReturned:
+                logger.error(
+                    "Caught MultipleObjectsReturned exception for {}, user_id {},\
+                    in {}".format(
+                        UserLocation.__name__, user_id, __file__
+                    )
+                )
+            except UserLocation.DoesNotExist:
+                data['user_id'] = user_id
+                data['region'] = REGION
+                ulserializer = UserLocationSerializer(data=data)
 
-            ul = self.queryset.get(user_id=request.user.id, region=REGION)
-            ulserializer = UserLocationSerializer(ul, data=data, partial=True)
-        except MultipleObjectsReturned:
-            pass
-        except ObjectDoesNotExist:
-            data['user_id'] = request.user.id
-            data['region'] = REGION
-            ulserializer = UserLocationSerializer(data=data)
+            if ulserializer.is_valid():
+                ulserializer.save()
+                return CustomeResponse({}, status=status.HTTP_204_NO_CONTENT)
 
-        if ulserializer.is_valid():
-            ulserializer.save()
-            return CustomeResponse({}, status=status.HTTP_204_NO_CONTENT)
+            return CustomeResponse([], status=status.HTTP_400_BAD_REQUEST)
+        except Exception:
+            logger.critical(
+                "Caught exception in {}".format(__file__),
+                exc_info=True
+            )
 
-        return CustomeResponse([], status=status.HTTP_400_BAD_REQUEST)
+        return CustomeResponse(
+            {
+                "msg": "Can not process request."
+            },
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            validate_errors=1
+        )
 
     @list_route(methods=['GET'])
     def nearuser(self, request):
+        """Return near by users."""
         try:
-            radius = 20  # in meter
-            ul = self.queryset.get(user_id=request.user.id, region=REGION)
-            currentUserLocation = 'POINT(%s %s)' % (
-                ul.geom.x, ul.geom.y)  # {"lat": ul.lat, "lon": ul.lon}
-            curTime = datetime.datetime.utcnow()
-            timeSubtract = datetime.timedelta(minutes=30)
-            timeBeforeCurrentTime = curTime - timeSubtract
+            radius = RADAR_RADIUS  # in meter
+            user_id = request.user.id
+            ul = self.queryset.get(user_id=user_id, region=REGION)
+            current_user_location = 'POINT(%s %s)' % (
+                ul.geom.x,
+                ul.geom.y
+            )  # {"lat": ul.lat, "lon": ul.lon}
+            currrent_datetime = datetime.datetime.utcnow()
+            time_subtract = datetime.timedelta(minutes=30)
+            currrent_datetime_after_subtract = currrent_datetime - time_subtract
 
-            uls = self.queryset.filter(geom__distance_lte=(currentUserLocation, D(m=radius))).filter(
-                ~Q(id=ul.id)).filter(updated_date__gte=timeBeforeCurrentTime.strftime('%Y-%m-%d %H:%M:%S'))
+            uls = self.queryset.filter(
+                geom__distance_lte=(
+                    current_user_location,
+                    D(m=radius)
+                )
+            ).filter(
+                ~Q(id=ul.id)
+            ).filter(
+                updated_date__gte=currrent_datetime_after_subtract.
+                strftime('%Y-%m-%d %H:%M:%S')
+            )
 
-            userIds = [oul.user_id for oul in uls]
+            user_ids = [oul.user_id for oul in uls]
 
-            userProfiles = Profile.objects.filter(user_id__in=userIds)
-            pserializer = ProfileSerializer(userProfiles, many=True, fields=(
-                'user', 'first_name', 'last_name', 'email', 'profile_image'))
+            user_profiles = Profile.objects.filter(user_id__in=user_ids)
+            pserializer = ProfileSerializer(user_profiles, many=True, fields=(
+                'user', 'first_name', 'last_name', 'email', 'profile_image')
+            )
 
             return CustomeResponse(pserializer.data, status=status.HTTP_200_OK)
-        except ObjectDoesNotExist:
-            return CustomeResponse([], status=status.HTTP_404_NOT_FOUND)
+        except UserLocation.DoesNotExist:
+            logger.error(
+                "Caught DoesNotExist exception for {}, user_id {},\
+                in {}".format(
+                    UserLocation.__name, user_id, __file__
+                )
+            )
+            return CustomeResponse(
+                {
+                    "msg": "Current user location unknow."
+                },
+                status=status.HTTP_404_NOT_FOUND
+            )
+        except Exception:
+            logger.critical(
+                "Caught exception in {}".format(__file__),
+                exc_info=True
+            )
+
+        return CustomeResponse(
+            {
+                "msg": "Can not process request."
+            },
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            validate_errors=1
+        )

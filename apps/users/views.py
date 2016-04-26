@@ -1093,16 +1093,33 @@ class UserEmailViewSet(viewsets.ModelViewSet):
 
     @list_route(methods=['post'],)
     def setdefault(self, request):
-
-        user_id = request.user
-        data = {}
-        data['id'] = request.user.id
-        data['ueid'] = request.data.get('useremail_id')
+        """Set user default email."""
+        try:
+            user_id = request.user
+            data = {}
+            data['id'] = request.user.id
+            data['ueid'] = request.data['useremail_id']
+        except KeyError:
+            logger.error(
+                "Caught KeyError exception, useremail_id not given in {} \
+                by primary key {}".
+                format(__file__, user_id)
+            )
+            return CustomeResponse(
+                {
+                    'msg': 'useremail_id is required.'
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+                validate_errors=1
+            )
 
         try:
             # set default status(2) of all emails to 1
             UserEmail.objects.filter(
-                user_id=request.user.id, isVerified=2).update(isVerified=1)
+                user_id=request.user.id,
+                isVerified=2
+            ).update(isVerified=1)
+
             userEmailAdded = UserEmail.objects.filter(
                 id=data['ueid']).values('isVerified', 'email')
             salt = hashlib.sha1(str(random.random())).hexdigest()[:5]
@@ -1125,7 +1142,7 @@ class UserEmailViewSet(viewsets.ModelViewSet):
                 return CustomeResponse(
                     {'msg': 'server error'}, validate_errors=1)
 
-        except:
+        except Exception:
             return CustomeResponse(
                 {
                     "msg": "email is not there"
@@ -1136,7 +1153,7 @@ class UserEmailViewSet(viewsets.ModelViewSet):
 
     @list_route(methods=['post'],)
     def deleteEmail(self, request):
-        """Delete user email other than default email"""
+        """Delete user email other than default email."""
         try:
             user_id = request.user.id
             user_email_id = request.data['userEmailId']
@@ -1155,8 +1172,14 @@ class UserEmailViewSet(viewsets.ModelViewSet):
             )
 
         try:
-            count = UserEmail.objects.filter(user_id=user_id).count()
-            userEmail = UserEmail.objects.get(id=user_email_id)
+            useremail = UserEmail.objects.get(id=user_email_id)
+            useremail.delete()
+            return CustomeResponse(
+                {
+                    'msg': 'Email is deleted'
+                },
+                status=status.HTTP_200_OK
+            )
         except UserEmail.DoesNotExist:
             logger.error(
                 "Caught DoesNotExist exception for {}, userEmailId {},\
@@ -1171,25 +1194,16 @@ class UserEmailViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_404_NOT_FOUND,
                 validate_errors=1
             )
-
-        if count > 0:
-            if userEmail:
-                userEmail.delete()
-                return CustomeResponse(
-                    {'msg': 'Email is deleted'}, status=status.HTTP_200_OK)
-
-        if count == 0:
-            defaultEmail = User.objects.filter(id=user_id)
-            serializer = UserSerializer(defaultEmail, many=True)
-            return CustomeResponse(
-                data=serializer.data,
-                status=status.HTTP_200_OK)
-
-        else:
-            return CustomeResponse(
-                {
-                    'msg': 'server error'
-                },
-                status=status.HTTP_400_BAD_REQUEST,
-                validate_errors=1
+        except Exception:
+            logger.critical(
+                "Caught exception in {}".format(__file__),
+                exc_info=True
             )
+
+        return CustomeResponse(
+            {
+                "msg": "Can not process request."
+            },
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            validate_errors=1
+        )
