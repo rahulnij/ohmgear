@@ -74,7 +74,9 @@ class ContactsSerializerWithJson(serializers.ModelSerializer):
             'bcard_json_data',
             'user_id',
             'folder_contact_data',
-            'businesscard_media'
+            'businesscard_media',
+            'created_date',
+            'updated_date'
         )
 
 
