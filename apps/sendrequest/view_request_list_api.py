@@ -1,6 +1,4 @@
 # --------- Import Python Modules ----------- #
-
-
 # ------------ Third Party Imports ---------- #
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import viewsets
@@ -25,17 +23,18 @@ class RequestListViewSet(viewsets.ModelViewSet):
         user_id = request.user
         sent_request = request.query_params.get('sent_request', None)
         received_request = request.query_params.get('received_request', None)
-        
         # get the list of request which user sent to other business card
         if sent_request:
-            queryset = self.queryset.filter(sender_user_id=user_id)
-            serializer = self.serializer_class(queryset, many=True)
+            queryset = self.queryset.select_related('sender_business_card_id').filter(sender_user_id=user_id)
+            serializer = self.serializer_class(
+                queryset, many=True, context={'filter_type': 'sent'})
             return CustomeResponse(serializer.data, status=status.HTTP_200_OK)
 
-        # get the list of request which user receive 
+        # get the list of request which user receive
         if received_request:
             queryset = self.queryset.filter(receiver_user_id=user_id)
-            serializer = self.serializer_class(queryset, many=True)
+            serializer = self.serializer_class(
+                queryset, many=True, context={'filter_type': 'received'})
             return CustomeResponse(serializer.data, status=status.HTTP_200_OK)
 
         return CustomeResponse(

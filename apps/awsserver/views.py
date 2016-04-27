@@ -43,8 +43,8 @@ class AwsActivity(viewsets.ModelViewSet):
     def register_to_aws(self, request):
         user_id = request.user
         try:
-            device_token = request.DATA['device_token']
-            device_type = request.DATA['device_type'].lower()
+            device_token = request.data['device_token']
+            device_type = request.data['device_type'].lower()
         except Exception as e:
             logger.error("Caught Exception in {}, {}".format(__file__, e))
             ravenclient.captureException()
@@ -56,7 +56,8 @@ class AwsActivity(viewsets.ModelViewSet):
             )
 
         if device_type == 'apns':
-            platform_application_arn = aws.AWS_PLATEFORM_APPLICATION_ARN["APNS"]
+            platform_application_arn = aws.AWS_PLATEFORM_APPLICATION_ARN[
+                "APNS"]
         elif device_type == 'gcm':
             platform_application_arn = aws.AWS_PLATEFORM_APPLICATION_ARN["GCM"]
         else:
@@ -67,36 +68,39 @@ class AwsActivity(viewsets.ModelViewSet):
             try:
                 client = boto3.client('sns', **aws.AWS_CREDENTIAL)
             except Exception as e:
-                logger.critical("Caught Exception in {}, {}".format(__file__, e))
+                logger.critical(
+                    "Caught Exception in {}, {}".format(
+                        __file__, e))
                 ravenclient.captureException()
             # TODO Need to check device token already exist or not
             # End
-            try:
-                response = client.create_platform_endpoint(
+            #try:
+            response = client.create_platform_endpoint(
                     PlatformApplicationArn=platform_application_arn,
                     Token=device_token,
                     CustomUserData='',
                     Attributes={}
                 )
-            except Exception as e:
-                logger.critical("Caught Exception in {}, {}".format(__file__, e))
-                ravenclient.captureException()
+            # except Exception as e:
+            #     logger.critical(
+            #         "Caught Exception in {}, {}".format(
+            #             __file__, e))
+            #     ravenclient.captureException()
 
-                return CustomeResponse(
-                    {'msg': "Internal Error"},
-                    status=status.HTTP_400_BAD_REQUEST,
-                    validate_errors=1
+            #     return CustomeResponse(
+            #         {'msg': "Internal Error"},
+            #         status=status.HTTP_400_BAD_REQUEST,
+            #         validate_errors=1
+            #     )
+            if "EndpointArn" in response:
+                AwsDeviceToken.objects.update_or_create(
+                    device_token=device_token,
+                    aws_plateform_endpoint_arn=response["EndpointArn"],
+                    user_id=user_id,
+                    device_type=device_type
                 )
-            else:    
-                if "EndpointArn" in response:
-                    AwsDeviceToken.objects.update_or_create(
-                        device_token=device_token,
-                        aws_plateform_endpoint_arn=response["EndpointArn"],
-                        user_id=user_id,
-                        device_type=device_type
-                    )
 
-                return CustomeResponse(response, status=status.HTTP_200_OK)
+            return CustomeResponse(response, status=status.HTTP_200_OK)
         else:
             return CustomeResponse(
                 {'msg': "Please provide device_token,device_type and user token"},

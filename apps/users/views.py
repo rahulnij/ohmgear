@@ -312,9 +312,12 @@ class UserViewSet(viewsets.ModelViewSet):
                     else:
                         return CustomeResponse(
                             {
-                                'msg': "password and confirm password are not same"},
+                                'msg': "password and confirm password are not\
+                                 same"
+                            },
                             status=status.HTTP_401_UNAUTHORIZED,
-                            validate_errors=1)
+                            validate_errors=1
+                        )
                 else:
                     msg = 'Old Password is wrong'
                     return CustomeResponse({'msg': msg},
@@ -341,18 +344,29 @@ class UserViewSet(viewsets.ModelViewSet):
         """Retrieve user connected accounts i.e FB or Linkedin."""
         try:
             user_id = request.user.id
-            userConnectedData = ConnectedAccount.objects.select_related(
-                "social_type_id").filter(user_id=user_id)
+            user_connected_accounts = ConnectedAccount.objects.select_related(
+                "social_type_id"
+            ).filter(
+                user_id=user_id
+            )
 
-            if userConnectedData:
+            if user_connected_accounts:
                 serializer = ConnectedAccountsSerializer(
-                    userConnectedData, many=True)
+                    user_connected_accounts,
+                    many=True
+                )
+
                 return CustomeResponse(
                     serializer.data,
-                    status=status.HTTP_201_CREATED)
+                    status=status.HTTP_201_CREATED
+                )
             else:
                 return CustomeResponse(
-                    {'msg': "Data not found"}, validate_errors=1)
+                    {
+                        'msg': "Data not found"
+                    },
+                    validate_errors=1
+                )
         except Exception:
             logger.critical("Caught Exception ", exc_info=True)
 
@@ -370,8 +384,7 @@ class UserViewSet(viewsets.ModelViewSet):
         social_types = constant.SOCIAL_TYPE
         try:
             social_type = request.data['social_type_id']
-            social_type_exist = social_type in social_types
-            if not social_type_exist:
+            if social_type not in social_types:
                 logger.warning("Unknow social_type {}, in {}".foramt(
                     social_type,
                     __file__
@@ -423,65 +436,95 @@ class UserViewSet(viewsets.ModelViewSet):
         """Delete user connected account."""
         try:
             user_id = request.user
+            social_type = request.data['social_type_id']
+            social_types = constant.SOCIAL_TYPE
 
-            social_type = constant.SOCIAL_TYPE
-            social_type_exist = request.data['social_type_id'] in social_type
-            if not social_type_exist:
+            if social_type not in social_types:
+                logger.warning("Unknow social_type {}, in {}".foramt(
+                    social_type,
+                    __file__
+                )
+                )
                 return CustomeResponse(
-                    {"msg": "social_type is not there"},
+                    {"msg": "Unknow social_type_id."},
                     status=status.HTTP_400_BAD_REQUEST,
                     validate_errors=1
                 )
         except KeyError:
             return CustomeResponse(
                 {
-                    "msg": "social_type_id is mandatory"
+                    "msg": "social_type_id is required."
                 },
                 status=status.HTTP_400_BAD_REQUEST,
                 validate_errors=1
             )
 
         try:
-            for key, social_id in social_type.iteritems():
-                if key == request.data['social_type_id']:
-                    social_type_id = social_id
-                    sociallogin = SocialLogin.objects.get(
-                        user=user_id, social_type=social_type_id)
-
-        except:
-            sociallogin = None
-
-        if sociallogin is not None:
+            SocialLogin.objects.get(
+                user=user_id,
+                social_type=social_type
+            )
             return CustomeResponse(
                 {
                     "msg": "This account is cannot be deleted because you have \
                     sign up with this account"
-                }
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+                validate_errors=1
             )
+        except SocialLogin.DoesNotExist:
+            try:
+                connecteddata = ConnectedAccount.objects.get(
+                    user_id=user_id,
+                    social_type_id=social_types[social_type]
+                )
+                connecteddata.delete()
+                return CustomeResponse(
+                    {
+                        "msg": "connected account is deleted"
+                    },
+                    status=status.HTTP_200_OK
+                )
 
-        connecteddata = ConnectedAccount.objects.filter(
-            user_id=user_id, social_type_id=social_type_id)
-        if connecteddata:
-            connecteddata.delete()
-            return CustomeResponse({"msg": "connected account is deleted"})
-        else:
-            return CustomeResponse(
-                {"msg": "There is no connected account for this user"})
+            except ConnectedAccount.DoesNotExist:
+                return CustomeResponse(
+                    {
+                        "msg": "There is no connected account for this user"
+                    },
+                    status=status.HTTP_400_BAD_REQUEST,
+                    validate_errors=1
+                )
+
+        except Exception:
+            logger.critical("Caught Exception ", exc_info=True)
+
+        return CustomeResponse(
+            {
+                "msg": "Can not process request."
+            },
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            validate_errors=1
+        )
 
     def usersetting(self, request, user_id):
+        """Set user settings. use this method in model???."""
         try:
-            settingvalue = Setting.objects.all()
+            default_settings = Setting.objects.all()
 
-            if settingvalue:
+            if default_settings:
                 tempContainer = []
-                for data in settingvalue:
-                    tempdata = {}
-                    tempdata['user_id'] = user_id
-                    tempdata['setting_id'] = data.id
-                    tempdata['value'] = data.value_type
-                    tempContainer.append(tempdata)
+                for setting in default_settings:
+                    tempContainer.append(
+                        {
+                            "user_id": user_id,
+                            "setting_id": setting.id,
+                            "value": setting.value_type
+                        }
+                    )
                 serializer = UserSignupSettingSerializer(
-                    data=tempContainer, many=True)
+                    data=tempContainer,
+                    many=True
+                )
                 if serializer.is_valid():
                     serializer.save()
                     return CustomeResponse(
@@ -490,14 +533,19 @@ class UserViewSet(viewsets.ModelViewSet):
                     return CustomeResponse(
                         serializer.errors, status=status.HTTP_201_CREATED)
 
-        except:
-            return CustomeResponse(
-                {'msg': 'provide status active'},
-                status=status.HTTP_400_BAD_REQUEST,
-                validate_errors=1
-            )
+        except Exception:
+            logger.critical("Caught Exception ", exc_info=True)
+
+        return CustomeResponse(
+            {
+                "msg": "Can not process request."
+            },
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            validate_errors=1
+        )
 
     def partial_update(self, request, pk=None):
+        """Not used."""
         pass
 
     def destroy(self, request, pk=None):
