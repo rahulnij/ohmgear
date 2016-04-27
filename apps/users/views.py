@@ -485,7 +485,7 @@ class SocialLoginViewSet(viewsets.ModelViewSet):
 def useractivity(request, **kwargs):
     msg = {}
     if request.method == 'GET':
-
+        print ">>>>>>>>>>>>>>>>>>>",request.device
         activation_key = request.query_params.get('activation_key', None)  
         reset_password_key = request.query_params.get('reset_password_key', None)
 
