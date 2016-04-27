@@ -41,8 +41,7 @@ class BaseSendMail(Task):
                 email_subject = email.subject
                 email_body = email.content.replace(
                     '%user_name%', getdata.first_name)
-                url = '/api/useractivity/?activation_key=' + \
-                    str(activation_key)
+                url = '/api/account_confirmation/%s/' %(activation_key)
                 email_body = email_body.replace(
                     '%url%', "<a href='" + settings.DOMAIN_NAME + url + "'>Link</a>")
 
