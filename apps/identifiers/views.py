@@ -31,7 +31,8 @@ class IdentifierViewSet(viewsets.ModelViewSet):
 
             identifier = self.request.query_params.get('identifier', None)
 
-            # check whether idnetifier is exist or not if not give suggested identifier
+            # check whether idnetifier is exist or not if not give suggested
+            # identifier
             identifierdata = Identifier.objects.filter(
                 identifier=identifier).values()
 
@@ -43,12 +44,15 @@ class IdentifierViewSet(viewsets.ModelViewSet):
             serializer = BusinessIdentifierSerializer(userdata, many=True)
 
             if userdata:
-                return CustomeResponse(serializer.data, status=status.HTTP_201_CREATED)
+                return CustomeResponse(
+                    serializer.data, status=status.HTTP_201_CREATED)
             else:
                 if identifier is None:
-                    return CustomeResponse({'msg': 'user id is not exist'}, status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
+                    return CustomeResponse(
+                        {'msg': 'user id is not exist'}, status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
                 if not identifierdata and identifier is not None:
-                    return CustomeResponse({'msg': 'Identifier available'}, status=status.HTTP_200_OK)
+                    return CustomeResponse(
+                        {'msg': 'Identifier available'}, status=status.HTTP_200_OK)
 
                 else:
                     list = []
@@ -60,7 +64,8 @@ class IdentifierViewSet(viewsets.ModelViewSet):
                             identifier=newidentifier).values()
                         if not matchidentifier:
                             list.append(newidentifier)
-                    return CustomeResponse({"msg": list}, status=status.HTTP_200_OK, validate_errors=True)
+                    return CustomeResponse(
+                        {"msg": list}, status=status.HTTP_200_OK, validate_errors=True)
 
     def retrieve(self, request, pk=None):
         queryset = self.queryset
@@ -71,7 +76,10 @@ class IdentifierViewSet(viewsets.ModelViewSet):
         return CustomeResponse(serializer.data, status=status.HTTP_200_OK)
 
     def create(self, request):
-
+        """
+        Create new identifer for system generated or 
+        for premium"
+        """
         data = request.data.copy()
         data['user'] = request.user.id
         data['identifierlastdate'] = str(
@@ -92,13 +100,21 @@ class IdentifierViewSet(viewsets.ModelViewSet):
                 identifier=request.POST.get('identifier'))
             if remove_lock_data:
                 remove_lock_data.delete()
-            return CustomeResponse(serializer.data, status=status.HTTP_201_CREATED)
+            return CustomeResponse(
+                serializer.data,
+                status=status.HTTP_201_CREATED)
         else:
-            return CustomeResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
+            return CustomeResponse(
+                serializer.errors,
+                status=status.HTTP_400_BAD_REQUEST,
+                validate_errors=1)
 
     @list_route(methods=['post'],)
     def refreshidentifier(self, request):
-
+        """
+        Refresh identifier will change if any request
+        for new identifier occurs.
+        """
         try:
             user_id = request.user
         except:
@@ -108,16 +124,21 @@ class IdentifierViewSet(viewsets.ModelViewSet):
             getidentifier = CreateSystemIdentifier()
 
             if getidentifier:
-                return CustomeResponse({'identifier': getidentifier}, status=status.HTTP_200_OK)
+                return CustomeResponse(
+                    {'identifier': getidentifier}, status=status.HTTP_200_OK)
             else:
-                return CustomeResponse({'msg': 'Identifier Not exist'}, status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
+                return CustomeResponse(
+                    {'msg': 'Identifier Not exist'}, status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
         else:
-            return CustomeResponse({'msg': 'Invalid User'}, status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
-
+            return CustomeResponse(
+                {'msg': 'Invalid User'}, status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
 
     @list_route(methods=['post'],)
     def lockidentifier(self, request):
-        print request.POST.get('identifier')
+        """
+        Lock identiifer will lock identiifer for user_id
+        If any other user request for it will not be given.
+        """
         try:
             user_id = request.user
         except:
@@ -136,6 +157,8 @@ class IdentifierViewSet(viewsets.ModelViewSet):
                 return CustomeResponse({'msg': 'Identifier is already locked'})
             else:
                 serializer.save()
-                return CustomeResponse(serializer.data, status=status.HTTP_201_CREATED)
+                return CustomeResponse(
+                    serializer.data, status=status.HTTP_201_CREATED)
         else:
-            return CustomeResponse({'msg': serializer.errors}, validate_errors=1)
+            return CustomeResponse(
+                {'msg': serializer.errors}, validate_errors=1)

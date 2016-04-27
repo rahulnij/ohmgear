@@ -1,5 +1,5 @@
 from django.conf import settings
-#------------------ Return token if does not exit then create -------------------#
+# Return token if does not exit then create
 from models import BusinessCard, BusinessCardAddSkill
 from apps.contacts.models import Contacts, ContactMedia
 from apps.notes.models import Notes
@@ -10,7 +10,7 @@ import rest_framework.status as status
 def createDuplicateBusinessCard(bcard_id=None, user_id=None):
 
     if bcard_id and user_id:
-        #-------------------- Duplicate Business card row ---------------------------#
+        # Duplicate Business card row
         try:
             bcards = BusinessCard.objects.select_related(
                 "contact_detail").get(id=bcard_id, user_id=user_id)
@@ -23,9 +23,9 @@ def createDuplicateBusinessCard(bcard_id=None, user_id=None):
         bcards.save()
         bcards_id_new = bcards.id
         contact_id = bcards.contact_detail.id
-        #---------------------- End---------------------------------------------------#
+        # End
 
-        #--------------------- Duplicate Contact row ------------------------#
+        # Duplicate Contact row
         try:
             contact = Contacts.objects.get(businesscard_id=bcard_id)
             contact.id = None
@@ -35,8 +35,8 @@ def createDuplicateBusinessCard(bcard_id=None, user_id=None):
             contact_id_new = contact.id
         except:
             pass
-        #----------------------- End--------------------------------------------------#
-        #--------------------- Duplicate Notes ---------------------------------------#
+        # End
+        # Duplicate Notes
         try:
             note = Notes.objects.get(contact_id=contact_id, bcard_side_no=1)
             note.contact_id = Contacts.objects.get(id=contact_id_new)
@@ -75,11 +75,11 @@ def createDuplicateBusinessCard(bcard_id=None, user_id=None):
         data['bcards_id_new'] = bcards_id_new
         data['contact_id_new'] = contact_id_new
         return data
-        #---------------------- End---------------------------------------------------#
+        # End
 
-        #--------------- Return the new business card --------------------------------#
+        # Return the new business card
 
-        #------------------------- End -----------------------------------------------#
+        # End
 
 
 class DiffJson(object):
@@ -161,19 +161,19 @@ class DiffJson(object):
 
 
 def searchjson(name, value, user_id=None):
+    """
+    search using email and firstname_lastname
+    search will retirn BusinessCard.
+    """
     bcard_id = []
     bcard = ''
 
-    #--------------------- need to be optimised ------------#
-    #--------------------- search by name ------------------#
+    # search by name
     if name == 'firstname_lastname':
-        new = value.split(" ")
         try:
-            print ">>>>>>>>>>>>>>>>>>>>>>>>>>>>"
-#              BusinessCard.objects.filter(jsonfield__contains={"status": value2}).exclude(jsonfield__contains={"status": value1})
-
             bcard = BusinessCard.objects.filter(contact_detail__bcard_json_data__contains={
                                                 'side_first': {'basic_info': [{'keyName': 'FirstName'}]}})
+
 #              bcard =BusinessCard.objects.filter(status=1,contact_detail__bcard_json_data__at_breed="labrador")
         except Exception as e:
             print e
@@ -186,12 +186,13 @@ def searchjson(name, value, user_id=None):
             bcard_id.append(data.id)
         return bcard
 
-    #--------------------- search by email ------------------#
+    # search by email
     if user_id:
         try:
             bcard = BusinessCard.objects.filter(
-                user_id=user_id, status=1, contact_detail__bcard_json_data__contains=value)
-            print "emial present"
+                user_id=user_id, status=1, contact_detail__bcard_json_data__contains={
+                    'side_first': {'contact_info': {'email': [{'data': value}]}}} or {
+                    'side_second': {'contact_info': {'email': [{'data': value}]}}})
         except:
             return CustomeResponse(
                 {
@@ -201,10 +202,11 @@ def searchjson(name, value, user_id=None):
         for data in bcard:
             bcard_id.append(data.id)
 
-    contact = BusinessCard.objects.select_related('contact_detail').filter(
-        status=1, contact_detail__bcard_json_data__contains=value).exclude(
+    contact = BusinessCard.objects.filter(
+        status=1, contact_detail__bcard_json_data__contains={
+            'side_first': {'contact_info': {'email': [{'data': value}]}}} or {
+            'side_second': {'contact_info': {'email': [{'data': value}]}}}).exclude(
         id__in=bcard_id)
-
     if bcard or contact:
         result_list = []
         from itertools import chain
