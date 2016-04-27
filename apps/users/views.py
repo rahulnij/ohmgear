@@ -108,7 +108,8 @@ class UserViewSet(viewsets.ModelViewSet):
                 cid = request.data['cid']
                 sid = request.data['sid']
                 from apps.sendrequest.models import SendRequest
-                SendRequest.objects.filter(sender_user_id=sid, receiver_bcard_or_contact_id=cid).update(
+                SendRequest.objects.filter(
+                    sender_user_id=sid, receiver_bcard_or_contact_id=cid).update(
                     request_status=1, receiver_user_id=user_id.id)
                 business_card_class_create = WhiteCardViewSet.as_view(
                     {'post': 'create'})
@@ -116,21 +117,25 @@ class UserViewSet(viewsets.ModelViewSet):
                 business_card_class_create(
                     request, from_white_contact=user_id.id, cid=cid, sid=sid)
 
-            if request.data.has_key('first_name'):
+            if 'first_name' in request.data:
                 profile.first_name = request.data['first_name']
 
-            if request.data.has_key('last_name'):
+            if 'last_name' in request.data:
                 profile.last_name = request.data['last_name']
 
             profile.save()
             # ---------------- End ------------------------ #
 
             if not fromsocial:
-                return CustomeResponse(serializer.data, status=status.HTTP_201_CREATED)
+                return CustomeResponse(
+                    serializer.data, status=status.HTTP_201_CREATED)
             else:
                 return serializer.data
         else:
-            return CustomeResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
+            return CustomeResponse(
+                serializer.errors,
+                status=status.HTTP_400_BAD_REQUEST,
+                validate_errors=1)
 
     def update(self, request, pk=None):
         try:
@@ -231,7 +236,7 @@ class UserViewSet(viewsets.ModelViewSet):
     @list_route(methods=['post'],)
     def connectedaccounts(self, request):
         social_type = constant.SOCIAL_TYPE
-        social_type_exist = social_type.has_key(request.data['social_type_id'])
+        social_type_exist = request.data['social_type_id'] in social_type
 
         if not social_type_exist:
             return CustomeResponse(
@@ -273,8 +278,7 @@ class UserViewSet(viewsets.ModelViewSet):
             user_id = request.user
 
             social_type = constant.SOCIAL_TYPE
-            social_type_exist = social_type.has_key(
-                request.data['social_type_id'])
+            social_type_exist = request.data['social_type_id'] in social_type
             if not social_type_exist:
                 return CustomeResponse(
                     {"msg": "social_type is not there"},
@@ -365,7 +369,7 @@ class ProfileViewSet(viewsets.ModelViewSet):
         try:
             user_id = request.user.id
             messages = Profile.objects.get(user_id=user_id)
-            if request.data.has_key('profile_image'):
+            if 'profile_image' in request.data:
                 profile_image = request.data['profile_image']
             else:
                 profile_image = messages.profile_image
@@ -485,9 +489,8 @@ class SocialLoginViewSet(viewsets.ModelViewSet):
 def useractivity(request, **kwargs):
     msg = {}
     if request.method == 'GET':
-        print ">>>>>>>>>>>>>>>>>>>",request.device
-        activation_key = request.query_params.get('activation_key', None)  
-        reset_password_key = request.query_params.get('reset_password_key', None)
+        activation_key = kwargs.pop('activation_key', None)
+        reset_password_key = kwargs.pop('reset_password_key', None)
 
         # get the activation key and activate the account : Process after
         # registration
@@ -556,7 +559,8 @@ def useractivity(request, **kwargs):
                 # save password in case of forgot passord TODO  move this
                 # section from login section
                 try:
-                    profile = Profile.objects.select_related().get(reset_password_key=reset_password_key,user__email=username)
+                    profile = Profile.objects.select_related().get(
+                        reset_password_key=reset_password_key, user__email=username)
                     profile.user.set_password(password)
                     profile.user.update_password = False
                     profile.user.save()
