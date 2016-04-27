@@ -29,6 +29,7 @@ import logging
 # ---------------------------End------------- #
 logger = logging.getLogger(__name__)
 
+
 class SendAcceptRequest(viewsets.ModelViewSet):
 
     queryset = SendRequest.objects.all()
@@ -70,12 +71,21 @@ class SendAcceptRequest(viewsets.ModelViewSet):
                 'receiver_bcard_or_contact_id']
 
             notification.message = karg['message']
-            notification.save()
-            return True
-        except TypeError as e:
-            return str(e)
+
+            try:
+                notification.save()
+                return True
+            except Exception as e:
+                logger.critical(
+                    "Unhandled exception in {}, {}".format(
+                        __name__, e))
+                return False
+
         except Exception as e:
-            return str(e)
+            logger.critical(
+                "Unhandled exception in {}, {}".format(
+                    __name__, e))
+            return False
 
     def exchange_business_cards(self, **karg):
 
@@ -93,7 +103,10 @@ class SendAcceptRequest(viewsets.ModelViewSet):
             try:
                 receiver_contact_id = karg['receiver_contact_id']
             except KeyError as e:
-                return str(e)
+                logger.critical(
+                    "KeyError in {}, {}".format(
+                        __name__, e))
+                return False
 
         try:
             sender_contact_id = karg['sender_business_card'].contact_detail
@@ -102,52 +115,47 @@ class SendAcceptRequest(viewsets.ModelViewSet):
             try:
                 sender_contact_id = karg['sender_contact_id']
             except KeyError as e:
-                return str(e)
+                logger.critical(
+                    "KeyError in {}, {}".format(
+                        __name__, e))
+                return False
+
+        # --- we are checking link already exist as white contact have other user contact already
+        try:
+            folder_sender = FolderContact.objects.get(
+                folder_id=karg['sender_folder'], contact_id=receiver_contact_id)
+            folder_sender.link_status = 2
+            folder_sender.is_linked = 1
+            folder_sender.save()
+        except FolderContact.DoesNotExist as e:
+
+            folder_sender = FolderContact()
+            folder_sender.user_id = karg['sender_user_id']
+            folder_sender.folder_id = karg['sender_folder']
+            folder_sender.contact_id = receiver_contact_id
+            folder_sender.link_status = 2
+            folder_sender.is_linked = 1
+            folder_sender.save()
 
         try:
-            try:
-                folder_sender = FolderContact.objects.get(
-                    folder_id=karg['sender_folder'], contact_id=receiver_contact_id)
-                folder_sender.link_status = 2
-                folder_sender.is_linked = 1
-                folder_sender.save()
-            except:
-                # Note : We will change following code  and
-                # call folder api:folder_contact_link from folder
-                # Or we can user FolderContactSerializer to insert data
-                folder_sender = FolderContact()
-                folder_sender.user_id = karg['sender_user_id']
-                folder_sender.folder_id = karg['sender_folder']
-                folder_sender.contact_id = receiver_contact_id
-                folder_sender.link_status = 2
-                folder_sender.is_linked = 1
-                folder_sender.save()
+            folder_receiver = FolderContact.objects.get(
+                folder_id=karg['receiver_folder'], contact_id=sender_contact_id)
+            folder_receiver.link_status = 2
+            folder_receiver.is_linked = 1
+            folder_receiver.save()
+        except FolderContact.DoesNotExist as e:
 
-            try:
-                folder_receiver = FolderContact.objects.get(
-                    folder_id=karg['receiver_folder'], contact_id=sender_contact_id)
-                folder_receiver.link_status = 2
-                folder_receiver.is_linked = 1
-                folder_receiver.save()
-            except:
-                # Note : We will change following code  and
-                # call folder api:folder_contact_link from folder
-                # Or we can user FolderContactSerializer to insert data
-                folder_receiver = FolderContact()
-                folder_receiver.user_id = receiver_contact_id.user_id
-                folder_receiver.folder_id = karg['receiver_folder']
-                folder_receiver.contact_id = sender_contact_id
-                folder_receiver.link_status = 2
-                folder_receiver.is_linked = 1
-                folder_receiver.save()
+            folder_receiver = FolderContact()
+            folder_receiver.user_id = receiver_contact_id.user_id
+            folder_receiver.folder_id = karg['receiver_folder']
+            folder_receiver.contact_id = sender_contact_id
+            folder_receiver.link_status = 2
+            folder_receiver.is_linked = 1
+            folder_receiver.save()
 
-            return True
+        return True
 
-        except TypeError as e:
-            return str(e)
-        except Exception as e:
-            return str(e)
-    # End
+        # End
 
     @list_route(methods=['post'],)
     def invite_to_businesscard(self, request):
@@ -239,7 +247,7 @@ class SendAcceptRequest(viewsets.ModelViewSet):
             if insert_notification is not True:
                 return CustomeResponse(
                     {
-                        'msg': insert_notification},
+                        'msg': ""},
                     status=status.HTTP_400_BAD_REQUEST,
                     validate_errors=1)
         # --------- End----------------------------------------------- #
@@ -305,9 +313,12 @@ class SendAcceptRequest(viewsets.ModelViewSet):
         if exchange_business_cards is not True:
             return CustomeResponse(
                 {
-                    'msg': exchange_business_cards},
+                    'msg': "Have some problem in exchangin businesscard"},
                 status=status.HTTP_400_BAD_REQUEST,
                 validate_errors=1)
+            logger.critical(
+                "Have some problem in exchangin businesscard sender_business_card_id {},  receiver_business_card_id {} ".format(
+                    sender_business_card_id, receiver_business_card_id))
         #  End
 
         #  Update the SendRequest status
@@ -315,8 +326,10 @@ class SendAcceptRequest(viewsets.ModelViewSet):
             send_request_obj = SendRequest.objects.get(id=request_id)
             send_request_obj.request_status = 1
             send_request_obj.save()
-        except ObjectDoesNotExist as e:
-            pass
+        except SendRequest.DoesNotExist as e:
+            logger.critical(
+                "Object Does Not Exist: SendRequest: {}, {}".format(
+                    request_id, e))
         return CustomeResponse({"msg": "success"}, status=status.HTTP_200_OK)
 
     # send white contact invitation
@@ -346,7 +359,8 @@ class SendAcceptRequest(viewsets.ModelViewSet):
                         'receiver_bcard_or_contact_id')).values_list('folder_id', flat=True)[0]
 
                 sender_business_card_id = Folder.objects.filter(
-                    id=sender_folder_id).values_list('businesscard_id', flat=True)[0]
+                    id=sender_folder_id).values_list(
+                    'businesscard_id', flat=True)[0]
 
                 data['email'] = request.user.email
                 data['sender_user_id'] = request.user.id
