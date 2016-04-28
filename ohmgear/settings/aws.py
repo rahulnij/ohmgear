@@ -1,6 +1,6 @@
 AWS_CREDENTIAL = {
-    "aws_access_key_id": "AKIAIK3AEVMALQ3AXKAQ",
-    "aws_secret_access_key": "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",
+    "aws_access_key_id": "AKIAIOFRR572MXHOGCXA",
+    "aws_secret_access_key": "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",
     "region_name": "ap-southeast-1"}
 
 

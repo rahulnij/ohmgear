@@ -190,40 +190,40 @@ class SendAcceptRequest(viewsets.ModelViewSet):
                 validate_errors=1)
 
         #  Get the aws arn from token table
-        # try:
-        #     aws_token_data = AwsDeviceToken.objects.filter(
-        #         user_id=receiver_business_card.user_id.id).latest("id")
-        # except:
-        #     return CustomeResponse(
-        #         {
-        #             'msg': "receiver device token does not exist."},
-        #         status=status.HTTP_400_BAD_REQUEST,
-        #         validate_errors=1)
-        # # aws_plateform_endpoint_arn = '%s'%aws_token_data.aws_plateform_endpoint_arn
-        # # ---------- End ---------------------------------------- #
-        # client = boto3.client('sns', **aws.AWS_CREDENTIAL)
-        # # Make json to send data
-        # message = {
-        #     'default': 'request sent from ' + user_name + ' to accept businesscard.',
-        #     'APNS_SANDBOX': json.dumps({
-        #         'aps': {
-        #             'alert': 'Hi How are you'},
-        #         'data': {
-        #             'receiver_business_card_id': receiver_business_card_id,
-        #             'sender_business_card_id': sender_business_card_id,
-        #         }}),
-        # }
-        # message = json.dumps(message, ensure_ascii=False)
-        # #  End
-        # # TODO If user install app more then one device then send the notification more then one device
-        # # --- End ---#
-        # response = client.publish(
-        #     TargetArn=aws_token_data.aws_plateform_endpoint_arn,
-        #     Message=message,
-        #     MessageStructure='json',
-        #     MessageAttributes={
-        #     }
-        # )
+        try:
+            aws_token_data = AwsDeviceToken.objects.filter(
+                user_id=receiver_business_card.user_id.id).latest("id")
+        except:
+            return CustomeResponse(
+                {
+                    'msg': "receiver device token does not exist."},
+                status=status.HTTP_400_BAD_REQUEST,
+                validate_errors=1)
+        # aws_plateform_endpoint_arn = '%s'%aws_token_data.aws_plateform_endpoint_arn
+        # ---------- End ---------------------------------------- #
+        client = boto3.client('sns', **aws.AWS_CREDENTIAL)
+        # Make json to send data
+        message = {
+            'default': 'request sent from ' + user_name + ' to accept businesscard.',
+            'APNS_SANDBOX': json.dumps({
+                'aps': {
+                    'alert': 'Hi How are you'},
+                'data': {
+                    'receiver_business_card_id': receiver_business_card_id,
+                    'sender_business_card_id': sender_business_card_id,
+                }}),
+        }
+        message = json.dumps(message, ensure_ascii=False)
+        #  End
+        # TODO If user install app more then one device then send the notification more then one device
+        # --- End ---#
+        response = client.publish(
+            TargetArn=aws_token_data.aws_plateform_endpoint_arn,
+            Message=message,
+            MessageStructure='json',
+            MessageAttributes={
+            }
+        )
         # Insert into Notification Table
         request_type = 'b2b'
         receiver_obj_id = receiver_business_card_id
@@ -251,7 +251,7 @@ class SendAcceptRequest(viewsets.ModelViewSet):
                     status=status.HTTP_400_BAD_REQUEST,
                     validate_errors=1)
         # --------- End----------------------------------------------- #
-        return CustomeResponse("request sent", status=status.HTTP_200_OK)
+        return CustomeResponse(response, status=status.HTTP_200_OK)
 
     # ---------- Receive Request ---------- #
 
