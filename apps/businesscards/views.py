@@ -419,33 +419,38 @@ class BusinessCardAddSkillViewSet(viewsets.ModelViewSet):
         tempData['user_id'] = request.user.id
         tempData['businesscard_id'] = request.data['businesscard_id']
         tempData['skill_name'] = request.data['skill_name'].split(',')
-        serializer = BusinessCardAddSkillSerializer(
-            data=tempData, context={'request': request})
 
-        if serializer.is_valid():
-            businesscard_id = tempData['businesscard_id']
-            user_id = tempData['user_id']
-            skill_name = tempData['skill_name']
+        if request.data['skill_name']:
 
-            BusinessCardAddSkill.objects.filter(
-                businesscard_id=businesscard_id).delete()
-            for item in skill_name:
-                data = {}
-                data['skill_name'] = item
-                data['user_id'] = user_id
-                data['businesscard_id'] = businesscard_id
-                serializer = BusinessCardAddSkillSerializer(
-                    data=data, context={'request': request})
-                serializer.is_valid()
-                serializer.save()
-            return CustomeResponse(
-                serializer.data,
-                status=status.HTTP_201_CREATED)
+            serializer = BusinessCardAddSkillSerializer(
+                data=tempData, context={'request': request})
+
+            if serializer.is_valid():
+                businesscard_id = tempData['businesscard_id']
+                user_id = tempData['user_id']
+                skill_name = tempData['skill_name']
+
+                BusinessCardAddSkill.objects.filter(
+                    businesscard_id=businesscard_id).delete()
+                for item in skill_name:
+                    data = {}
+                    data['skill_name'] = item
+                    data['user_id'] = user_id
+                    data['businesscard_id'] = businesscard_id
+                    serializer = BusinessCardAddSkillSerializer(
+                        data=data, context={'request': request})
+                    serializer.is_valid()
+                    serializer.save()
+                return CustomeResponse(
+                    serializer.data,
+                    status=status.HTTP_201_CREATED)
+            else:
+                return CustomeResponse(
+                    serializer.errors,
+                    status=status.HTTP_400_BAD_REQUEST,
+                    validate_errors=1)
         else:
-            return CustomeResponse(
-                serializer.errors,
-                status=status.HTTP_400_BAD_REQUEST,
-                validate_errors=1)
+            return CustomeResponse(tempData, status=status.HTTP_200_OK)
 
     def update(self, request, pk=None):
         return CustomeResponse({'msg': "Update method does not allow"},
@@ -595,14 +600,16 @@ class BusinessViewSet(viewsets.ModelViewSet):
                             note_frontend_obj = Notes(
                                 user_id=user,
                                 contact_id=contact,
-                                note=request.data["business_notes"]['note_frontend'],
+                                note=request.data["business_notes"][
+                                    'note_frontend'],
                                 bcard_side_no=1)
                             note_frontend_obj.save()
                         if "note_backend" in request.data["business_notes"]:
                             note_frontend_obj = Notes(
                                 user_id=user,
                                 contact_id=contact,
-                                note=request.data["business_notes"]['note_backend'],
+                                note=request.data["business_notes"][
+                                    'note_backend'],
                                 bcard_side_no=2)
                             note_frontend_obj.save()
                     except:
@@ -699,7 +706,8 @@ class BusinessViewSet(viewsets.ModelViewSet):
                                 user_id=user,
                                 contact_id=contact,
                                 bcard_side_no=1)
-                        note_frontend_obj.note = request.data["business_notes"]['note_frontend']
+                        note_frontend_obj.note = request.data[
+                            "business_notes"]['note_frontend']
                         note_frontend_obj.save()
 
                     if "note_backend" in request.data["business_notes"]:
@@ -713,7 +721,8 @@ class BusinessViewSet(viewsets.ModelViewSet):
                                 user_id=user,
                                 contact_id=contact,
                                 bcard_side_no=2)
-                        note_frontend_obj.note = request.data["business_notes"]['note_backend']
+                        note_frontend_obj.note = request.data[
+                            "business_notes"]['note_backend']
                         note_frontend_obj.save()
 
                 # except:
@@ -1067,7 +1076,7 @@ class WhiteCardViewSet(viewsets.ModelViewSet):
                         id=sender_data[0].folder_id.id)
 
                     sender_businesscard_id = sender_folder_id.businesscard_id
-                    
+
                     sender_contact_id = Contacts.objects.get(
                         businesscard_id=sender_businesscard_id)
 

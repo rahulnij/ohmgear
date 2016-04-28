@@ -59,7 +59,7 @@ class BusinessCard(models.Model):
         related_name='business_vacation')
 
     def __unicode__(self):
-        return'{"id":"%s","name":"%s","user_id":"%s"}' % (self.id, self.name, self.user_id.id)
+        return'{"id":"%s","name":"%s","user_id":"%s","is_active":"%s"}' % (self.id, self.name, self.user_id.id, self.is_active)
 
 
 class BusinessCardIdentifier(models.Model):
