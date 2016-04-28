@@ -28,6 +28,7 @@ from ohmgear.token_authentication import ExpiringTokenAuthentication
 import logging
 # ---------------------------End------------- #
 logger = logging.getLogger(__name__)
+ravenclient = getattr(settings, "RAVEN_CLIENT", None)
 
 
 class SendAcceptRequest(viewsets.ModelViewSet):
@@ -201,7 +202,13 @@ class SendAcceptRequest(viewsets.ModelViewSet):
                 validate_errors=1)
         # aws_plateform_endpoint_arn = '%s'%aws_token_data.aws_plateform_endpoint_arn
         # ---------- End ---------------------------------------- #
-        client = boto3.client('sns', **aws.AWS_CREDENTIAL)
+        try:
+            client = boto3.client('sns', **aws.AWS_CREDENTIAL)
+        except Exception as e:
+            logger.critical(
+                "Caught Exception in {}, {}".format(
+                    __file__, e))
+            ravenclient.captureException()
         # Make json to send data
         message = {
             'default': 'request sent from ' + user_name + ' to accept businesscard.',
@@ -217,6 +224,7 @@ class SendAcceptRequest(viewsets.ModelViewSet):
         #  End
         # TODO If user install app more then one device then send the notification more then one device
         # --- End ---#
+        # we will add except botocore.exceptions.ClientError as e:
         response = client.publish(
             TargetArn=aws_token_data.aws_plateform_endpoint_arn,
             Message=message,
