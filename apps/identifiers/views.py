@@ -49,7 +49,7 @@ class IdentifierViewSet(viewsets.ModelViewSet):
                 return CustomeResponse({'msg': 'key not found'},
                                        status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
             try:
-                # check whether idnetifier is exist or not if not give suggested
+                # check whether identifier is exist or not if not give suggested
                 # identifier
                 try:
                     identifierdata = Identifier.objects.get(
@@ -117,19 +117,22 @@ class IdentifierViewSet(viewsets.ModelViewSet):
             data['identifierlastdate'] = str(
                 (datetime.date.today() + datetime.timedelta(3 * 365 / 12)).isoformat())
 
-            if request.POST.get('identifiertype') == '1':
-                pass
-
-            else:
-                pass
-
             serializer = IdentifierSerializer(
                 data=data, context={'request': request, 'msg': 'not exist'})
-
+            identifier = data['identifier']
             if serializer.is_valid():
                 serializer.save()
-                remove_lock_data = LockIdentifier.objects.get(
-                    identifier=request.POST.get('identifier'))
+                try:
+                    remove_lock_data = ''
+                    remove_lock_data = LockIdentifier.objects.get(
+                        identifier=identifier)
+                except LockIdentifier.DoesNotExist:
+                    logger.error(
+                        "Caught DoesNotExist exception for {}, identifier {},\
+                    in {}".format(
+                            self.__class__, identifier, __file__
+                        )
+                    )
                 if remove_lock_data:
                     remove_lock_data.delete()
                 return CustomeResponse(
@@ -189,12 +192,30 @@ class IdentifierViewSet(viewsets.ModelViewSet):
             data['user'] = request.user.id
             serializer = LockIdentifierSerializer(
                 data=data, context={'request': data, 'msg': 'not exist'})
-
+            identifier = data['identifier']
             if serializer.is_valid():
-                identifier_exist = Identifier.objects.get(
-                    identifier=data['identifier'])
-                identifier_lock_exist = LockIdentifier.objects.get(
-                    identifier=data['identifier'])
+
+                try:
+                    identifier_exist = ''
+                    identifier_lock_exist = ''
+                    identifier_exist = Identifier.objects.get(
+                        identifier=identifier)
+                    identifier_lock_exist = LockIdentifier.objects.get(
+                        identifier=identifier)
+                except Identifier.DoesNotExist:
+                    logger.error(
+                        "Caught DoesNotExist exception for {}, identifier {},\
+                    in {}".format(
+                            self.__class__, identifier, __file__
+                        )
+                    )
+                except LockIdentifier.DoesNotExist:
+                    logger.error(
+                        "Caught DoesNotExist exception for {}, identifier {},\
+                    in {}".format(
+                            self.__class__, identifier, __file__
+                        )
+                    )
                 if identifier_exist or identifier_lock_exist:
                     return CustomeResponse(
                         {'msg': 'Identifier is already locked'})
