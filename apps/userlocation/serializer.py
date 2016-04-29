@@ -1,5 +1,6 @@
 # Third Party Imports
 from rest_framework import serializers
+from django.db.models import Q
 import logging
 
 # Local app imports
@@ -9,6 +10,7 @@ from apps.usersetting.models import (
     Setting,
     UserSetting
 )
+from apps.sendrequest.models import SendRequest
 
 logger = logging.getLogger(__name__)
 
@@ -76,4 +78,20 @@ class ProfileWithConnectionStatusSerializer(
         return 0
 
     def isconnected(self, obj):
-        return 0
+        connected_user_id = self.context.get('connected_user_id')
+        CONNECTED = 1
+        NOT_CONNECTED = 0
+        try:
+            """get last request AcceptedStatus"""
+            send_request = SendRequest.objects.order_by('-updated_date').get(
+                sender_user_id=connected_user_id,
+                receiver_user_id=obj.user_id
+            )
+
+            if send_request.request_status is CONNECTED:
+                return CONNECTED
+
+        except SendRequest.DoesNotExist:
+            """Not find reason for logging here. it is just to find user\
+             connected or not"""
+        return NOT_CONNECTED

@@ -121,7 +121,7 @@ class UserLocationViewSet(viewsets.ModelViewSet):
                     'profile_image',
                     'defaultbusinesscard_id',
                     'is_connected'
-                )
+                ), context={"connected_user_id": user_id}
             )
 
             return CustomeResponse(pserializer.data, status=status.HTTP_200_OK)
