@@ -15,13 +15,16 @@ import re
 
 
 class UserSettingViewSet(viewsets.ModelViewSet):
+    """Usersetting view."""
+
     queryset = UserSetting.objects.all()
     serializer_class = UserSettingSerializer
     authentication_classes = (ExpiringTokenAuthentication,)
     permission_classes = (IsAuthenticated,)
 
-    #---------------------Get all user-setting of a user-----------#
+    # Get all user-setting of a user
     def list(self, request):
+        """Get default user-setting."""
         user_id = request.user.id
         queryset = get_all_usersetting(user_id)
         if queryset:
@@ -34,8 +37,9 @@ class UserSettingViewSet(viewsets.ModelViewSet):
                 {"msg": "data not found"}, status=status.HTTP_200_OK)
 
     @list_route(methods=["post"],)
-    #-----------------get particular setting value of user by key--------#
+    # get particular setting value of user by key#
     def getsettingvalue(self, request):
+        """Get user default setting value by key."""
         try:
             getkey = request.data['key']
             user_id = request.user.id
@@ -58,9 +62,9 @@ class UserSettingViewSet(viewsets.ModelViewSet):
                 validate_errors=1)
 
     @list_route(methods=["post"],)
-    #----------------update settings of the user by key---------#
+    # Update settings of the user by key#
     def updatekeyvalue(self, request):
-
+        """Update setting value by key."""
         try:
             getkey = request.data['key']
             getvalue = request.data['value']
@@ -79,6 +83,7 @@ class UserSettingViewSet(viewsets.ModelViewSet):
 
     @list_route(methods=['post'],)
     def update_pinnumber(self, request):
+        """Update pin number."""
         try:
             user_id = request.user.id
         except:
@@ -113,11 +118,14 @@ class UserSettingViewSet(viewsets.ModelViewSet):
 
 
 class LanguageSettingViewSet(viewsets.ModelViewSet):
+    """Language view."""
+
     queryset = Language.objects.all()
     serializer_list = LanguageSerializer
-    #-------------get all data of language from refrence table
+    # get all data of language from refrence table#
 
     def list(self, request):
+        """Get all language."""
         queryset = Language.objects.all()
         if self.queryset:
             serializer = LanguageSerializer(queryset, many=True)
@@ -128,14 +136,15 @@ class LanguageSettingViewSet(viewsets.ModelViewSet):
 
 
 class DisplayContactNameAsViewSet(viewsets.ModelViewSet):
+    """DisplayContactName View."""
+
     queryset = DisplayContactNameAs.objects.all()
     serializer_list = DisplayContactNameAsSerializer
-    #-------------get all data of language from refrence table----------#
+    # get all data of language from refrence table
 
     def list(self, request):
-        #queryset    =   Language.objects.all()
+        """Get all DisplayContactName data."""
         queryset = DisplayContactNameAs.objects.all()
-        print queryset
         if queryset:
             serializer = DisplayContactNameAsSerializer(queryset, many=True)
             return CustomeResponse(serializer.data, status=status.HTTP_200_OK)

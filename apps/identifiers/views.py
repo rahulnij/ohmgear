@@ -51,15 +51,23 @@ class IdentifierViewSet(viewsets.ModelViewSet):
             try:
                 # check whether idnetifier is exist or not if not give suggested
                 # identifier
-                identifierdata = Identifier.objects.filter(
-                    identifier=identifier).values()
-
-                # Get all identifiers of the user
+                try:
+                    identifierdata = Identifier.objects.get(
+                        identifier=identifier)
+                except Identifier.DoesNotExist:
+                    logger.error(
+                        "Caught DoesNotExist exception for {}, primary key {},\
+                    in {}".format(
+                            self.__class__, identifier, __file__
+                        )
+                    )
+            # Get all identifiers of the user
                 userdata = Identifier.objects.select_related(
                     'businesscard_identifiers').filter(user=user).order_by('-id')
 
                 if userdata:
-                    serializer = BusinessIdentifierSerializer(userdata, many=True)
+                    serializer = BusinessIdentifierSerializer(
+                        userdata, many=True)
                     return CustomeResponse(
                         serializer.data, status=status.HTTP_201_CREATED)
                 else:
@@ -76,8 +84,8 @@ class IdentifierViewSet(viewsets.ModelViewSet):
                             identifiersuggestion = ''.join(
                                 random.choice('0123456789') for i in range(2))
                             newidentifier = identifier + identifiersuggestion
-                            matchidentifier = Identifier.objects.filter(
-                                identifier=newidentifier).values()
+                            matchidentifier = Identifier.objects.get(
+                                identifier=newidentifier)
                             if not matchidentifier:
                                 list.append(newidentifier)
                         return CustomeResponse(
@@ -93,6 +101,7 @@ class IdentifierViewSet(viewsets.ModelViewSet):
             )
 
     def retrieve(self, request, pk=None):
+        """Retrive identifier."""
         queryset = self.queryset
         identifier = get_object_or_404(queryset, pk=pk)
         serializer = self.serializer_class(
@@ -119,7 +128,7 @@ class IdentifierViewSet(viewsets.ModelViewSet):
 
             if serializer.is_valid():
                 serializer.save()
-                remove_lock_data = LockIdentifier.objects.filter(
+                remove_lock_data = LockIdentifier.objects.get(
                     identifier=request.POST.get('identifier'))
                 if remove_lock_data:
                     remove_lock_data.delete()
@@ -182,12 +191,13 @@ class IdentifierViewSet(viewsets.ModelViewSet):
                 data=data, context={'request': data, 'msg': 'not exist'})
 
             if serializer.is_valid():
-                identifier_exist = Identifier.objects.filter(
+                identifier_exist = Identifier.objects.get(
                     identifier=data['identifier'])
-                identifier_lock_exist = LockIdentifier.objects.filter(
+                identifier_lock_exist = LockIdentifier.objects.get(
                     identifier=data['identifier'])
                 if identifier_exist or identifier_lock_exist:
-                    return CustomeResponse({'msg': 'Identifier is already locked'})
+                    return CustomeResponse(
+                        {'msg': 'Identifier is already locked'})
                 else:
                     serializer.save()
                     return CustomeResponse(
