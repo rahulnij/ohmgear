@@ -15,7 +15,6 @@ from ohmgear.functions import CustomeResponse
 from ohmgear.token_authentication import ExpiringTokenAuthentication
 from apps.businesscards.serializer import CountContactInBusinesscardSerializer
 from apps.businesscards.models import BusinessCard
-from django.http import Http404
 import logging
 logger = logging.getLogger(__name__)
 
@@ -95,14 +94,10 @@ class GroupViewSet(viewsets.ModelViewSet):
         )
 
     def update(self, request, pk=None):
-        """
-        Update group details.
-
-        update group details.
-        """
+        """Update group details."""
         try:
             group_data = self.queryset.get(user_id=request.user.id, id=pk)
-        except DoesNotExist:
+        except Group.DoesNotExist:
             logger.error(
                 "Caught DoesNotExist exception for {}, primary key {},\
                 in {}".format(
@@ -116,7 +111,7 @@ class GroupViewSet(viewsets.ModelViewSet):
                 group_updated_data = {}
                 group_updated_data = request.data
                 group_updated_data['user_id'] = request.user.id
-    
+
                 serializer = self.serializer_class(
                     group_data, data=group_updated_data)
                 if serializer.is_valid():
@@ -144,7 +139,7 @@ class GroupViewSet(viewsets.ModelViewSet):
         """
         Delete multiple groups.
 
-        If group is deleted than its Contacts will also deleted.
+        If group is deleted than its contacts will also deleted.
         """
         try:
             user_id = request.user.id
@@ -176,11 +171,7 @@ class GroupViewSet(viewsets.ModelViewSet):
         )
 
     def destroy(self, request, pk=None):
-        """
-        Destroy method not allowed
-
-        Delete not allowed as we can delete mutliple groups.
-        """
+        """Delete not allowed as we can delete mutliple groups."""
         return CustomeResponse(
             {'msg': 'delete method not allowed'}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -238,11 +229,7 @@ class GroupContactsViewSet(viewsets.ModelViewSet):
     permisssion_classes = IsAuthenticated
 
     def list(self, request):
-        """
-        List method not allowed.
-
-        List method not allowed in contacts.
-        """
+        """List method not allowed in contacts."""
         return CustomeResponse({'msg': 'Get method bnot allowed'})
 
     def create(self, request):
@@ -444,11 +431,7 @@ class GroupMediaViewSet(viewsets.ModelViewSet):
     # change image of group
     # change group image
     def update(self, request, pk=None):
-        """
-        Update group image
-
-        old group image will be deleted from folder as well
-        """
+        """Update group image old group image will be deleted."""
         try:
             group_data = self.queryset.get(
                 user_id=request.user.id, group_id=pk)
@@ -496,11 +479,7 @@ class GroupMediaViewSet(viewsets.ModelViewSet):
         )
 
     def destroy(self, request, pk):
-        """
-        Delete group image.
-
-        Also deleted image from folder by signal.
-        """
+        """Delete group image also deleted image from folder by signal."""
         try:
             user_id = request.user.id
             group_id = pk
