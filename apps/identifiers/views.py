@@ -10,64 +10,98 @@ from ohmgear.functions import CustomeResponse
 import rest_framework.status as status
 import datetime
 import random
+import logging
 
 # application imports
 from models import Identifier, LockIdentifier
 from serializer import IdentifierSerializer, LockIdentifierSerializer, BusinessIdentifierSerializer
 from functions import CreateSystemIdentifier
 
-
+logger = logging.getLogger(__name__)
 # Create your views here.
 
 
 class IdentifierViewSet(viewsets.ModelViewSet):
+    """Identifier View."""
+
     queryset = Identifier.objects.select_related().all()
     serializer_class = IdentifierSerializer
     authentication_classes = (ExpiringTokenAuthentication,)
     permission_classes = (IsAuthenticated,)
 
     def list(self, request, **kwargs):
+        """
+        Get all user identifier.
+
+        Also check if identifier exist give suggested identifier.
+        """
         if request.method == 'GET':
-
-            identifier = self.request.query_params.get('identifier', None)
-
-            # check whether idnetifier is exist or not if not give suggested
-            # identifier
-            identifierdata = Identifier.objects.filter(
-                identifier=identifier).values()
-
+            try:
+                identifier = self.request.query_params.get('identifier', None)
+                user = self.request.query_params.get('user', None)
+            except KeyError:
+                logger.error(
+                    "Caught KeyError exception: group_id \
+                is required  , in {}".format(
+                        __file__
+                    )
+                )
+                return CustomeResponse({'msg': 'key not found'},
+                                       status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
+            try:
+                # check whether identifier is exist or not if not give suggested
+                # identifier
+                try:
+                    identifierdata = Identifier.objects.get(
+                        identifier=identifier)
+                except Identifier.DoesNotExist:
+                    logger.error(
+                        "Caught DoesNotExist exception for {}, primary key {},\
+                    in {}".format(
+                            self.__class__, identifier, __file__
+                        )
+                    )
             # Get all identifiers of the user
-            user = self.request.query_params.get('user', None)
-            userdata = Identifier.objects.select_related(
-                'businesscard_identifiers').filter(user=user).order_by('-id')
+                userdata = Identifier.objects.select_related(
+                    'businesscard_identifiers').filter(user=user).order_by('-id')
 
-            serializer = BusinessIdentifierSerializer(userdata, many=True)
-
-            if userdata:
-                return CustomeResponse(
-                    serializer.data, status=status.HTTP_201_CREATED)
-            else:
-                if identifier is None:
+                if userdata:
+                    serializer = BusinessIdentifierSerializer(
+                        userdata, many=True)
                     return CustomeResponse(
-                        {'msg': 'user id is not exist'}, status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
-                if not identifierdata and identifier is not None:
-                    return CustomeResponse(
-                        {'msg': 'Identifier available'}, status=status.HTTP_200_OK)
-
+                        serializer.data, status=status.HTTP_201_CREATED)
                 else:
-                    list = []
-                    for i in range(5):
-                        identifiersuggestion = ''.join(
-                            random.choice('0123456789') for i in range(2))
-                        newidentifier = identifier + identifiersuggestion
-                        matchidentifier = Identifier.objects.filter(
-                            identifier=newidentifier).values()
-                        if not matchidentifier:
-                            list.append(newidentifier)
-                    return CustomeResponse(
-                        {"msg": list}, status=status.HTTP_200_OK, validate_errors=True)
+                    if identifier is None:
+                        return CustomeResponse(
+                            {'msg': 'user id is not exist'}, status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
+                    if not identifierdata and identifier is not None:
+                        return CustomeResponse(
+                            {'msg': 'Identifier available'}, status=status.HTTP_200_OK)
+
+                    else:
+                        list = []
+                        for i in range(5):
+                            identifiersuggestion = ''.join(
+                                random.choice('0123456789') for i in range(2))
+                            newidentifier = identifier + identifiersuggestion
+                            matchidentifier = Identifier.objects.get(
+                                identifier=newidentifier)
+                            if not matchidentifier:
+                                list.append(newidentifier)
+                        return CustomeResponse(
+                            {"msg": list}, status=status.HTTP_200_OK, validate_errors=True)
+            except Exception:
+                logger.critical("Caught Exception ", exc_info=True)
+            return CustomeResponse(
+                {
+                    "msg": "Can not process request."
+                },
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                validate_errors=1
+            )
 
     def retrieve(self, request, pk=None):
+        """Retrive identifier."""
         queryset = self.queryset
         identifier = get_object_or_404(queryset, pk=pk)
         serializer = self.serializer_class(
@@ -76,89 +110,128 @@ class IdentifierViewSet(viewsets.ModelViewSet):
         return CustomeResponse(serializer.data, status=status.HTTP_200_OK)
 
     def create(self, request):
-        """
-        Create new identifer for system generated or 
-        for premium"
-        """
-        data = request.data.copy()
-        data['user'] = request.user.id
-        data['identifierlastdate'] = str(
-            (datetime.date.today() + datetime.timedelta(3 * 365 / 12)).isoformat())
+        """Create new identifer for system generated or premium."""
+        try:
+            data = request.data.copy()
+            data['user'] = request.user.id
+            data['identifierlastdate'] = str(
+                (datetime.date.today() + datetime.timedelta(3 * 365 / 12)).isoformat())
 
-        if request.POST.get('identifiertype') == '1':
-            pass
-
-        else:
-            pass
-
-        serializer = IdentifierSerializer(
-            data=data, context={'request': request, 'msg': 'not exist'})
-
-        if serializer.is_valid():
-            serializer.save()
-            remove_lock_data = LockIdentifier.objects.filter(
-                identifier=request.POST.get('identifier'))
-            if remove_lock_data:
-                remove_lock_data.delete()
-            return CustomeResponse(
-                serializer.data,
-                status=status.HTTP_201_CREATED)
-        else:
-            return CustomeResponse(
-                serializer.errors,
-                status=status.HTTP_400_BAD_REQUEST,
-                validate_errors=1)
+            serializer = IdentifierSerializer(
+                data=data, context={'request': request, 'msg': 'not exist'})
+            identifier = data['identifier']
+            if serializer.is_valid():
+                serializer.save()
+                try:
+                    remove_lock_data = ''
+                    remove_lock_data = LockIdentifier.objects.get(
+                        identifier=identifier)
+                except LockIdentifier.DoesNotExist:
+                    logger.error(
+                        "Caught DoesNotExist exception for {}, identifier {},\
+                    in {}".format(
+                            self.__class__, identifier, __file__
+                        )
+                    )
+                if remove_lock_data:
+                    remove_lock_data.delete()
+                return CustomeResponse(
+                    serializer.data,
+                    status=status.HTTP_201_CREATED)
+            else:
+                return CustomeResponse(
+                    serializer.errors,
+                    status=status.HTTP_400_BAD_REQUEST,
+                    validate_errors=1)
+        except Exception:
+            logger.critical("Caught Exception ", exc_info=True)
+        return CustomeResponse(
+            {
+                "msg": "Can not process request."
+            },
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            validate_errors=1
+        )
 
     @list_route(methods=['post'],)
     def refreshidentifier(self, request):
-        """
-        Refresh identifier will change if any request
-        for new identifier occurs.
-        """
+        """Refresh identifier will generate new identifier eveytime."""
         try:
             user_id = request.user
-        except:
-            user_id = None
+            if user_id:
+                getidentifier = CreateSystemIdentifier()
 
-        if user_id:
-            getidentifier = CreateSystemIdentifier()
-
-            if getidentifier:
-                return CustomeResponse(
-                    {'identifier': getidentifier}, status=status.HTTP_200_OK)
+                if getidentifier:
+                    return CustomeResponse(
+                        {'identifier': getidentifier}, status=status.HTTP_200_OK)
+                else:
+                    return CustomeResponse(
+                        {'msg': 'Identifier Not exist'}, status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
             else:
                 return CustomeResponse(
-                    {'msg': 'Identifier Not exist'}, status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
-        else:
-            return CustomeResponse(
-                {'msg': 'Invalid User'}, status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
+                    {'msg': 'Invalid User'}, status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
+        except Exception:
+            logger.critical("Caught Exception ", exc_info=True)
+        return CustomeResponse(
+            {
+                "msg": "Can not process request."
+            },
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            validate_errors=1
+        )
 
     @list_route(methods=['post'],)
     def lockidentifier(self, request):
         """
-        Lock identiifer will lock identiifer for user_id
+        Lock identiifer will lock identifer for that user.
+
         If any other user request for it will not be given.
         """
         try:
-            user_id = request.user
-        except:
-            user_id = None
-        data = request.data.copy()
-        data['user'] = request.user.id
-        serializer = LockIdentifierSerializer(
-            data=data, context={'request': data, 'msg': 'not exist'})
+            data = request.data.copy()
+            data['user'] = request.user.id
+            serializer = LockIdentifierSerializer(
+                data=data, context={'request': data, 'msg': 'not exist'})
+            identifier = data['identifier']
+            if serializer.is_valid():
 
-        if serializer.is_valid():
-            identifier_exist = Identifier.objects.filter(
-                identifier=data['identifier'])
-            identifier_lock_exist = LockIdentifier.objects.filter(
-                identifier=data['identifier'])
-            if identifier_exist or identifier_lock_exist:
-                return CustomeResponse({'msg': 'Identifier is already locked'})
+                try:
+                    identifier_exist = ''
+                    identifier_lock_exist = ''
+                    identifier_exist = Identifier.objects.get(
+                        identifier=identifier)
+                    identifier_lock_exist = LockIdentifier.objects.get(
+                        identifier=identifier)
+                except Identifier.DoesNotExist:
+                    logger.error(
+                        "Caught DoesNotExist exception for {}, identifier {},\
+                    in {}".format(
+                            self.__class__, identifier, __file__
+                        )
+                    )
+                except LockIdentifier.DoesNotExist:
+                    logger.error(
+                        "Caught DoesNotExist exception for {}, identifier {},\
+                    in {}".format(
+                            self.__class__, identifier, __file__
+                        )
+                    )
+                if identifier_exist or identifier_lock_exist:
+                    return CustomeResponse(
+                        {'msg': 'Identifier is already locked'})
+                else:
+                    serializer.save()
+                    return CustomeResponse(
+                        serializer.data, status=status.HTTP_201_CREATED)
             else:
-                serializer.save()
                 return CustomeResponse(
-                    serializer.data, status=status.HTTP_201_CREATED)
-        else:
-            return CustomeResponse(
-                {'msg': serializer.errors}, validate_errors=1)
+                    {'msg': serializer.errors}, validate_errors=1)
+        except Exception:
+            logger.critical("Caught Exception ", exc_info=True)
+        return CustomeResponse(
+            {
+                "msg": "Can not process request."
+            },
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            validate_errors=1
+        )

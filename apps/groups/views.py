@@ -15,8 +15,6 @@ from ohmgear.functions import CustomeResponse
 from ohmgear.token_authentication import ExpiringTokenAuthentication
 from apps.businesscards.serializer import CountContactInBusinesscardSerializer
 from apps.businesscards.models import BusinessCard
-from django.http import Http404
-from django.core.exceptions import ObjectDoesNotExist
 import logging
 logger = logging.getLogger(__name__)
 
@@ -24,11 +22,7 @@ logger = logging.getLogger(__name__)
 
 
 class GroupViewSet(viewsets.ModelViewSet):
-    """
-    Create group.
-
-    Create group with operations.
-    """
+    """Group View."""
 
     queryset = Group.objects.all()
     serializer_class = GroupSerializer
@@ -36,46 +30,29 @@ class GroupViewSet(viewsets.ModelViewSet):
     permission_classes = (IsAuthenticated,)
 
     def list(self, request):
-        """
-        Getting all group of a user.
-
-        Getting all group of a user.
-        """
+        """Create new group."""
         try:
             group_data = self.queryset.filter(user_id=request.user)
-        except DoesNotExist:
-            logger.error(
-                "Caught DoesNotExist exception for {}, user_id {},\
-                in {}".format(
-                    self.__class__, user_id, __file__
+            try:
+                if group_data:
+                    serializer = self.serializer_class(group_data, many=True)
+                    if serializer.data:
+                        return CustomeResponse(
+                            serializer.data, status=status.HTTP_200_OK)
+            except Group.DoesNotExist:
+                logger.error(
+                    "Caught DoesNotExist exception for {}, user_id {},\
+                    in {}".format(
+                        self.__class__, user_id, __file__
+                    )
                 )
-            )
-        try:
-            serializer = self.serializer_class(group_data, many=True)
-            if serializer.data:
                 return CustomeResponse(
-                    serializer.data, status=status.HTTP_200_OK)
-        except DoesNotExist:
-            logger.error(
-                "Caught DoesNotExist exception for {}, user_id {},\
-                in {}".format(
-                    self.__class__, user_id, __file__
+                    {
+                        "msg": "Group does not exist."
+                    },
+                    status=status.HTTP_404_NOT_FOUND,
+                    validate_errors=1
                 )
-            )
-        except Http404:
-            logger.error(
-                "Caught Http404(DoesNotExist) exception for {},\
-                in {}".format(
-                    self.__class, __file__
-                )
-            )
-            return CustomeResponse(
-                {
-                    "msg": "Group does not exist."
-                },
-                status=status.HTTP_404_NOT_FOUND,
-                validate_errors=1
-            )
         except Exception:
             logger.critical(
                 "Caught exception in {}".format(__file__),
@@ -90,11 +67,7 @@ class GroupViewSet(viewsets.ModelViewSet):
         )
 
     def create(self, request):
-        """
-        Create new group for a user.
-
-        Create new group for a user.
-        """
+        """Create new group for a user."""
         try:
             newdata = request.data.copy()
             newdata['user_id'] = request.user.id
@@ -121,14 +94,10 @@ class GroupViewSet(viewsets.ModelViewSet):
         )
 
     def update(self, request, pk=None):
-        """
-        Update group details.
-
-        update group details.
-        """
+        """Update group details."""
         try:
             group_data = self.queryset.get(user_id=request.user.id, id=pk)
-        except DoesNotExist:
+        except Group.DoesNotExist:
             logger.error(
                 "Caught DoesNotExist exception for {}, primary key {},\
                 in {}".format(
@@ -139,8 +108,12 @@ class GroupViewSet(viewsets.ModelViewSet):
                 {'msg': 'Data not found'}, status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
         try:
             if group_data:
+                group_updated_data = {}
+                group_updated_data = request.data
+                group_updated_data['user_id'] = request.user.id
+
                 serializer = self.serializer_class(
-                    group_data, data=request.data)
+                    group_data, data=group_updated_data)
                 if serializer.is_valid():
                     serializer.save()
                     return CustomeResponse(
@@ -166,7 +139,7 @@ class GroupViewSet(viewsets.ModelViewSet):
         """
         Delete multiple groups.
 
-        If group is deleted than its Contacts will also deleted.
+        If group is deleted than its contacts will also deleted.
         """
         try:
             user_id = request.user.id
@@ -180,17 +153,8 @@ class GroupViewSet(viewsets.ModelViewSet):
             )
             return CustomeResponse({'msg': 'group_id not found'},
                                    status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
-        try:
-            group_data = self.queryset.filter(user_id=user_id, id__in=group_id)
-        except DoesNotExist:
-            logger.error(
-                "Caught DoesNotExist exception for {}, primary key {},\
-                in {}".format(
-                    self.__class__, __file__
-                )
-            )
-            return CustomeResponse(
-                {'msg': 'group not found'}, status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
+
+        group_data = self.queryset.filter(user_id=user_id, id__in=group_id)
         try:
             if group_data:
                 group_data.delete()
@@ -207,11 +171,7 @@ class GroupViewSet(viewsets.ModelViewSet):
         )
 
     def destroy(self, request, pk=None):
-        """
-        Destroy method not allowed
-
-        Delete not allowed as we can delete mutliple groups.
-        """
+        """Delete not allowed as we can delete mutliple groups."""
         return CustomeResponse(
             {'msg': 'delete method not allowed'}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -261,11 +221,7 @@ class GroupViewSet(viewsets.ModelViewSet):
 
 
 class GroupContactsViewSet(viewsets.ModelViewSet):
-    """
-    Insert Contacts in group.
-
-    Insert multiple Contacts in group.
-    """
+    """Insert multiple Contacts in group."""
 
     queryset = GroupContacts.objects.all()
     serializer_class = GroupContactsSerializer
@@ -273,22 +229,15 @@ class GroupContactsViewSet(viewsets.ModelViewSet):
     permisssion_classes = IsAuthenticated
 
     def list(self, request):
-        """
-        List method not allowed.
-
-        List method not allowed in contacts.
-        """
+        """List method not allowed in contacts."""
         return CustomeResponse({'msg': 'Get method bnot allowed'})
 
     def create(self, request):
-        """
-        Insert Contacts in group.
-
-        Insert  mutliple Contacts in group
-        """
+        """Insert  mutliple Contacts in group."""
         try:
             user_id = request.user.id
-            group_contacts = request.data['folder_contact_id']
+            folder_contact_ids = request.data['folder_contact_id']
+            group_id = request.data['group_id']
         except KeyError:
             logger.error(
                 "Caught KeyError exception: folder_contact_id\
@@ -300,16 +249,11 @@ class GroupContactsViewSet(viewsets.ModelViewSet):
                                    status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
         try:
             temp_container = []
-            temp_container = []
-            for contacts in group_contacts:
-                data = {}
-                data['folder_contact_id'] = contacts
-                data['group_id'] = request.data['group_id']
-                data['user_id'] = user_id
+            for folder_contact_id in folder_contact_ids:
                 group_contact_data_exist = self.queryset.filter(
                     user_id=request.user,
-                    folder_contact_id=data['folder_contact_id'],
-                    group_id=data['group_id'])
+                    folder_contact_id=folder_contact_id,
+                    group_id=group_id)
                 if group_contact_data_exist:
                     return CustomeResponse(
                         {
@@ -317,8 +261,7 @@ class GroupContactsViewSet(viewsets.ModelViewSet):
                         status=status.HTTP_400_BAD_REQUEST,
                         validate_errors=1)
 
-                temp_container.append(data)
-
+                temp_container.append({'folder_contact_id': folder_contact_id, 'group_id': group_id, 'user_id': user_id})
             serializer = self.serializer_class(
                 data=temp_container, many=True)
             if serializer.is_valid():
@@ -343,17 +286,9 @@ class GroupContactsViewSet(viewsets.ModelViewSet):
 
     @list_route(methods=['post'],)
     def delete(self, request):
-        """
-        Delete mutliple Contacts in group.
-
-        Delete mutliple Contacts in group
-        """
+        """Delete mutliple Contacts in group."""
         try:
             user_id = request.user.id
-        except:
-            user_id = ''
-
-        try:
             group_contact_id = request.data['group_contact_id']
         except KeyError:
             logger.error(
@@ -365,18 +300,8 @@ class GroupContactsViewSet(viewsets.ModelViewSet):
             return CustomeResponse({'msg': 'group contact id not found'},
                                    status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
 
-        try:
-            group_contact_data = self.queryset.filter(
-                user_id=user_id, id__in=group_contact_id)
-        except DoesNotExist:
-            logger.error(
-                "Caught DoesNotExist exception for {}, group_contact_id {},\
-                in {}".format(
-                    self.__class__, user_id, __file__
-                )
-            )
-            return CustomeResponse({'msg': 'group contact data not found'},
-                                   status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
+        group_contact_data = self.queryset.filter(
+            user_id=user_id, id__in=group_contact_id)
         try:
             if group_contact_data:
                 group_contact_data.delete()
@@ -400,11 +325,7 @@ class GroupContactsViewSet(viewsets.ModelViewSet):
 
 
 class GroupMediaViewSet(viewsets.ModelViewSet):
-    """
-    Insert group Image in group.
-
-    Insert group Image in group.
-    """
+    """Insert group Image in group."""
 
     queryset = GroupMedia.objects.all()
     serializer_class = GroupMediaSerializer
@@ -412,20 +333,12 @@ class GroupMediaViewSet(viewsets.ModelViewSet):
     permission_classes = (IsAuthenticated,)
 
     def list(self, request):
-        """
-        List method not allowed.
-
-        List method not allowed
-        """
+        """List method not allowed."""
         return CustomeResponse({'msg': "list method not allowed"},
                                status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
 
     def create(self, request):
-        """
-        Create method not allowed.
-
-        Create method not allowed
-        """
+        """Create method not allowed."""
         return CustomeResponse({'msg': "create method not allowed"},
                                status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
 
@@ -433,11 +346,7 @@ class GroupMediaViewSet(viewsets.ModelViewSet):
     # Upload image after group created
     @list_route(methods=['post'],)
     def upload(self, request):
-        """
-        Upload image for a group.
-
-        Upload image for a group.
-        """
+        """Upload image for a group."""
         user_id = self.request.user.id
         try:
             group_id = self.request.data["group_id"]
@@ -452,7 +361,7 @@ class GroupMediaViewSet(viewsets.ModelViewSet):
                                    validate_errors=1)
         try:
             group = Group.objects.get(id=group_id, user_id=user_id)
-        except DoesNotExist:
+        except GroupMedia.DoesNotExist:
             logger.error(
                 "Caught DoesNotExist exception for {}, primary key {},\
                 in {}".format(
@@ -522,15 +431,11 @@ class GroupMediaViewSet(viewsets.ModelViewSet):
     # change image of group
     # change group image
     def update(self, request, pk=None):
-        """
-        Update group image
-
-        old group image will be deleted from folder as well
-        """
+        """Update group image old group image will be deleted."""
         try:
             group_data = self.queryset.get(
                 user_id=request.user.id, group_id=pk)
-        except DoesNotExist:
+        except GroupMedia.DoesNotExist:
             logger.error(
                 "Caught DoesNotExist exception for {}, primary key {},\
                 in {}".format(
@@ -549,8 +454,6 @@ class GroupMediaViewSet(viewsets.ModelViewSet):
 
             if group_data:
                 serializer = self.serializer_class(group_data, data=data)
-                print serializer
-                print "serializer"
                 if serializer.is_valid():
                     group_data.img_url.delete(False)
                     serializer.save()
@@ -576,11 +479,7 @@ class GroupMediaViewSet(viewsets.ModelViewSet):
         )
 
     def destroy(self, request, pk):
-        """
-        Delete group image.
-
-        Also deleted image from folder by signal.
-        """
+        """Delete group image also deleted image from folder by signal."""
         try:
             user_id = request.user.id
             group_id = pk
@@ -599,7 +498,7 @@ class GroupMediaViewSet(viewsets.ModelViewSet):
 
             get_image = GroupMedia.objects.get(
                 group_id=group_id, user_id=user_id, status=1)
-        except DoesNotExist:
+        except GroupMedia.DoesNotExist:
             logger.error(
                 "Caught DoesNotExist exception for {}, primary key {},\
                 in {}".format(
