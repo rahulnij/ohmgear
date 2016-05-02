@@ -4,6 +4,10 @@ from apps.folders.serializer import FolderContactSerializer
 from models import Contacts, FavoriteContact, AssociateContact, ContactMedia, PrivateContact
 from apps.contacts.models import FolderContact
 from django.conf import settings
+import rest_framework.status as status
+from ohmgear.functions import CustomeResponse
+import logging
+logger = logging.getLogger(__name__)
 
 
 class ContactMediaSerializer(serializers.ModelSerializer):
@@ -92,14 +96,30 @@ class FavoriteContactSerializer(serializers.ModelSerializer):
         'bcard_image_frontend')
 
     def bcard_image_frontend(self, obj):
-        media = ContactMedia.objects.filter(
-            contact_id=obj.id, status=1).order_by('front_back')
+        foldercontact_data = obj.foldercontact_id
+        contact_id = foldercontact_data.contact_id.id
+        try:
+            media = ContactMedia.objects.filter(
+                contact_id=contact_id, status=1).order_by('front_back')
+        except ContactMedia.DoesNotExist:
+                logger.error(
+                    "Caught DoesNotExist exception for {}, contact_id {},\
+                    in {}".format(
+                        self.__class__, contact_id, __file__
+                    )
+                )
+                return CustomeResponse(
+                    {
+                        "msg": "ContactMedia does not exist."
+                    },
+                    status=status.HTTP_404_NOT_FOUND,
+                    validate_errors=1
+                )
         data = []
         for item in media:
             data.append({"img_url": str(settings.DOMAIN_NAME) +
                          str(settings.MEDIA_URL) +
                          str(item.img_url), "front_back": item.front_back})
-
         return data
 
     class Meta:
