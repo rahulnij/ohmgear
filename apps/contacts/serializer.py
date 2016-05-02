@@ -121,6 +121,19 @@ class FolderContactWithDetailsSerializer(serializers.ModelSerializer):
     contact_data = serializers.ReadOnlyField(
         source='contact_id.bcard_json_data')
 
+    contact_media = serializers.SerializerMethodField(
+        'contact_media_funct')
+
+    def contact_media_funct(self, obj):
+        media = ContactMedia.objects.filter(
+            contact_id=obj.contact_id, status=1).order_by('front_back')
+        data = []
+
+        for item in media:
+            data.append({"img_url": str(settings.DOMAIN_NAME) +
+                         str(settings.MEDIA_URL) +
+                         str(item.img_url), "front_back": item.front_back})
+        return data
     private_contact_data = PrivateContactSerializer(read_only=True)
 
     class Meta:
@@ -133,4 +146,8 @@ class FolderContactWithDetailsSerializer(serializers.ModelSerializer):
             'link_status',
             'is_linked',
             'contact_data',
-            'private_contact_data',)
+            'contact_media',
+            'private_contact_data',
+            'created_date',
+            'updated_date',
+        )
