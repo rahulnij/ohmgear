@@ -5,7 +5,7 @@ from . import views as users_views
 from rest_framework.routers import DefaultRouter
 
 router = DefaultRouter()
-router.register(r'users/emails', users_views.UserEmailViewSet)
+router.register(r'api/users/emails', users_views.UserEmailViewSet)
 router.register(r'api/users', users_views.UserViewSet)
 router.register(r'api/profile', users_views.ProfileViewSet)
 router.register(r'api/sociallogin', users_views.SocialLoginViewSet)
