@@ -37,6 +37,7 @@ class storeContactsViewSet(viewsets.ModelViewSet):
     permission_classes = (IsAuthenticated,)
 
     def list(self, request):
+
         # queryset = self.queryset.filter(
         #    folder_contact_data__user_id=request.user.id)
         queryset = FolderContact.objects.filter(user_id=request.user.id)
