@@ -34,7 +34,7 @@ from serializer import (
 )
 from apps.contacts.serializer import ContactsSerializer
 from apps.contacts.models import Contacts, ContactMedia
-from apps.identifiers.serializer import BusinessIdentifierSerializer
+from apps.identifiers.serializer import BusinessIdentifierSerializer,SearchBusinessIdentifierSerializer
 from ohmgear.token_authentication import ExpiringTokenAuthentication
 from ohmgear.functions import CustomeResponse, rawResponse
 from ohmgear.json_default_data import BUSINESS_CARD_DATA_VALIDATION
@@ -44,7 +44,7 @@ from apps.folders.views import FolderViewSet
 from apps.sendrequest.views import SendAcceptRequest
 from apps.folders.models import Folder, FolderContact
 from apps.folders.serializer import FolderSerializer
-from serializer import BusinessCardWithIdentifierSerializer
+from serializer import BusinessCardWithIdentifierSerializer, SearchBusinessCardWithIdentifierSerializer
 import re
 
 logger = getLogger(__name__)
@@ -250,7 +250,7 @@ class BusinessCardIdentifierViewSet(viewsets.ModelViewSet):
                     return CustomeResponse(
                         {'msg': "identifier not Found"}, status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
 
-                serializer = BusinessIdentifierSerializer(
+                serializer = SearchBusinessIdentifierSerializer(
                     identifier_data, many=True)
 
                 try:
@@ -299,12 +299,11 @@ class BusinessCardIdentifierViewSet(viewsets.ModelViewSet):
                     return CustomeResponse(
                         {'msg': "Server error"}, status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
                 if userdata:
-                    print "userdata email"
                     user_id = userdata[0]['id']
                     name = "email"
                     data = searchjson(name, value, user_id)
                     if data:
-                        serializer = BusinessCardWithIdentifierSerializer(
+                        serializer = SearchBusinessCardWithIdentifierSerializer(
                             data, many=True)
                         return CustomeResponse(
                             serializer.data, status=status.HTTP_200_OK)
@@ -317,7 +316,7 @@ class BusinessCardIdentifierViewSet(viewsets.ModelViewSet):
                     user_id = ""
                     data = searchjson(name, value)
                     if data:
-                        serializer = BusinessCardWithIdentifierSerializer(
+                        serializer = SearchBusinessCardWithIdentifierSerializer(
                             data, many=True)
                         return CustomeResponse(
                             serializer.data, status=status.HTTP_200_OK)

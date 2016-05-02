@@ -1,7 +1,8 @@
 
 from rest_framework import serializers
 from apps.folders.serializer import FolderContactSerializer
-from models import Contacts, FavoriteContact, AssociateContact, ContactMedia,PrivateContact
+from models import Contacts, FavoriteContact, AssociateContact, ContactMedia, PrivateContact
+from apps.contacts.models import FolderContact
 from django.conf import settings
 
 
@@ -111,3 +112,24 @@ class AssociateContactSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = AssociateContact
+
+
+# it is used in user contact list
+
+class FolderContactWithDetailsSerializer(serializers.ModelSerializer):
+
+    contact_data = serializers.ReadOnlyField(
+        source='contact_id.bcard_json_data')
+
+    private_contact_data = PrivateContactSerializer(read_only=True)
+
+    class Meta:
+        model = FolderContact
+        fields = (
+            'id',
+            'user_id',
+            'folder_id',
+            'contact_id',
+            'link_status',
+            'contact_data',
+            'private_contact_data',)

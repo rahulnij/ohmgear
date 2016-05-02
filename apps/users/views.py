@@ -192,7 +192,6 @@ class UserViewSet(viewsets.ModelViewSet):
 
                 if 'first_name' in request.data:
                     profile.first_name = request.data['first_name']
-
                 if 'last_name' in request.data:
                     profile.last_name = request.data['last_name']
 
@@ -400,6 +399,7 @@ class UserViewSet(viewsets.ModelViewSet):
                 "Caught KeyError exception, social_type not given in \
                 {}.".format(__file__)
             )
+
             return CustomeResponse(
                 {"msg": "social_type_id is required."},
                 status=status.HTTP_400_BAD_REQUEST,
@@ -727,10 +727,9 @@ class SocialLoginViewSet(viewsets.ModelViewSet):
 def useractivity(request, **kwargs):
     msg = {}
     if request.method == 'GET':
+        activation_key = kwargs.pop('activation_key', None)
+        reset_password_key = kwargs.pop('reset_password_key', None)
 
-        activation_key = request.query_params.get('activation_key', None)
-        reset_password_key = request.query_params.get(
-            'reset_password_key', None)
 
         # get the activation key and activate the account : Process after
         # registration
@@ -813,6 +812,7 @@ def useractivity(request, **kwargs):
                         reset_password_key=reset_password_key,
                         user__email=username
                     )
+
                     profile.user.set_password(password)
                     profile.user.update_password = False
                     profile.user.save()

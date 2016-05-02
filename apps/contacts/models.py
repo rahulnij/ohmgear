@@ -44,8 +44,10 @@ class PrivateContact(models.Model):
         db_table = 'ohmgear_contacts_privatecontact'
         unique_together = ('foldercontact_id', 'user_id')
     bcard_json_data = JSONField(null=True)
-    foldercontact_id = models.ForeignKey(
-        FolderContact, db_column='foldercontact_id')
+    foldercontact_id = models.OneToOneField(
+        FolderContact,
+        db_column='foldercontact_id',
+        related_name="private_contact_data")
     user_id = models.ForeignKey(User, db_column="user_id")
     created_date = models.DateTimeField(
         _("Created Date"), auto_now_add=True, auto_now=False)
@@ -54,7 +56,7 @@ class PrivateContact(models.Model):
 
     def __unicode__(self):
         return '{"id":"%s","bcard_json_data":"%s"}' % (
-            self.id, self.bcard_json_data, self.user_id)
+            self.id, self.bcard_json_data)
 
 
 class ContactMedia(models.Model):
