@@ -131,5 +131,6 @@ class FolderContactWithDetailsSerializer(serializers.ModelSerializer):
             'folder_id',
             'contact_id',
             'link_status',
+            'is_linked',
             'contact_data',
             'private_contact_data',)

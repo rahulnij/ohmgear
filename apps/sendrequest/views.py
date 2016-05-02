@@ -214,7 +214,7 @@ class SendAcceptRequest(viewsets.ModelViewSet):
             'default': 'request sent from ' + user_name + ' to accept businesscard.',
             'APNS_SANDBOX': json.dumps({
                 'aps': {
-                    'alert': 'Hi How are you'},
+                    'alert': 'request sent from ' + user_name + ' to accept businesscard.'},
                 'data': {
                     'receiver_business_card_id': receiver_business_card_id,
                     'sender_business_card_id': sender_business_card_id,
@@ -328,17 +328,21 @@ class SendAcceptRequest(viewsets.ModelViewSet):
                 "Have some problem in exchangin businesscard sender_business_card_id {},  receiver_business_card_id {} ".format(
                     sender_business_card_id, receiver_business_card_id))
         #  End
+        else:
+            #  Update the SendRequest status
+            try:
+                send_request_obj = SendRequest.objects.get(id=request_id)
+                send_request_obj.request_status = 1
+                send_request_obj.save()
+            except SendRequest.DoesNotExist as e:
+                logger.critical(
+                    "Object Does Not Exist: SendRequest: {}, {}".format(
+                        request_id, e))
 
-        #  Update the SendRequest status
-        try:
-            send_request_obj = SendRequest.objects.get(id=request_id)
-            send_request_obj.request_status = 1
-            send_request_obj.save()
-        except SendRequest.DoesNotExist as e:
-            logger.critical(
-                "Object Does Not Exist: SendRequest: {}, {}".format(
-                    request_id, e))
-        return CustomeResponse({"msg": "success"}, status=status.HTTP_200_OK)
+            # send notification to receiver for acceptance business card    
+            
+            # end
+            return CustomeResponse({"msg": "success"}, status=status.HTTP_200_OK)
 
     # send white contact invitation
     @list_route(methods=['post'],)
