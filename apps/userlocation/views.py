@@ -16,7 +16,7 @@ from models import UserLocation
 from apps.users.models import Profile
 from ohmgear.token_authentication import ExpiringTokenAuthentication
 from serializer import UserLocationSerializer
-from apps.users.serializer import ProfileSerializer
+from .serializer import ProfileWithConnectionStatusSerializer
 from ohmgear.settings.constant import REGION
 from ohmgear.functions import CustomeResponse
 from ohmgear.settings.constant import RADAR_RADIUS
@@ -88,9 +88,9 @@ class UserLocationViewSet(viewsets.ModelViewSet):
             user_id = request.user.id
             ul = self.queryset.get(user_id=user_id, region=REGION)
             current_user_location = 'POINT(%s %s)' % (
-                ul.geom.x,
-                ul.geom.y
-            )  # {"lat": ul.lat, "lon": ul.lon}
+                ul.geom.x,  # latigude
+                ul.geom.y  # logitude
+            )
             currrent_datetime = datetime.datetime.utcnow()
             time_subtract = datetime.timedelta(minutes=30)
             currrent_datetime_after_subtract = currrent_datetime - time_subtract
@@ -110,8 +110,19 @@ class UserLocationViewSet(viewsets.ModelViewSet):
             user_ids = [oul.user_id for oul in uls]
 
             user_profiles = Profile.objects.filter(user_id__in=user_ids)
-            pserializer = ProfileSerializer(user_profiles, many=True, fields=(
-                'user', 'first_name', 'last_name', 'email', 'profile_image')
+
+            pserializer = ProfileWithConnectionStatusSerializer(
+                user_profiles,
+                many=True, fields=(
+                    'user',
+                    'first_name',
+                    'last_name',
+                    'email',
+                    'profile_image',
+                    'defaultbusinesscard_id',
+                    'is_connected'
+                ), context={"connected_user_id": user_id}
+
             )
 
             return CustomeResponse(pserializer.data, status=status.HTTP_200_OK)

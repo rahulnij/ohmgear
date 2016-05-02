@@ -11,7 +11,10 @@ from django.conf import settings
 
 # Application imports
 from ohmgear.functions import CustomeResponse
-from serializer import ContactsSerializer, ContactsSerializerWithJson, FavoriteContactSerializer, AssociateContactSerializer, ContactMediaSerializer, PrivateContactSerializer
+from serializer import ContactsSerializer, ContactsSerializerWithJson, \
+    FavoriteContactSerializer, AssociateContactSerializer, ContactMediaSerializer,\
+    PrivateContactSerializer, FolderContactWithDetailsSerializer
+
 from ohmgear.json_default_data import BUSINESS_CARD_DATA_VALIDATION
 from models import Contacts, FavoriteContact, AssociateContact, ContactMedia, PrivateContact
 from ohmgear.token_authentication import ExpiringTokenAuthentication
@@ -34,10 +37,12 @@ class storeContactsViewSet(viewsets.ModelViewSet):
     permission_classes = (IsAuthenticated,)
 
     def list(self, request):
-        queryset = self.queryset.filter(
-            folder_contact_data__user_id=request.user.id)
-#        serializer = self.serializer_class(queryset,many=True)
-        serializer = ContactsSerializerWithJson(queryset, many=True)
+
+        # queryset = self.queryset.filter(
+        #    folder_contact_data__user_id=request.user.id)
+        queryset = FolderContact.objects.filter(user_id=request.user.id)
+#       serializer = self.serializer_class(queryset,many=True)
+        serializer = FolderContactWithDetailsSerializer(queryset, many=True)
 
         if serializer.data:
             return CustomeResponse(serializer.data, status=status.HTTP_200_OK)
