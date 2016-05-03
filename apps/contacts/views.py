@@ -193,9 +193,9 @@ class storeContactsViewSet(viewsets.ModelViewSet):
 
             return CustomeResponse(data_new, status=status.HTTP_200_OK)
         else:
-            newdata = {"data": data, "pk": pk, "user_id": request.user.id}
-            self.privatecontact(newdata)
-            return CustomeResponse({'msg': 'private contact data'},
+            # newdata = {"data": data, "pk": pk, "user_id": request.user.id}
+            # self.privatecontact(newdata)
+            return CustomeResponse({'msg': 'private contact data updated'},
                                    status=status.HTTP_404_NOT_FOUND, validate_errors=1)
 
     # Pending work remaining
