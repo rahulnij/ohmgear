@@ -161,6 +161,7 @@ class SendAcceptRequest(viewsets.ModelViewSet):
     @list_route(methods=['post'],)
     def invite_to_businesscard(self, request):
         user_id = request.user
+        print user_id
         try:
             receiver_business_card_id = request.data[
                 'receiver_business_card_id']
