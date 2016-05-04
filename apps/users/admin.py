@@ -9,7 +9,7 @@ from rest_framework.authtoken.models import Token
 from django.contrib import admin
 admin.autodiscover()
 
-#Third Party models
+# Third Party models
 import csv
 
 from .models import (
@@ -122,7 +122,24 @@ class SocialLoginAdmin(admin.ModelAdmin):
 
 
 class UserEmailAdmin(admin.ModelAdmin):
-    pass
+    list_display = ('user_original_email_display','additional_email','is_Verified',
+                    'created_date', 'updated_date')
+
+    def user_original_email_display(self, obj):
+        return obj.user_id.email
+    user_original_email_display.short_description = 'OriginalEmail'
+
+    def additional_email(self, obj):
+        return obj.email
+    additional_email.short_description = 'Additional Email'
+
+    def is_Verified(self, obj):
+
+        if obj.isVerified == 1:
+            return "Activated"
+        else:
+            return "Not Activated"
+    is_Verified.short_description = 'Status'
 
 
 class SocialTypeAdmin(admin.ModelAdmin):
