@@ -1,15 +1,25 @@
-
+""" not currently used."""
 # Third Party Imports
-from django.shortcuts import render
 import rest_framework.status as status
 from rest_framework.permissions import IsAuthenticated
-from rest_framework import routers, serializers, viewsets
+from rest_framework import viewsets
 from ohmgear.functions import CustomeResponse
 from ohmgear.token_authentication import ExpiringTokenAuthentication
 
 # Application imports
-from models import Feedbacks, FeedbackCategory, FeedbackCategorySubject, ContactUs
-from serializer import FeedbacksSerializer, FeedbackCategorySerializer, FeedbackCategorySubjectSerializer, ContactusSerializer
+from models import (
+    Feedbacks,
+    FeedbackCategory,
+    FeedbackCategorySubject,
+    ContactUs
+)
+
+from serializer import (
+    FeedbacksSerializer,
+    FeedbackCategorySerializer,
+    FeedbackCategorySubjectSerializer,
+    ContactusSerializer
+)
 
 
 class FeedbackViewSet(viewsets.ModelViewSet):

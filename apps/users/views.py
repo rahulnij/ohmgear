@@ -730,7 +730,6 @@ def useractivity(request, **kwargs):
         activation_key = kwargs.pop('activation_key', None)
         reset_password_key = kwargs.pop('reset_password_key', None)
 
-
         # get the activation key and activate the account : Process after
         # registration
         if activation_key:
@@ -955,7 +954,6 @@ class UserEmailViewSet(viewsets.ModelViewSet):
     permission_classes = (IsAuthenticated,)
 
     def get_permissions(self):
-        # Your logic should be all here
         if self.request.method == 'GET':
             activation_code = self.request.query_params.get(
                 'activation_code', '')
@@ -1002,22 +1000,53 @@ class UserEmailViewSet(viewsets.ModelViewSet):
             return CustomeResponse(default_email, status=status.HTTP_200_OK)
 
     def create(self, request):
-        data = {}
-        data['user_id'] = request.user.id
-        data['email'] = request.data.get('email')
-        data['is_default'] = 0
-        # todo email validation in serializer
-        serializer = UserEmailSerializer(
-            data=data, context={'request': request, 'msg': 'not exist'})
+        """Add user additional email."""
+        try:
+            data = {}
+            user_id = request.user.id
+            data['user_id'] = user_id
+            data['email'] = request.data['email']
+        except KeyError:
+            logger.error(
+                "Caught KeyError exception, email not given in {} \
+                by primary key {}".
+                format(__file__, user_id)
+            )
+            return CustomeResponse(
+                {
+                    'msg': 'email is required.'
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+                validate_errors=1
+            )
 
-        if serializer.is_valid():
-            serializer.save()
-            return CustomeResponse(
-                serializer.data,
-                status=status.HTTP_201_CREATED)
-        else:
-            return CustomeResponse(
-                {'msg': serializer.errors}, validate_errors=1)
+        data['is_default'] = 0
+        try:
+            # todo email validation in serializer
+            serializer = UserEmailSerializer(
+                data=data, context={'request': request, 'msg': 'not exist'})
+
+            if serializer.is_valid():
+                serializer.save()
+                return CustomeResponse(
+                    serializer.data,
+                    status=status.HTTP_201_CREATED)
+            else:
+                return CustomeResponse(
+                    {'msg': serializer.errors}, validate_errors=1)
+        except Exception:
+            logger.critical(
+                "Caught exception in {}".format(__file__),
+                exc_info=True
+            )
+
+        return CustomeResponse(
+            {
+                "msg": "Can not process request."
+            },
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            validate_errors=1
+        )
 
     @list_route(methods=['post'],)
     def send_verification_code(self, request):

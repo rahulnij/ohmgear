@@ -9,6 +9,7 @@ from rest_framework import viewsets
 from rest_framework.decorators import list_route
 from rest_framework.permissions import IsAuthenticated
 import rest_framework.status as status
+from django.conf import settings
 import logging
 
 # Local app imports
@@ -22,6 +23,7 @@ from ohmgear.functions import CustomeResponse
 from ohmgear.settings.constant import RADAR_RADIUS
 
 logger = logging.getLogger(__name__)
+ravenclient = getattr(settings, "RAVEN_CLIENT", None)
 
 
 class UserLocationViewSet(viewsets.ModelViewSet):
@@ -56,6 +58,7 @@ class UserLocationViewSet(viewsets.ModelViewSet):
                         UserLocation.__name__, user_id, __file__
                     )
                 )
+                ravenclient.captureException()
             except UserLocation.DoesNotExist:
                 data['user_id'] = user_id
                 data['region'] = REGION
@@ -71,6 +74,7 @@ class UserLocationViewSet(viewsets.ModelViewSet):
                 "Caught exception in {}".format(__file__),
                 exc_info=True
             )
+            ravenclient.captureException()
 
         return CustomeResponse(
             {
@@ -144,7 +148,7 @@ class UserLocationViewSet(viewsets.ModelViewSet):
                 "Caught exception in {}".format(__file__),
                 exc_info=True
             )
-
+            ravenclient.captureException()
         return CustomeResponse(
             {
                 "msg": "Can not process request."
