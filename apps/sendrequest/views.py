@@ -59,6 +59,7 @@ class SendAcceptRequest(viewsets.ModelViewSet):
         # receiver_bcard_or_contact_id
         # message
         # request_type
+        # search_by
         try:
             notification = SendRequest()
 
@@ -72,7 +73,7 @@ class SendAcceptRequest(viewsets.ModelViewSet):
                 'receiver_bcard_or_contact_id']
 
             notification.message = karg['message']
-
+            notification.search_by = karg['search_by']
             try:
                 notification.save()
                 return True
@@ -205,11 +206,11 @@ class SendAcceptRequest(viewsets.ModelViewSet):
     @list_route(methods=['post'],)
     def invite_to_businesscard(self, request):
         user_id = request.user
-        print user_id
         try:
             receiver_business_card_id = request.data[
                 'receiver_business_card_id']
             sender_business_card_id = request.data['sender_business_card_id']
+            search_by = request.data['search_by']
             get_profile = Profile.objects.filter(user_id=user_id).values(
                 "first_name", "last_name").latest("id")
             user_name = str(get_profile["first_name"]) + \
@@ -217,7 +218,7 @@ class SendAcceptRequest(viewsets.ModelViewSet):
         except:
             return CustomeResponse(
                 {
-                    'msg': "Please provide receiver_business_card_id and sender_business_card_id"},
+                    'msg': "Please provide receiver_business_card_id, sender_business_card_id and search_by"},
                 status=status.HTTP_400_BAD_REQUEST,
                 validate_errors=1)
 
@@ -261,7 +262,7 @@ class SendAcceptRequest(viewsets.ModelViewSet):
                 sender_business_card_id=sender_business_card,
                 receiver_user_id=receiver_business_card.user_id,
                 receiver_bcard_or_contact_id=receiver_obj_id,
-                message=message)
+                message=message, search_by=search_by)
             if insert_notification is not True:
                 return CustomeResponse(
                     {
