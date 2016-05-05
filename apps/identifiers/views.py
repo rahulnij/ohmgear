@@ -95,13 +95,18 @@ class IdentifierViewSet(viewsets.ModelViewSet):
                     identifiersuggestion = ''.join(
                         random.choice('0123456789') for i in range(2))
                     newidentifier = identifier + identifiersuggestion
-                    matchidentifier = Identifier.objects.get(
-                        identifier=newidentifier)
-                    if not matchidentifier:
+                    try:
+                        Identifier.objects.get(
+                            identifier=newidentifier
+                        )
+                    except Identifier.DoesNotExist:
                         list.append(newidentifier)
+
                 return CustomeResponse(
-                    {"msg": list}, status=status.HTTP_200_OK,
-                    validate_errors=True
+                    {
+                        "msg": list
+                    },
+                    status=status.HTTP_200_OK
                 )
             except Identifier.DoesNotExist:
                 # no need to log
