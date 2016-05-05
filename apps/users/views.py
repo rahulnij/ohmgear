@@ -729,7 +729,6 @@ def useractivity(request, **kwargs):
     if request.method == 'GET':
         activation_key = kwargs.pop('activation_key', None)
         reset_password_key = kwargs.pop('reset_password_key', None)
-
         # get the activation key and activate the account : Process after
         # registration
         if activation_key:

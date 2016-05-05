@@ -72,6 +72,7 @@ class UserLocationViewSet(viewsets.ModelViewSet):
                 ulserializer.errors,
                 status=status.HTTP_400_BAD_REQUEST
             )
+
         except Exception:
             logger.critical(
                 "Caught exception in {}".format(__file__),
