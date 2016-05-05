@@ -5,6 +5,8 @@ from apps.contacts.models import Contacts, ContactMedia
 from apps.notes.models import Notes
 from ohmgear.functions import CustomeResponse
 import rest_framework.status as status
+from django.db import connection
+
 
 def createDuplicateBusinessCard(bcard_id=None, user_id=None):
 
@@ -214,7 +216,7 @@ def searchjson(name, value, user_id=None):
             status=1, contact_detail__bcard_json_data__contains={
                 'side_first': {'contact_info': {'email': [{'data': value}]}}} or {
                 'side_second': {'contact_info': {'email': [{'data': value}]}}}).exclude(
-            id__in=bcard_id).order_by('id')
+            id__in=bcard_id)
 
     except:
         return CustomeResponse(
