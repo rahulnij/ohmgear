@@ -28,6 +28,7 @@ from ohmgear.token_authentication import ExpiringTokenAuthentication
 import logging
 # ---------------------------End------------- #
 logger = logging.getLogger(__name__)
+ravenclient = getattr(settings, "RAVEN_CLIENT", None)
 
 
 class SendAcceptRequest(viewsets.ModelViewSet):
@@ -157,9 +158,54 @@ class SendAcceptRequest(viewsets.ModelViewSet):
 
         # End
 
+    def send_push_notification(self,
+                               message=None,
+                               message_type=None,
+                               user_id=None):
+
+        #  Get the aws arn from token table
+        try:
+            aws_token_data = AwsDeviceToken.objects.filter(
+                user_id=user_id).latest("id")
+        except AwsDeviceToken.DoesNotExist as e:
+                logger.critical(
+                    "Object Does Not Exist: AwsDeviceToken: {}, {}".format(
+                        user_id, e))
+                return False 
+                                          
+        try:
+            client = boto3.client('sns', **aws.AWS_CREDENTIAL)
+        except Exception as e:
+            logger.critical(
+                "Caught Exception in {}, {}".format(
+                    __file__, e))
+            ravenclient.captureException()
+
+        message = {
+            'default': message,
+            'APNS_SANDBOX': json.dumps({
+                'aps': {
+                    'type': message_type},
+                'data': {
+                    'receiver_business_card_id': '',
+                    'sender_business_card_id': '',
+                }})
+        }
+        message = json.dumps(message, ensure_ascii=False)
+        # we will add except botocore.exceptions.ClientError as e:
+        response = client.publish(
+            TargetArn=aws_token_data.aws_plateform_endpoint_arn,
+            Message=message,
+            MessageStructure='json',
+            MessageAttributes={
+            }
+        )
+        return response
+
     @list_route(methods=['post'],)
     def invite_to_businesscard(self, request):
         user_id = request.user
+        print user_id
         try:
             receiver_business_card_id = request.data[
                 'receiver_business_card_id']
@@ -189,41 +235,13 @@ class SendAcceptRequest(viewsets.ModelViewSet):
                 status=status.HTTP_400_BAD_REQUEST,
                 validate_errors=1)
 
-        #  Get the aws arn from token table
-        try:
-            aws_token_data = AwsDeviceToken.objects.filter(
-                user_id=receiver_business_card.user_id.id).latest("id")
-        except:
-            return CustomeResponse(
-                {
-                    'msg': "receiver device token does not exist."},
-                status=status.HTTP_400_BAD_REQUEST,
-                validate_errors=1)
-        # aws_plateform_endpoint_arn = '%s'%aws_token_data.aws_plateform_endpoint_arn
-        # ---------- End ---------------------------------------- #
-        client = boto3.client('sns', **aws.AWS_CREDENTIAL)
-        # Make json to send data
-        message = {
-            'default': 'request sent from ' + user_name + ' to accept businesscard.',
-            'APNS_SANDBOX': json.dumps({
-                'aps': {
-                    'alert': 'Hi How are you'},
-                'data': {
-                    'receiver_business_card_id': receiver_business_card_id,
-                    'sender_business_card_id': sender_business_card_id,
-                }}),
-        }
-        message = json.dumps(message, ensure_ascii=False)
+        # send notification
+        message = 'request sent from ' + user_name + ' to accept businesscard.'
+        response = self.send_push_notification(
+            message, 'b2b_invite', receiver_business_card.user_id.id)
+
         #  End
-        # TODO If user install app more then one device then send the notification more then one device
-        # --- End ---#
-        response = client.publish(
-            TargetArn=aws_token_data.aws_plateform_endpoint_arn,
-            Message=message,
-            MessageStructure='json',
-            MessageAttributes={
-            }
-        )
+
         # Insert into Notification Table
         request_type = 'b2b'
         receiver_obj_id = receiver_business_card_id
@@ -272,9 +290,12 @@ class SendAcceptRequest(viewsets.ModelViewSet):
 
         try:
             sender_business_card = BusinessCard.objects.select_related(
-                "contact_detail").get(user_id=user_id.id, id=sender_business_card_id)
+                "contact_detail").get(
+                user_id=user_id.id, id=sender_business_card_id)
             receiver_business_card = BusinessCard.objects.select_related(
-                "contact_detail").exclude(user_id=user_id.id).get(id=receiver_business_card_id)
+                "contact_detail").exclude(
+                user_id=user_id.id).get(
+                id=receiver_business_card_id)
         except:
             return CustomeResponse(
                 {
@@ -320,17 +341,27 @@ class SendAcceptRequest(viewsets.ModelViewSet):
                 "Have some problem in exchangin businesscard sender_business_card_id {},  receiver_business_card_id {} ".format(
                     sender_business_card_id, receiver_business_card_id))
         #  End
+        else:
+            #  Update the SendRequest status
+            try:
+                send_request_obj = SendRequest.objects.get(id=request_id)
+                send_request_obj.request_status = 1
+                send_request_obj.save()
+            except SendRequest.DoesNotExist as e:
+                logger.critical(
+                    "Object Does Not Exist: SendRequest: {}, {}".format(
+                        request_id, e))
 
-        #  Update the SendRequest status
-        try:
-            send_request_obj = SendRequest.objects.get(id=request_id)
-            send_request_obj.request_status = 1
-            send_request_obj.save()
-        except SendRequest.DoesNotExist as e:
-            logger.critical(
-                "Object Does Not Exist: SendRequest: {}, {}".format(
-                    request_id, e))
-        return CustomeResponse({"msg": "success"}, status=status.HTTP_200_OK)
+            # send notification to receiver for acceptance business card
+            user_name = str(receiver_business_card.user_id.user_profile.first_name) + \
+                " " + str(receiver_business_card.user_id.user_profile.last_name)
+            message = 'your business card accepted by ' + user_name
+            self.send_push_notification(
+                message, 'b2b_accepted', receiver_business_card.user_id.id)
+
+            #  End
+            return CustomeResponse(
+                {"msg": "success"}, status=status.HTTP_200_OK)
 
     # send white contact invitation
     @list_route(methods=['post'],)

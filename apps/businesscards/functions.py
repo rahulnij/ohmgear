@@ -201,12 +201,19 @@ def searchjson(name, value, user_id=None):
                 validate_errors=1)
         for data in bcard:
             bcard_id.append(data.id)
+    try:
+        contact = BusinessCard.objects.filter(
+            status=1, contact_detail__bcard_json_data__contains={
+                'side_first': {'contact_info': {'email': [{'data': value}]}}} or {
+                'side_second': {'contact_info': {'email': [{'data': value}]}}}).exclude(
+            id__in=bcard_id)
 
-    contact = BusinessCard.objects.filter(
-        status=1, contact_detail__bcard_json_data__contains={
-            'side_first': {'contact_info': {'email': [{'data': value}]}}} or {
-            'side_second': {'contact_info': {'email': [{'data': value}]}}}).exclude(
-        id__in=bcard_id)
+    except:
+            return CustomeResponse(
+                {
+                    'msg': "No Contact Businesscard found"},
+                status=status.HTTP_400_BAD_REQUEST,
+                validate_errors=1)
     if bcard or contact:
         result_list = []
         from itertools import chain

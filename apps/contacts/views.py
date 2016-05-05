@@ -51,6 +51,12 @@ class storeContactsViewSet(viewsets.ModelViewSet):
                                    status=status.HTTP_400_BAD_REQUEST,
                                    validate_errors=True)
 
+    def retrieve(self, request, pk=None):
+
+        return CustomeResponse({'msg': 'retrieve method not allowed'},
+                               status=status.HTTP_405_METHOD_NOT_ALLOWED,
+                               validate_errors=1)
+
     def create(self, request):
         return CustomeResponse({'msg': 'POST method not allowed'},
                                status=status.HTTP_405_METHOD_NOT_ALLOWED,
@@ -170,7 +176,7 @@ class storeContactsViewSet(viewsets.ModelViewSet):
             # contact =
             # Contacts.objects.select_related('folder_contact_data').filter(id=pk)
             folder_contact_data = FolderContact.objects.select_related(
-                'contact_id').get(id=pk, user_id=request.user.id)
+                'contact_id').get(contact_id=pk, user_id=request.user.id)
             contact_data = folder_contact_data.contact_id
             link_status = folder_contact_data.link_status
 
@@ -193,9 +199,9 @@ class storeContactsViewSet(viewsets.ModelViewSet):
 
             return CustomeResponse(data_new, status=status.HTTP_200_OK)
         else:
-            newdata = {"data": data, "pk": pk, "user_id": request.user.id}
-            self.privatecontact(newdata)
-            return CustomeResponse({'msg': 'private contact data'},
+            # newdata = {"data": data, "pk": pk, "user_id": request.user.id}
+            # self.privatecontact(newdata)
+            return CustomeResponse({'msg': 'private contact data updated'},
                                    status=status.HTTP_404_NOT_FOUND, validate_errors=1)
 
     # Pending work remaining

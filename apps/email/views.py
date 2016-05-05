@@ -103,7 +103,7 @@ class BaseSendMail(Task):
                           [user['email']],
                           fail_silently=False,
                           html_message=email_body)
-
+                return True
             except EmailTemplate.DoesNotExist:
                 logger.critical(
                     "Caught DoesNotExist exception for {}, user_id{}, \

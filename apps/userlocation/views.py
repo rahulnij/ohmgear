@@ -68,7 +68,10 @@ class UserLocationViewSet(viewsets.ModelViewSet):
                 ulserializer.save()
                 return CustomeResponse({}, status=status.HTTP_204_NO_CONTENT)
 
-            return CustomeResponse([], status=status.HTTP_400_BAD_REQUEST)
+            return CustomeResponse(
+                ulserializer.errors,
+                status=status.HTTP_400_BAD_REQUEST
+            )
         except Exception:
             logger.critical(
                 "Caught exception in {}".format(__file__),
@@ -78,7 +81,7 @@ class UserLocationViewSet(viewsets.ModelViewSet):
 
         return CustomeResponse(
             {
-                "msg": "Can not process request."
+                "msg": "Can not process request. Please try later."
             },
             status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             validate_errors=1
@@ -151,7 +154,7 @@ class UserLocationViewSet(viewsets.ModelViewSet):
             ravenclient.captureException()
         return CustomeResponse(
             {
-                "msg": "Can not process request."
+                "msg": "Can not process request. Please try later."
             },
             status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             validate_errors=1
