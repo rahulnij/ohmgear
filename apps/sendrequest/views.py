@@ -169,11 +169,11 @@ class SendAcceptRequest(viewsets.ModelViewSet):
             aws_token_data = AwsDeviceToken.objects.filter(
                 user_id=user_id).latest("id")
         except AwsDeviceToken.DoesNotExist as e:
-                logger.critical(
-                    "Object Does Not Exist: AwsDeviceToken: {}, {}".format(
-                        user_id, e))
-                return False 
-                                          
+            logger.critical(
+                "Object Does Not Exist: AwsDeviceToken: {}, {}".format(
+                    user_id, e))
+            return False
+
         try:
             client = boto3.client('sns', **aws.AWS_CREDENTIAL)
         except Exception as e:
@@ -186,16 +186,19 @@ class SendAcceptRequest(viewsets.ModelViewSet):
             'default': message,
             'APNS_SANDBOX': json.dumps({
                 'aps': {
-                    'type': message_type},
+                    'alert': message,
+                    'message_type': message_type
+                },
                 'data': {
                     'receiver_business_card_id': '',
                     'sender_business_card_id': '',
                 }})
         }
         message = json.dumps(message, ensure_ascii=False)
+        print aws_token_data.aws_plateform_endpoint_arn
         # we will add except botocore.exceptions.ClientError as e:
         response = client.publish(
-            TargetArn=aws_token_data.aws_plateform_endpoint_arn,
+            TargetArn=str(aws_token_data.aws_plateform_endpoint_arn),
             Message=message,
             MessageStructure='json',
             MessageAttributes={
@@ -363,6 +366,37 @@ class SendAcceptRequest(viewsets.ModelViewSet):
             #  End
             return CustomeResponse(
                 {"msg": "success"}, status=status.HTTP_200_OK)
+
+    # cancel the invitation request
+    @list_route(methods=['post'],)
+    def cancel_invitation(self, request):
+        user_id = request.user.id
+
+        if 'request_id' in request.data:
+
+            try:
+                send_request_obj = SendRequest.objects.get(
+                    receiver_user_id=user_id, id=request.data["request_id"])
+                send_request_obj.request_status = 2
+                send_request_obj.save()
+            except SendRequest.DoesNotExist as e:
+                logger.critical(
+                    "cancel_invitation api : Object Does Not Exist: SendRequest: {}, {}".format(
+                        request.data["request_id"], e))
+                return CustomeResponse(
+                    {
+                        'msg': "request_id does not exist for this user"},
+                    status=status.HTTP_400_BAD_REQUEST,
+                    validate_errors=1)
+
+            return CustomeResponse(
+                {"msg": "request cancelled successfully"}, status=status.HTTP_200_OK)
+        else:
+            return CustomeResponse(
+                {
+                    'msg': "Please provide request_id"},
+                status=status.HTTP_400_BAD_REQUEST,
+                validate_errors=1)
 
     # send white contact invitation
     @list_route(methods=['post'],)
