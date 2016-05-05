@@ -224,9 +224,9 @@ class BusinessCardIdentifierViewSet(viewsets.ModelViewSet):
             return CustomeResponse({'msg': "Please provide name"},
                                    status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
         # search by firstname and lastname#
-
-        if (' ' in value) == True:
-            try:
+        try:
+            if (' ' in value) == True:
+    
                 name = "firstname_lastname"
                 user_id = ''
                 data = searchjson(name, value)
@@ -238,21 +238,12 @@ class BusinessCardIdentifierViewSet(viewsets.ModelViewSet):
                 else:
                     return CustomeResponse(
                         {'msg': "Name not found"}, status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
-            except Exception:
-                logger.critical("Caught Exception ", exc_info=True)
+    
+            # search by firstname and lastname #
+            else:
 
-            return CustomeResponse(
-                {
-                    "msg": "Can not process request."
-                },
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                validate_errors=1
-            )
-        # search by firstname and lastname #
-        else:
+                if not re.match("[^@]+@[^@]+\.[^@]+", value):
 
-            if not re.match("[^@]+@[^@]+\.[^@]+", value):
-                try:
                     identifier_data = Identifier.objects.filter(
                         identifier=value, status=1)
 
@@ -298,20 +289,11 @@ class BusinessCardIdentifierViewSet(viewsets.ModelViewSet):
                         else:
                             return CustomeResponse(
                                 {'msg': "No Business Card Found"}, status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
-                except Exception:
-                    logger.critical("Caught Exception ", exc_info=True)
 
-                return CustomeResponse(
-                    {
-                        "msg": "Can not process request."
-                    },
-                    status=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                    validate_errors=1
-                )
-            # Search by email #
-            else:
-                userdata = User.objects.filter(email=value).values()
-                try:
+                # Search by email #
+                else:
+                    userdata = User.objects.filter(email=value).values()
+
                     if userdata:
                         user_id = userdata[0]['id']
                         name = "email"
@@ -337,16 +319,17 @@ class BusinessCardIdentifierViewSet(viewsets.ModelViewSet):
                         else:
                             return CustomeResponse(
                                 {'msg': "email not found"}, status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
-                except Exception:
-                    logger.critical("Caught Exception ", exc_info=True)
 
-                return CustomeResponse(
-                    {
-                        "msg": "Can not process request."
-                    },
-                    status=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                    validate_errors=1
-                )
+        except Exception:
+            logger.critical("Caught Exception ", exc_info=True)
+
+        return CustomeResponse(
+            {
+                "msg": "Can not process request."
+            },
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            validate_errors=1
+        )
 
 # BusinessCard History
 
