@@ -5,7 +5,6 @@ from apps.contacts.models import Contacts, ContactMedia
 from apps.notes.models import Notes
 from ohmgear.functions import CustomeResponse
 import rest_framework.status as status
-from django.db import connection
 
 
 def createDuplicateBusinessCard(bcard_id=None, user_id=None):
@@ -169,61 +168,40 @@ def searchjson(name, value, user_id=None):
     bcard_id = []
     bcard = ''
 
-    # search by name
+    # Search by name.#
     if name == 'firstname_lastname':
         new = value.split(" ")
-        try:
-
-            bcard = BusinessCard.objects.filter(
-                status=1, contact_detail__bcard_json_data__contains={
-                    'side_first': {
-                        'basic_info': [
-                            {
-                                'keyName': "FirstName", "value": new[0]}, {
-                                'keyName': "LastName", "value": new[1]}]}} or {
-                    'side_second': {
-                        'basic_info': [
-                            {
-                                'keyName': "FirstName", "value": new[0]}, {
-                                'keyName': "LastName", "value": new[1]}]}})
-        except:
-            return CustomeResponse(
-                {
-                    'msg': "Businesscard Identifier Id not found"},
-                status=status.HTTP_400_BAD_REQUEST,
-                validate_errors=1)
+        bcard = BusinessCard.objects.filter(
+            status=1, contact_detail__bcard_json_data__contains={
+                'side_first': {
+                    'basic_info': [
+                        {
+                            'keyName': "FirstName", "value": new[0]}, {
+                            'keyName': "LastName", "value": new[1]}]}} or {
+                'side_second': {
+                    'basic_info': [
+                        {
+                            'keyName': "FirstName", "value": new[0]}, {
+                            'keyName': "LastName", "value": new[1]}]}})
         return bcard
 
-    # search by email
+    # Search by email.#
     if user_id and name == "email":
-        try:
-            bcard = BusinessCard.objects.filter(
-                user_id=user_id, status=1, contact_detail__bcard_json_data__contains={
-                    'side_first': {
-                        'contact_info': {'email': [{'data': value}]}}} or {
-                    'side_second': {
-                        'contact_info': {'email': [{'data': value}]}}})
-        except:
-            return CustomeResponse(
-                {
-                    'msg': "Businesscard Identifier Id not found"},
-                status=status.HTTP_400_BAD_REQUEST,
-                validate_errors=1)
+        bcard = BusinessCard.objects.filter(
+            user_id=user_id, status=1, contact_detail__bcard_json_data__contains={
+                'side_first': {
+                    'contact_info': {'email': [{'data': value}]}}} or {
+                'side_second': {
+                    'contact_info': {'email': [{'data': value}]}}})
         for data in bcard:
             bcard_id.append(data.id)
-    try:
+
         contact = BusinessCard.objects.filter(
             status=1, contact_detail__bcard_json_data__contains={
                 'side_first': {'contact_info': {'email': [{'data': value}]}}} or {
                 'side_second': {'contact_info': {'email': [{'data': value}]}}}).exclude(
             id__in=bcard_id)
 
-    except:
-        return CustomeResponse(
-            {
-                'msg': "No Contact Businesscard found"},
-            status=status.HTTP_400_BAD_REQUEST,
-            validate_errors=1)
     if bcard or contact:
         result_list = []
         from itertools import chain
