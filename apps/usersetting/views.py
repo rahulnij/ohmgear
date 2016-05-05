@@ -1,17 +1,34 @@
-from django.shortcuts import render
-from rest_framework import routers, serializers, viewsets
-from serializer import UserSettingSerializer, SettingSerializer, LanguageSerializer, DisplayContactNameAsSerializer
-from models import Setting, UserSetting, Language, DisplayContactNameAs
+"""Usersetting view."""
+from rest_framework import viewsets
+from django.conf import settings
+import logging
+
+from serializer import (
+    UserSettingSerializer,
+    LanguageSerializer,
+    DisplayContactNameAsSerializer
+)
+
+from models import (
+    UserSetting,
+    Language,
+    DisplayContactNameAs
+)
 from ohmgear.functions import CustomeResponse
 import rest_framework.status as status
 from ohmgear.token_authentication import ExpiringTokenAuthentication
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import list_route
-from functions import get_all_usersetting, get_setting_value_by_key, update_user_setting
+from functions import (
+    get_all_usersetting,
+    get_setting_value_by_key,
+    update_user_setting
+)
 from apps.users.models import User
 import re
 
-# Create your views here.
+logger = logging.getLogger(__name__)
+ravenclient = getattr(settings, "RAVEN_CLIENT", None)
 
 
 class UserSettingViewSet(viewsets.ModelViewSet):
@@ -25,16 +42,30 @@ class UserSettingViewSet(viewsets.ModelViewSet):
     # Get all user-setting of a user
     def list(self, request):
         """Get default user-setting."""
-        user_id = request.user.id
-        queryset = get_all_usersetting(user_id)
-        if queryset:
-            serializer = UserSettingSerializer(queryset, many=True)
-            data = {keydata['key']: keydata['value']
-                    for keydata in serializer.data}
-            return CustomeResponse(data, status=status.HTTP_200_OK)
-        else:
-            return CustomeResponse(
-                {"msg": "data not found"}, status=status.HTTP_200_OK)
+        try:
+            user_id = request.user.id
+            queryset = get_all_usersetting(user_id)
+            if queryset:
+                serializer = UserSettingSerializer(queryset, many=True)
+                data = {keydata['key']: keydata['value'] for keydata in serializer.data}
+                return CustomeResponse(data, status=status.HTTP_200_OK)
+            else:
+                return CustomeResponse(
+                    {"msg": "data not found"}, status=status.HTTP_200_OK)
+        except Exception:
+            logger.critical(
+                "Caught exception in {}".format(__file__),
+                exc_info=True
+            )
+            ravenclient.captureException()
+
+        return CustomeResponse(
+            {
+                "msg": "Can not process request. Please try later."
+            },
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            validate_errors=1
+        )
 
     @list_route(methods=["post"],)
     # get particular setting value of user by key#
@@ -43,23 +74,41 @@ class UserSettingViewSet(viewsets.ModelViewSet):
         try:
             getkey = request.data['key']
             user_id = request.user.id
-        except:
-            return CustomeResponse({"msg": "Please provide the key"},
-                                   status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
+        except KeyError:
+            return CustomeResponse(
+                {
+                    "msg": "Please provide the key"
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+                validate_errors=1
+            )
         try:
             usersettingvalue = get_setting_value_by_key(getkey, user_id)
 
-        except:
-            return CustomeResponse(
-                {"msg": "Key not found"}, status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
-        if usersettingvalue:
             serializer = UserSettingSerializer(usersettingvalue)
             return CustomeResponse(serializer.data, status=status.HTTP_200_OK)
-        else:
+        except UserSetting.DoesNotExist:
             return CustomeResponse(
-                serializer.errors,
+                {
+                    "msg": "Key not found"
+                },
                 status=status.HTTP_400_BAD_REQUEST,
-                validate_errors=1)
+                validate_errors=1
+            )
+        except Exception:
+            logger.critical(
+                "Caught exception in {}".format(__file__),
+                exc_info=True
+            )
+            ravenclient.captureException()
+
+        return CustomeResponse(
+            {
+                "msg": "Can not process request. Please try later."
+            },
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            validate_errors=1
+        )
 
     @list_route(methods=["post"],)
     # Update settings of the user by key#
@@ -71,24 +120,36 @@ class UserSettingViewSet(viewsets.ModelViewSet):
             user_id = request.user.id
             getkeydata = update_user_setting(getkey, getvalue, user_id)
 
-        except:
-            return CustomeResponse(
-                {"msg": "Data not found"}, status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
-        if getkeydata:
-            return CustomeResponse(
-                {"msg": "settings has been updated"}, status=status.HTTP_200_OK)
-        else:
-            return CustomeResponse({"msg": "Server error try again"},
-                                   status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
+            if getkeydata:
+                return CustomeResponse(
+                    {"msg": "settings has been updated"},
+                    status=status.HTTP_200_OK
+                )
+            else:
+                return CustomeResponse(
+                    {"msg": "Setting Not found."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                    validate_errors=1
+                )
+        except Exception:
+            logger.critical(
+                "Caught exception in {}".format(__file__),
+                exc_info=True
+            )
+            ravenclient.captureException()
+
+        return CustomeResponse(
+            {
+                "msg": "Can not process request. Please try later."
+            },
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            validate_errors=1
+        )
 
     @list_route(methods=['post'],)
     def update_pinnumber(self, request):
         """Update pin number."""
-        try:
-            user_id = request.user.id
-        except:
-            user_id = ''
-
+        user_id = request.user.id
         try:
             pin_number = request.data['pin_number']
 
@@ -97,24 +158,44 @@ class UserSettingViewSet(viewsets.ModelViewSet):
             else:
                 return CustomeResponse(
                     {
-                        "msg": "Pin number can be numeric with 4 digits only "},
+                        "msg": "Pin number can be numeric with 4 digits only "
+                    },
                     status=status.HTTP_400_BAD_REQUEST,
-                    validate_errors=1)
-        except:
+                    validate_errors=1
+                )
+        except KeyError:
             pin_number = ''
 
         try:
-            userdata = User.objects.filter(
-                id=user_id).update(pin_number=pin_number)
-        except:
-            userdata = None
-
-        if userdata:
+            User.objects.get(
+                id=user_id
+            ).update(
+                pin_number=pin_number
+            )
             return CustomeResponse(
-                {'msg': 'Pin number is updated'}, status=status.HTTP_201_CREATED)
-        else:
-            return CustomeResponse({"msg": "Server error try again"},
-                                   status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
+                {'msg': 'Pin number is updated'},
+                status=status.HTTP_201_CREATED
+            )
+        except User.DoesNotExist:
+            return CustomeResponse(
+                {"msg": "User not exist."},
+                status=status.HTTP_400_BAD_REQUEST,
+                validate_errors=1
+            )
+        except Exception:
+            logger.critical(
+                "Caught exception in {}".format(__file__),
+                exc_info=True
+            )
+            ravenclient.captureException()
+
+        return CustomeResponse(
+            {
+                "msg": "Can not process request. Please try later."
+            },
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            validate_errors=1
+        )
 
 
 class LanguageSettingViewSet(viewsets.ModelViewSet):
@@ -126,13 +207,34 @@ class LanguageSettingViewSet(viewsets.ModelViewSet):
 
     def list(self, request):
         """Get all language."""
-        queryset = Language.objects.all()
-        if self.queryset:
-            serializer = LanguageSerializer(queryset, many=True)
-            return CustomeResponse(serializer.data, status=status.HTTP_200_OK)
-        else:
-            return CustomeResponse(
-                {"msg": "Data not found"}, status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
+        try:
+            queryset = self.queryset
+            if queryset:
+                serializer = LanguageSerializer(queryset, many=True)
+                return CustomeResponse(
+                    serializer.data,
+                    status=status.HTTP_200_OK
+                )
+            else:
+                return CustomeResponse(
+                    {"msg": "Data not found"},
+                    status=status.HTTP_400_BAD_REQUEST,
+                    validate_errors=1
+                )
+        except Exception:
+            logger.critical(
+                "Caught exception in {}".format(__file__),
+                exc_info=True
+            )
+            ravenclient.captureException()
+
+        return CustomeResponse(
+            {
+                "msg": "Can not process request. Please try later."
+            },
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            validate_errors=1
+        )
 
 
 class DisplayContactNameAsViewSet(viewsets.ModelViewSet):
@@ -144,10 +246,31 @@ class DisplayContactNameAsViewSet(viewsets.ModelViewSet):
 
     def list(self, request):
         """Get all DisplayContactName data."""
-        queryset = DisplayContactNameAs.objects.all()
-        if queryset:
-            serializer = DisplayContactNameAsSerializer(queryset, many=True)
-            return CustomeResponse(serializer.data, status=status.HTTP_200_OK)
-        else:
-            return CustomeResponse(
-                {"msg": "Data not found"}, status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
+        try:
+            queryset = self.queryset
+            if queryset:
+                serializer = DisplayContactNameAsSerializer(queryset, many=True)
+                return CustomeResponse(
+                    serializer.data,
+                    status=status.HTTP_200_OK
+                )
+            else:
+                return CustomeResponse(
+                    {"msg": "Data not found"},
+                    status=status.HTTP_400_BAD_REQUEST,
+                    validate_errors=1
+                )
+        except Exception:
+            logger.critical(
+                "Caught exception in {}".format(__file__),
+                exc_info=True
+            )
+            ravenclient.captureException()
+
+        return CustomeResponse(
+            {
+                "msg": "Can not process request. Please try later."
+            },
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            validate_errors=1
+        )

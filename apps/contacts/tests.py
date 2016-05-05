@@ -159,7 +159,7 @@ class ContactTestCase(APITestCase):
         response = self.client.get(
             '/api/contacts/', '', format='json', **auth_headers)
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.data['data'][0]['bcard_json_data'].keys(), [u'side_second', u'side_first'])
+        self.assertEqual(response.data['data'][0]['contact_data'].keys(), [u'side_second', u'side_first'])
 
     def test_contact_delete(self):
         pass    

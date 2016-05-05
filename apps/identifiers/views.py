@@ -45,6 +45,7 @@ class IdentifierViewSet(viewsets.ModelViewSet):
 
         Also check if identifier exist give suggested identifier.
         """
+
         try:
             identifier = self.request.query_params.get('identifier', None)
             user = self.request.query_params.get('user', None)
@@ -62,55 +63,69 @@ class IdentifierViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_400_BAD_REQUEST,
                 validate_errors=1
             )
+        try:
+            # check whether identifier is exist or not if not give suggested
+            # identifier
 
-        # check whether identifier is exist or not if not give suggested
-        # identifier
+            # Get all identifiers of the user
+            userdata = Identifier.objects.select_related(
+                'businesscard_identifiers').filter(user=user).order_by('-id')
 
-        # Get all identifiers of the user
-        userdata = Identifier.objects.select_related(
-            'businesscard_identifiers').filter(user=user).order_by('-id')
-
-        if userdata:
-            serializer = BusinessIdentifierSerializer(
-                userdata, many=True)
-            return CustomeResponse(
-                serializer.data, status=status.HTTP_201_CREATED)
-        else:
-
-            if identifier is None:
+            if userdata:
+                serializer = BusinessIdentifierSerializer(
+                    userdata, many=True)
                 return CustomeResponse(
-                    {
-                        'msg': 'user id is not exist'
-                    },
-                    status=status.HTTP_400_BAD_REQUEST,
-                    validate_errors=1
-                )
+                    serializer.data, status=status.HTTP_201_CREATED)
+            else:
 
-            try:
-                Identifier.objects.get(
-                    identifier=identifier
-                )
-                list = []
-                for i in range(5):
-                    identifiersuggestion = ''.join(
-                        random.choice('0123456789') for i in range(2))
-                    newidentifier = identifier + identifiersuggestion
-                    matchidentifier = Identifier.objects.get(
-                        identifier=newidentifier)
-                    if not matchidentifier:
-                        list.append(newidentifier)
-                return CustomeResponse(
-                    {"msg": list}, status=status.HTTP_200_OK,
-                    validate_errors=True
-                )
-            except Identifier.DoesNotExist:
-                # no need to log
-                return CustomeResponse(
-                    {
-                        'msg': 'Identifier available'
-                    },
-                    status=status.HTTP_200_OK
-                )
+                if identifier is None:
+                    return CustomeResponse(
+                        {
+                            'msg': 'user id is not exist'
+                        },
+                        status=status.HTTP_400_BAD_REQUEST,
+                        validate_errors=1
+                    )
+
+                try:
+                    Identifier.objects.get(
+                        identifier=identifier
+                    )
+                    list = []
+                    for i in range(5):
+                        identifiersuggestion = ''.join(
+                            random.choice('0123456789') for i in range(2))
+                        newidentifier = identifier + identifiersuggestion
+                        matchidentifier = Identifier.objects.get(
+                            identifier=newidentifier)
+                        if not matchidentifier:
+                            list.append(newidentifier)
+                    return CustomeResponse(
+                        {"msg": list}, status=status.HTTP_200_OK,
+                        validate_errors=True
+                    )
+                except Identifier.DoesNotExist:
+                    # no need to log
+                    return CustomeResponse(
+                        {
+                            'msg': 'Identifier available'
+                        },
+                        status=status.HTTP_200_OK
+                    )
+        except Exception:
+            logger.critical(
+                "Caught exception in {}".format(__file__),
+                exc_info=True
+            )
+            ravenclient.captureException()
+
+        return CustomeResponse(
+            {
+                "msg": "Can not process request. Please try later."
+            },
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            validate_errors=1
+        )
 
     def retrieve(self, request, pk=None):
         """Retrive identifier."""
@@ -135,73 +150,117 @@ class IdentifierViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_404_NOT_FOUND,
                 validate_errors=1
             )
+        except Exception:
+            logger.critical(
+                "Caught exception in {}".format(__file__),
+                exc_info=True
+            )
+            ravenclient.captureException()
+
+        return CustomeResponse(
+            {
+                "msg": "Can not process request. Please try later."
+            },
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            validate_errors=1
+        )
 
     def create(self, request):
         """Create new identifer for system generated or premium."""
-        data = request.data.copy()
-        data['user'] = request.user.id
-        data['identifierlastdate'] = str(
-            (datetime.date.today() + datetime.timedelta(3 * 365 / 12)).isoformat())
+        try:
+            data = request.data.copy()
+            data['user'] = request.user.id
+            data['identifierlastdate'] = str(
+                (datetime.date.today() + datetime.timedelta(3 * 365 / 12)).isoformat())
 
-        serializer = IdentifierSerializer(
-            data=data,
-            context={'request': request, 'msg': 'not exist'}
-        )
-        identifier = data['identifier']
-        if serializer.is_valid():
-            serializer.save()
-            try:
-                remove_lock_data = ''
-                remove_lock_data = LockIdentifier.objects.get(
-                    identifier=identifier)
-            except LockIdentifier.DoesNotExist:
-                logger.error(
-                    "Caught DoesNotExist exception for {}, identifier {}, \
-                    in {}".format(
-                        LockIdentifier.__name__, identifier, __file__
+            serializer = IdentifierSerializer(
+                data=data,
+                context={'request': request, 'msg': 'not exist'}
+            )
+            identifier = data['identifier']
+            if serializer.is_valid():
+                serializer.save()
+                try:
+                    remove_lock_data = ''
+                    remove_lock_data = LockIdentifier.objects.get(
+                        identifier=identifier)
+                except LockIdentifier.DoesNotExist:
+                    logger.error(
+                        "Caught DoesNotExist exception for {}, identifier {}, \
+                        in {}".format(
+                            LockIdentifier.__name__, identifier, __file__
+                        )
                     )
-                )
-            if remove_lock_data:
-                remove_lock_data.delete()
-            return CustomeResponse(
-                serializer.data,
-                status=status.HTTP_201_CREATED)
-        else:
-            return CustomeResponse(
-                serializer.errors,
-                status=status.HTTP_400_BAD_REQUEST,
-                validate_errors=1)
+                if remove_lock_data:
+                    remove_lock_data.delete()
+                return CustomeResponse(
+                    serializer.data,
+                    status=status.HTTP_201_CREATED)
+            else:
+                return CustomeResponse(
+                    serializer.errors,
+                    status=status.HTTP_400_BAD_REQUEST,
+                    validate_errors=1)
+        except Exception:
+            logger.critical(
+                "Caught exception in {}".format(__file__),
+                exc_info=True
+            )
+            ravenclient.captureException()
+
+        return CustomeResponse(
+            {
+                "msg": "Can not process request. Please try later."
+            },
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            validate_errors=1
+        )
 
     @list_route(methods=['post'],)
     def refreshidentifier(self, request):
         """Refresh identifier will generate new identifier eveytime."""
-        user_id = request.user
-        if user_id:
-            getidentifier = CreateSystemIdentifier()
+        try:
+            user_id = request.user
+            if user_id:
+                getidentifier = CreateSystemIdentifier()
 
-            if getidentifier:
-                return CustomeResponse(
-                    {
-                        'identifier': getidentifier
-                    },
-                    status=status.HTTP_200_OK
-                )
+                if getidentifier:
+                    return CustomeResponse(
+                        {
+                            'identifier': getidentifier
+                        },
+                        status=status.HTTP_200_OK
+                    )
+                else:
+                    return CustomeResponse(
+                        {
+                            'msg': 'Identifier Not exist'
+                        },
+                        status=status.HTTP_400_BAD_REQUEST,
+                        validate_errors=1
+                    )
             else:
                 return CustomeResponse(
                     {
-                        'msg': 'Identifier Not exist'
+                        'msg': 'Invalid User'
                     },
                     status=status.HTTP_400_BAD_REQUEST,
                     validate_errors=1
                 )
-        else:
-            return CustomeResponse(
-                {
-                    'msg': 'Invalid User'
-                },
-                status=status.HTTP_400_BAD_REQUEST,
-                validate_errors=1
+        except Exception:
+            logger.critical(
+                "Caught exception in {}".format(__file__),
+                exc_info=True
             )
+            ravenclient.captureException()
+
+        return CustomeResponse(
+            {
+                "msg": "Can not process request. Please try later."
+            },
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            validate_errors=1
+        )
 
     @list_route(methods=['post'],)
     def lockidentifier(self, request):
@@ -210,42 +269,56 @@ class IdentifierViewSet(viewsets.ModelViewSet):
 
         If any other user request for it will not be given.
         """
+        try:
+            data = request.data.copy()
+            data['user'] = request.user.id
+            serializer = LockIdentifierSerializer(
+                data=data, context={'request': data, 'msg': 'not exist'})
+            identifier = data['identifier']
+            if serializer.is_valid():
 
-        data = request.data.copy()
-        data['user'] = request.user.id
-        serializer = LockIdentifierSerializer(
-            data=data, context={'request': data, 'msg': 'not exist'})
-        identifier = data['identifier']
-        if serializer.is_valid():
-
-            try:
-                identifier_exist = ''
-                identifier_lock_exist = ''
-                identifier_exist = Identifier.objects.get(
-                    identifier=identifier)
-                identifier_lock_exist = LockIdentifier.objects.get(
-                    identifier=identifier)
-            except Identifier.DoesNotExist:
-                logger.error(
-                    "Caught DoesNotExist exception for {}, identifier {},\
-                in {}".format(
-                        self.__class__, identifier, __file__
+                try:
+                    identifier_exist = ''
+                    identifier_lock_exist = ''
+                    identifier_exist = Identifier.objects.get(
+                        identifier=identifier)
+                    identifier_lock_exist = LockIdentifier.objects.get(
+                        identifier=identifier)
+                except Identifier.DoesNotExist:
+                    logger.error(
+                        "Caught DoesNotExist exception for {}, identifier {},\
+                    in {}".format(
+                            self.__class__, identifier, __file__
+                        )
                     )
-                )
-            except LockIdentifier.DoesNotExist:
-                logger.error(
-                    "Caught DoesNotExist exception for {}, identifier {},\
-                in {}".format(
-                        self.__class__, identifier, __file__
+                except LockIdentifier.DoesNotExist:
+                    logger.error(
+                        "Caught DoesNotExist exception for {}, identifier {},\
+                    in {}".format(
+                            self.__class__, identifier, __file__
+                        )
                     )
-                )
-            if identifier_exist or identifier_lock_exist:
-                return CustomeResponse(
-                    {'msg': 'Identifier is already locked'})
+                if identifier_exist or identifier_lock_exist:
+                    return CustomeResponse(
+                        {'msg': 'Identifier is already locked'})
+                else:
+                    serializer.save()
+                    return CustomeResponse(
+                        serializer.data, status=status.HTTP_201_CREATED)
             else:
-                serializer.save()
                 return CustomeResponse(
-                    serializer.data, status=status.HTTP_201_CREATED)
-        else:
-            return CustomeResponse(
-                {'msg': serializer.errors}, validate_errors=1)
+                    {'msg': serializer.errors}, validate_errors=1)
+        except Exception:
+            logger.critical(
+                "Caught exception in {}".format(__file__),
+                exc_info=True
+            )
+            ravenclient.captureException()
+
+        return CustomeResponse(
+            {
+                "msg": "Can not process request. Please try later."
+            },
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            validate_errors=1
+        )

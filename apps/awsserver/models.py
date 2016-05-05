@@ -33,3 +33,7 @@ class AwsDeviceToken(models.Model):
         _('Device Type'),
         max_length=50,
         default='apns')
+    created_date = models.DateTimeField(
+        _("Created Date"), auto_now_add=True, auto_now=False)
+    updated_date = models.DateTimeField(
+        _("Updated Date"), auto_now_add=False, auto_now=True)    

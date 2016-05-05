@@ -51,6 +51,19 @@ class UserLocationViewSet(viewsets.ModelViewSet):
                     data=data,
                     partial=True
                 )
+            except KeyError:
+                logger.error(
+                    "Caught KeyError exception, lon or lat not given in {} \
+                    by primary key {}".
+                    format(__file__, user_id)
+                )
+                return CustomeResponse(
+                    {
+                        'msg': 'lat or lon is missing.'
+                    },
+                    status=status.HTTP_400_BAD_REQUEST,
+                    validate_errors=1
+                )
             except UserLocation.MultipleObjectsReturned:
                 logger.error(
                     "Caught MultipleObjectsReturned exception for {}, user_id {},\
