@@ -22,6 +22,13 @@ class SendRequest(models.Model):
         ("b2b", "bcard to bcard"),
         ("b2g", "bcard to grey card"),
     )
+
+    SearchBy = (
+        ("email", "email"),
+        ("identifier", "identifier"),
+        ("name", "name")
+    )
+
     request_type = models.CharField(
         max_length=50,
         default="b2b",
@@ -44,6 +51,10 @@ class SendRequest(models.Model):
         default=0, blank=True)
 
     message = models.CharField(max_length=200, blank=True, null=True)
+    search_by = models.CharField(
+        max_length=10,
+        blank=True, null=True,
+        choices=RequestType)  
     request_status = models.SmallIntegerField(
         default=0, choices=AcceptedStatus)
     created_date = models.DateTimeField(
