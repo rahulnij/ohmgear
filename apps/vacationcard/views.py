@@ -271,10 +271,9 @@ class VacationCardViewSet(viewsets.ModelViewSet):
                 vacationcard_data.delete()
                 if businesscard_vacation:
                     businesscard_vacation.delete()
-            return CustomeResponse({'msg': 'Trip and vacation card  has been deleted as you have only one stop in yor vacation'}, status=status.HTTP_200_OK)
+            return CustomeResponse({'msg': 'Trip and vacation card  has been deleted as you have only one stop in your vacation'}, status=status.HTTP_200_OK)
 
         else:
-            print "No trip"
             return CustomeResponse({'msg': 'Trip_id not found'}, status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
 
 
