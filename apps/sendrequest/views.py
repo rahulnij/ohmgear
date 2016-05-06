@@ -239,14 +239,6 @@ class SendAcceptRequest(viewsets.ModelViewSet):
                 status=status.HTTP_400_BAD_REQUEST,
                 validate_errors=1)
 
-        # send notification
-        message = 'request sent from ' + user_name + ' to accept businesscard.'
-        response = self.send_push_notification(
-            message, 'b2b_invite', receiver_business_card.user_id.id)
-
-        #  End
-
-        # Insert into Notification Table
         request_type = 'b2b'
         receiver_obj_id = receiver_business_card_id
         message = 'request sent from ' + user_name + ' to accept businesscard.'
@@ -256,9 +248,17 @@ class SendAcceptRequest(viewsets.ModelViewSet):
             sender_user_id=user_id,
             sender_business_card_id=sender_business_card,
             receiver_user_id=receiver_business_card.user_id,
-            receiver_bcard_or_contact_id=receiver_obj_id)
+            receiver_bcard_or_contact_id=receiver_obj_id).exclude(
+            link_status=2)
+
         # ----------------------- End------------------------ #
         if not already_sent_request:
+            # send notification
+            message = 'request sent from ' + user_name + ' to accept businesscard.'
+            response = self.send_push_notification(
+                message, 'b2b_invite', receiver_business_card.user_id.id)
+            #  End
+            # Insert into Notification Table
             insert_notification = self.insert_notification(
                 request_type=request_type,
                 sender_user_id=user_id,
@@ -272,6 +272,13 @@ class SendAcceptRequest(viewsets.ModelViewSet):
                         'msg': ""},
                     status=status.HTTP_400_BAD_REQUEST,
                     validate_errors=1)
+        else:
+            return CustomeResponse(
+                {
+                    'msg': "you have already sent request from your business card to other user business card"},
+                status=status.HTTP_400_BAD_REQUEST,
+                validate_errors=1)
+
         # --------- End----------------------------------------------- #
         return CustomeResponse(response, status=status.HTTP_200_OK)
 

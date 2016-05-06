@@ -16,25 +16,25 @@ from logging import getLogger
 # ------------------------------------------- #
 # ----------------- Local app imports ------ #
 from models import (
-    BusinessCard, 
-    # BusinessCardTemplate, 
-    BusinessCardIdentifier, 
-    Identifier, 
-    BusinessCardSkillAvailable, 
-    BusinessCardAddSkill, 
+    BusinessCard,
+    # BusinessCardTemplate,
+    BusinessCardIdentifier,
+    Identifier,
+    BusinessCardSkillAvailable,
+    BusinessCardAddSkill,
     BusinessCardHistory
 )
 from serializer import (
-    BusinessCardSerializer, 
-    BusinessCardIdentifierSerializer, 
-    BusinessCardSkillAvailableSerializer, 
-    BusinessCardAddSkillSerializer, 
-    BusinessCardSummarySerializer, 
+    BusinessCardSerializer,
+    BusinessCardIdentifierSerializer,
+    BusinessCardSkillAvailableSerializer,
+    BusinessCardAddSkillSerializer,
+    BusinessCardSummarySerializer,
     BusinessCardHistorySerializer
 )
 from apps.contacts.serializer import ContactsSerializer
 from apps.contacts.models import Contacts, ContactMedia
-from apps.identifiers.serializer import BusinessIdentifierSerializer,SearchBusinessIdentifierSerializer
+from apps.identifiers.serializer import BusinessIdentifierSerializer, SearchBusinessIdentifierSerializer
 from ohmgear.token_authentication import ExpiringTokenAuthentication
 from ohmgear.functions import CustomeResponse, rawResponse
 from ohmgear.json_default_data import BUSINESS_CARD_DATA_VALIDATION
@@ -53,14 +53,14 @@ ravenclient = getattr(settings, 'RAVEN_CLIENT', None)
 
 # ---------------- Business Card Summary ---------------------- #
 class CardSummary(APIView):
-    """
-    View to card summary.
-    """
+    """View to card summary."""
+
     authentication_classes = (ExpiringTokenAuthentication,)
     permission_classes = (IsAuthenticated,)
     queryset = BusinessCard.objects.all()
 
     def get(self, request):
+        """Get all business_cards."""
         bcard_id = self.request.query_params.get('bcard_id', None)
         if bcard_id:
             queryset = self.queryset.filter(id=bcard_id)
@@ -90,6 +90,8 @@ class CardSummary(APIView):
 # Create your views here.
 
 class BusinessCardIdentifierViewSet(viewsets.ModelViewSet):
+    """Bsuinesscardidentifier viewsets."""
+
     queryset = BusinessCardIdentifier.objects.all()
     serializer_class = BusinessCardIdentifierSerializer
     authentication_classes = (ExpiringTokenAuthentication,)
@@ -97,7 +99,7 @@ class BusinessCardIdentifierViewSet(viewsets.ModelViewSet):
     # --------------Method: GET----------------------------- #
 
     def list(self, request):
-
+        """Get attached business_card with Identifier."""
         user_id = request.user
         self.queryset = Identifier.objects.all().filter(user_id=user_id)
         """
@@ -111,6 +113,7 @@ class BusinessCardIdentifierViewSet(viewsets.ModelViewSet):
                 {'msg': "No Data Found"}, status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
 
     def create(self, request, call_from_function=None, offline_data=None):
+        """Attach business_card to identifier."""
         try:
             op = request.data['op']
         except KeyError as e:
@@ -158,13 +161,14 @@ class BusinessCardIdentifierViewSet(viewsets.ModelViewSet):
 
     @list_route(methods=['post'],)
     def unlinkIdentifier(self, request):
-
+        """Unlink Identifier from businesscard."""
         identifier_id = request.data['identifier_id']
         businesscard_id = request.data['bcard_id']
         getbusinessacard_identifier_data = BusinessCardIdentifier.objects.filter(
             identifier_id=identifier_id, businesscard_id=businesscard_id)
 
-        # ------Unlink Businesscard Identifier status 0 in Bsuinesscardidentifier table-------- #
+        # Unlink Businesscard Identifier status 0 in Businesscardidentifier
+        # table#
         if getbusinessacard_identifier_data:
             getbusinessacard_identifier_data.delete()
             return CustomeResponse(
@@ -173,7 +177,7 @@ class BusinessCardIdentifierViewSet(viewsets.ModelViewSet):
             return CustomeResponse({'msg': "Card is not attached"},
                                    status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
 
-    # Delete Identifiers it will first inactive the businesscard then delete the linking 
+    # Delete Identifiers it will first inactive the businesscard then delete the linking
     # of identifier with businesscard in businesscard_identifier table
     # then delete the identifeirs in identifier table ------------ #
     def destroy(self, request, pk=None):
@@ -206,133 +210,138 @@ class BusinessCardIdentifierViewSet(viewsets.ModelViewSet):
 
     @list_route(methods=['post'])
     def searchIdentifier(self, request):
+        """Search business_card by email ,name and Identifiers."""
         from functions import searchjson
-        try:
-            user_id = request.user.id
-
-        except Exception as e:
-            logger.error("Caught exception in {}, {}".format(__file__, e))
-            ravenclient.captureException()
-
-            user_id = ''
-            return CustomeResponse(
-                {'msg': "user not found"}, status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
+        user_id = request.user.id
 
         try:
             value = request.data['name']
         except KeyError as e:
-            logger.error("Caught KeyError in {}, {}".format(__file__), e)
+            logger.error("Caught KeyError in {}, value {}".format(__file__), e)
             ravenclient.captureException()
 
             value = ''
             return CustomeResponse({'msg': "Please provide name"},
                                    status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
+        # search by firstname and lastname#
+        try:
+            if (' ' in value) == True:
+    
+                name = "firstname_lastname"
+                user_id = ''
+                data = searchjson(name, value)
+                if data:
+                    serializer = SearchBusinessCardWithIdentifierSerializer(
+                        data, many=True, context={'search': "name"})
+                    return CustomeResponse(
+                        serializer.data, status=status.HTTP_200_OK)
+                else:
+                    return CustomeResponse(
+                        {'msg': "Name not found"}, status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
+    
+            # search by firstname and lastname #
+            else:
 
-        if (' ' in value) == True:
-            name = "firstname_lastname"
-            user_id = ''
-            data = searchjson(name, value)
+                if not re.match("[^@]+@[^@]+\.[^@]+", value):
 
-        else:
-
-            if not re.match("[^@]+@[^@]+\.[^@]+", value):
-
-                name = "identifier"
-                try:
                     identifier_data = Identifier.objects.filter(
                         identifier=value, status=1)
 
-                except:
-                    return CustomeResponse(
-                        {'msg': "Server error"}, status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
+                    if not identifier_data:
+                        return CustomeResponse(
+                            {'msg': "identifier not Found"}, status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
 
-                if not identifier_data:
-                    return CustomeResponse(
-                        {'msg': "identifier not Found"}, status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
+                    serializer = SearchBusinessIdentifierSerializer(
+                        identifier_data, many=True)
 
-                serializer = SearchBusinessIdentifierSerializer(
-                    identifier_data, many=True)
+                    try:
+                        businesscard_data = serializer.data[
+                            0]['business_identifier']
+                        contact_id = serializer.data[0][
+                            'business_identifier'][0]['contact_detail']['id']
+                    except:
+                        return CustomeResponse(
+                            {'msg': "No Business card found"}, status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
 
-                try:
-                    businesscard_data = serializer.data[
-                        0]['business_identifier']
-                    contact_id = serializer.data[0][
-                        'business_identifier'][0]['contact_detail']['id']
-                except:
-                    return CustomeResponse(
-                        {'msg': "No Business card found"}, status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
-                try:
                     folder_contacts = FolderContact.objects.filter(
                         user_id=user_id, contact_id=contact_id)
-                except:
-                    return CustomeResponse(
-                        {'msg': "server error"}, status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
 
-                if folder_contacts:
-                    return CustomeResponse(
-                        {
-                            'msg': "Business card is already been added"},
-                        status=status.HTTP_400_BAD_REQUEST,
-                        validate_errors=1)
+                    if folder_contacts:
+                        return CustomeResponse(
+                            {
+                                'msg': "Business card is already been added"},
+                            status=status.HTTP_400_BAD_REQUEST,
+                            validate_errors=1)
+                    else:
+
+                        if businesscard_data:
+
+                            if businesscard_data[0]['status']:
+                                return CustomeResponse(
+                                    serializer.data, status=status.HTTP_200_OK)
+                            else:
+                                return CustomeResponse(
+                                    {
+                                        'msg': "Business Card is not published"},
+                                    status=status.HTTP_400_BAD_REQUEST,
+                                    validate_errors=1)
+
+                        else:
+                            return CustomeResponse(
+                                {'msg': "No Business Card Found"}, status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
+
+                # Search by email #
                 else:
+                    userdata = User.objects.filter(email=value).values()
 
-                    if businesscard_data:
-
-                        if businesscard_data[0]['status']:
+                    if userdata:
+                        user_id = userdata[0]['id']
+                        name = "email"
+                        data = searchjson(name, value, user_id)
+                        if data:
+                            serializer = SearchBusinessCardWithIdentifierSerializer(
+                                data, many=True, context={'search': "email"})
                             return CustomeResponse(
                                 serializer.data, status=status.HTTP_200_OK)
                         else:
                             return CustomeResponse(
-                                {
-                                    'msg': "Business Card is not published"},
-                                status=status.HTTP_400_BAD_REQUEST,
-                                validate_errors=1)
+                                {'msg': "email not found"}, status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
 
                     else:
-                        return CustomeResponse(
-                            {'msg': "No Business Card Found"}, status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
+                        name = "email"
+                        user_id = ""
+                        data = searchjson(name, value)
+                        if data:
+                            serializer = SearchBusinessCardWithIdentifierSerializer(
+                                data, many=True, context={'search': "email"})
+                            return CustomeResponse(
+                                serializer.data, status=status.HTTP_200_OK)
+                        else:
+                            return CustomeResponse(
+                                {'msg': "email not found"}, status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
 
-            else:
-                try:
-                    userdata = User.objects.filter(email=value).values()
-                except:
-                    return CustomeResponse(
-                        {'msg': "Server error"}, status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
-                if userdata:
-                    user_id = userdata[0]['id']
-                    name = "email"
-                    data = searchjson(name, value, user_id)
-                    if data:
-                        serializer = SearchBusinessCardWithIdentifierSerializer(
-                            data, many=True)
-                        return CustomeResponse(
-                            serializer.data, status=status.HTTP_200_OK)
-                    else:
-                        return CustomeResponse(
-                            {'msg': "email not found"}, status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
-#
-                else:
-                    name = "email"
-                    user_id = ""
-                    data = searchjson(name, value)
-                    if data:
-                        serializer = SearchBusinessCardWithIdentifierSerializer(
-                            data, many=True)
-                        return CustomeResponse(
-                            serializer.data, status=status.HTTP_200_OK)
-                    else:
-                        return CustomeResponse(
-                            {'msg': "email not found"}, status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
+        except Exception:
+            logger.critical("Caught Exception ", exc_info=True)
+
+        return CustomeResponse(
+            {
+                "msg": "Can not process request."
+            },
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            validate_errors=1
+        )
 
 # BusinessCard History
 
 
 class BusinessCardHistoryViewSet(viewsets.ModelViewSet):
+    """BusinessCardHistory viewsets."""
+
     queryset = BusinessCardHistory.objects.all()
     serializer_class = BusinessCardHistorySerializer
 
     def list(self, request):
-
+        """Get businesscard data."""
         bid = self.request.query_params.get('bid', None)
         if bid:
             self.queryset = self.queryset.filter(
@@ -427,6 +436,7 @@ class BusinessCardSkillAvailableViewSet(viewsets.ModelViewSet):
 
 
 class BusinessCardAddSkillViewSet(viewsets.ModelViewSet):
+    """BusinessCardAddSkill viewsets."""
 
     queryset = BusinessCardAddSkill.objects.all()
     serializer_class = BusinessCardAddSkillSerializer
@@ -435,16 +445,19 @@ class BusinessCardAddSkillViewSet(viewsets.ModelViewSet):
     # --------------Method: GET----------------------------- #
 
     def list(self, request):
+        """Get method not allowed."""
         return CustomeResponse({'msg': 'GET method not allowed'},
                                status=status.HTTP_405_METHOD_NOT_ALLOWED,
                                validate_errors=1)
 
     def retrieve(self, request, pk=None):
+        """Retrieve method not allowed."""
         return CustomeResponse({'msg': 'GET method not allowed'},
                                status=status.HTTP_405_METHOD_NOT_ALLOWED,
                                validate_errors=1)
 
     def create(self, request):
+        """Add skills in businesscard."""
         tempData = {}
         tempData['user_id'] = request.user.id
         tempData['businesscard_id'] = request.data['businesscard_id']
@@ -478,6 +491,7 @@ class BusinessCardAddSkillViewSet(viewsets.ModelViewSet):
                 validate_errors=1)
 
     def update(self, request, pk=None):
+        """Update not allowed."""
         return CustomeResponse({'msg': "Update method does not allow"},
                                status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
 
@@ -584,13 +598,17 @@ class BusinessViewSet(viewsets.ModelViewSet):
             validictory.validate(
                 request.data["bcard_json_data"], BUSINESS_CARD_DATA_VALIDATION)
         except validictory.ValidationError as error:
-            logger.error("Caught validictory.ValidationError in {}, {}".format(__file__, error))
+            logger.error(
+                "Caught validictory.ValidationError in {}, {}".format(
+                    __file__, error))
             ravenclient.captureException()
 
             return CustomeResponse(
                 {'msg': error.message}, status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
         except validictory.SchemaError as error:
-            logger.error("Caught validictory.ValidationError in {}, {}".format(__file__, error))
+            logger.error(
+                "Caught validictory.ValidationError in {}, {}".format(
+                    __file__, error))
             ravenclient.captureException()
 
             return CustomeResponse(
@@ -645,9 +663,11 @@ class BusinessViewSet(viewsets.ModelViewSet):
                                 bcard_side_no=2)
                             note_frontend_obj.save()
                     except Exception as e:
-                        logger.error("Caught Exception in {}, {}".format(__file__, e))
+                        logger.error(
+                            "Caught Exception in {}, {}".format(
+                                __file__, e))
                         ravenclient.captureException()
-                        
+
                 data_new["business_notes"] = serializer.fetch_notes(bcards)
                 # -------------------------End------------ #
 
@@ -740,7 +760,8 @@ class BusinessViewSet(viewsets.ModelViewSet):
                                 user_id=user,
                                 contact_id=contact,
                                 bcard_side_no=1)
-                        note_frontend_obj.note = request.data["business_notes"]['note_frontend']
+                        note_frontend_obj.note = request.data[
+                            "business_notes"]['note_frontend']
                         note_frontend_obj.save()
 
                     if "note_backend" in request.data["business_notes"]:
@@ -754,7 +775,8 @@ class BusinessViewSet(viewsets.ModelViewSet):
                                 user_id=user,
                                 contact_id=contact,
                                 bcard_side_no=2)
-                        note_frontend_obj.note = request.data["business_notes"]['note_backend']
+                        note_frontend_obj.note = request.data[
+                            "business_notes"]['note_backend']
                         note_frontend_obj.save()
 
                 # except:
@@ -967,7 +989,7 @@ class BusinessViewSet(viewsets.ModelViewSet):
             except Exception as e:
                 logger.error("Caught Exception in {}, {}".format(__file__, e))
                 ravenclient.captureException()
-                
+
                 return CustomeResponse(
                     {
                         "msg": "some problem occured on server side during delete business cards"},
@@ -1124,7 +1146,7 @@ class WhiteCardViewSet(viewsets.ModelViewSet):
                         id=sender_data[0].folder_id.id)
 
                     sender_businesscard_id = sender_folder_id.businesscard_id
-                    
+
                     sender_contact_id = Contacts.objects.get(
                         businesscard_id=sender_businesscard_id)
 
