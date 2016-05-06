@@ -226,7 +226,7 @@ class BusinessCardIdentifierViewSet(viewsets.ModelViewSet):
         # search by firstname and lastname#
         try:
             if (' ' in value) == True:
-    
+
                 name = "firstname_lastname"
                 user_id = ''
                 data = searchjson(name, value)
@@ -238,7 +238,7 @@ class BusinessCardIdentifierViewSet(viewsets.ModelViewSet):
                 else:
                     return CustomeResponse(
                         {'msg': "Name not found"}, status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
-    
+
             # search by firstname and lastname #
             else:
 
@@ -652,20 +652,23 @@ class BusinessViewSet(viewsets.ModelViewSet):
                             note_frontend_obj = Notes(
                                 user_id=user,
                                 contact_id=contact,
-                                note=request.data["business_notes"]['note_frontend'],
+                                note=request.data["business_notes"][
+                                    'note_frontend'],
                                 bcard_side_no=1)
                             note_frontend_obj.save()
                         if "note_backend" in request.data["business_notes"]:
                             note_frontend_obj = Notes(
                                 user_id=user,
                                 contact_id=contact,
-                                note=request.data["business_notes"]['note_backend'],
+                                note=request.data["business_notes"][
+                                    'note_backend'],
                                 bcard_side_no=2)
                             note_frontend_obj.save()
                     except Exception as e:
                         logger.error(
                             "Caught Exception in {}, {}".format(
                                 __file__, e))
+
                         ravenclient.captureException()
 
                 data_new["business_notes"] = serializer.fetch_notes(bcards)
@@ -1159,6 +1162,10 @@ class WhiteCardViewSet(viewsets.ModelViewSet):
                         receiver_folder=receiver_folder_id,
                         sender_user_id=sender_user_id,
                         receiver_user_id=user_id)
+
+                    # send push notification
+                    contact_share.send_push_notification(
+                        "your business card accepted", "b2g_accepted", sender_user_id)
 
         #  ------------------- End ---------------- #
 
