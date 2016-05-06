@@ -169,7 +169,7 @@ class SendAcceptRequest(viewsets.ModelViewSet):
             aws_token_data = AwsDeviceToken.objects.filter(
                 user_id=user_id).latest("id")
         except AwsDeviceToken.DoesNotExist as e:
-            logger.critical(
+            logger.errors(
                 "Object Does Not Exist: AwsDeviceToken: {}, {}".format(
                     user_id, e))
             return False
@@ -187,7 +187,8 @@ class SendAcceptRequest(viewsets.ModelViewSet):
             'APNS_SANDBOX': json.dumps({
                 'aps': {
                     'alert': message,
-                    'message_type': message_type
+                    'message_type': message_type,
+                    "badge": 1
                 },
                 'data': {
                     'receiver_business_card_id': '',
@@ -249,7 +250,7 @@ class SendAcceptRequest(viewsets.ModelViewSet):
             sender_business_card_id=sender_business_card,
             receiver_user_id=receiver_business_card.user_id,
             receiver_bcard_or_contact_id=receiver_obj_id).exclude(
-            link_status=2)
+            request_status=2)
 
         # ----------------------- End------------------------ #
         if not already_sent_request:
