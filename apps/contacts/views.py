@@ -36,7 +36,7 @@ class storeContactsViewSet(viewsets.ModelViewSet):
     queryset = Contacts.objects.all()
     serializer_class = ContactsSerializer
     authentication_classes = (ExpiringTokenAuthentication,)
-    permission_classes = (IsAuthenticated, IsUserContactData,)
+    permission_classes = (IsAuthenticated,)
 
     def list(self, request):
 
@@ -54,6 +54,7 @@ class storeContactsViewSet(viewsets.ModelViewSet):
                                    validate_errors=True)
 
     def retrieve(self, request, pk=None):
+
         #queryset = FolderContact.objects.filter(pk=pk)
         return CustomeResponse("dddddddddd", status=status.HTTP_200_OK)
 
@@ -73,9 +74,8 @@ class storeContactsViewSet(viewsets.ModelViewSet):
         except:
             return CustomeResponse({'msg': 'Please provide correct Json Format'},
                                    status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
-
-        if contact:
-            counter = 0
+        counter = 0
+        if contact:            
 
             # Assign  first created business card to created default folder
             queryset_folder = Folder.objects.filter(
