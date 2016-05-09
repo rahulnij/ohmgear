@@ -8,15 +8,28 @@ from rest_framework.decorators import list_route
 from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated
 from django.conf import settings
+import logging
 
 # Application imports
 from ohmgear.functions import CustomeResponse
-from serializer import ContactsSerializer, ContactsSerializerWithJson, \
-    FavoriteContactSerializer, AssociateContactSerializer, ContactMediaSerializer,\
-    PrivateContactSerializer, FolderContactWithDetailsSerializer
+from serializer import (
+    ContactsSerializer,
+    ContactsSerializerWithJson,
+    FavoriteContactSerializer,
+    AssociateContactSerializer,
+    ContactMediaSerializer,
+    PrivateContactSerializer,
+    FolderContactWithDetailsSerializer
+)
 
 from ohmgear.json_default_data import BUSINESS_CARD_DATA_VALIDATION
-from models import Contacts, FavoriteContact, AssociateContact, ContactMedia, PrivateContact
+from models import (
+    Contacts,
+    FavoriteContact,
+    AssociateContact,
+    ContactMedia,
+    PrivateContact
+)
 from ohmgear.token_authentication import ExpiringTokenAuthentication
 from apps.businesscards.views import BusinessViewSet
 from apps.folders.views import FolderViewSet
@@ -25,11 +38,13 @@ from apps.folders.serializer import FolderContactSerializer
 import copy
 from django.db.models import Q
 import ohmgear.settings.constant as constant
-# End
+
+logger = logging.getLogger(__name__)
+ravenclient = getattr(settings, "RAVEN_CLIENT", None)
 
 
-# Storing Contacts as a Bulk
 class storeContactsViewSet(viewsets.ModelViewSet):
+    """Store contacts."""
 
     queryset = Contacts.objects.all()
     serializer_class = ContactsSerializer
@@ -37,119 +52,200 @@ class storeContactsViewSet(viewsets.ModelViewSet):
     permission_classes = (IsAuthenticated,)
 
     def list(self, request):
+        """List store user's contacts."""
+        try:
+            queryset = FolderContact.objects.filter(user_id=request.user.id)
 
-        # queryset = self.queryset.filter(
-        #    folder_contact_data__user_id=request.user.id)
-        queryset = FolderContact.objects.filter(user_id=request.user.id)
-#       serializer = self.serializer_class(queryset,many=True)
-        serializer = FolderContactWithDetailsSerializer(queryset, many=True)
+            serializer = FolderContactWithDetailsSerializer(
+                queryset,
+                many=True
+            )
 
-        if serializer.data:
-            return CustomeResponse(serializer.data, status=status.HTTP_200_OK)
-        else:
-            return CustomeResponse({"msg": "No Data found"},
-                                   status=status.HTTP_400_BAD_REQUEST,
-                                   validate_errors=True)
+            if serializer.data:
+                return CustomeResponse(
+                    serializer.data,
+                    status=status.HTTP_200_OK
+                )
+            else:
+                return CustomeResponse(
+                    {
+                        "msg": "No Data found"
+                    },
+                    status=status.HTTP_400_BAD_REQUEST,
+                    validate_errors=True
+                )
+        except Exception:
+            logger.critical(
+                "Caught exception in {}".format(__file__),
+                exc_info=True
+            )
+            ravenclient.captureException()
+
+        return CustomeResponse(
+            {
+                "msg": "Can not process request. Please try later."
+            },
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            validate_errors=1
+        )
 
     def retrieve(self, request, pk=None):
-
-        return CustomeResponse({'msg': 'retrieve method not allowed'},
-                               status=status.HTTP_405_METHOD_NOT_ALLOWED,
-                               validate_errors=1)
+        """Retrieve not allowed."""
+        return CustomeResponse(
+            {
+                'msg': 'POST method not allowed'
+            },
+            status=status.HTTP_405_METHOD_NOT_ALLOWED,
+            validate_errors=1
+        )
 
     def create(self, request):
-        return CustomeResponse({'msg': 'POST method not allowed'},
-                               status=status.HTTP_405_METHOD_NOT_ALLOWED,
-                               validate_errors=1)
+        """Create not allowed."""
+        return CustomeResponse(
+            {
+                'msg': 'POST method not allowed'
+            },
+            status=status.HTTP_405_METHOD_NOT_ALLOWED,
+            validate_errors=1
+        )
 
     @list_route(methods=['post'],)
     def uploads(self, request):
-
-        user_id = request.user
-        NUMBER_OF_CONTACT = 100
-
+        """Upload bulk contacts."""
         try:
-            contact = request.data['contact']
-        except:
-            return CustomeResponse({'msg': 'Please provide correct Json Format'},
-                                   status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
+            user_id = request.user
+            NUMBER_OF_CONTACT = 100
 
-        if contact:
+            try:
+                contact = request.data['contact']
+            except KeyError:
+                logger.error(
+                    "Caught KeyError exception, contact not given in {}".
+                    format(__file__)
+                )
+                return CustomeResponse(
+                    {
+                        'msg': 'Please provide correct Json Format'
+                    },
+                    status=status.HTTP_400_BAD_REQUEST,
+                    validate_errors=1
+                )
             counter = 0
+            if contact:
 
-            # Assign  first created business card to created default folder
-            queryset_folder = Folder.objects.filter(
-                user_id=user_id, foldertype='PR').values()
-            if not queryset_folder:
-                folder_view = FolderViewSet.as_view({'post': 'create'})
-                offline_data = {}
-                offline_data['businesscard_id'] = ''
-                offline_data['foldername'] = 'PR'
-                folder_view = folder_view(request, offline_data)
-                folder_id = folder_view.data['data']['id']
+                # Assign  first created business card to created default folder
+                queryset_folder = Folder.objects.filter(
+                    user_id=user_id, foldertype='PR').values()
+                if not queryset_folder:
+                    folder_view = FolderViewSet.as_view({'post': 'create'})
+                    offline_data = {}
+                    offline_data['businesscard_id'] = ''
+                    offline_data['foldername'] = 'PR'
+                    folder_view = folder_view(request, offline_data)
+                    folder_id = folder_view.data['data']['id']
+                else:
+                    folder_id = queryset_folder[0]['id']
+
+                # End
+
+                contact_new = []
+                for contact_temp in contact:
+                    # Validate the json data
+                    try:
+                        validictory.validate(
+                            contact_temp["bcard_json_data"],
+                            BUSINESS_CARD_DATA_VALIDATION)
+                    except validictory.ValidationError as error:
+                        logger.error(
+                            "Caught KeyError exception, {} in {}".
+                            format(error.message, __file__)
+                        )
+                        return CustomeResponse(
+                            {
+                                'msg': error.message
+                            },
+                            status=status.HTTP_400_BAD_REQUEST,
+                            validate_errors=1
+                        )
+                    except validictory.SchemaError as error:
+                        logger.error(
+                            "Caught KeyError exception, {} in {}".
+                            format(error.message, __file__)
+                        )
+                        return CustomeResponse(
+                            {
+                                'msg': error.message
+                            },
+                            status=status.HTTP_400_BAD_REQUEST,
+                            validate_errors=1
+                        )
+
+                if 'user_id' not in contact_temp:
+                    contact_temp['user_id'] = user_id.id
+                    contact_new.append(contact_temp)
+                else:
+                    contact_new.append(contact_temp)
+                counter = counter + 1
+
+            if counter > NUMBER_OF_CONTACT:
+                return CustomeResponse(
+                    {
+                        'msg': "Max " + str(NUMBER_OF_CONTACT) +
+                        " allowed to upload"
+                    },
+                    status=status.HTTP_400_BAD_REQUEST,
+                    validate_errors=1
+                )
+
+            serializer = ContactsSerializer(data=contact_new, many=True)
+            if serializer.is_valid():
+                contact_data = serializer.save()
+                contact_id = contact_data[0].id
+                queryset = self.queryset.filter(
+                    user_id=request.user.id,
+                    businesscard_id__isnull=True,
+                    id=contact_id)
+
+                # Assign all contacts to folder
+                folder_contact_array = []
+
+                for items in serializer.data:
+                    folder_contact_array.append(
+                        {
+                            'user_id': user_id.id,
+                            'folder_id': folder_id,
+                            'contact_id': items['id']
+                        }
+                    )
+
+                if folder_contact_array:
+                    folder_contact_serializer = FolderContactSerializer(
+                        data=folder_contact_array, many=True)
+                    if folder_contact_serializer.is_valid():
+                        folder_contact_serializer.save()
+                # End
+                serializer = ContactsSerializerWithJson(queryset, many=True)
+                return CustomeResponse(
+                    serializer.data,
+                    status=status.HTTP_201_CREATED)
             else:
-                folder_id = queryset_folder[0]['id']
+                return CustomeResponse(
+                    serializer.errors,
+                    status=status.HTTP_201_CREATED)
+        except Exception:
+            logger.critical(
+                "Caught exception in {}".format(__file__),
+                exc_info=True
+            )
+            ravenclient.captureException()
 
-            # End
-
-            contact_new = []
-            for contact_temp in contact:
-                # Validate the json data
-                try:
-                    validictory.validate(
-                        contact_temp["bcard_json_data"],
-                        BUSINESS_CARD_DATA_VALIDATION)
-                except validictory.ValidationError as error:
-                    return CustomeResponse(
-                        {'msg': error.message}, status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
-                except validictory.SchemaError as error:
-                    return CustomeResponse(
-                        {'msg': error.message}, status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
-
-            if 'user_id' not in contact_temp:
-                contact_temp['user_id'] = user_id.id
-                contact_new.append(contact_temp)
-            else:
-                contact_new.append(contact_temp)
-            counter = counter + 1
-
-        if counter > NUMBER_OF_CONTACT:
-            return CustomeResponse(
-                {
-                    'msg': "Max " + str(NUMBER_OF_CONTACT) + " allowed to upload"},
-                status=status.HTTP_400_BAD_REQUEST,
-                validate_errors=1)
-
-        serializer = ContactsSerializer(data=contact_new, many=True)
-        if serializer.is_valid():
-            contact_data = serializer.save()
-            contact_id = contact_data[0].id
-            queryset = self.queryset.filter(
-                user_id=request.user.id,
-                businesscard_id__isnull=True,
-                id=contact_id)
-
-            # Assign all contacts to folder
-            folder_contact_array = []
-
-            for items in serializer.data:
-                folder_contact_array.append(
-                    {'user_id': user_id.id, 'folder_id': folder_id, 'contact_id': items['id']})
-
-            if folder_contact_array:
-                folder_contact_serializer = FolderContactSerializer(
-                    data=folder_contact_array, many=True)
-                if folder_contact_serializer.is_valid():
-                    folder_contact_serializer.save()
-            # End
-            serializer = ContactsSerializerWithJson(queryset, many=True)
-            return CustomeResponse(
-                serializer.data,
-                status=status.HTTP_201_CREATED)
-        else:
-            return CustomeResponse(
-                serializer.errors,
-                status=status.HTTP_201_CREATED)
+        return CustomeResponse(
+            {
+                "msg": "Can not process request. Please try later."
+            },
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            validate_errors=1
+        )
 
     def update(self, request, pk=None):
 
@@ -159,17 +255,29 @@ class storeContactsViewSet(viewsets.ModelViewSet):
                 request.data["bcard_json_data"], BUSINESS_CARD_DATA_VALIDATION)
         except validictory.ValidationError as error:
             return CustomeResponse(
-                {'msg': error.message}, status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
+                {
+                    'msg': error.message
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+                validate_errors=1
+            )
         except validictory.SchemaError as error:
             return CustomeResponse(
-                {'msg': error.message}, status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
+                {
+                    'msg': error.message
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+                validate_errors=1
+            )
         except:
             return CustomeResponse(
                 {
-                    'msg': "Please provide contact_json_data in json format"},
+                    'msg': "Please provide contact_json_data in json format"
+                },
                 status=status.HTTP_400_BAD_REQUEST,
-                validate_errors=1)
-        #  End
+                validate_errors=1
+            )
+
         data = request.data.copy()
         data['user_id'] = request.user.id
         try:
@@ -180,9 +288,14 @@ class storeContactsViewSet(viewsets.ModelViewSet):
             contact_data = folder_contact_data.contact_id
             link_status = folder_contact_data.link_status
 
-        except:
-            return CustomeResponse({'msg': 'record not found'},
-                                   status=status.HTTP_404_NOT_FOUND, validate_errors=1)
+        except FolderContact.DoesNotExist:
+            return CustomeResponse(
+                {
+                    'msg': 'record not found'
+                },
+                status=status.HTTP_404_NOT_FOUND,
+                validate_errors=1
+            )
         if link_status == link_status_cons.get(
                 'ORANGE') or link_status == link_status_cons.get('WHITE'):
             # contact = Contacts.objects.get(id=pk)
@@ -201,8 +314,13 @@ class storeContactsViewSet(viewsets.ModelViewSet):
         else:
             # newdata = {"data": data, "pk": pk, "user_id": request.user.id}
             # self.privatecontact(newdata)
-            return CustomeResponse({'msg': 'private contact data updated'},
-                                   status=status.HTTP_404_NOT_FOUND, validate_errors=1)
+            return CustomeResponse(
+                {
+                    'msg': 'private contact data updated'
+                },
+                status=status.HTTP_404_NOT_FOUND,
+                validate_errors=1
+            )
 
     # Pending work remaining
     def privatecontact(newdata):
@@ -220,31 +338,38 @@ class storeContactsViewSet(viewsets.ModelViewSet):
         except validictory.ValidationError as error:
             print error
             return CustomeResponse(
-                {'msg': error.message}, status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
+                {
+                    'msg': error.message
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+                validate_errors=1
+            )
         except validictory.SchemaError as error:
             return CustomeResponse(
-                {'msg': error.message}, status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
+                {
+                    'msg': error.message
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+                validate_errors=1
+            )
         except:
             return CustomeResponse(
                 {
-                    'msg': "Please provide contact_json_data in json format"},
+                    'msg': "Please provide contact_json_data in json format"
+                },
                 status=status.HTTP_400_BAD_REQUEST,
-                validate_errors=1)
-        #  End
+                validate_errors=1
+            )
 
-        print "tesdt"
         private_contact_data = PrivateContact.objects.get(
             foldercontact_id=newdata['pk'])
-        print private_contact_data
-        print "%%%"
+
         if not private_contact_data:
 
             newdata = {
                 "foldercontact_id": newdata['pk'],
                 "bcard_json_data": newdata['data'],
                 "user_id": newdata['user_id']}
-            print newdata
-            print "####"
             serializer = PrivateContactSerializer(
                 data=newdata, context={'request': request})
             if serializer.is_valid():
@@ -252,7 +377,12 @@ class storeContactsViewSet(viewsets.ModelViewSet):
                 return CustomeResponse(status=status.HTTP_201_CREATED)
             else:
                 return CustomeResponse(
-                    {"msg": "server error"}, status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
+                    {
+                        "msg": "server error"
+                    },
+                    status=status.HTTP_400_BAD_REQUEST,
+                    validate_errors=1
+                )
 
     @list_route(['post'],)
     def limitedaccess(self, request):
@@ -271,22 +401,38 @@ class storeContactsViewSet(viewsets.ModelViewSet):
             contact_id = request.data['contact_id']
         except:
             return CustomeResponse(
-                {'msg': 'folder_id not found'}, status=status.HTTP_400_BAD_REQUEST)
+                {
+                    'msg': 'folder_id not found'
+                },
+                status=status.HTTP_400_BAD_REQUEST
+            )
         try:
             folder_contact_data = FolderContact.objects.filter(
                 contact_id=contact_id, user_id=user_id)
             is_linked = folder_contact_data[0].is_linked
         except:
             return CustomeResponse(
-                {'msg': 'Contact data not found'}, status=status.HTTP_400_BAD_REQUEST)
+                {
+                    'msg': 'Contact data not found'
+                },
+                status=status.HTTP_400_BAD_REQUEST
+            )
         if folder_contact_data and is_linked == 1:
             folder_contact_data.update(
                 link_status=link_status.get('BLUE'), is_linked=0)
             return CustomeResponse(
-                {"msg": "Contact has limited_access now."}, status=status.HTTP_200_OK)
+                {
+                    "msg": "Contact has limited_access now."
+                },
+                status=status.HTTP_200_OK
+            )
         else:
             return CustomeResponse(
-                {"msg": "Check your Contact is is_linked or not."}, status=status.HTTP_400_BAD_REQUEST)
+                {
+                    "msg": "Check your Contact is is_linked or not."
+                },
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
     # Destroy method will delete Contacts from Contact and folder_contact,
     #  if it is white contact ,other wise will be delete from  folder contact
@@ -302,14 +448,24 @@ class storeContactsViewSet(viewsets.ModelViewSet):
             link_status_cons = constant.LINK_STATUS
         except:
             return CustomeResponse(
-                {'msg': "server error"}, status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
+                {
+                    'msg': "server error"
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+                validate_errors=1
+            )
 
         try:
             contact_data = Contacts.objects.filter(
                 id=pk, user_id=request.user.id)
         except:
             return CustomeResponse(
-                {'msg': "server error"}, status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
+                {
+                    'msg': "server error"
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+                validate_errors=1
+            )
 
         if folder_contact_data:
 
@@ -318,10 +474,19 @@ class storeContactsViewSet(viewsets.ModelViewSet):
                 if contact_data:
                     contact_data.delete()
                     return CustomeResponse(
-                        {'msg': "Contact has been deleted successfully"}, status=status.HTTP_200_OK)
+                        {
+                            'msg': "Contact has been deleted successfully"
+                        },
+                        status=status.HTTP_200_OK
+                    )
                 else:
                     return CustomeResponse(
-                        {'msg': "Cannot be deleted"}, status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
+                        {
+                            'msg': "Cannot be deleted"
+                        },
+                        status=status.HTTP_400_BAD_REQUEST,
+                        validate_errors=1
+                    )
 
             else:
                 if link_status == link_status_cons.get('DELETED'):
@@ -329,10 +494,17 @@ class storeContactsViewSet(viewsets.ModelViewSet):
                     try:
                         # find user contact_id with bcard_id and user_id
                         existing_contact_data = Contacts.objects.get(
-                            businesscard_id=get_user_bcard_id, user_id=request.user.id)
+                            businesscard_id=get_user_bcard_id,
+                            user_id=request.user.id
+                        )
                     except:
                         return CustomeResponse(
-                            {'msg': "server error"}, status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
+                            {
+                                'msg': "server error"
+                            },
+                            status=status.HTTP_400_BAD_REQUEST,
+                            validate_errors=1
+                        )
                     # get contact id of user
                     getcontact_id = existing_contact_data.id
                     # get user_id of contact which is to be deleted.
@@ -347,7 +519,12 @@ class storeContactsViewSet(viewsets.ModelViewSet):
                         new_user_folder_contact_data.delete()
                         folder_contact_data.delete()
                         return CustomeResponse(
-                            {'msg': "Both Connected Contact has been delete successfully"}, status=status.HTTP_200_OK)
+                            {
+                                'msg': "Both Connected Contact has been delete\
+                                 successfully"
+                            },
+                            status=status.HTTP_200_OK
+                        )
 
                     else:
                         return CustomeResponse(
@@ -361,9 +538,16 @@ class storeContactsViewSet(viewsets.ModelViewSet):
                         folder_contact_data = FolderContact.objects.filter(
                             contact_id=pk, user_id=request.user.id)
                         folder_contact_data.update(
-                            link_status=link_status_cons.get('DELETED'), is_linked=0)
+                            link_status=link_status_cons.get('DELETED'),
+                            is_linked=0
+                        )
                         return CustomeResponse(
-                            {'msg': "Connected Contact has been deleted successfully"}, status=status.HTTP_200_OK)
+                            {
+                                'msg': "Connected Contact has been deleted\
+                                 successfully"
+                            },
+                            status=status.HTTP_200_OK
+                        )
                     except:
                         return CustomeResponse(
                             {
@@ -372,7 +556,12 @@ class storeContactsViewSet(viewsets.ModelViewSet):
                             validate_errors=1)
         else:
             return CustomeResponse(
-                {'msg': "No contact found"}, status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
+                {
+                    'msg': "No contact found"
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+                validate_errors=1
+            )
 
     def merge_contacts(self, request):
         pass
@@ -591,9 +780,12 @@ class storeContactsViewSet(viewsets.ModelViewSet):
                 else:
                     return CustomeResponse(
                         {
-                            "msg": "merge_contact_ids does not exist OR merge contact links with business card"},
+                            "msg": "merge_contact_ids does not exist OR merge\
+                             contact links with business card"
+                        },
                         status=status.HTTP_400_BAD_REQUEST,
-                        validate_errors=1)
+                        validate_errors=1
+                    )
 
                 # End
                 return CustomeResponse(
@@ -607,26 +799,27 @@ class storeContactsViewSet(viewsets.ModelViewSet):
         else:
             return CustomeResponse(
                 {
-                    "msg": "Please provide merge_contact_ids, target_contact_id"},
+                    "msg": "Please provide merge_contact_ids,\
+                     target_contact_id"
+                },
                 status=status.HTTP_400_BAD_REQUEST,
-                validate_errors=1)
+                validate_errors=1
+            )
 
     # Favorite Contact
 
     @list_route(methods=['post'],)
     def addFavoriteContact(self, request):
         try:
-            user_id = request.user.id
-        except:
-            user_id = ''
-            return CustomeResponse(
-                {'msg': 'user not found'}, status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
-
-        try:
             contact_id = request.data['foldercontact_id']
-        except:
-            return CustomeResponse({'msg': 'foldercontact_id not found'},
-                                   status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
+        except KeyError:
+            return CustomeResponse(
+                {
+                    'msg': 'foldercontact_id not found'
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+                validate_errors=1
+            )
 
 #        data['user_id'] = request.user.id
         tempContainer = []
@@ -636,8 +829,11 @@ class storeContactsViewSet(viewsets.ModelViewSet):
             tempData['foldercontact_id'] = data
             tempContainer.append(tempData)
 
-        serializer = FavoriteContactSerializer(data=tempContainer, context={
-                                               'request': request}, many=True)
+        serializer = FavoriteContactSerializer(
+            data=tempContainer,
+            context={'request': request},
+            many=True
+        )
 
         if serializer.is_valid():
             serializer.save()
@@ -658,14 +854,24 @@ class storeContactsViewSet(viewsets.ModelViewSet):
         except:
             user_id = ''
             return CustomeResponse(
-                {'msg': 'user not found'}, status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
+                {
+                    'msg': 'user not found'
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+                validate_errors=1
+            )
 
         try:
             favoriteContactData = FavoriteContact.objects.filter(
                 user_id=user_id)
         except:
-            return CustomeResponse({'msg': 'server error please try again'},
-                                   status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
+            return CustomeResponse(
+                {
+                    'msg': 'server error please try again'
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+                validate_errors=1
+            )
 
         if favoriteContactData:
             serializer = FavoriteContactSerializer(
@@ -687,28 +893,52 @@ class storeContactsViewSet(viewsets.ModelViewSet):
         except:
             user_id = ''
             return CustomeResponse(
-                {'msg': 'user not found'}, status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
+                {
+                    'msg': 'user not found'
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+                validate_errors=1
+            )
 
         try:
             foldercontact_id = request.data['foldercontact_id']
         except:
-            return CustomeResponse({'msg': 'Folder Contact_id not found'},
-                                   status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
+            return CustomeResponse(
+                {
+                    'msg': 'Folder Contact_id not found'
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+                validate_errors=1
+            )
 
         try:
             favoriteContactData = FavoriteContact.objects.filter(
                 user_id=user_id, foldercontact_id__in=foldercontact_id)
         except:
-            return CustomeResponse({'msg': 'Server error please try again'},
-                                   status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
+            return CustomeResponse(
+                {
+                    'msg': 'Server error please try again'
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+                validate_errors=1
+            )
 
         if favoriteContactData:
             favoriteContactData.delete()
             return CustomeResponse(
-                {'msg': 'Remove from favorite successfully'}, status=status.HTTP_200_OK)
+                {
+                    'msg': 'Remove from favorite successfully'
+                },
+                status=status.HTTP_200_OK
+            )
         else:
-            return CustomeResponse({'msg': 'Favorite Contact cannot be deleted'},
-                                   status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
+            return CustomeResponse(
+                {
+                    'msg': 'Favorite Contact cannot be deleted'
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+                validate_errors=1
+            )
 
     # Associate Contact
 
@@ -720,7 +950,12 @@ class storeContactsViewSet(viewsets.ModelViewSet):
         except:
             user_id = ''
             return CustomeResponse(
-                {'msg': 'user not found'}, status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
+                {
+                    'msg': 'user not found'
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+                validate_errors=1
+            )
 
         try:
             associate_from = request.data['associate']
@@ -733,8 +968,13 @@ class storeContactsViewSet(viewsets.ModelViewSet):
             all_contact.append(associate_from)
 
         except:
-            return CustomeResponse({'msg': 'Please Check json format'},
-                                   status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
+            return CustomeResponse(
+                {
+                    'msg': 'Please Check json format'
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+                validate_errors=1
+            )
 
         try:
             associate_contact = FolderContact.objects.filter(
@@ -785,63 +1025,79 @@ class storeContactsViewSet(viewsets.ModelViewSet):
             else:
                 return CustomeResponse(
                     {
-                        'msg': 'The contact from which to associate is not in user Contact'},
+                        'msg': 'The contact from which to associate is not\
+                         in user Contact'
+                    },
                     status=status.HTTP_400_BAD_REQUEST,
-                    validate_errors=1)
+                    validate_errors=1
+                )
         except:
             return CustomeResponse(
-                {'msg': 'Contact not found'}, status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
+                {
+                    'msg': 'Contact not found'
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+                validate_errors=1
+            )
 
     # Get All associate Contact of a user
 
     @list_route(methods=['post'])
     def getAssociateContact(self, request):
         try:
-            user_id = request.user.id
-
-        except:
-            user_id = ''
-            return CustomeResponse(
-                {'msg': 'user not found'}, status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
-
-        try:
             associate_folder_id = request.data['associatefoldercontact_id']
         except:
-            return CustomeResponse({'msg': 'associatefoldercontact_id not found'},
-                                   status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
+            return CustomeResponse(
+                {
+                    'msg': 'associatefoldercontact_id not found'
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+                validate_errors=1
+            )
 
         try:
             accociateContactData = AssociateContact.objects.filter(
                 associatefoldercontact_id=associate_folder_id)
         except:
-            return CustomeResponse({'msg': 'Server error please try again'},
-                                   status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
+            return CustomeResponse(
+                {
+                    'msg': 'Server error please try again'
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+                validate_errors=1
+            )
         if accociateContactData:
             serializer = AssociateContactSerializer(
                 accociateContactData, many=True)
             return CustomeResponse(serializer.data, status=status.HTTP_200_OK)
         else:
-            return CustomeResponse({'msg': 'Assciate Contact not found'},
-                                   status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
+            return CustomeResponse(
+                {
+                    'msg': 'Assciate Contact not found'
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+                validate_errors=1
+            )
 
     # Delete Associate Contact to whom it is connected
 
     @list_route(methods=['post'])
     def deleteAssociateContact(self, request):
-        try:
-            user_id = request.user.id
-        except:
-            user_id = ''
-            return CustomeResponse(
-                {'msg': 'User not found'}, status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
+
+        user_id = request.user.id
 
         try:
             associate_from = request.data['associate_from']
             associate_to = request.data['associate_to']
 
-        except:
-            return CustomeResponse({'msg': 'Associate Contact not found'},
-                                   status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
+        except KeyError:
+            return CustomeResponse(
+                {
+                    'msg': 'Associate Contact not found'
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+                validate_errors=1
+            )
 
         try:
             associateContactData = AssociateContact.objects.filter(
@@ -855,15 +1111,29 @@ class storeContactsViewSet(viewsets.ModelViewSet):
 
         except:
             return CustomeResponse(
-                {'msg': 'Server try again'}, status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
+                {
+                    'msg': 'Server try again'
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+                validate_errors=1
+            )
 
         if associateContactData:
             associateContactData.delete()
             return CustomeResponse(
-                {'msg': 'Associate Contact delete successfully'}, status=status.HTTP_200_OK)
+                {
+                    'msg': 'Associate Contact delete successfully'
+                },
+                status=status.HTTP_200_OK
+            )
         else:
-            return CustomeResponse({'msg': 'Assciate Contact cannot be deleted'},
-                                   status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
+            return CustomeResponse(
+                {
+                    'msg': 'Assciate Contact cannot be deleted'
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+                validate_errors=1
+            )
 
 # Contact Images Upload
 
@@ -896,10 +1166,20 @@ class ContactMediaViewSet(viewsets.ModelViewSet):
                 return CustomeResponse(data, status=status.HTTP_200_OK)
             else:
                 return CustomeResponse(
-                    {'msg': "Data not exist"}, status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
+                    {
+                        'msg': "Data not exist"
+                    },
+                    status=status.HTTP_400_BAD_REQUEST,
+                    validate_errors=1
+                )
         else:
-            return CustomeResponse({'msg': "Without parameters does not support"},
-                                   status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
+            return CustomeResponse(
+                {
+                    'msg': "Without parameters does not support"
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+                validate_errors=1
+            )
 
     # Add image into business card gallary
     def create(self, request, call_from_function=None):
@@ -935,13 +1215,23 @@ class ContactMediaViewSet(viewsets.ModelViewSet):
         try:
             contact_id = self.request.data["contact_id"]
         except:
-            return CustomeResponse({'msg': "provide contact_id"},
-                                   status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
+            return CustomeResponse(
+                {
+                    'msg': "provide contact_id"
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+                validate_errors=1
+            )
         try:
             contact = Contacts.objects.get(id=contact_id, user_id=user_id)
         except:
-            return CustomeResponse({'msg': "Contact id does not exist"},
-                                   status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
+            return CustomeResponse(
+                {
+                    'msg': "Contact id does not exist"
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+                validate_errors=1
+            )
         #  Save Image in image Gallary
 
         data_new = {}
@@ -1003,8 +1293,10 @@ class ContactMediaViewSet(viewsets.ModelViewSet):
         if contact_id:
             try:
                 get_image = ContactMedia.objects.get(
-                    id=gallary_image_id, contact_id=contact_id, user_id=user_id)
-                print get_image
+                    id=gallary_image_id,
+                    contact_id=contact_id,
+                    user_id=user_id
+                )
                 get_image.status = 1
                 get_image.front_back = image_type
                 get_image.save()
@@ -1014,24 +1306,37 @@ class ContactMediaViewSet(viewsets.ModelViewSet):
                     id=gallary_image_id).update(
                     status=0)
                 return CustomeResponse(
-                    {"msg": "Business card image changed successfully."}, status=status.HTTP_200_OK)
+                    {
+                        "msg": "Business card image changed successfully."
+                    },
+                    status=status.HTTP_200_OK
+                )
             except:
                 return CustomeResponse(
                     {
-                        'msg': "provided contact_id,gallary_image_id not valid"},
+                        'msg': "provided contact_id,gallary_image_id not valid"
+                    },
                     status=status.HTTP_400_BAD_REQUEST,
-                    validate_errors=1)
+                    validate_errors=1
+                )
         else:
             return CustomeResponse(
                 {
-                    'msg': "Please provide contact_id,gallary_image_id"},
+                    'msg': "Please provide contact_id,gallary_image_id"
+                },
                 status=status.HTTP_400_BAD_REQUEST,
-                validate_errors=1)
+                validate_errors=1
+            )
     # End
 
     def update(self, request, pk=None):
-        return CustomeResponse({'msg': "Update method does not allow"},
-                               status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
+        return CustomeResponse(
+            {
+                'msg': "Update method does not allow"
+            },
+            status=status.HTTP_400_BAD_REQUEST,
+            validate_errors=1
+        )
 
     @list_route(methods=['post'],)
     def delete(self, request):
@@ -1044,10 +1349,16 @@ class ContactMediaViewSet(viewsets.ModelViewSet):
                 id=pk, contact_id=contact_id, user_id=user_id, status=1)
             get_image.delete()
             return CustomeResponse(
-                {'msg': "Media deleted successfully"}, status=status.HTTP_200_OK)
+                {
+                    'msg': "Media deleted successfully"
+                },
+                status=status.HTTP_200_OK
+            )
         except:
             return CustomeResponse(
                 {
-                    'msg': "Please provide correct contact_id,media id"},
+                    'msg': "Please provide correct contact_id,media id"
+                },
                 status=status.HTTP_400_BAD_REQUEST,
-                validate_errors=1)
+                validate_errors=1
+            )

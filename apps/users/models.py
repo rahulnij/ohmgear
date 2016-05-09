@@ -28,7 +28,7 @@ class CustomUserManager(BaseUserManager):
         try:
             user.user_type = UserType.objects.get(id=1)
         except ObjectDoesNotExist:
-            user.user_type = 1  
+            user.user_type = 1
         user.status = 1
         # ----------- Hashing password is done in model --------#
         user.password = password
@@ -203,8 +203,9 @@ class Profile(models.Model):
 
 # display profile image of user
     def admin_thumbnail(self):
-        if self.profile_image :
-            return u'<img src="%s%s" style="width: 50px;height:50px;border-radius: 15px;" />' % (settings.DOMAIN_NAME +'/media/',self.profile_image)
+        if self.profile_image:
+            return u'<img src="%s%s" style="width: 50px;height:50px;border-radius: 15px;" />' % (
+                settings.DOMAIN_NAME + '/media/', self.profile_image)
         else:
             return 'N/A'
     admin_thumbnail.short_description = 'Profile Thumbnail'
@@ -247,7 +248,7 @@ class Profile(models.Model):
                 self.prefix,
                 self.middle,
                 self.suffix
-            ) 
+            )
 
 
 class SocialLogin(models.Model):
