@@ -219,7 +219,7 @@ class FolderContactWithRelatedDataSerializer(serializers.ModelSerializer):
         # history
         data_history = []
         history = BusinessCardHistory.objects.filter(
-            businesscard_id=obj.contact_id.businesscard_id).values()
+            businesscard_id=obj.contact_id.businesscard_id).order_by('-id')[:5].values()
         for item in history:
             data_history.append(item)
 
