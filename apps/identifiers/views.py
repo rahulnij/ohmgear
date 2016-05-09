@@ -118,7 +118,6 @@ class IdentifierViewSet(viewsets.ModelViewSet):
                 exc_info=True
             )
             ravenclient.captureException()
-
         return CustomeResponse(
             {
                 "msg": "Can not process request. Please try later."
