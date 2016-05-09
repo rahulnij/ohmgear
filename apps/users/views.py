@@ -12,6 +12,7 @@ import rest_framework.status as status
 from ohmgear.token_authentication import ExpiringTokenAuthentication
 from ohmgear.functions import CustomeResponse
 import ohmgear.settings.constant as constant
+from django.conf import settings
 from ohmgear.auth_frontend import authenticate_frontend
 from django.shortcuts import get_object_or_404
 from django.contrib.auth import get_user_model
@@ -54,6 +55,7 @@ from functions import (
 )
 
 logger = logging.getLogger(__name__)
+ravenclient = getattr(settings, "RAVEN_CLIENT", None)
 
 
 class UserViewSet(viewsets.ModelViewSet):
@@ -94,11 +96,12 @@ class UserViewSet(viewsets.ModelViewSet):
                 by primary key {}".
                 format(__file__, user_id)
             )
-        except Exception:
+        except:
             logger.critical(
                 "Caught exception in {}".format(__file__),
                 exc_info=True
             )
+            ravenclient.captureException()
         return False
 
     def list(self, request):
@@ -131,14 +134,15 @@ class UserViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_404_NOT_FOUND,
                 validate_errors=1
             )
-        except Exception:
+        except:
             logger.critical(
                 "Caught exception in {}".format(__file__),
                 exc_info=True
             )
+            ravenclient.captureException()
         return CustomeResponse(
             {
-                "msg": "Can not process request."
+                "msg": "Can not process request. Please try later."
             },
             status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             validate_errors=1
@@ -209,12 +213,15 @@ class UserViewSet(viewsets.ModelViewSet):
                     status=status.HTTP_400_BAD_REQUEST,
                     validate_errors=1
                 )
-        except Exception:
-            logger.critical("Caught Exception ", exc_info=True)
-
+        except:
+            logger.critical(
+                "Caught exception in {}".format(__file__),
+                exc_info=True
+            )
+            ravenclient.captureException()
         return CustomeResponse(
             {
-                "msg": "Can not process request."
+                "msg": "Can not process request. Please try later."
             },
             status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             validate_errors=1
@@ -254,12 +261,16 @@ class UserViewSet(viewsets.ModelViewSet):
                     serializer.errors,
                     status=status.HTTP_400_BAD_REQUEST,
                     validate_errors=1)
-        except Exception:
-            logger.critical("Caught Exception ", exc_info=True)
+        except:
+            logger.critical(
+                "Caught exception in {}".format(__file__),
+                exc_info=True
+            )
+            ravenclient.captureException()
 
         return CustomeResponse(
             {
-                "msg": "Can not process request."
+                "msg": "Can not process request. Please try later."
             },
             status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             validate_errors=1
@@ -327,12 +338,16 @@ class UserViewSet(viewsets.ModelViewSet):
                 return CustomeResponse({'msg': msg},
                                        status=status.HTTP_401_UNAUTHORIZED,
                                        validate_errors=1)
-        except Exception:
-            logger.critical("Caught Exception ", exc_info=True)
+        except:
+            logger.critical(
+                "Caught exception in {}".format(__file__),
+                exc_info=True
+            )
+            ravenclient.captureException()
 
         return CustomeResponse(
             {
-                "msg": "Can not process request."
+                "msg": "Can not process request. Please try later."
             },
             status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             validate_errors=1
@@ -366,12 +381,16 @@ class UserViewSet(viewsets.ModelViewSet):
                     },
                     validate_errors=1
                 )
-        except Exception:
-            logger.critical("Caught Exception ", exc_info=True)
+        except:
+            logger.critical(
+                "Caught exception in {}".format(__file__),
+                exc_info=True
+            )
+            ravenclient.captureException()
 
         return CustomeResponse(
             {
-                "msg": "Can not process request."
+                "msg": "Can not process request. Please try later."
             },
             status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             validate_errors=1
@@ -420,12 +439,16 @@ class UserViewSet(viewsets.ModelViewSet):
                     {'msg': "User is already connected"},
                     validate_errors=1
                 )
-        except Exception:
-            logger.critical("Caught Exception ", exc_info=True)
+        except:
+            logger.critical(
+                "Caught exception in {}".format(__file__),
+                exc_info=True
+            )
+            ravenclient.captureException()
 
         return CustomeResponse(
             {
-                "msg": "Can not process request."
+                "msg": "Can not process request. Please try later."
             },
             status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             validate_errors=1
@@ -495,12 +518,16 @@ class UserViewSet(viewsets.ModelViewSet):
                     validate_errors=1
                 )
 
-        except Exception:
-            logger.critical("Caught Exception ", exc_info=True)
+        except:
+            logger.critical(
+                "Caught exception in {}".format(__file__),
+                exc_info=True
+            )
+            ravenclient.captureException()
 
         return CustomeResponse(
             {
-                "msg": "Can not process request."
+                "msg": "Can not process request. Please try later."
             },
             status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             validate_errors=1
@@ -533,12 +560,16 @@ class UserViewSet(viewsets.ModelViewSet):
                     return CustomeResponse(
                         serializer.errors, status=status.HTTP_201_CREATED)
 
-        except Exception:
-            logger.critical("Caught Exception ", exc_info=True)
+        except:
+            logger.critical(
+                "Caught exception in {}".format(__file__),
+                exc_info=True
+            )
+            ravenclient.captureException()
 
         return CustomeResponse(
             {
-                "msg": "Can not process request."
+                "msg": "Can not process request. Please try later."
             },
             status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             validate_errors=1
@@ -575,11 +606,40 @@ class ProfileViewSet(viewsets.ModelViewSet):
         )
 
     def retrieve(self, request, pk=None):
-        queryset = self.queryset
-        profile = get_object_or_404(queryset, pk=pk)
-        serializer = self.serializer_class(
-            profile, context={'request': request})
-        return CustomeResponse(serializer.data, status=status.HTTP_200_OK)
+        try:
+            queryset = self.queryset
+            profile = get_object_or_404(queryset, pk=pk)
+            serializer = self.serializer_class(
+                profile, context={'request': request})
+            return CustomeResponse(serializer.data, status=status.HTTP_200_OK)
+        except Http404:
+            logger.critical(
+                "Caught Http404(DoesNotExist) exception for {}, primary key {},\
+                in {}".format(
+                    Profile.__name__, pk, __file__
+                )
+            )
+            ravenclient.captureException()
+            return CustomeResponse(
+                {
+                    "msg": "User Profile does not exist."
+                },
+                status=status.HTTP_404_NOT_FOUND,
+                validate_errors=1
+            )
+        except:
+            logger.critical(
+                "Caught exception in {}".format(__file__),
+                exc_info=True
+            )
+            ravenclient.captureException()
+        return CustomeResponse(
+            {
+                "msg": "Can not process request. Please try later."
+            },
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            validate_errors=1
+        )
 
     def create(self, request, pk=None):
         try:
@@ -589,30 +649,52 @@ class ProfileViewSet(viewsets.ModelViewSet):
                 profile_image = request.data['profile_image']
             else:
                 profile_image = messages.profile_image
-        except:
+
+            serializer = ProfileSerializer(
+                messages,
+                data=request.data,
+                partial=True,
+                context={
+                    'request': request})
+            if serializer.is_valid():
+                serializer.save(first_time_login=False,
+                                profile_image=profile_image)
+                return CustomeResponse(
+                    serializer.data, status=status.HTTP_200_OK)
+            else:
+                return CustomeResponse(
+                    serializer.errors,
+                    status=status.HTTP_400_BAD_REQUEST,
+                    validate_errors=1)
+        except Profile.DoesNotExist:
+            logger.critical(
+                "Caught Http404(DoesNotExist) exception for {}, primary key {},\
+                in {}".format(
+                    Profile.__name__, pk, __file__
+                )
+            )
+            ravenclient.captureException()
             return CustomeResponse(
                 {
-                    'msg': 'record not found'
+                    "msg": "User Profile does not exist."
                 },
                 status=status.HTTP_404_NOT_FOUND,
                 validate_errors=1
             )
 
-        serializer = ProfileSerializer(
-            messages,
-            data=request.data,
-            partial=True,
-            context={
-                'request': request})
-        if serializer.is_valid():
-            serializer.save(first_time_login=False,
-                            profile_image=profile_image)
-            return CustomeResponse(serializer.data, status=status.HTTP_200_OK)
-        else:
-            return CustomeResponse(
-                serializer.errors,
-                status=status.HTTP_400_BAD_REQUEST,
-                validate_errors=1)
+        except:
+            logger.critical(
+                "Caught exception in {}".format(__file__),
+                exc_info=True
+            )
+            ravenclient.captureException()
+        return CustomeResponse(
+            {
+                "msg": "Can not process request. Please try later."
+            },
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            validate_errors=1
+        )
 
     def partial_update(self, request, pk=None):
         pass
@@ -621,29 +703,52 @@ class ProfileViewSet(viewsets.ModelViewSet):
     def deleteprofileimage(self, request, pk=None):
         try:
             user_id = request.user.id
-        except:
-            user_id = None
 
-        profiledata = Profile.objects.get(user_id=user_id)
-        profiledata.profile_image.delete()
-        if profiledata:
-            return CustomeResponse(
-                {'msg': 'Image is deleted'}, status=status.HTTP_200_OK)
-        else:
+            profiledata = Profile.objects.get(user_id=user_id)
+            profiledata.profile_image.delete()
             return CustomeResponse(
                 {
-                    'msg': 'server error'
+                    'msg': 'Image is deleted'
                 },
-                status=status.HTTP_400_BAD_REQUEST,
+                status=status.HTTP_200_OK
+            )
+        except Profile.DoesNotExist:
+            logger.critical(
+                "Caught Http404(DoesNotExist) exception for {}, primary key {},\
+                in {}".format(
+                    Profile.__name__, pk, __file__
+                )
+            )
+            ravenclient.captureException()
+            return CustomeResponse(
+                {
+                    "msg": "User Profile does not exist."
+                },
+                status=status.HTTP_404_NOT_FOUND,
                 validate_errors=1
             )
+        except:
+            logger.critical(
+                "Caught exception in {}".format(__file__),
+                exc_info=True
+            )
+            ravenclient.captureException()
+        return CustomeResponse(
+            {
+                "msg": "Can not process request. Please try later."
+            },
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            validate_errors=1
+        )
 
 
 class SocialLoginViewSet(viewsets.ModelViewSet):
+    """Social login views."""
     queryset = SocialLogin.objects.all()
     serializer_class = SocialLoginSerializer
 
     def create(self, request):
+        """Create acount with social acount."""
         try:
             if request.data['status'] is 0:
                 return CustomeResponse(
@@ -653,7 +758,7 @@ class SocialLoginViewSet(viewsets.ModelViewSet):
                     status=status.HTTP_400_BAD_REQUEST,
                     validate_errors=1
                 )
-        except:
+        except KeyError:
             return CustomeResponse(
                 {
                     'msg': 'provide status active'
@@ -662,171 +767,200 @@ class SocialLoginViewSet(viewsets.ModelViewSet):
                 validate_errors=1
             )
 
-        serializer = UserSerializer(
-            data=request.data, context={
-                'request': request, 'msg': 'not exist'})
         try:
-            user = checkEmail(request.data['email'])
-        except:
-            user = ''
-        if user:
-            # Create the token
+            serializer = UserSerializer(
+                data=request.data, context={
+                    'request': request, 'msg': 'not exist'})
             try:
-                token = getToken(user[0]['id'])
-                user[0]['token'] = token
+                user = checkEmail(request.data['email'])
             except:
-                pass
-
-            return CustomeResponse(
-                user[0],
-                status=status.HTTP_302_FOUND,
-                already_exist=0,
-                validate_errors=0)
-        else:
-            if serializer.is_valid():
-
-                # Call the userviewset for create the user
-                user_view_obj = UserViewSet()
-                data = user_view_obj.create(request, 1)
-                # End
-                social_id = request.POST.get('social_id', '')
-                # social_type_id for fb its 2
-
-                social_type = constant.SOCIAL_TYPE
-                social_type_exist = request.data['social_type'] in social_type
-                if not social_type_exist:
-                    return CustomeResponse({'msg': 'social_type not exist'})
-
-                for key, social_id in social_type.iteritems():
-                    if key == request.data['social_type']:
-                        social_type_id = social_id
-                sociallogin = SocialLogin(
-                    user_id=data['id'],
-                    social_media_login_id=social_id,
-                    social_type_id=social_type_id)
-                createConnectedAccount(data['id'], social_type_id)
-                sociallogin.save()
+                user = ''
+            if user:
                 # Create the token
                 try:
-                    token = getToken(data['id'])
-                    data['token'] = token
+                    token = getToken(user[0]['id'])
+                    user[0]['token'] = token
                 except:
-                    data['token'] = ''
-                    # End
-                return CustomeResponse(data, status=status.HTTP_201_CREATED)
+                    pass
 
-            else:
                 return CustomeResponse(
-                    serializer.errors,
-                    status=status.HTTP_400_BAD_REQUEST,
-                    validate_errors=1)
+                    user[0],
+                    status=status.HTTP_302_FOUND,
+                    already_exist=0,
+                    validate_errors=0)
+            else:
+                if serializer.is_valid():
+
+                    # Call the userviewset for create the user
+                    user_view_obj = UserViewSet()
+                    data = user_view_obj.create(request, 1)
+                    # End
+                    social_id = request.POST.get('social_id', '')
+                    # social_type_id for fb its 2
+
+                    social_type = constant.SOCIAL_TYPE
+                    social_type_exist = request.data[
+                        'social_type'] in social_type
+                    if not social_type_exist:
+                        return CustomeResponse(
+                            {'msg': 'social_type not exist'})
+
+                    for key, social_id in social_type.iteritems():
+                        if key == request.data['social_type']:
+                            social_type_id = social_id
+                    sociallogin = SocialLogin(
+                        user_id=data['id'],
+                        social_media_login_id=social_id,
+                        social_type_id=social_type_id)
+                    createConnectedAccount(data['id'], social_type_id)
+                    sociallogin.save()
+                    # Create the token
+                    try:
+                        token = getToken(data['id'])
+                        data['token'] = token
+                    except:
+                        data['token'] = ''
+                        # End
+                    return CustomeResponse(
+                        data, status=status.HTTP_201_CREATED)
+
+                else:
+                    return CustomeResponse(
+                        serializer.errors,
+                        status=status.HTTP_400_BAD_REQUEST,
+                        validate_errors=1)
+        except:
+            logger.critical(
+                "Caught exception in {}".format(__file__),
+                exc_info=True
+            )
+            ravenclient.captureException()
+        return CustomeResponse(
+            {
+                "msg": "Can not process request. Please try later."
+            },
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            validate_errors=1
+        )
 
 
 # User Login | Forgot Password | Reset Password
 @api_view(['GET', 'POST'])
 def useractivity(request, **kwargs):
+    """User activity."""
     msg = {}
-    if request.method == 'GET':
-        activation_key = kwargs.pop('activation_key', None)
-        reset_password_key = kwargs.pop('reset_password_key', None)
-        # get the activation key and activate the account : Process after
-        # registration
-        if activation_key:
-            user_profile = get_object_or_404(
-                Profile, activation_key=activation_key)
+    try:
+        if request.method == 'GET':
+            activation_key = kwargs.pop('activation_key', None)
+            reset_password_key = kwargs.pop('reset_password_key', None)
+            # get the activation key and activate the account : Process after
+            # registration
+            if activation_key:
+                user_profile = get_object_or_404(
+                    Profile, activation_key=activation_key)
 
-            user = user_profile.user
-            user.status = 1
-            user.update_password = False
-            user.save()
-            user_setting = UserViewSet()
-            user_setting.usersetting(request, user.id)
-            if request.device:
-                from django.http import HttpResponse
-                # token value and user_id for direct login into app
-                token_value = getToken(user.id)
-                response = HttpResponse(
-                    "kinbow://?token=" + str(token_value), status=302)
-                response['Location'] = "kinbow://?token=" + str(token_value)
-                return response
-            else:
-                return CustomeResponse(
-                    'Account has been activated',
-                    status=status.HTTP_200_OK)
+                user = user_profile.user
+                user.status = 1
+                user.update_password = False
+                user.save()
+                user_setting = UserViewSet()
+                user_setting.usersetting(request, user.id)
+                if request.device:
+                    from django.http import HttpResponse
+                    # token value and user_id for direct login into app
+                    token_value = getToken(user.id)
+                    response = HttpResponse(
+                        "kinbow://?token=" + str(token_value), status=302)
+                    response['Location'] = "kinbow://?token=" + \
+                        str(token_value)
+                    return response
+                else:
+                    return CustomeResponse(
+                        'Account has been activated',
+                        status=status.HTTP_200_OK)
 
-        # Get the reset password key and redirect to mobile : Processed when
-        # forgot password mail link clicked
-        elif reset_password_key:
-            if request.device:
-                from django.http import HttpResponse
-                response = HttpResponse(
-                    "kinbow://?resetPasswordKey=" +
-                    reset_password_key,
-                    status=302)
-                response['Location'] = "kinbow://?resetPasswordKey=" + \
-                    reset_password_key
-                return response
-            else:
-                return CustomeResponse(
-                    {
-                        'msg': 'This url is used in app only'
-                    },
-                    status=status.HTTP_401_UNAUTHORIZED,
-                    validate_errors=1
-                )
-        return CustomeResponse(
-            {
-                'msg': 'Please provide correct parameters'
-            },
-            status=status.HTTP_401_UNAUTHORIZED,
-            validate_errors=1
-        )
-
-    if request.method == 'POST':
-        try:
-            op = request.data['op']
-        except:
-            op = None
-        # Login
-        if op == 'login':
-            try:
-                username = request.data['username']
-                password = request.data['password']
-            except:
-                username = None
-                password = None
-            # save password in case of forgot passord TODO  move this section
-            # from login section
-            try:
-                reset_password_key = request.data['reset_password_key']
-            except:
-                reset_password_key = None
-
-            if reset_password_key:
-                # save password in case of forgot passord TODO  move this
-                # section from login section
-                try:
-                    profile = Profile.objects.select_related().get(
-                        reset_password_key=reset_password_key,
-                        user__email=username
-                    )
-
-                    profile.user.set_password(password)
-                    profile.user.update_password = False
-                    profile.user.save()
-                except:
+            # Get the reset password key and redirect to mobile : Processed when
+            # forgot password mail link clicked
+            elif reset_password_key:
+                if request.device:
+                    from django.http import HttpResponse
+                    response = HttpResponse(
+                        "kinbow://?resetPasswordKey=" +
+                        reset_password_key,
+                        status=302)
+                    response['Location'] = "kinbow://?resetPasswordKey=" + \
+                        reset_password_key
+                    return response
+                else:
                     return CustomeResponse(
                         {
-                            'msg': 'There is problem in reset password'},
+                            'msg': 'This url is used in app only'
+                        },
                         status=status.HTTP_401_UNAUTHORIZED,
-                        validate_errors=1)
+                        validate_errors=1
+                    )
+            return CustomeResponse(
+                {
+                    'msg': 'Please provide correct parameters'
+                },
+                status=status.HTTP_401_UNAUTHORIZED,
+                validate_errors=1
+            )
 
-            if username and password:
-                user = authenticate_frontend(
-                    username=username, password=password)
-                if user and not None:
-                    if user.status != 1:
-                        msg = 'User account is disabled.'
+        if request.method == 'POST':
+            try:
+                op = request.data['op']
+            except:
+                op = None
+            # Login
+            if op == 'login':
+                try:
+                    username = request.data['username']
+                    password = request.data['password']
+                except:
+                    username = None
+                    password = None
+                # save password in case of forgot passord TODO  move this section
+                # from login section
+                try:
+                    reset_password_key = request.data['reset_password_key']
+                except:
+                    reset_password_key = None
+
+                if reset_password_key:
+                    # save password in case of forgot passord TODO  move this
+                    # section from login section
+                    try:
+                        profile = Profile.objects.select_related().get(
+                            reset_password_key=reset_password_key,
+                            user__email=username
+                        )
+
+                        profile.user.set_password(password)
+                        profile.user.update_password = False
+                        profile.user.save()
+                    except:
+                        return CustomeResponse(
+                            {
+                                'msg': 'There is problem in reset password'},
+                            status=status.HTTP_401_UNAUTHORIZED,
+                            validate_errors=1)
+
+                if username and password:
+                    user = authenticate_frontend(
+                        username=username, password=password)
+                    if user and not None:
+                        if user.status != 1:
+                            msg = 'User account is disabled.'
+                            return CustomeResponse(
+                                {
+                                    'msg': msg
+                                },
+                                status=status.HTTP_401_UNAUTHORIZED,
+                                validate_errors=1
+                            )
+                    else:
+                        msg = 'Unable to log in with provided credentials.'
                         return CustomeResponse(
                             {
                                 'msg': msg
@@ -834,119 +968,126 @@ def useractivity(request, **kwargs):
                             status=status.HTTP_401_UNAUTHORIZED,
                             validate_errors=1
                         )
+                        # raise exceptions.ValidationError(msg)
                 else:
-                    msg = 'Unable to log in with provided credentials.'
-                    return CustomeResponse(
-                        {
-                            'msg': msg
-                        },
-                        status=status.HTTP_401_UNAUTHORIZED,
-                        validate_errors=1
+                    msg = 'Must include "username" and "password".'
+                    return CustomeResponse({'msg': msg},
+                                           status=status.HTTP_401_UNAUTHORIZED,
+                                           validate_errors=1)
+
+                # Create Token
+                # everytime user login user will get new token
+                # first check previus token if exist then delete
+                user = model_to_dict(user)
+                token = getToken(user["id"])
+                try:
+                    profile = Profile.objects.get(user_id=user["id"])
+                    user['first_time_login'] = profile.first_time_login
+                except:
+                    pass
+                user['token'] = token
+                # End
+                return CustomeResponse(user, status=status.HTTP_200_OK)
+            # restet password and send the email
+            elif op == 'reset_password':
+                try:
+                    email = request.data['email']
+                except KeyError:
+                    email = None
+                try:
+                    profile = Profile.objects.select_related().get(
+                        user__email=request.data['email'],
+                        user__user_type__in=[2, 3]
                     )
+                except profile.DoesNotExist:
+                    profile = ''
+                if email:
+                    if profile and not None:
+                        salt = hashlib.sha1(
+                            str(random.random())).hexdigest()[:5]
+                        reset_password_key = hashlib.sha1(
+                            salt + profile.user.email).hexdigest()
+
+                        user = model_to_dict(profile.user)
+                        BaseSendMail.delay(
+                            user, type='forgot_password', key=reset_password_key)
+                        profile.reset_password_key = reset_password_key
+                        profile.save()
+                        return CustomeResponse(user, status=status.HTTP_200_OK)
+                    else:
+                        msg = 'This email id does not exist.'
+                        return CustomeResponse(
+                            {
+                                'msg': msg
+                            },
+                            status=status.HTTP_401_UNAUTHORIZED,
+                            validate_errors=1
+                        )
+                        # raise exceptions.ValidationError(msg)
                     # raise exceptions.ValidationError(msg)
-            else:
-                msg = 'Must include "username" and "password".'
-                return CustomeResponse({'msg': msg},
-                                       status=status.HTTP_401_UNAUTHORIZED,
-                                       validate_errors=1)
+                else:
+                    msg = 'Must include "email".'
+                    return CustomeResponse({'msg': msg},
+                                           status=status.HTTP_401_UNAUTHORIZED,
+                                           validate_errors=1)
 
-            # Create Token
-            # everytime user login user will get new token
-            # first check previus token if exist then delete
-            user = model_to_dict(user)
-            token = getToken(user["id"])
-            try:
-                profile = Profile.objects.get(user_id=user["id"])
-                user['first_time_login'] = profile.first_time_login
-            except:
-                pass
-            user['token'] = token
-            # End
-            return CustomeResponse(user, status=status.HTTP_200_OK)
-        # restet password and send the email
-        elif op == 'reset_password':
-            try:
-                email = request.data['email']
-            except:
-                email = None
-            try:
-                profile = Profile.objects.select_related().get(
-                    user__email=request.data['email'],
-                    user__user_type__in=[2, 3]
-                )
-            except:
-                profile = ''
-            if email:
-                if profile and not None:
-                    salt = hashlib.sha1(str(random.random())).hexdigest()[:5]
-                    reset_password_key = hashlib.sha1(
-                        salt + profile.user.email).hexdigest()
+                return CustomeResponse(profile, status=status.HTTP_200_OK)
 
+            elif op == 'resend_register_mail':
+                try:
+                    email = request.data['email']
+                except:
+                    email = None
+                try:
+                    profile = Profile.objects.select_related().get(
+                        user__email=email
+                    )
+                except:
+                    profile = ''
+
+                if profile:
                     user = model_to_dict(profile.user)
                     BaseSendMail.delay(
-                        user, type='forgot_password', key=reset_password_key)
-                    profile.reset_password_key = reset_password_key
-                    profile.save()
-                    return CustomeResponse(user, status=status.HTTP_200_OK)
+                        user,
+                        type='account_confirmation',
+                        key=profile.activation_key)
+                    return CustomeResponse(
+                        {'msg': "email sent"}, status=status.HTTP_200_OK)
                 else:
-                    msg = 'This email id does not exist.'
                     return CustomeResponse(
                         {
-                            'msg': msg
+                            'msg': "email does not exist"
                         },
                         status=status.HTTP_401_UNAUTHORIZED,
                         validate_errors=1
                     )
-                    # raise exceptions.ValidationError(msg)
-                # raise exceptions.ValidationError(msg)
-            else:
-                msg = 'Must include "email".'
-                return CustomeResponse({'msg': msg},
-                                       status=status.HTTP_401_UNAUTHORIZED,
-                                       validate_errors=1)
 
-            return CustomeResponse(profile, status=status.HTTP_200_OK)
-
-        elif op == 'resend_register_mail':
-            try:
-                email = request.data['email']
-            except:
-                email = None
-            try:
-                profile = Profile.objects.select_related().get(
-                    user__email=email
-                )
-            except:
-                profile = ''
-
-            if profile:
-                user = model_to_dict(profile.user)
-                BaseSendMail.delay(
-                    user,
-                    type='account_confirmation',
-                    key=profile.activation_key)
-                return CustomeResponse(
-                    {'msg': "email sent"}, status=status.HTTP_200_OK)
             else:
                 return CustomeResponse(
                     {
-                        'msg': "email does not exist"
+                        'msg': 'Please provide operation parameter op'
                     },
                     status=status.HTTP_401_UNAUTHORIZED,
                     validate_errors=1
                 )
-
-        else:
-            return CustomeResponse(
-                {
-                    'msg': 'Please provide operation parameter op'
-                },
-                status=status.HTTP_401_UNAUTHORIZED,
-                validate_errors=1
-            )
+    except:
+        logger.critical(
+            "Caught exception in {}".format(__file__),
+            exc_info=True
+        )
+        ravenclient.captureException()
+    return CustomeResponse(
+        {
+            "msg": "Can not process request. Please try later."
+        },
+        status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        validate_errors=1
+    )
 
 
 class UserEmailViewSet(viewsets.ModelViewSet):
+    """User email views."""
+
     queryset = UserEmail.objects.all()
     serializer_class = UserEmailSerializer
     authentication_classes = (ExpiringTokenAuthentication,)
@@ -967,36 +1108,53 @@ class UserEmailViewSet(viewsets.ModelViewSet):
         default_email = {}
         default_email['email'] = request.user.email
         default_email['is_default'] = 1
-        userEmails = self.queryset.filter(user_id=request.user)
-        user_id = request.user.id
+        try:
+            userEmails = self.queryset.filter(user_id=request.user)
+            user_id = request.user.id
 
-        userEmailSerializer = UserEmailSerializer(userEmails, many=True)
-        count = UserEmail.objects.filter(user_id=user_id).count()
-        # items= 0
-        data = []
-        i = 0
-        if userEmailSerializer:
-            for items in userEmailSerializer.data:
-                if i == 0:
-                    data.append(default_email)
-                    items['is_default'] = 0
-                    data.append(items)
+            userEmailSerializer = UserEmailSerializer(userEmails, many=True)
+            count = UserEmail.objects.filter(user_id=user_id).count()
+            # items= 0
+            data = []
+            i = 0
+            if userEmailSerializer:
+                for items in userEmailSerializer.data:
+                    if i == 0:
+                        data.append(default_email)
+                        items['is_default'] = 0
+                        data.append(items)
+                    else:
+                        items['is_default'] = 0
+                        data.append(items)
+                    i = i + 1
+
+            if userEmailSerializer:
+                if count > 0:
+                    return CustomeResponse(data, status=status.HTTP_200_OK)
                 else:
-                    items['is_default'] = 0
-                    data.append(items)
-                i = i + 1
-
-        if userEmailSerializer:
-            if count > 0:
-                return CustomeResponse(data, status=status.HTTP_200_OK)
+                    data.append(default_email)
+                    # Rahul: who did this code?
+                    # defaultEmail = User.objects.filter(id=user_id)
+                    # serializer = UserSerializer(defaultEmail, many=True)
+                    return CustomeResponse(data, status=status.HTTP_200_OK)
             else:
-                data.append(default_email)
-                # Rahul: who did this code?
-                # defaultEmail = User.objects.filter(id=user_id)
-                # serializer = UserSerializer(defaultEmail, many=True)
-                return CustomeResponse(data, status=status.HTTP_200_OK)
-        else:
-            return CustomeResponse(default_email, status=status.HTTP_200_OK)
+                return CustomeResponse(
+                    default_email,
+                    status=status.HTTP_200_OK
+                )
+        except:
+            logger.critical(
+                "Caught exception in {}".format(__file__),
+                exc_info=True
+            )
+            ravenclient.captureException()
+        return CustomeResponse(
+            {
+                "msg": "Can not process request. Please try later."
+            },
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            validate_errors=1
+        )
 
     def create(self, request):
         """Add user additional email."""
@@ -1033,15 +1191,16 @@ class UserEmailViewSet(viewsets.ModelViewSet):
             else:
                 return CustomeResponse(
                     {'msg': serializer.errors}, validate_errors=1)
-        except Exception:
+        except:
             logger.critical(
                 "Caught exception in {}".format(__file__),
                 exc_info=True
             )
+            ravenclient.captureException()
 
         return CustomeResponse(
             {
-                "msg": "Can not process request."
+                "msg": "Can not process request. Please try later."
             },
             status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             validate_errors=1
@@ -1049,7 +1208,7 @@ class UserEmailViewSet(viewsets.ModelViewSet):
 
     @list_route(methods=['post'],)
     def send_verification_code(self, request):
-
+        """Send verification code email."""
         try:
             user_id = request.user
             salt = hashlib.sha1(str(random.random())).hexdigest()[:5]
@@ -1085,8 +1244,7 @@ class UserEmailViewSet(viewsets.ModelViewSet):
                     status=status.HTTP_400_BAD_REQUEST,
                     validate_errors=1
                 )
-        except:
-            data['email'] = None
+        except KeyError:
             return CustomeResponse(
                 {
                     "msg": "email is mandatory"
@@ -1094,64 +1252,39 @@ class UserEmailViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_400_BAD_REQUEST,
                 validate_errors=1
             )
+        except:
+            logger.critical(
+                "Caught exception in {}".format(__file__),
+                exc_info=True
+            )
+            ravenclient.captureException()
+
+        return CustomeResponse(
+            {
+                "msg": "Can not process request. Please try later."
+            },
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            validate_errors=1
+        )
 
     @list_route(methods=['get'],)
     def verify_email(self, request):
-
-        activation_code = self.request.query_params.get('activation_code', '')
-        user_email = UserEmail.objects.select_related(
-            'user_id').get(verification_code=activation_code)
-        data = {}
-        data['ueid'] = user_email.id  # added user email pk
-        userEmail = user_email.user_id.email
-        userEmailAdded = user_email.email
-        isVerified = user_email.isVerified
-
+        """Verify emial."""
         try:
-            checkUserEmail = User.objects.filter(
-                email=userEmailAdded)  # check email user table if exist
-        except:
-            return CustomeResponse(
-                {
-                    "msg": "email is not there"
-                },
-                status=status.HTTP_400_BAD_REQUEST,
-                validate_errors=1
-            )
+            activation_code = self.request.query_params.get(
+                'activation_code', '')
+            user_email = UserEmail.objects.select_related(
+                'user_id').get(verification_code=activation_code)
+            data = {}
+            data['ueid'] = user_email.id  # added user email pk
+            userEmail = user_email.user_id.email
+            userEmailAdded = user_email.email
+            isVerified = user_email.isVerified
 
-        if user_email:
-            if isVerified == 0:
-                # user_email.update(isVerified=1,verification_code='')
-                UserEmail.objects.filter(id=data['ueid']).update(
-                    isVerified=1, verification_code='')
-                return CustomeResponse(
-                    {'msg': 'email verified'}, status=status.HTTP_200_OK)
-
-            elif isVerified == 1:
-                # user_email.update(isVerified=2,verification_code='')
-                UserEmail.objects.filter(id=data['ueid']).update(
-                    isVerified=2, verification_code='')
-                # tempUserEmail= userEmailAdded[0]['email']
-                if not checkUserEmail:
-                    UserEmail.objects.filter(
-                        id=data['ueid']).update(email=userEmail)
-                    User.objects.filter(id=request.user.id).update(
-                        email=userEmailAdded)
-                    return CustomeResponse(
-                        {
-                            'msg': 'email set to default'
-                        },
-                        status=status.HTTP_200_OK
-                    )
-                else:
-                    return CustomeResponse(
-                        {'msg': 'email cannot be replaced'}, validate_errors=1)
-
-            else:
-                return CustomeResponse(
-                    {'msg': 'server error'}, validate_errors=1)
-
-            if not userEmail:
+            try:
+                checkUserEmail = User.objects.filter(
+                    email=userEmailAdded)  # check email user table if exist
+            except:
                 return CustomeResponse(
                     {
                         "msg": "email is not there"
@@ -1160,17 +1293,77 @@ class UserEmailViewSet(viewsets.ModelViewSet):
                     validate_errors=1
                 )
 
-            elif request.device:
-                from django.http import HttpResponse
-                response = HttpResponse("kinbow://verify_email=1", status=302)
-                response['Location'] = "kinbow://?verify_email=1"
-                return response
+            if user_email:
+                if isVerified == 0:
+                    # user_email.update(isVerified=1,verification_code='')
+                    UserEmail.objects.filter(id=data['ueid']).update(
+                        isVerified=1, verification_code='')
+                    return CustomeResponse(
+                        {'msg': 'email verified'}, status=status.HTTP_200_OK)
+
+                elif isVerified == 1:
+                    # user_email.update(isVerified=2,verification_code='')
+                    UserEmail.objects.filter(id=data['ueid']).update(
+                        isVerified=2, verification_code='')
+                    # tempUserEmail= userEmailAdded[0]['email']
+                    if not checkUserEmail:
+                        UserEmail.objects.filter(
+                            id=data['ueid']).update(email=userEmail)
+                        User.objects.filter(id=request.user.id).update(
+                            email=userEmailAdded)
+                        return CustomeResponse(
+                            {
+                                'msg': 'email set to default'
+                            },
+                            status=status.HTTP_200_OK
+                        )
+                    else:
+                        return CustomeResponse(
+                            {'msg': 'email cannot be replaced'}, validate_errors=1)
+
+                else:
+                    return CustomeResponse(
+                        {'msg': 'server error'}, validate_errors=1)
+
+                if not userEmail:
+                    return CustomeResponse(
+                        {
+                            "msg": "email is not there"
+                        },
+                        status=status.HTTP_400_BAD_REQUEST,
+                        validate_errors=1
+                    )
+
+                elif request.device:
+                    from django.http import HttpResponse
+                    response = HttpResponse(
+                        "kinbow://verify_email=1", status=302)
+                    response['Location'] = "kinbow://?verify_email=1"
+                    return response
+                else:
+                    return CustomeResponse(
+                        {'msg': 'email verified'}, status=status.HTTP_200_OK)
             else:
                 return CustomeResponse(
-                    {'msg': 'email verified'}, status=status.HTTP_200_OK)
-        else:
-            return CustomeResponse(
-                {'msg': 'activation_code does not exist.'}, validate_errors=1)
+                    {
+                        'msg': 'activation_code does not exist.'
+                    },
+                    validate_errors=1
+                )
+        except:
+            logger.critical(
+                "Caught exception in {}".format(__file__),
+                exc_info=True
+            )
+            ravenclient.captureException()
+
+        return CustomeResponse(
+            {
+                "msg": "Can not process request. Please try later."
+            },
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            validate_errors=1
+        )
 
     @list_route(methods=['post'],)
     def setdefault(self, request):
@@ -1223,14 +1416,20 @@ class UserEmailViewSet(viewsets.ModelViewSet):
                 return CustomeResponse(
                     {'msg': 'server error'}, validate_errors=1)
 
-        except Exception:
-            return CustomeResponse(
-                {
-                    "msg": "email is not there"
-                },
-                status=status.HTTP_400_BAD_REQUEST,
-                validate_errors=1
+        except:
+            logger.critical(
+                "Caught exception in {}".format(__file__),
+                exc_info=True
             )
+            ravenclient.captureException()
+
+        return CustomeResponse(
+            {
+                "msg": "Can not process request. Please try later."
+            },
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            validate_errors=1
+        )
 
     @list_route(methods=['post'],)
     def deleteEmail(self, request):
@@ -1275,15 +1474,16 @@ class UserEmailViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_404_NOT_FOUND,
                 validate_errors=1
             )
-        except Exception:
+        except:
             logger.critical(
                 "Caught exception in {}".format(__file__),
                 exc_info=True
             )
+            ravenclient.captureException()
 
         return CustomeResponse(
             {
-                "msg": "Can not process request."
+                "msg": "Can not process request. Please try later."
             },
             status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             validate_errors=1

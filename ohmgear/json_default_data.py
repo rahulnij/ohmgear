@@ -110,7 +110,7 @@ BUSINESS_CARD_DATA_VALIDATION = {
                                         "type": "object",
                                         "properties": {
                                             "type": {"type": "string"},
-                                            "data": {"type": "string", "required": False, "blank": True, "minLength": 2, "maxLength": 15}
+                                            "data": {"type": "string", "required": False, "blank": True}
 
                                         }
                                     },
@@ -123,7 +123,7 @@ BUSINESS_CARD_DATA_VALIDATION = {
                                         "type": "object",
                                         "properties": {
                                             "type": {"type": "string"},
-                                            "data": {"type": "string", "required": False, "blank": True, "minLength": 2, "maxLength": 30}
+                                            "data": {"type": "string", "required": False, "blank": True}
 
                                         }
                                     },

@@ -22,6 +22,8 @@ from apps.businesscards.views import BusinessViewSet
 from apps.folders.views import FolderViewSet
 from apps.folders.models import Folder, FolderContact
 from apps.folders.serializer import FolderContactSerializer
+from permissions import IsUserContactData
+
 import copy
 from django.db.models import Q
 import ohmgear.settings.constant as constant
@@ -53,9 +55,8 @@ class storeContactsViewSet(viewsets.ModelViewSet):
 
     def retrieve(self, request, pk=None):
 
-        return CustomeResponse({'msg': 'retrieve method not allowed'},
-                               status=status.HTTP_405_METHOD_NOT_ALLOWED,
-                               validate_errors=1)
+        #queryset = FolderContact.objects.filter(pk=pk)
+        return CustomeResponse("dddddddddd", status=status.HTTP_200_OK)
 
     def create(self, request):
         return CustomeResponse({'msg': 'POST method not allowed'},
@@ -73,9 +74,8 @@ class storeContactsViewSet(viewsets.ModelViewSet):
         except:
             return CustomeResponse({'msg': 'Please provide correct Json Format'},
                                    status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
-
-        if contact:
-            counter = 0
+        counter = 0
+        if contact:            
 
             # Assign  first created business card to created default folder
             queryset_folder = Folder.objects.filter(

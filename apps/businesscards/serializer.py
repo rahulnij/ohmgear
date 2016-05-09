@@ -135,19 +135,21 @@ class BusinessCardWithIdentifierSerializer(serializers.ModelSerializer):
 
 
 class SearchBusinessCardWithIdentifierSerializer(serializers.ModelSerializer):
+    """search by email or name."""
 
     contact_detail = ContactsSerializerWithJson(read_only=True)
     media_detail = serializers.SerializerMethodField('bcard_image_frontend')
-    # business_identifier should be businesscard_identifier
     business_identifier = IdentifierSerializer(many=True, read_only=True)
     business_notes = serializers.SerializerMethodField('fetch_notes')
     search_by = serializers.SerializerMethodField('searchby')
 
     def searchby(self, obj):
-        data = "email"
+        """It give whether search result is from email or from name."""
+        data = self.context['search']
         return data
 
     def bcard_image_frontend(self, obj):
+        """Fetched business card images."""
         media = ContactMedia.objects.filter(
             contact_id=obj.contact_detail.id, status=1).order_by('front_back')
         data = []
@@ -158,6 +160,7 @@ class SearchBusinessCardWithIdentifierSerializer(serializers.ModelSerializer):
         return data
 
     def fetch_notes(self, obj):
+        """Fetch notes of Businesscards."""
         notes = Notes.objects.filter(contact_id=obj.contact_detail.id)
         data = {}
         for item in notes:
@@ -168,6 +171,8 @@ class SearchBusinessCardWithIdentifierSerializer(serializers.ModelSerializer):
         return data
 
     class Meta:
+        """Required filds."""
+
         model = BusinessCard
         fields = (
             'id',
@@ -182,7 +187,6 @@ class SearchBusinessCardWithIdentifierSerializer(serializers.ModelSerializer):
             'business_notes',
             'search_by'
         )
-
 
 
 from apps.vacationcard.serializer import VacationCardSerializer
