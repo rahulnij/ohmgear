@@ -13,7 +13,8 @@ from django.conf import settings
 from ohmgear.functions import CustomeResponse
 from serializer import ContactsSerializer, ContactsSerializerWithJson, \
     FavoriteContactSerializer, AssociateContactSerializer, ContactMediaSerializer,\
-    PrivateContactSerializer, FolderContactWithDetailsSerializer
+    PrivateContactSerializer, FolderContactWithDetailsSerializer,\
+    FolderContactWithRelatedDataSerializer
 
 from ohmgear.json_default_data import BUSINESS_CARD_DATA_VALIDATION
 from models import Contacts, FavoriteContact, AssociateContact, ContactMedia, PrivateContact
@@ -36,13 +37,13 @@ class storeContactsViewSet(viewsets.ModelViewSet):
     queryset = Contacts.objects.all()
     serializer_class = ContactsSerializer
     authentication_classes = (ExpiringTokenAuthentication,)
-    permission_classes = (IsAuthenticated,)
+    permission_classes = (IsAuthenticated, IsUserContactData,)
 
     def list(self, request):
 
         # queryset = self.queryset.filter(
         #    folder_contact_data__user_id=request.user.id)
-        queryset = FolderContact.objects.filter(user_id=request.user.id)
+        queryset = FolderContact.objects.filter(user_id=request.user.id).select_related()
 #       serializer = self.serializer_class(queryset,many=True)
         serializer = FolderContactWithDetailsSerializer(queryset, many=True)
 
@@ -55,8 +56,14 @@ class storeContactsViewSet(viewsets.ModelViewSet):
 
     def retrieve(self, request, pk=None):
 
-        #queryset = FolderContact.objects.filter(pk=pk)
-        return CustomeResponse("dddddddddd", status=status.HTTP_200_OK)
+        queryset = FolderContact.objects.filter(contact_id=pk)
+        serializer = FolderContactWithRelatedDataSerializer(queryset, many=True)
+        if serializer.data:
+            return CustomeResponse(serializer.data, status=status.HTTP_200_OK)
+        else:
+            return CustomeResponse({"msg": "No Data found"},
+                                   status=status.HTTP_400_BAD_REQUEST,
+                                   validate_errors=True)
 
     def create(self, request):
         return CustomeResponse({'msg': 'POST method not allowed'},
@@ -75,7 +82,7 @@ class storeContactsViewSet(viewsets.ModelViewSet):
             return CustomeResponse({'msg': 'Please provide correct Json Format'},
                                    status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
         counter = 0
-        if contact:            
+        if contact:
 
             # Assign  first created business card to created default folder
             queryset_folder = Folder.objects.filter(
