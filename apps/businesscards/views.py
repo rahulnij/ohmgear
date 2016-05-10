@@ -245,8 +245,8 @@ class BusinessCardIdentifierViewSet(viewsets.ModelViewSet):
                         identifier_data, many=True, context={'search': "identifier"})
                     return CustomeResponse(
                         {
-                            'business_cards_by_name': name_serializer.data,
-                            'business_cars_by_identifier': businesscard_by_identifier_serializer.data},
+                            'search_business_cards': businesscard_by_identifier_serializer.data + name_serializer.data,
+                        },
                         status=status.HTTP_200_OK)
 
                 else:
