@@ -34,7 +34,7 @@ from serializer import (
 )
 from apps.contacts.serializer import ContactsSerializer
 from apps.contacts.models import Contacts, ContactMedia
-from apps.identifiers.serializer import BusinessIdentifierSerializer, SearchBusinessIdentifierSerializer
+from apps.identifiers.serializer import BusinessIdentifierSerializer
 from ohmgear.token_authentication import ExpiringTokenAuthentication
 from ohmgear.functions import CustomeResponse, rawResponse
 from ohmgear.json_default_data import BUSINESS_CARD_DATA_VALIDATION
@@ -252,9 +252,6 @@ class BusinessCardIdentifierViewSet(viewsets.ModelViewSet):
                 else:
                     return CustomeResponse(
                         {'msg': "Businesscard not found"}, status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
-
-                serializer = SearchBusinessIdentifierSerializer(
-                    identifier_data, many=True)
 
             # Search by email #
             else:
