@@ -13,7 +13,7 @@ class Group(models.Model):
         db_table = 'ohmgear_groups_group'
         unique_together = ('group_name', 'user_id')
     group_name = models.CharField(_("Group Name"), max_length=60)
-    description = models.TextField("Description",null=True)
+    description = models.TextField("Description", null=True)
     user_id = models.ForeignKey(User, db_column="user_id")
     status = models.IntegerField(_('status'), default=1)
     created_date = models.DateTimeField(
@@ -22,7 +22,8 @@ class Group(models.Model):
         _("Updated Date"), auto_now_add=False, auto_now=True)
 
     def __unicode__(self):
-        return '{"id":"%s","group_name":"%s","user_id":"%s","description":"%s"}' % (self.id, self.group_name, self.user_id,self.description)
+        return '{"id":"%s","group_name":"%s","user_id":"%s","description":"%s"}' % (
+            self.id, self.group_name, self.user_id, self.description)
 
 
 class GroupContacts(models.Model):
@@ -41,7 +42,8 @@ class GroupContacts(models.Model):
         _("Updated Date"), auto_now_add=False, auto_now=True)
 
     def __unicode__(self):
-        return '{"id":"%s","group_id":"%s","user_id":"%s"}' % (self.id, self.group_id, self.user_id)
+        return '{"id":"%s","group_id":"%s","group_name":"%s","user_id":"%s"}' % (
+            self.id, self.group_id, self.group_id.group_name, self.user_id)
 
 
 class GroupMedia(models.Model):

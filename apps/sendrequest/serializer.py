@@ -5,6 +5,8 @@ from rest_framework import serializers
 from models import SendRequest
 from apps.contacts.models import Contacts
 from apps.businesscards.models import BusinessCard
+
+from apps.contacts.functions import get_contact_media
 # Serializers define the API representation.
 
 logger = logging.getLogger(__name__)
@@ -20,8 +22,7 @@ class SendRequestSerializer(serializers.ModelSerializer):
         filter_type = self.context.get("filter_type")
         if filter_type is not 'sent':
             try:
-                get_contact_data = Contacts.objects.get(
-                    id=obj. sender_business_card_id.contact_detail.id)
+                get_contact_data = obj.sender_business_card_id.contact_detail
             except Contacts.DoesNotExist as e:
                 logger.error(
                     "Object DoesNotExist: Contacts: {}, {}".format(
@@ -61,9 +62,9 @@ class SendRequestSerializer(serializers.ModelSerializer):
                 return data
         else:
             return data
-
         data['id'] = get_contact_data.id
         data['bcard_json_data'] = get_contact_data.bcard_json_data
+        data['contact_media'] = get_contact_media(get_contact_data.businesscard_media.all())
         return data
 
     class Meta:
@@ -79,7 +80,7 @@ class SendRequestSerializer(serializers.ModelSerializer):
             'search_by',
             'request_status',
             'sender_data',
-            'receiver_data',            
+            'receiver_data',
             'created_date',
             'updated_date',
         )

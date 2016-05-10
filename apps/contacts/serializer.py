@@ -5,6 +5,7 @@ from models import Contacts, FavoriteContact, AssociateContact, ContactMedia, Pr
 from apps.contacts.models import FolderContact
 from apps.businesscards.models import BusinessCardAddSkill, BusinessCardHistory
 from apps.groups.models import GroupContacts
+from apps.notes.models import Notes
 
 from django.conf import settings
 import rest_framework.status as status
@@ -186,7 +187,7 @@ class FolderContactWithRelatedDataSerializer(serializers.ModelSerializer):
     related_data = serializers.SerializerMethodField(
         'related_data_funct')
 
-    # get the contact skill, media, history
+    # get the contact skill, media, history, notes
     def related_data_funct(self, obj):
 
         # tried to pull data from select related but fail, need to look
@@ -231,14 +232,40 @@ class FolderContactWithRelatedDataSerializer(serializers.ModelSerializer):
         # groups
         data_groups = []
         groups = GroupContacts.objects.filter(
-            folder_contact_id=obj.id).values()
+            folder_contact_id=obj.id)
         for item in groups:
-            data_groups.append(item)
+            data_groups.append({"id": item.id,
+                                "group_id": item.group_id.id,
+                                "group_name": item.group_id.group_name,
+                                "folder_contact_id": item.folder_contact_id.id,
+                                "created_date": item.created_date,
+                                "updated_date": item.updated_date
+                                })
 
         if groups:
             data['groups'] = data_groups
         else:
             data['groups'] = []
+
+        # notes
+
+        data_notes = []
+        notes = Notes.objects.filter(
+            contact_id=obj.contact_id,
+            bcard_side_no__in=[
+                1,
+                2]).values(
+            "id",
+            "note",
+            "bcard_side_no",
+            "contact_id")
+        for item in notes:
+            data_notes.append(item)
+
+        if notes:
+            data['notes'] = data_notes
+        else:
+            data['notes'] = []
 
         return data
 
