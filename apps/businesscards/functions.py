@@ -230,7 +230,7 @@ def searchjson(name, value, user_id=None, bcard_id=None):
     if bcards or contact:
         result_list = []
         from itertools import chain
-        result_list = list(chain(bcard, contact))
+        result_list = list(chain(bcards, contact))
         return result_list
     else:
         return False
