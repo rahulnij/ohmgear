@@ -68,7 +68,7 @@ class BusinessCardIdentifier(models.Model):
         db_table = 'ohmgear_businesscards_identifier'
 
     businesscard_id = models.ForeignKey(
-        BusinessCard, db_column="businesscard_id")
+        BusinessCard, db_column="businesscard_id",related_name='identifiers_data')
     identifier_id = models.OneToOneField(
         Identifier,
         db_column="identifier_id",
