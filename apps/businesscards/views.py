@@ -223,115 +223,68 @@ class BusinessCardIdentifierViewSet(viewsets.ModelViewSet):
             value = ''
             return CustomeResponse({'msg': "Please provide name"},
                                    status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
-        # search by firstname and lastname#
+        # search by firstname and lastname or by identifier#
         try:
-            if (' ' in value) == True:
+            if not re.match("[^@]+@[^@]+\.[^@]+", value):
 
+                identifier_data = BusinessCard.objects.filter(
+                    status=1, identifiers_data__identifier_id__identifier__contains=value)
+                bcard_id = None
+
+                if identifier_data:
+                    bcard_id = identifier_data[0].id
+                    bcard_id = bcard_id
                 name = "firstname_lastname"
                 user_id = ''
-                data = searchjson(name, value)
-                if data:
-                    serializer = SearchBusinessCardWithIdentifierSerializer(
-                        data, many=True, context={'search': "name"})
+
+                searchname_data = searchjson(name, value, user_id, bcard_id)
+                if identifier_data or searchname_data:
+                    name_serializer = SearchBusinessCardWithIdentifierSerializer(
+                        searchname_data, many=True, context={'search': "name"})
+                    businesscard_by_identifier_serializer = SearchBusinessCardWithIdentifierSerializer(
+                        identifier_data, many=True, context={'search': "identifier"})
                     return CustomeResponse(
-                        serializer.data, status=status.HTTP_200_OK)
+                        {
+                            'business_cards_by_name': name_serializer.data,
+                            'business_cars_by_identifier': businesscard_by_identifier_serializer.data},
+                        status=status.HTTP_200_OK)
+
                 else:
                     return CustomeResponse(
-                        {'msg': "Name not found"}, status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
+                        {'msg': "Businesscard not found"}, status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
 
-            # search by firstname and lastname #
+                serializer = SearchBusinessIdentifierSerializer(
+                    identifier_data, many=True)
+
+            # Search by email #
             else:
+                userdata = User.objects.filter(email=value).values()
 
-                if not re.match("[^@]+@[^@]+\.[^@]+", value):
-
-                    # identifier_data = BusinessCard.objects.filter(
-                    # status=1,
-                    # identifiers_data__identifier_id__identifier__contains=value)
-
-                    identifier_data = Identifier.objects.filter(
-                        identifier=value, status=1)
-
-                    if not identifier_data:
+                if userdata:
+                    user_id = userdata[0]['id']
+                    name = "email"
+                    data = searchjson(name, value, user_id)
+                    if data:
+                        serializer = SearchBusinessCardWithIdentifierSerializer(
+                            data, many=True, context={'search': "email"})
                         return CustomeResponse(
-                            {'msg': "identifier not Found"}, status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
-
-                    # if identifier_data:
-                    #     serializer = SearchBusinessCardWithIdentifierSerializer(
-                    #         identifier_data, many=True, context={'search': "identifier"})
-                    #     return CustomeResponse(
-                    #         serializer.data, status=status.HTTP_200_OK)
-                    # else:
-                    #     return CustomeResponse(
-                    #         {'msg': "Identifier not found"}, status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
-
-                    serializer = SearchBusinessIdentifierSerializer(
-                        identifier_data, many=True)
-
-                    try:
-                        businesscard_data = serializer.data[
-                            0]['business_identifier']
-                        contact_id = serializer.data[0][
-                            'business_identifier'][0]['contact_detail']['id']
-                    except:
-                        return CustomeResponse(
-                            {'msg': "No Business card found"}, status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
-
-                    folder_contacts = FolderContact.objects.filter(
-                        user_id=user_id, contact_id=contact_id)
-
-                    if folder_contacts:
-                        return CustomeResponse(
-                            {
-                                'msg': "Business card is already been added"},
-                            status=status.HTTP_400_BAD_REQUEST,
-                            validate_errors=1)
+                            serializer.data, status=status.HTTP_200_OK)
                     else:
+                        return CustomeResponse(
+                            {'msg': "email not found"}, status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
 
-                        if businesscard_data:
-
-                            if businesscard_data[0]['status']:
-                                return CustomeResponse(
-                                    serializer.data, status=status.HTTP_200_OK)
-                            else:
-                                return CustomeResponse(
-                                    {
-                                        'msg': "Business Card is not published"},
-                                    status=status.HTTP_400_BAD_REQUEST,
-                                    validate_errors=1)
-
-                        else:
-                            return CustomeResponse(
-                                {'msg': "No Business Card Found"}, status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
-
-                # Search by email #
                 else:
-                    userdata = User.objects.filter(email=value).values()
-
-                    if userdata:
-                        user_id = userdata[0]['id']
-                        name = "email"
-                        data = searchjson(name, value, user_id)
-                        if data:
-                            serializer = SearchBusinessCardWithIdentifierSerializer(
-                                data, many=True, context={'search': "email"})
-                            return CustomeResponse(
-                                serializer.data, status=status.HTTP_200_OK)
-                        else:
-                            return CustomeResponse(
-                                {'msg': "email not found"}, status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
-
+                    name = "email"
+                    user_id = ""
+                    data = searchjson(name, value)
+                    if data:
+                        serializer = SearchBusinessCardWithIdentifierSerializer(
+                            data, many=True, context={'search': "email"})
+                        return CustomeResponse(
+                            serializer.data, status=status.HTTP_200_OK)
                     else:
-                        name = "email"
-                        user_id = ""
-                        data = searchjson(name, value)
-                        if data:
-                            serializer = SearchBusinessCardWithIdentifierSerializer(
-                                data, many=True, context={'search': "email"})
-                            return CustomeResponse(
-                                serializer.data, status=status.HTTP_200_OK)
-                        else:
-                            return CustomeResponse(
-                                {'msg': "email not found"}, status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
+                        return CustomeResponse(
+                            {'msg': "email not found"}, status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
 
         except Exception:
             logger.critical("Caught Exception ", exc_info=True)
