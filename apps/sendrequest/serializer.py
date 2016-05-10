@@ -33,6 +33,8 @@ class SendRequestSerializer(serializers.ModelSerializer):
 
         data['id'] = get_contact_data.id
         data['bcard_json_data'] = get_contact_data.bcard_json_data
+        data['contact_media'] = get_contact_media(
+            obj.sender_business_card_id.contact_detail.businesscard_media.all())
         return data
 
     def receiver_data_func(self, obj):
@@ -64,7 +66,8 @@ class SendRequestSerializer(serializers.ModelSerializer):
             return data
         data['id'] = get_contact_data.id
         data['bcard_json_data'] = get_contact_data.bcard_json_data
-        data['contact_media'] = get_contact_media(get_contact_data.businesscard_media.all())
+        data['contact_media'] = get_contact_media(
+            get_contact_data.businesscard_media.all())
         return data
 
     class Meta:
