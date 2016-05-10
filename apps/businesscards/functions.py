@@ -168,6 +168,7 @@ def searchjson(name, value, user_id=None, bcard_id=None):
 
     bcards_id = []
     bcards = ''
+    contact = ''
 
     if bcard_id is None:
         bcard_id = []
