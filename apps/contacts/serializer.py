@@ -3,6 +3,10 @@ from rest_framework import serializers
 from apps.folders.serializer import FolderContactSerializer
 from models import Contacts, FavoriteContact, AssociateContact, ContactMedia, PrivateContact
 from apps.contacts.models import FolderContact
+from apps.businesscards.models import BusinessCardAddSkill, BusinessCardHistory
+from apps.groups.models import GroupContacts
+from apps.notes.models import Notes
+
 from django.conf import settings
 import rest_framework.status as status
 from ohmgear.functions import CustomeResponse
@@ -102,19 +106,19 @@ class FavoriteContactSerializer(serializers.ModelSerializer):
             media = ContactMedia.objects.filter(
                 contact_id=contact_id, status=1).order_by('front_back')
         except ContactMedia.DoesNotExist:
-                logger.error(
-                    "Caught DoesNotExist exception for {}, contact_id {},\
+            logger.error(
+                "Caught DoesNotExist exception for {}, contact_id {},\
                     in {}".format(
-                        self.__class__, contact_id, __file__
-                    )
+                    self.__class__, contact_id, __file__
                 )
-                return CustomeResponse(
-                    {
-                        "msg": "ContactMedia does not exist."
-                    },
-                    status=status.HTTP_404_NOT_FOUND,
-                    validate_errors=1
-                )
+            )
+            return CustomeResponse(
+                {
+                    "msg": "ContactMedia does not exist."
+                },
+                status=status.HTTP_404_NOT_FOUND,
+                validate_errors=1
+            )
         data = []
         for item in media:
             data.append({"img_url": str(settings.DOMAIN_NAME) +
@@ -167,6 +171,117 @@ class FolderContactWithDetailsSerializer(serializers.ModelSerializer):
             'is_linked',
             'contact_data',
             'contact_media',
+            'private_contact_data',
+            'created_date',
+            'updated_date',
+        )
+
+
+# get the contact details and related data
+
+class FolderContactWithRelatedDataSerializer(serializers.ModelSerializer):
+
+    contact_data = serializers.ReadOnlyField(
+        source='contact_id.bcard_json_data')
+
+    related_data = serializers.SerializerMethodField(
+        'related_data_funct')
+
+    # get the contact skill, media, history, notes
+    def related_data_funct(self, obj):
+
+        # tried to pull data from select related but fail, need to look
+        data = {}
+        media = ContactMedia.objects.filter(
+            contact_id=obj.contact_id, status=1).order_by('front_back')
+        data_media = []
+
+        for item in media:
+            data_media.append({"img_url": str(settings.DOMAIN_NAME) +
+                               str(settings.MEDIA_URL) +
+                               str(item.img_url), "front_back": item.front_back})
+        if media:
+            data['contact_media'] = data_media
+        else:
+            data['contact_media'] = []
+
+        # skills
+        data_skills = []
+        skills = BusinessCardAddSkill.objects.filter(
+            businesscard_id=obj.contact_id.businesscard_id).values()
+        for item in skills:
+            data_skills.append(item)
+
+        if skills:
+            data['skills'] = data_skills
+        else:
+            data['skills'] = []
+
+        # history
+        data_history = []
+        history = BusinessCardHistory.objects.filter(
+            businesscard_id=obj.contact_id.businesscard_id).order_by('-id')[:5].values()
+        for item in history:
+            data_history.append(item)
+
+        if history:
+            data['history'] = data_history
+        else:
+            data['history'] = []
+
+        # groups
+        data_groups = []
+        groups = GroupContacts.objects.filter(
+            folder_contact_id=obj.id)
+        for item in groups:
+            data_groups.append({"id": item.id,
+                                "group_id": item.group_id.id,
+                                "group_name": item.group_id.group_name,
+                                "folder_contact_id": item.folder_contact_id.id,
+                                "created_date": item.created_date,
+                                "updated_date": item.updated_date
+                                })
+
+        if groups:
+            data['groups'] = data_groups
+        else:
+            data['groups'] = []
+
+        # notes
+
+        data_notes = []
+        notes = Notes.objects.filter(
+            contact_id=obj.contact_id,
+            bcard_side_no__in=[
+                1,
+                2]).values(
+            "id",
+            "note",
+            "bcard_side_no",
+            "contact_id")
+        for item in notes:
+            data_notes.append(item)
+
+        if notes:
+            data['notes'] = data_notes
+        else:
+            data['notes'] = []
+
+        return data
+
+    private_contact_data = PrivateContactSerializer(read_only=True)
+
+    class Meta:
+        model = FolderContact
+        fields = (
+            'id',
+            'user_id',
+            'folder_id',
+            'contact_id',
+            'link_status',
+            'is_linked',
+            'contact_data',
+            'related_data',
             'private_contact_data',
             'created_date',
             'updated_date',

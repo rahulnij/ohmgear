@@ -11,7 +11,6 @@ from rest_framework.decorators import list_route
 from rest_framework.permissions import IsAuthenticated
 import rest_framework.status as status
 from django.conf import settings
-from django.core.exceptions import ObjectDoesNotExist
 
 # ----------------- Local app imports ------ #
 from apps.email.views import BaseSendMail
@@ -160,7 +159,7 @@ class SendAcceptRequest(viewsets.ModelViewSet):
     def send_push_notification(self,
                                message=None,
                                message_type=None,
-                               user_id=None):
+                               user_id=None, sender_obj_id=None):
 
         #  Get the aws arn from token table
         try:
@@ -186,11 +185,11 @@ class SendAcceptRequest(viewsets.ModelViewSet):
                 'aps': {
                     'alert': message,
                     'message_type': message_type,
-                    "badge": 1
+                    "badge": 1,
+                    "sound": "default"
                 },
                 'data': {
-                    'receiver_business_card_id': '',
-                    'sender_business_card_id': '',
+                    'sender_obj_id': sender_obj_id
                 }})
         }
         message = json.dumps(message, ensure_ascii=False)
@@ -343,21 +342,36 @@ class SendAcceptRequest(viewsets.ModelViewSet):
                     'msg': "Have some problem in exchangin businesscard"},
                 status=status.HTTP_400_BAD_REQUEST,
                 validate_errors=1)
-            logger.critical(
+            logger.errors(
                 "Have some problem in exchangin businesscard sender_business_card_id {},  receiver_business_card_id {} ".format(
                     sender_business_card_id, receiver_business_card_id))
         #  End
 
-        #  Update the SendRequest status
-        try:
-            send_request_obj = SendRequest.objects.get(id=request_id)
-            send_request_obj.request_status = 1
-            send_request_obj.save()
-        except SendRequest.DoesNotExist as e:
-            logger.critical(
-                "Object Does Not Exist: SendRequest: {}, {}".format(
-                    request_id, e))
-        return CustomeResponse({"msg": "success"}, status=status.HTTP_200_OK)
+        else:
+            #  Update the SendRequest status
+            try:
+                send_request_obj = SendRequest.objects.get(id=request_id)
+                send_request_obj.request_status = 1
+                send_request_obj.save()
+            except SendRequest.DoesNotExist as e:
+                logger.errors(
+                    "Object Does Not Exist: SendRequest: {}, {}".format(
+                        request_id, e))
+
+            # send notification to receiver for acceptance business card
+            user_name = str(receiver_business_card.user_id.user_profile.first_name) + \
+                " " + str(receiver_business_card.user_id.user_profile.last_name)
+            message = 'your business card accepted by ' + user_name
+            self.send_push_notification(
+                message,
+                'b2b_accepted',
+                receiver_business_card.user_id.id,
+                sender_business_card.contact_detail.id)
+
+            #  End
+            return CustomeResponse(
+                {"msg": "success"}, status=status.HTTP_200_OK)
+
 
     # cancel the invitation request
     @list_route(methods=['post'],)

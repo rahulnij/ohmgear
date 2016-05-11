@@ -12,6 +12,7 @@ import logging
 
 # Application imports
 from ohmgear.functions import CustomeResponse
+
 from serializer import (
     ContactsSerializer,
     ContactsSerializerWithJson,
@@ -19,8 +20,10 @@ from serializer import (
     AssociateContactSerializer,
     ContactMediaSerializer,
     PrivateContactSerializer,
-    FolderContactWithDetailsSerializer
+    FolderContactWithDetailsSerializer,
+    FolderContactWithRelatedDataSerializer
 )
+
 
 from ohmgear.json_default_data import BUSINESS_CARD_DATA_VALIDATION
 from models import (
@@ -35,6 +38,7 @@ from apps.businesscards.views import BusinessViewSet
 from apps.folders.views import FolderViewSet
 from apps.folders.models import Folder, FolderContact
 from apps.folders.serializer import FolderContactSerializer
+from permissions import IsUserContactData
 import copy
 from django.db.models import Q
 import ohmgear.settings.constant as constant
@@ -49,12 +53,17 @@ class storeContactsViewSet(viewsets.ModelViewSet):
     queryset = Contacts.objects.all()
     serializer_class = ContactsSerializer
     authentication_classes = (ExpiringTokenAuthentication,)
-    permission_classes = (IsAuthenticated,)
+    permission_classes = (
+        IsAuthenticated,
+        IsUserContactData,
+    )
 
     def list(self, request):
         """List store user's contacts."""
         try:
-            queryset = FolderContact.objects.filter(user_id=request.user.id)
+            queryset = FolderContact.objects.filter(
+                user_id=request.user.id
+            ).select_related()
 
             serializer = FolderContactWithDetailsSerializer(
                 queryset,
@@ -74,7 +83,7 @@ class storeContactsViewSet(viewsets.ModelViewSet):
                     status=status.HTTP_400_BAD_REQUEST,
                     validate_errors=True
                 )
-        except Exception:
+        except:
             logger.critical(
                 "Caught exception in {}".format(__file__),
                 exc_info=True
@@ -90,14 +99,22 @@ class storeContactsViewSet(viewsets.ModelViewSet):
         )
 
     def retrieve(self, request, pk=None):
-        """Retrieve not allowed."""
-        return CustomeResponse(
-            {
-                'msg': 'POST method not allowed'
-            },
-            status=status.HTTP_405_METHOD_NOT_ALLOWED,
-            validate_errors=1
+        queryset = FolderContact.objects.filter(contact_id=pk)
+        serializer = FolderContactWithRelatedDataSerializer(
+            queryset,
+            many=True
         )
+        if serializer.data:
+            return CustomeResponse(serializer.data, status=status.HTTP_200_OK)
+        else:
+            return CustomeResponse(
+                {
+                    "msg": "No Data found"
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+                validate_errors=True
+            )
+
 
     def create(self, request):
         """Create not allowed."""
@@ -145,8 +162,6 @@ class storeContactsViewSet(viewsets.ModelViewSet):
                     folder_id = folder_view.data['data']['id']
                 else:
                     folder_id = queryset_folder[0]['id']
-
-                # End
 
                 contact_new = []
                 for contact_temp in contact:

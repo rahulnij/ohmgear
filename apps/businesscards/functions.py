@@ -200,6 +200,9 @@ def searchjson(name, value, user_id=None):
                 'side_first': {'contact_info': {'email': [{'data': value}]}}} or {
                 'side_second': {'contact_info': {'email': [{'data': value}]}}}).exclude(
             id__in=bcard_id)
+        # contact = BusinessCard.objects.raw(
+        #     'SELECT * FROM  \
+        #     where  ohmgear_contacts_contact.bcard_json_data @> \'{"yrdy":"fff"}\'')
 
     if bcard or contact:
         result_list = []

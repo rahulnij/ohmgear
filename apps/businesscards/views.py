@@ -244,12 +244,25 @@ class BusinessCardIdentifierViewSet(viewsets.ModelViewSet):
 
                 if not re.match("[^@]+@[^@]+\.[^@]+", value):
 
+                    # identifier_data = BusinessCard.objects.filter(
+                    # status=1,
+                    # identifiers_data__identifier_id__identifier__contains=value)
+
                     identifier_data = Identifier.objects.filter(
                         identifier=value, status=1)
 
                     if not identifier_data:
                         return CustomeResponse(
                             {'msg': "identifier not Found"}, status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
+
+                    # if identifier_data:
+                    #     serializer = SearchBusinessCardWithIdentifierSerializer(
+                    #         identifier_data, many=True, context={'search': "identifier"})
+                    #     return CustomeResponse(
+                    #         serializer.data, status=status.HTTP_200_OK)
+                    # else:
+                    #     return CustomeResponse(
+                    #         {'msg': "Identifier not found"}, status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
 
                     serializer = SearchBusinessIdentifierSerializer(
                         identifier_data, many=True)

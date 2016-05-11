@@ -68,7 +68,7 @@ class BusinessCardIdentifier(models.Model):
         db_table = 'ohmgear_businesscards_identifier'
 
     businesscard_id = models.ForeignKey(
-        BusinessCard, db_column="businesscard_id")
+        BusinessCard, db_column="businesscard_id",related_name='identifiers_data')
     identifier_id = models.OneToOneField(
         Identifier,
         db_column="identifier_id",
@@ -81,7 +81,7 @@ class BusinessCardIdentifier(models.Model):
         _("Updated Date"), auto_now_add=False, auto_now=True)
 
     def __unicode__(self):
-        return'{"id:"%s","businesscard_id":"%s","identifier_id":"%s","status":"%s"}' % \
+        return'{"id":"%s","businesscard_id":"%s","identifier_id":"%s","status":"%s"}' % \
             (self.id, self.businesscard_id, self.identifier_id, self.status)
 
     def bcard_data(self):
@@ -102,13 +102,13 @@ class BusinessCardSkillAvailable(models.Model):
     status = models.IntegerField(_("Status"), default=1)
 
     def __unicode__(self):
-        return'{"id:"%s","skillset":"%s"}' % (self.id, self.skill_name)
+        return'{"id":"%s","skillset":"%s"}' % (self.id, self.skill_name)
 
 
 class BusinessCardHistory(models.Model):
 
     class Meta:
-        db_table = 'contacts_historicalcontacts1'
+        db_table = 'contacts_historicalcontacts'
     user_id = models.ForeignKey(User, db_column="user_id")
     bcard_json_data = JSONField(null=True)
     businesscard = models.ForeignKey(BusinessCard, db_column='businesscard_id')
@@ -124,7 +124,7 @@ class BusinessCardHistory(models.Model):
     history_type = models.IntegerField(_("History Type"), null=True)
 
     def __unicode__(self):
-        return'{"id:"%s","user_id":"%s","bcard_json_data":"%s"}' % (self.id, self.user_id, self.bcard_json_data)
+        return'{"id":"%s","user_id":"%s","bcard_json_data":"%s"}' % (self.id, self.user_id, self.bcard_json_data)
 
 
 class BusinessCardAddSkill(models.Model):
@@ -145,7 +145,7 @@ class BusinessCardAddSkill(models.Model):
     status = models.IntegerField(_("Status"), default=1)
 
     def __unicode__(self):
-        return'{"id:"%s","businesscard_id":"%s","skillname":"%s"}' % (self.id, self.businesscard_id, self.skill_name)
+        return'{"id":"%s","businesscard_id":"%s","skillname":"%s"}' % (self.id, self.businesscard_id, self.skill_name)
 
 
 class BusinessCardVacation(models.Model):
