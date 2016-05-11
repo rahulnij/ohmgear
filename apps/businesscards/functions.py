@@ -211,7 +211,7 @@ def searchjson(name, value, user_id=None, bcard_id=None):
     # Search by email.#
     if user_id and name == "email":
         bcards = BusinessCard.objects.filter(
-            user_id=user_id, status=1, contact_detail__bcard_json_data__contains={
+            user_id=user_id, status=1, contact_detail__bcard_json_data__icontains={
                 'side_first': {
                     'contact_info': {'email': [{'data': value}]}}} or {
                 'side_second': {
@@ -219,7 +219,7 @@ def searchjson(name, value, user_id=None, bcard_id=None):
         for data in bcards:
             bcards_id.append(data.id)
         contact = BusinessCard.objects.filter(
-            status=1, contact_detail__bcard_json_data__contains={
+            status=1, contact_detail__bcard_json_data__icontains={
                 'side_first': {'contact_info': {'email': [{'data': value}]}}} or {
                 'side_second': {'contact_info': {'email': [{'data': value}]}}}).exclude(
             id__in=bcards_id)
