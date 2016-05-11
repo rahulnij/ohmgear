@@ -228,7 +228,7 @@ class BusinessCardIdentifierViewSet(viewsets.ModelViewSet):
             if not re.match("[^@]+@[^@]+\.[^@]+", value):
 
                 identifier_data = BusinessCard.objects.filter(
-                    status=1, identifiers_data__identifier_id__identifier__contains=value)
+                    status=1, identifiers_data__identifier_id__identifier__icontains=value)
                 bcard_id = None
 
                 if identifier_data:

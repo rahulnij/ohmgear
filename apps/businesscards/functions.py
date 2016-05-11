@@ -180,7 +180,7 @@ def searchjson(name, value, user_id=None, bcard_id=None):
         firstName, lastName = value.partition(" ")[0:3:2]
         bcard = BusinessCard.objects.filter(
             status=1,
-            contact_detail__bcard_json_data__contains={
+            contact_detail__bcard_json_data__icontains={
                 'side_first': {
                     'basic_info': [
                         {
@@ -195,7 +195,7 @@ def searchjson(name, value, user_id=None, bcard_id=None):
         if lastName:
 
             bcard = bcard.filter(
-                contact_detail__bcard_json_data__contains={
+                contact_detail__bcard_json_data__icontains={
                     'side_first': {
                         'basic_info': [
                             {
