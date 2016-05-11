@@ -218,15 +218,15 @@ def searchjson(name, value, user_id=None, bcard_id=None):
                     'contact_info': {'email': [{'data': value}]}}})
         for data in bcards:
             bcards_id.append(data.id)
-        contact = BusinessCard.objects.filter(
-            status=1, contact_detail__bcard_json_data__contains={
-                'side_first': {'contact_info': {'email': [{'data': value}]}}} or {
-                'side_second': {'contact_info': {'email': [{'data': value}]}}}).exclude(
-            id__in=bcards_id)
-        # contact = BusinessCard.objects.raw(
-        #     'SELECT * FROM  \
-        # where  ohmgear_contacts_contact.bcard_json_data @>
-        # \'{"yrdy":"fff"}\'')
+    contact = BusinessCard.objects.filter(
+        status=1, contact_detail__bcard_json_data__contains={
+            'side_first': {'contact_info': {'email': [{'data': value}]}}} or {
+            'side_second': {'contact_info': {'email': [{'data': value}]}}}).exclude(
+        id__in=bcards_id)
+    # contact = BusinessCard.objects.raw(
+    #     'SELECT * FROM  \
+    # where  ohmgear_contacts_contact.bcard_json_data @>
+    # \'{"yrdy":"fff"}\'')
 
     if bcards or contact:
         result_list = []
