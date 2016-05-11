@@ -69,19 +69,6 @@ class BusinessIdentifierSerializer(serializers.ModelSerializer):
 
         return attrs
 
-class SearchBusinessIdentifierSerializer(serializers.ModelSerializer):
-    business_identifier = BusinessCardSerializer(many=True, read_only=True)
-    search_by = serializers.SerializerMethodField('searchby')
-
-    def searchby(self, obj):
-        data = "Identifier"
-        return data
-
-    class Meta:
-        model = Identifier
-        fields = ('id', 'user', 'identifier', 'identifiertype',
-                  'paymentstatus', 'identifierlastdate', 'business_identifier', 'search_by')
-
 
 class LockIdentifierSerializer(serializers.ModelSerializer):
 

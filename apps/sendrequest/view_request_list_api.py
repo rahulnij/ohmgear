@@ -25,7 +25,7 @@ class RequestListViewSet(viewsets.ModelViewSet):
         received_request = request.query_params.get('received_request', None)
         # get the list of request which user sent to other business card
         if sent_request:
-            queryset = self.queryset.select_related('sender_business_card_id').filter(sender_user_id=user_id)
+            queryset = self.queryset.select_related('sender_business_card_id').filter(sender_user_id=user_id)            
             serializer = self.serializer_class(
                 queryset, many=True, context={'filter_type': 'sent'})
             return CustomeResponse(serializer.data, status=status.HTTP_200_OK)

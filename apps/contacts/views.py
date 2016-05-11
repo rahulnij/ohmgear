@@ -1,3 +1,4 @@
+"""Contact view set."""
 #  Import Python Modules
 import json
 import validictory
@@ -99,22 +100,38 @@ class storeContactsViewSet(viewsets.ModelViewSet):
         )
 
     def retrieve(self, request, pk=None):
-        queryset = FolderContact.objects.filter(contact_id=pk)
-        serializer = FolderContactWithRelatedDataSerializer(
-            queryset,
-            many=True
-        )
-        if serializer.data:
-            return CustomeResponse(serializer.data, status=status.HTTP_200_OK)
-        else:
-            return CustomeResponse(
-                {
-                    "msg": "No Data found"
-                },
-                status=status.HTTP_400_BAD_REQUEST,
-                validate_errors=True
+        """Get contact by folder contact id."""
+        try:
+            queryset = FolderContact.objects.filter(contact_id=pk)
+            serializer = FolderContactWithRelatedDataSerializer(
+                queryset,
+                many=True
             )
+            if serializer.data:
+                return CustomeResponse(
+                    serializer.data, status=status.HTTP_200_OK)
+            else:
+                return CustomeResponse(
+                    {
+                        "msg": "No Data found"
+                    },
+                    status=status.HTTP_400_BAD_REQUEST,
+                    validate_errors=True
+                )
+        except:
+            logger.critical(
+                "Caught exception in {}".format(__file__),
+                exc_info=True
+            )
+            ravenclient.captureException()
 
+        return CustomeResponse(
+            {
+                "msg": "Can not process request. Please try later."
+            },
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            validate_errors=1
+        )
 
     def create(self, request):
         """Create not allowed."""
@@ -172,7 +189,8 @@ class storeContactsViewSet(viewsets.ModelViewSet):
                             BUSINESS_CARD_DATA_VALIDATION)
                     except validictory.ValidationError as error:
                         logger.error(
-                            "Caught KeyError exception, {} in {}".
+                            "Caught validictory.ValidationError\
+                             exception, {} in {}".
                             format(error.message, __file__)
                         )
                         return CustomeResponse(
@@ -184,7 +202,8 @@ class storeContactsViewSet(viewsets.ModelViewSet):
                         )
                     except validictory.SchemaError as error:
                         logger.error(
-                            "Caught KeyError exception, {} in {}".
+                            "Caught validictory.SchemaError exception,\
+                             {} in {}".
                             format(error.message, __file__)
                         )
                         return CustomeResponse(
@@ -247,7 +266,7 @@ class storeContactsViewSet(viewsets.ModelViewSet):
                 return CustomeResponse(
                     serializer.errors,
                     status=status.HTTP_201_CREATED)
-        except Exception:
+        except:
             logger.critical(
                 "Caught exception in {}".format(__file__),
                 exc_info=True
@@ -263,12 +282,16 @@ class storeContactsViewSet(viewsets.ModelViewSet):
         )
 
     def update(self, request, pk=None):
-
+        """Update contact."""
         try:
             link_status_cons = constant.LINK_STATUS
             validictory.validate(
                 request.data["bcard_json_data"], BUSINESS_CARD_DATA_VALIDATION)
         except validictory.ValidationError as error:
+            logger.error(
+                "Caught validictory.ValidationError exception, {} in {}".
+                format(error.message, __file__)
+            )
             return CustomeResponse(
                 {
                     'msg': error.message
@@ -277,6 +300,10 @@ class storeContactsViewSet(viewsets.ModelViewSet):
                 validate_errors=1
             )
         except validictory.SchemaError as error:
+            logger.error(
+                "Caught validictory.SchemaError exception, {} in {}".
+                format(error.message, __file__)
+            )
             return CustomeResponse(
                 {
                     'msg': error.message
@@ -284,7 +311,11 @@ class storeContactsViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_400_BAD_REQUEST,
                 validate_errors=1
             )
-        except:
+        except KeyError:
+            logger.error(
+                "Caught KeyError exception, {} in {}".
+                format(error.message, __file__)
+            )
             return CustomeResponse(
                 {
                     'msg': "Please provide contact_json_data in json format"
@@ -296,13 +327,38 @@ class storeContactsViewSet(viewsets.ModelViewSet):
         data = request.data.copy()
         data['user_id'] = request.user.id
         try:
-            # contact =
-            # Contacts.objects.select_related('folder_contact_data').filter(id=pk)
             folder_contact_data = FolderContact.objects.select_related(
                 'contact_id').get(contact_id=pk, user_id=request.user.id)
             contact_data = folder_contact_data.contact_id
             link_status = folder_contact_data.link_status
 
+            if link_status == link_status_cons.get(
+                    'ORANGE') or link_status == link_status_cons.get('WHITE'):
+                contact_serializer = ContactsSerializer(
+                    contact_data,
+                    data=data,
+                    context={'request': request}
+                )
+                if contact_serializer.is_valid():
+                    contact_serializer.save()
+                    data_new = contact_serializer.data.copy()
+                else:
+                    return CustomeResponse(
+                        contact_serializer.errors,
+                        status=status.HTTP_400_BAD_REQUEST,
+                        validate_errors=1)
+
+                return CustomeResponse(data_new, status=status.HTTP_200_OK)
+            else:
+                # newdata = {"data": data, "pk": pk, "user_id": request.user.id}
+                # self.privatecontact(newdata)
+                return CustomeResponse(
+                    {
+                        'msg': 'private contact data updated'
+                    },
+                    status=status.HTTP_404_NOT_FOUND,
+                    validate_errors=1
+                )
         except FolderContact.DoesNotExist:
             return CustomeResponse(
                 {
@@ -311,31 +367,20 @@ class storeContactsViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_404_NOT_FOUND,
                 validate_errors=1
             )
-        if link_status == link_status_cons.get(
-                'ORANGE') or link_status == link_status_cons.get('WHITE'):
-            # contact = Contacts.objects.get(id=pk)
-            contact_serializer = ContactsSerializer(
-                contact_data, data=data, context={'request': request})
-            if contact_serializer.is_valid():
-                contact_serializer.save()
-                data_new = contact_serializer.data.copy()
-            else:
-                return CustomeResponse(
-                    contact_serializer.errors,
-                    status=status.HTTP_400_BAD_REQUEST,
-                    validate_errors=1)
-
-            return CustomeResponse(data_new, status=status.HTTP_200_OK)
-        else:
-            # newdata = {"data": data, "pk": pk, "user_id": request.user.id}
-            # self.privatecontact(newdata)
-            return CustomeResponse(
-                {
-                    'msg': 'private contact data updated'
-                },
-                status=status.HTTP_404_NOT_FOUND,
-                validate_errors=1
+        except:
+            logger.critical(
+                "Caught exception in {}".format(__file__),
+                exc_info=True
             )
+            ravenclient.captureException()
+
+        return CustomeResponse(
+            {
+                "msg": "Can not process request. Please try later."
+            },
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            validate_errors=1
+        )
 
     # Pending work remaining
     def privatecontact(newdata):
@@ -406,18 +451,15 @@ class storeContactsViewSet(viewsets.ModelViewSet):
 
         Limited Access to the contact which is linked.
         """
-        try:
-            user_id = request.user.id
-            link_status = constant.LINK_STATUS
-            # print link_status.BLUE
-        except:
-            user_id = ''
+        user_id = request.user.id
+        link_status = constant.LINK_STATUS
+
         try:
             contact_id = request.data['contact_id']
-        except:
+        except KeyError:
             return CustomeResponse(
                 {
-                    'msg': 'folder_id not found'
+                    'msg': 'contact_id not found'
                 },
                 status=status.HTTP_400_BAD_REQUEST
             )
@@ -425,35 +467,52 @@ class storeContactsViewSet(viewsets.ModelViewSet):
             folder_contact_data = FolderContact.objects.filter(
                 contact_id=contact_id, user_id=user_id)
             is_linked = folder_contact_data[0].is_linked
-        except:
+            if is_linked == 1:
+                folder_contact_data.update(
+                    link_status=link_status.get('BLUE'), is_linked=0)
+                return CustomeResponse(
+                    {
+                        "msg": "Contact has limited_access now."
+                    },
+                    status=status.HTTP_200_OK
+                )
+            else:
+                return CustomeResponse(
+                    {
+                        "msg": "Check your Contact is linked or not."
+                    },
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+        except IndexError:
             return CustomeResponse(
                 {
                     'msg': 'Contact data not found'
                 },
                 status=status.HTTP_400_BAD_REQUEST
             )
-        if folder_contact_data and is_linked == 1:
-            folder_contact_data.update(
-                link_status=link_status.get('BLUE'), is_linked=0)
-            return CustomeResponse(
-                {
-                    "msg": "Contact has limited_access now."
-                },
-                status=status.HTTP_200_OK
+        except:
+            logger.critical(
+                "Caught exception in {}".format(__file__),
+                exc_info=True
             )
-        else:
-            return CustomeResponse(
-                {
-                    "msg": "Check your Contact is is_linked or not."
-                },
-                status=status.HTTP_400_BAD_REQUEST
-            )
+            ravenclient.captureException()
 
-    # Destroy method will delete Contacts from Contact and folder_contact,
-    #  if it is white contact ,other wise will be delete from  folder contact
-    # and that contact which is deleted having connection with cureent user
-    # then link_status will be change
+        return CustomeResponse(
+            {
+                "msg": "Can not process request. Please try later."
+            },
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            validate_errors=1
+        )
+
     def destroy(self, request, pk=None):
+        """
+        Destroy method will delete Contacts from Contact and folder_contact.
+
+        if it is white contact ,other wise will be delete from  folder contact
+        and that contact which is deleted having connection with cureent user
+        then link_status will be change.
+        """
         try:
             folder_contact_data = FolderContact.objects.select_related(
                 'folder_id').get(contact_id=pk, user_id=request.user.id)
@@ -461,95 +520,97 @@ class storeContactsViewSet(viewsets.ModelViewSet):
             get_folder_data = folder_contact_data.folder_id
             get_user_bcard_id = get_folder_data.businesscard_id.id
             link_status_cons = constant.LINK_STATUS
-        except:
+        except FolderContact.DoesNotExist:
+            logger.critical(
+                "Caught exception in {}".format(__file__),
+                exc_info=True
+            )
+            ravenclient.captureException()
             return CustomeResponse(
                 {
-                    'msg': "server error"
+                    'msg': "Contact does not exists."
                 },
-                status=status.HTTP_400_BAD_REQUEST,
+                status=status.HTTP_404_NOT_FOUND,
                 validate_errors=1
             )
-
         try:
             contact_data = Contacts.objects.filter(
                 id=pk, user_id=request.user.id)
-        except:
-            return CustomeResponse(
-                {
-                    'msg': "server error"
-                },
-                status=status.HTTP_400_BAD_REQUEST,
-                validate_errors=1
-            )
 
-        if folder_contact_data:
+            if folder_contact_data:
 
-            if link_status == link_status_cons.get(
-                    'ORANGE') or link_status == link_status_cons.get('WHITE'):
-                if contact_data:
-                    contact_data.delete()
-                    return CustomeResponse(
-                        {
-                            'msg': "Contact has been deleted successfully"
-                        },
-                        status=status.HTTP_200_OK
-                    )
-                else:
-                    return CustomeResponse(
-                        {
-                            'msg': "Cannot be deleted"
-                        },
-                        status=status.HTTP_400_BAD_REQUEST,
-                        validate_errors=1
-                    )
-
-            else:
-                if link_status == link_status_cons.get('DELETED'):
-
-                    try:
-                        # find user contact_id with bcard_id and user_id
-                        existing_contact_data = Contacts.objects.get(
-                            businesscard_id=get_user_bcard_id,
-                            user_id=request.user.id
-                        )
-                    except:
+                if link_status == link_status_cons.get(
+                        'ORANGE') or link_status == link_status_cons.get('WHITE'):
+                    if contact_data:
+                        contact_data.delete()
                         return CustomeResponse(
                             {
-                                'msg': "server error"
+                                'msg': "Contact has been deleted successfully"
+                            },
+                            status=status.HTTP_200_OK
+                        )
+                    else:
+                        return CustomeResponse(
+                            {
+                                'msg': "Cannot be deleted"
                             },
                             status=status.HTTP_400_BAD_REQUEST,
                             validate_errors=1
                         )
-                    # get contact id of user
-                    getcontact_id = existing_contact_data.id
-                    # get user_id of contact which is to be deleted.
-                    existing_user_id = existing_contact_data.user_id
-                    new_contact_data = Contacts.objects.get(
-                        id=pk)
-
-                    # new_contact_user_id = new_contact_data.id
-                    if existing_user_id != new_contact_data.user_id.id and folder_contact_data:
-                        new_user_folder_contact_data = FolderContact.objects.filter(
-                            contact_id=getcontact_id, user_id=new_contact_data.user_id.id)
-                        new_user_folder_contact_data.delete()
-                        folder_contact_data.delete()
-                        return CustomeResponse(
-                            {
-                                'msg': "Both Connected Contact has been delete\
-                                 successfully"
-                            },
-                            status=status.HTTP_200_OK
-                        )
-
-                    else:
-                        return CustomeResponse(
-                            {
-                                'msg': "Contact caanot be deleted try again"},
-                            status=status.HTTP_400_BAD_REQUEST,
-                            validate_errors=1)
 
                 else:
-                    try:
+                    if link_status == link_status_cons.get('DELETED'):
+
+                        try:
+                            # find user contact_id with bcard_id and user_id
+                            existing_contact_data = Contacts.objects.get(
+                                businesscard_id=get_user_bcard_id,
+                                user_id=request.user.id
+                            )
+                        except Contacts.DoesNotExist:
+                            logger.critical(
+                                "Caught exception in {}. Found contact_id {} in\
+                                 foldercontact but not in contact.".format(__file__, pk),
+                                exc_info=True
+                            )
+                            ravenclient.captureException()
+                            return CustomeResponse(
+                                {
+                                    'msg': "Contact does not exists."
+                                },
+                                status=status.HTTP_404_NOT_FOUND,
+                                validate_errors=1
+                            )
+                        # get contact id of user
+                        getcontact_id = existing_contact_data.id
+                        # get user_id of contact which is to be deleted.
+                        existing_user_id = existing_contact_data.user_id
+                        new_contact_data = Contacts.objects.get(
+                            id=pk)
+
+                        # new_contact_user_id = new_contact_data.id
+                        if existing_user_id != new_contact_data.user_id.id and folder_contact_data:
+                            new_user_folder_contact_data = FolderContact.objects.filter(
+                                contact_id=getcontact_id, user_id=new_contact_data.user_id.id)
+                            new_user_folder_contact_data.delete()
+                            folder_contact_data.delete()
+                            return CustomeResponse(
+                                {
+                                    'msg': "Both Connected Contact has been delete\
+                                     successfully"
+                                },
+                                status=status.HTTP_200_OK
+                            )
+
+                        else:
+                            return CustomeResponse(
+                                {
+                                    'msg': "Contact can not be deleted. try again"
+                                },
+                                status=status.HTTP_400_BAD_REQUEST,
+                                validate_errors=1)
+
+                    else:
                         folder_contact_data = FolderContact.objects.filter(
                             contact_id=pk, user_id=request.user.id)
                         folder_contact_data.update(
@@ -563,183 +624,222 @@ class storeContactsViewSet(viewsets.ModelViewSet):
                             },
                             status=status.HTTP_200_OK
                         )
-                    except:
-                        return CustomeResponse(
-                            {
-                                'msg': "Server error"},
-                            status=status.HTTP_400_BAD_REQUEST,
-                            validate_errors=1)
-        else:
-            return CustomeResponse(
-                {
-                    'msg': "No contact found"
-                },
-                status=status.HTTP_400_BAD_REQUEST,
-                validate_errors=1
+
+            else:
+                return CustomeResponse(
+                    {
+                        'msg': "No contact found"
+                    },
+                    status=status.HTTP_400_BAD_REQUEST,
+                    validate_errors=1
+                )
+        except:
+            logger.critical(
+                "Caught exception in {}".format(__file__),
+                exc_info=True
             )
+            ravenclient.captureException()
+
+        return CustomeResponse(
+            {
+                "msg": "Can not process request. Please try later."
+            },
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            validate_errors=1
+        )
 
     def merge_contacts(self, request):
         pass
 
     def find_duplicate(self, first_json, second_json):
-        """ TODO : check optimization """
-        first_name = []
-        last_name = []
-        email = []
-        phone = []
-
+        """Todo : check optimization."""
         try:
-            first_name = [value['value'] for value in first_json[
-                "side_first"]["basic_info"] if value['keyName'] == 'FirstName']
-        except:
-            pass
+            first_name = []
+            last_name = []
+            email = []
+            phone = []
 
-        try:
-            last_name = [value['value'] for value in first_json[
-                "side_first"]["basic_info"] if value['keyName'] == 'LastName']
-        except:
-            pass
+            try:
+                first_name = [value['value'] for value in first_json[
+                    "side_first"]["basic_info"] if value['keyName'] == 'FirstName']
+            except:
+                pass
 
-        try:
-            email = [x['data']
-                     for x in first_json["side_first"]["contact_info"]["email"]]
-        except:
-            pass
+            try:
+                last_name = [value['value'] for value in first_json[
+                    "side_first"]["basic_info"] if value['keyName'] == 'LastName']
+            except:
+                pass
 
-        try:
-            phone = [x['data']
-                     for x in first_json["side_first"]["contact_info"]["phone"]]
-        except:
-            pass
-        # add second side data
+            try:
+                email = [x['data'] for x in first_json[
+                    "side_first"]["contact_info"]["email"]]
+            except:
+                pass
 
-        try:
-            email = email + [x['data']
-                             for x in first_json["side_second"]["contact_info"]["email"]]
-        except:
-            pass
+            try:
+                phone = [x['data'] for x in first_json[
+                    "side_first"]["contact_info"]["phone"]]
+            except:
+                pass
+            # add second side data
 
-        try:
-            phone = phone + [x['data']
-                             for x in first_json["side_second"]["contact_info"]["phone"]]
-        except:
-            pass
+            try:
+                email = email + \
+                    [x['data'] for x in first_json["side_second"]["contact_info"]["email"]]
+            except:
+                pass
 
-        first_name_target = []
-        last_name_target = []
-        email_target = []
-        phone_target = []
+            try:
+                phone = phone + \
+                    [x['data'] for x in first_json["side_second"]["contact_info"]["phone"]]
+            except:
+                pass
 
-        try:
-            first_name_target = [value['value'] for value in second_json[
-                "side_first"]["basic_info"] if value['keyName'] == 'FirstName']
-        except:
-            pass
+            first_name_target = []
+            last_name_target = []
+            email_target = []
+            phone_target = []
 
-        try:
-            last_name_target = [value['value'] for value in second_json[
-                "side_first"]["basic_info"] if value['keyName'] == 'LastName']
-        except:
-            pass
+            try:
+                first_name_target = [value['value'] for value in second_json[
+                    "side_first"]["basic_info"] if value['keyName'] == 'FirstName']
+            except:
+                pass
 
-        # add second side data
-        try:
-            email_target = [x['data'] for x in second_json[
-                "side_first"]["contact_info"]["email"]]
-        except:
-            pass
+            try:
+                last_name_target = [value['value'] for value in second_json[
+                    "side_first"]["basic_info"] if value['keyName'] == 'LastName']
+            except:
+                pass
 
-        try:
-            phone_target = [x['data'] for x in second_json[
-                "side_first"]["contact_info"]["phone"]]
-        except:
-            pass
+            # add second side data
+            try:
+                email_target = [x['data'] for x in second_json[
+                    "side_first"]["contact_info"]["email"]]
+            except:
+                pass
 
-        try:
-            email_target = email_target + \
-                [x['data']
-                    for x in second_json["side_second"]["contact_info"]["email"]]
-        except:
-            pass
-        try:
-            phone_target = phone_target + \
-                [x['data']
-                    for x in second_json["side_second"]["contact_info"]["phone"]]
-        except:
-            pass
-        # print email_target,phone_target
-        check_duplicate_1 = 0
-        for first_name_val in first_name:
-            if first_name_val in first_name_target and first_name_val != []:
-                check_duplicate_1 = 1
+            try:
+                phone_target = [x['data'] for x in second_json[
+                    "side_first"]["contact_info"]["phone"]]
+            except:
+                pass
 
-        if not check_duplicate_1:
-            for last_name_val in last_name:
-                if last_name_val in last_name_target and last_name_val != []:
+            try:
+                email_target = email_target + \
+                    [x['data']
+                        for x in second_json["side_second"]["contact_info"]["email"]]
+            except:
+                pass
+            try:
+                phone_target = phone_target + \
+                    [x['data']
+                        for x in second_json["side_second"]["contact_info"]["phone"]]
+            except:
+                pass
+            # print email_target,phone_target
+            check_duplicate_1 = 0
+            for first_name_val in first_name:
+                if first_name_val in first_name_target and first_name_val != []:
                     check_duplicate_1 = 1
 
-        check_duplicate_2 = 0
-        for email_val in email:
-            if email_val in email_target and email_val != []:
-                check_duplicate_2 = 1
+            if not check_duplicate_1:
+                for last_name_val in last_name:
+                    if last_name_val in last_name_target and last_name_val != []:
+                        check_duplicate_1 = 1
 
-        if not check_duplicate_2:
-            for phone_val in phone:
-                if phone_val in phone_target and phone_val != []:
+            check_duplicate_2 = 0
+            for email_val in email:
+                if email_val in email_target and email_val != []:
                     check_duplicate_2 = 1
 
-        # Condition {First_Name OR Last_Name} AND {email OR phone OR instant_message}
-        # print check_duplicate_1,check_duplicate_2
-        if check_duplicate_1 and check_duplicate_2:
-            return 1
-        else:
-            return 0
+            if not check_duplicate_2:
+                for phone_val in phone:
+                    if phone_val in phone_target and phone_val != []:
+                        check_duplicate_2 = 1
 
-    # Not in use as duplicate task will be done at device side
+            # Condition {First_Name OR Last_Name} AND {email OR phone OR instant_message}
+            # print check_duplicate_1,check_duplicate_2
+            if check_duplicate_1 and check_duplicate_2:
+                return 1
+            else:
+                return 0
+        except:
+            logger.critical(
+                "Caught exception in {}".format(__file__),
+                exc_info=True
+            )
+            ravenclient.captureException()
+
+        return CustomeResponse(
+            {
+                "msg": "Can not process request. Please try later."
+            },
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            validate_errors=1
+        )
+
     @list_route(methods=['post'],)
     def get_duplicate_contacts(self, request):
-        user_id = request.user.id
-        contacts = list(self.queryset.filter(user_id=user_id).values(
-            'id', 'businesscard_id', 'bcard_json_data').order_by("id"))
-        contacts_copy = contacts
-        # fetch contact json detail from qeuryset
+        """Not in use as duplicate task will be done at device side."""
+        try:
+            user_id = request.user.id
+            contacts = list(self.queryset.filter(user_id=user_id).values(
+                'id', 'businesscard_id', 'bcard_json_data').order_by("id"))
+            contacts_copy = contacts
+            # fetch contact json detail from qeuryset
 
-        finalContacts = []
-        count = 0
-        duplicate_contacts_ids = []
-        inner_loop = 0
+            finalContacts = []
+            count = 0
+            duplicate_contacts_ids = []
+            inner_loop = 0
 
-        for value in contacts:
-            check = 1
-            duplicateContacts = []
-            iterator = iter(contacts_copy)
-            try:
-                while True:
-                    value_copy = iterator.next()
+            for value in contacts:
+                check = 1
+                duplicateContacts = []
+                iterator = iter(contacts_copy)
+                try:
+                    while True:
+                        value_copy = iterator.next()
 
-                    if value["id"] != value_copy["id"] and value[
-                            "id"] not in duplicate_contacts_ids:
-                        result = self.find_duplicate(
-                            value["bcard_json_data"], value_copy["bcard_json_data"])
-                        if result:
-                            if check == 1:
-                                finalContacts.append(value)
-                                inner_loop = inner_loop + 1
-                                check = 0
-                            duplicateContacts.append(
-                                json.loads(json.dumps(value_copy)))
-                            duplicate_contacts_ids.append(value_copy["id"])
-            except StopIteration as e:
-                if count == inner_loop - 1:
-                    finalContacts[inner_loop -
-                                  1]["duplicate"] = duplicateContacts
-                    count = count + 1
+                        if value["id"] != value_copy["id"] and value[
+                                "id"] not in duplicate_contacts_ids:
+                            result = self.find_duplicate(
+                                value["bcard_json_data"], value_copy["bcard_json_data"])
+                            if result:
+                                if check == 1:
+                                    finalContacts.append(value)
+                                    inner_loop = inner_loop + 1
+                                    check = 0
+                                duplicateContacts.append(
+                                    json.loads(json.dumps(value_copy)))
+                                duplicate_contacts_ids.append(value_copy["id"])
+                except StopIteration as e:
+                    if count == inner_loop - 1:
+                        finalContacts[inner_loop -
+                                      1]["duplicate"] = duplicateContacts
+                        count = count + 1
 
-        return CustomeResponse(finalContacts, status=status.HTTP_200_OK)
+            return CustomeResponse(finalContacts, status=status.HTTP_200_OK)
+        except:
+            logger.critical(
+                "Caught exception in {}".format(__file__),
+                exc_info=True
+            )
+            ravenclient.captureException()
+
+        return CustomeResponse(
+            {
+                "msg": "Can not process request. Please try later."
+            },
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            validate_errors=1
+        )
 
     @list_route(methods=['post'],)
     def merge(self, request):
-
+        """Merge contacts."""
         try:
             user_id = request.user.id
         except:
@@ -747,23 +847,20 @@ class storeContactsViewSet(viewsets.ModelViewSet):
         try:
             merge_contact_ids = request.data["merge_contact_ids"]
             target_contact_id = request.data["target_contact_id"]
-        except:
-            merge_contact_ids = None
-            target_contact_id = None
+        except KeyError:
+            return CustomeResponse(
+                {
+                    "msg": "Please provide merge_contact_ids,\
+                     target_contact_id"
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+                validate_errors=1
+            )
 
         # Get the  target_bcard_id and merge_bcards_ids data
-
-        if merge_contact_ids and target_contact_id and user_id:
-
-            try:
-                target_contact = Contacts.objects.get(
-                    id=target_contact_id, user_id=user_id)
-            except:
-                return CustomeResponse(
-                    {
-                        "msg": "target_contact_id does not exist"},
-                    status=status.HTTP_400_BAD_REQUEST,
-                    validate_errors=1)
+        try:
+            target_contact = Contacts.objects.get(
+                id=target_contact_id, user_id=user_id)
 
             first_json = json.loads(json.dumps(target_contact.bcard_json_data))
 
@@ -773,25 +870,32 @@ class storeContactsViewSet(viewsets.ModelViewSet):
                 merge_contacts = Contacts.objects.filter(
                     id__in=merge_contact_ids, user_id=user_id).exclude(
                     businesscard_id__isnull=False).all()
-                for temp in merge_contacts:
-                    contact_json_data = temp.bcard_json_data
-                    if contact_json_data:
-                        try:
-                            second_json = json.loads(
-                                json.dumps(contact_json_data))
-                        except:
-                            second_json = {}
-                        third_json = second_json.copy()
-                        card_object = BusinessViewSet()
-                        card_object.mergeDict(third_json, first_json)
-
-                        # assign the new json
-                        target_contact.bcard_json_data = third_json
-                        target_contact.save(force_update=True)
-                        first_json = third_json
                 if merge_contacts:
                     # pass
+
+                    for temp in merge_contacts:
+                        contact_json_data = temp.bcard_json_data
+                        if contact_json_data:
+                            try:
+                                second_json = json.loads(
+                                    json.dumps(contact_json_data))
+                            except:
+                                second_json = {}
+                            third_json = second_json.copy()
+                            card_object = BusinessViewSet()
+                            card_object.mergeDict(third_json, first_json)
+
+                            # assign the new json
+                            target_contact.bcard_json_data = third_json
+                            target_contact.save(force_update=True)
+                            first_json = third_json
                     merge_contacts.delete()
+                    return CustomeResponse(
+                        {
+                            "msg": "successfully merged"
+                        },
+                        status=status.HTTP_200_OK
+                    )
                 else:
                     return CustomeResponse(
                         {
@@ -802,29 +906,42 @@ class storeContactsViewSet(viewsets.ModelViewSet):
                         validate_errors=1
                     )
 
-                # End
-                return CustomeResponse(
-                    {"msg": "successfully merged"}, status=status.HTTP_200_OK)
             else:
                 return CustomeResponse(
                     {
-                        "msg": "Please provide correct target_contact_id"},
+                        "msg": "Please provide correct target_contact_id"
+                    },
                     status=status.HTTP_400_BAD_REQUEST,
-                    validate_errors=1)
-        else:
+                    validate_errors=1
+                )
+        except Contacts.DoesNotExist:
             return CustomeResponse(
                 {
-                    "msg": "Please provide merge_contact_ids,\
-                     target_contact_id"
+                    "msg": "target_contact_id does not exist"
                 },
                 status=status.HTTP_400_BAD_REQUEST,
                 validate_errors=1
             )
+        except:
+            logger.critical(
+                "Caught exception in {}".format(__file__),
+                exc_info=True
+            )
+            ravenclient.captureException()
+
+        return CustomeResponse(
+            {
+                "msg": "Can not process request. Please try later."
+            },
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            validate_errors=1
+        )
 
     # Favorite Contact
 
     @list_route(methods=['post'],)
     def addFavoriteContact(self, request):
+        """Add favorite contact."""
         try:
             contact_id = request.data['foldercontact_id']
         except KeyError:
@@ -844,83 +961,90 @@ class storeContactsViewSet(viewsets.ModelViewSet):
             tempData['foldercontact_id'] = data
             tempContainer.append(tempData)
 
-        serializer = FavoriteContactSerializer(
-            data=tempContainer,
-            context={'request': request},
-            many=True
-        )
+        try:
+            serializer = FavoriteContactSerializer(
+                data=tempContainer,
+                context={'request': request},
+                many=True
+            )
 
-        if serializer.is_valid():
-            serializer.save()
-        else:
+            if serializer.is_valid():
+                serializer.save()
+            else:
+                return CustomeResponse(
+                    serializer.errors,
+                    status=status.HTTP_400_BAD_REQUEST)
+
             return CustomeResponse(
-                serializer.errors,
-                status=status.HTTP_400_BAD_REQUEST)
+                serializer.data,
+                status=status.HTTP_200_OK
+            )
+        except:
+            logger.critical(
+                "Caught exception in {}".format(__file__),
+                exc_info=True
+            )
+            ravenclient.captureException()
 
-        return CustomeResponse(serializer.data, status=status.HTTP_200_OK)
+        return CustomeResponse(
+            {
+                "msg": "Can not process request. Please try later."
+            },
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            validate_errors=1
+        )
 
     # Get all favorite contact of a user
 
     @list_route(methods=['get'],)
     def getFavoriteContact(self, request):
-
-        try:
-            user_id = request.user.id
-        except:
-            user_id = ''
-            return CustomeResponse(
-                {
-                    'msg': 'user not found'
-                },
-                status=status.HTTP_400_BAD_REQUEST,
-                validate_errors=1
-            )
-
+        """Get favorite contacts."""
+        user_id = request.user.id
         try:
             favoriteContactData = FavoriteContact.objects.filter(
                 user_id=user_id)
+            if favoriteContactData:
+                serializer = FavoriteContactSerializer(
+                    favoriteContactData,
+                    many=True
+                )
+                return CustomeResponse(
+                    serializer.data,
+                    status=status.HTTP_200_OK
+                )
+            else:
+                return CustomeResponse(
+                    {
+                        'msg': 'favorite contact not found for this user'
+                    },
+                    status=status.HTTP_400_BAD_REQUEST,
+                    validate_errors=1
+                )
         except:
-            return CustomeResponse(
-                {
-                    'msg': 'server error please try again'
-                },
-                status=status.HTTP_400_BAD_REQUEST,
-                validate_errors=1
+            logger.critical(
+                "Caught exception in {}".format(__file__),
+                exc_info=True
             )
+            ravenclient.captureException()
 
-        if favoriteContactData:
-            serializer = FavoriteContactSerializer(
-                favoriteContactData, many=True)
-            return CustomeResponse(serializer.data, status=status.HTTP_200_OK)
-        else:
-            return CustomeResponse(
-                {
-                    'msg': 'favorite contact not found for this user'},
-                status=status.HTTP_400_BAD_REQUEST,
-                validate_errors=1)
-
-    # Delete favorite Contact
+        return CustomeResponse(
+            {
+                "msg": "Can not process request. Please try later."
+            },
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            validate_errors=1
+        )
 
     @list_route(methods=['post'],)
     def deleteFavoriteContact(self, request):
-        try:
-            user_id = request.user.id
-        except:
-            user_id = ''
-            return CustomeResponse(
-                {
-                    'msg': 'user not found'
-                },
-                status=status.HTTP_400_BAD_REQUEST,
-                validate_errors=1
-            )
-
+        """Delete favorite Contact."""
+        user_id = request.user.id
         try:
             foldercontact_id = request.data['foldercontact_id']
-        except:
+        except KeyError:
             return CustomeResponse(
                 {
-                    'msg': 'Folder Contact_id not found'
+                    'msg': 'Folder Contact_id is required.'
                 },
                 status=status.HTTP_400_BAD_REQUEST,
                 validate_errors=1
@@ -929,48 +1053,45 @@ class storeContactsViewSet(viewsets.ModelViewSet):
         try:
             favoriteContactData = FavoriteContact.objects.filter(
                 user_id=user_id, foldercontact_id__in=foldercontact_id)
+            if favoriteContactData:
+                favoriteContactData.delete()
+                return CustomeResponse(
+                    {
+                        'msg': 'Deleted favorite contact.'
+                    },
+                    status=status.HTTP_200_OK
+                )
+            else:
+                return CustomeResponse(
+                    {
+                        'msg': 'Favorite Contact cannot be deleted'
+                    },
+                    status=status.HTTP_400_BAD_REQUEST,
+                    validate_errors=1
+                )
         except:
-            return CustomeResponse(
-                {
-                    'msg': 'Server error please try again'
-                },
-                status=status.HTTP_400_BAD_REQUEST,
-                validate_errors=1
+            logger.critical(
+                "Caught exception in {}".format(__file__),
+                exc_info=True
             )
+            ravenclient.captureException()
 
-        if favoriteContactData:
-            favoriteContactData.delete()
-            return CustomeResponse(
-                {
-                    'msg': 'Remove from favorite successfully'
-                },
-                status=status.HTTP_200_OK
-            )
-        else:
-            return CustomeResponse(
-                {
-                    'msg': 'Favorite Contact cannot be deleted'
-                },
-                status=status.HTTP_400_BAD_REQUEST,
-                validate_errors=1
-            )
+        return CustomeResponse(
+            {
+                "msg": "Can not process request. Please try later."
+            },
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            validate_errors=1
+        )
 
-    # Associate Contact
-
-    # Insert Associate Contact it will be 2 way process
     @list_route(methods=['post'],)
     def addAssociateContact(self, request):
-        try:
-            user_id = request.user.id
-        except:
-            user_id = ''
-            return CustomeResponse(
-                {
-                    'msg': 'user not found'
-                },
-                status=status.HTTP_400_BAD_REQUEST,
-                validate_errors=1
-            )
+        """
+        Associate Contact.
+
+        Insert Associate Contact it will be 2 way process
+        """
+        user_id = request.user.id
 
         try:
             associate_from = request.data['associate']
@@ -982,7 +1103,7 @@ class storeContactsViewSet(viewsets.ModelViewSet):
 
             all_contact.append(associate_from)
 
-        except:
+        except KeyError:
             return CustomeResponse(
                 {
                     'msg': 'Please Check json format'
@@ -1006,9 +1127,11 @@ class storeContactsViewSet(viewsets.ModelViewSet):
                 if not associate_contact:
                     return CustomeResponse(
                         {
-                            'msg': 'Associate Contact is not there'},
+                            'msg': 'Associate Contact is not there'
+                        },
                         status=status.HTTP_400_BAD_REQUEST,
-                        validate_errors=1)
+                        validate_errors=1
+                    )
                 tempContainer = []
 
                 for contact in associate_contact:
@@ -1047,24 +1170,33 @@ class storeContactsViewSet(viewsets.ModelViewSet):
                     validate_errors=1
                 )
         except:
-            return CustomeResponse(
-                {
-                    'msg': 'Contact not found'
-                },
-                status=status.HTTP_400_BAD_REQUEST,
-                validate_errors=1
+            logger.critical(
+                "Caught exception in {}".format(__file__),
+                exc_info=True
             )
+            ravenclient.captureException()
 
-    # Get All associate Contact of a user
+        return CustomeResponse(
+            {
+                "msg": "Can not process request. Please try later."
+            },
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            validate_errors=1
+        )
 
     @list_route(methods=['post'])
     def getAssociateContact(self, request):
+        """Get All associate Contact of a user."""
         try:
             associate_folder_id = request.data['associatefoldercontact_id']
-        except:
+        except KeyError:
+            logger.error(
+                "Caught KeyError exception, in {}".
+                format(__file__)
+            )
             return CustomeResponse(
                 {
-                    'msg': 'associatefoldercontact_id not found'
+                    'msg': 'associatefoldercontact_id is required.'
                 },
                 status=status.HTTP_400_BAD_REQUEST,
                 validate_errors=1
@@ -1072,33 +1204,42 @@ class storeContactsViewSet(viewsets.ModelViewSet):
 
         try:
             accociateContactData = AssociateContact.objects.filter(
-                associatefoldercontact_id=associate_folder_id)
-        except:
-            return CustomeResponse(
-                {
-                    'msg': 'Server error please try again'
-                },
-                status=status.HTTP_400_BAD_REQUEST,
-                validate_errors=1
-            )
-        if accociateContactData:
-            serializer = AssociateContactSerializer(
-                accociateContactData, many=True)
-            return CustomeResponse(serializer.data, status=status.HTTP_200_OK)
-        else:
-            return CustomeResponse(
-                {
-                    'msg': 'Assciate Contact not found'
-                },
-                status=status.HTTP_400_BAD_REQUEST,
-                validate_errors=1
+                associatefoldercontact_id=associate_folder_id
             )
 
-    # Delete Associate Contact to whom it is connected
+            if accociateContactData:
+                serializer = AssociateContactSerializer(
+                    accociateContactData, many=True)
+                return CustomeResponse(
+                    serializer.data,
+                    status=status.HTTP_200_OK
+                )
+            else:
+                return CustomeResponse(
+                    {
+                        'msg': 'Assciate Contact not found'
+                    },
+                    status=status.HTTP_404_NOT_FOUND,
+                    validate_errors=1
+                )
+        except:
+            logger.critical(
+                "Caught exception in {}".format(__file__),
+                exc_info=True
+            )
+            ravenclient.captureException()
+
+        return CustomeResponse(
+            {
+                "msg": "Can not process request. Please try later."
+            },
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            validate_errors=1
+        )
 
     @list_route(methods=['post'])
     def deleteAssociateContact(self, request):
-
+        """Delete Associate Contact to whom it is connected."""
         user_id = request.user.id
 
         try:
@@ -1122,38 +1263,44 @@ class storeContactsViewSet(viewsets.ModelViewSet):
                     foldercontact_id__in=associate_to) | Q(
                     user_id=user_id,
                     associatefoldercontact_id__in=associate_to,
-                    foldercontact_id__in=associate_from))
+                    foldercontact_id__in=associate_from)
+            )
 
+            if associateContactData:
+                associateContactData.delete()
+                return CustomeResponse(
+                    {
+                        'msg': 'Associate Contact delete successfully'
+                    },
+                    status=status.HTTP_200_OK
+                )
+            else:
+                return CustomeResponse(
+                    {
+                        'msg': 'Assciate Contact cannot be deleted'
+                    },
+                    status=status.HTTP_400_BAD_REQUEST,
+                    validate_errors=1
+                )
         except:
-            return CustomeResponse(
-                {
-                    'msg': 'Server try again'
-                },
-                status=status.HTTP_400_BAD_REQUEST,
-                validate_errors=1
+            logger.critical(
+                "Caught exception in {}".format(__file__),
+                exc_info=True
             )
+            ravenclient.captureException()
 
-        if associateContactData:
-            associateContactData.delete()
-            return CustomeResponse(
-                {
-                    'msg': 'Associate Contact delete successfully'
-                },
-                status=status.HTTP_200_OK
-            )
-        else:
-            return CustomeResponse(
-                {
-                    'msg': 'Assciate Contact cannot be deleted'
-                },
-                status=status.HTTP_400_BAD_REQUEST,
-                validate_errors=1
-            )
-
-# Contact Images Upload
+        return CustomeResponse(
+            {
+                "msg": "Can not process request. Please try later."
+            },
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            validate_errors=1
+        )
 
 
 class ContactMediaViewSet(viewsets.ModelViewSet):
+    """Contact Images Upload."""
+
     queryset = ContactMedia.objects.all().order_by('front_back')
     serializer_class = ContactMediaSerializer
     authentication_classes = (ExpiringTokenAuthentication,)
@@ -1161,88 +1308,129 @@ class ContactMediaViewSet(viewsets.ModelViewSet):
 
     def list(self, request):
         user_id = self.request.user.id
-        contact_id = self.request.query_params.get('contact_id', None)
-        if contact_id:
-
-                # Should be pass queryset to serializer but error occured
+        try:
+            contact_id = self.request.data['contact_id']
+        except KeyError:
+            return CustomeResponse(
+                {
+                    'msg': 'contact_id is required.'
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+                validate_errors=1
+            )
+        try:
             self.queryset = self.queryset.filter(
-                contact_id=contact_id, user_id=user_id)
+                contact_id=contact_id,
+                user_id=user_id
+            )
             if self.queryset:
                 data = {}
                 data['all'] = []
                 data['top'] = []
                 for items in self.queryset:
-                    print items
                     if items.status == 1:
                         data['top'].append({"image_id": items.id, "front_back": items.front_back, "img_url": str(
                             settings.DOMAIN_NAME) + str(settings.MEDIA_URL) + str(items.img_url)})
                     data['all'].append({"image_id": items.id, "front_back": items.front_back, "img_url": str(
                         settings.DOMAIN_NAME) + str(settings.MEDIA_URL) + str(items.img_url)})
-                return CustomeResponse(data, status=status.HTTP_200_OK)
+                return CustomeResponse(
+                    data,
+                    status=status.HTTP_200_OK
+                )
             else:
                 return CustomeResponse(
                     {
-                        'msg': "Data not exist"
+                        'msg': "Contact images does not exist."
                     },
-                    status=status.HTTP_400_BAD_REQUEST,
+                    status=status.HTTP_404_NOT_FOUND,
                     validate_errors=1
                 )
-        else:
-            return CustomeResponse(
-                {
-                    'msg': "Without parameters does not support"
-                },
-                status=status.HTTP_400_BAD_REQUEST,
-                validate_errors=1
+        except:
+            logger.critical(
+                "Caught exception in {}".format(__file__),
+                exc_info=True
             )
+            ravenclient.captureException()
 
-    # Add image into business card gallary
+        return CustomeResponse(
+            {
+                "msg": "Can not process request. Please try later."
+            },
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            validate_errors=1
+        )
+
     def create(self, request, call_from_function=None):
-        # return CustomeResponse({"msg":"POST method not
-        # allowed"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
+        """
+        Add image into business card gallery.
+
+        return CustomeResponse({"msg":"POST method not
+        allowed"},status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
+        """
         data = request.data.copy()
         data['status'] = 0
         data['user_id'] = self.request.user.id
-        serializer = ContactMediaSerializer(
-            data=data, context={'request': request})
+        try:
+            serializer = ContactMediaSerializer(
+                data=data,
+                context={
+                    'request': request
+                }
+            )
 
-        if serializer.is_valid():
-            serializer.save()
-            if call_from_function:
-                return json.loads(unicode(serializer.data))
+            if serializer.is_valid():
+                serializer.save()
+                if call_from_function:
+                    return json.loads(unicode(serializer.data))
+                else:
+                    return CustomeResponse(
+                        serializer.data, status=status.HTTP_201_CREATED)
             else:
-                return CustomeResponse(
-                    serializer.data, status=status.HTTP_201_CREATED)
-        else:
-            if call_from_function:
-                return serializer.errors
-            else:
-                return CustomeResponse(
-                    serializer.errors,
-                    status=status.HTTP_400_BAD_REQUEST,
-                    validate_errors=1)
-    # End
-    # Upload image after business card created
+                if call_from_function:
+                    return serializer.errors
+                else:
+                    return CustomeResponse(
+                        serializer.errors,
+                        status=status.HTTP_400_BAD_REQUEST,
+                        validate_errors=1)
+        except:
+            logger.critical(
+                "Caught exception in {}".format(__file__),
+                exc_info=True
+            )
+            ravenclient.captureException()
+        return CustomeResponse(
+            {
+                "msg": "Can not process request. Please try later."
+            },
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            validate_errors=1
+        )
 
     @list_route(methods=['post'],)
     def upload(self, request):
         user_id = self.request.user.id
         try:
             contact_id = self.request.data["contact_id"]
-        except:
+        except KeyError:
+            logger.error(
+                "Caught KeyError exception, in {}".
+                format(__file__),
+                exc_info=True
+            )
             return CustomeResponse(
                 {
-                    'msg': "provide contact_id"
+                    'msg': "contact_id is required."
                 },
                 status=status.HTTP_400_BAD_REQUEST,
                 validate_errors=1
             )
         try:
             contact = Contacts.objects.get(id=contact_id, user_id=user_id)
-        except:
+        except Contacts.DoesNotExist:
             return CustomeResponse(
                 {
-                    'msg': "Contact id does not exist"
+                    'msg': "Contact id does not exist."
                 },
                 status=status.HTTP_400_BAD_REQUEST,
                 validate_errors=1
@@ -1253,101 +1441,133 @@ class ContactMediaViewSet(viewsets.ModelViewSet):
         data_new['bcard_image_frontend'] = ""
         data_new['bcard_image_backend'] = ""
         try:
-            if 'bcard_image_frontend' in request.data and request.data[
-                    'bcard_image_frontend']:
+            try:
+                if 'bcard_image_frontend' in request.data and request.data[
+                        'bcard_image_frontend']:
 
-                #  Set previous image 0
-                ContactMedia.objects.filter(
-                    contact_id=contact, front_back=1).update(status=0)
-                bcard_image_frontend, created = ContactMedia.objects.update_or_create(
-                    user_id=self.request.user, contact_id=contact, img_url=request.data['bcard_image_frontend'], front_back=1, status=1)
-                data_new['bcard_image_frontend'] = str(
-                    settings.DOMAIN_NAME) + str(settings.MEDIA_URL) + str(bcard_image_frontend.img_url)
-        except:
-            pass
+                    #  Set previous image 0
+                    ContactMedia.objects.filter(
+                        contact_id=contact, front_back=1).update(status=0)
+                    bcard_image_frontend, created = ContactMedia.objects.update_or_create(
+                        user_id=self.request.user,
+                        contact_id=contact,
+                        img_url=request.data['bcard_image_frontend'],
+                        front_back=1,
+                        status=1
+                    )
+                    data_new['bcard_image_frontend'] = str(
+                        settings.DOMAIN_NAME) + str(settings.MEDIA_URL) + str(bcard_image_frontend.img_url)
+            except:
+                pass
 
-        try:
-            if 'bcard_image_backend' in request.data and request.data[
+            try:
+                if 'bcard_image_backend' in request.data and request.data[
+                        'bcard_image_backend']:
+                    ContactMedia.objects.filter(
+                        contact_id=contact, front_back=2).update(status=0)
+                    bcard_image_backend, created = ContactMedia.objects.update_or_create(
+                        user_id=self.request.user,
+                        contact_id=contact,
+                        img_url=request.data['bcard_image_backend'],
+                        front_back=2, status=1
+                    )
+                    if bcard_image_backend:
+                        data_new['bcard_image_backend'] = str(
+                            settings.DOMAIN_NAME) + str(settings.MEDIA_URL) + str(bcard_image_backend.img_url)
+
+            except:
+                pass
+
+            if data_new['bcard_image_frontend'] or data_new[
                     'bcard_image_backend']:
-                ContactMedia.objects.filter(
-                    contact_id=contact, front_back=2).update(status=0)
-                bcard_image_backend, created = ContactMedia.objects.update_or_create(
-                    user_id=self.request.user, contact_id=contact, img_url=request.data['bcard_image_backend'], front_back=2, status=1)
-                if bcard_image_backend:
-                    data_new['bcard_image_backend'] = str(
-                        settings.DOMAIN_NAME) + str(settings.MEDIA_URL) + str(bcard_image_backend.img_url)
-
+                return CustomeResponse({"contact_id": contact_id,
+                                        "bcard_image_frontend": data_new['bcard_image_frontend'],
+                                        "bcard_image_backend": data_new['bcard_image_backend']},
+                                       status=status.HTTP_201_CREATED)
+            else:
+                return CustomeResponse(
+                    {
+                        'msg': "Please upload media bcard_image_frontend or\
+                         bcard_image_backend"},
+                    status=status.HTTP_200_OK)
         except:
-            pass
-
-        if data_new['bcard_image_frontend'] or data_new['bcard_image_backend']:
-            return CustomeResponse({"contact_id": contact_id,
-                                    "bcard_image_frontend": data_new['bcard_image_frontend'],
-                                    "bcard_image_backend": data_new['bcard_image_backend']},
-                                   status=status.HTTP_201_CREATED)
-        else:
-            return CustomeResponse(
-                {
-                    'msg': "Please upload media bcard_image_frontend or bcard_image_backend"},
-                status=status.HTTP_200_OK)
-        # End
-
-    #  Change image of business card
+            logger.critical(
+                "Caught exception in {}".format(__file__),
+                exc_info=True
+            )
+            ravenclient.captureException()
+        return CustomeResponse(
+            {
+                "msg": "Can not process request. Please try later."
+            },
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            validate_errors=1
+        )
 
     @list_route(methods=['post'],)
     def change(self, request):
+        """Change image of business card."""
         user_id = request.user.id
         try:
             contact_id = request.data["contact_id"]
             gallary_image_id = request.data["gallary_image_id"]
             # means it is 1 frontend or 2 backend
             image_type = request.data["image_type"]
-        except:
-            contact_id = None
-
-        if contact_id:
-            try:
-                get_image = ContactMedia.objects.get(
-                    id=gallary_image_id,
-                    contact_id=contact_id,
-                    user_id=user_id
-                )
-                get_image.status = 1
-                get_image.front_back = image_type
-                get_image.save()
-                ContactMedia.objects.filter(
-                    contact_id=contact_id,
-                    front_back=image_type).exclude(
-                    id=gallary_image_id).update(
-                    status=0)
-                return CustomeResponse(
-                    {
-                        "msg": "Business card image changed successfully."
-                    },
-                    status=status.HTTP_200_OK
-                )
-            except:
-                return CustomeResponse(
-                    {
-                        'msg': "provided contact_id,gallary_image_id not valid"
-                    },
-                    status=status.HTTP_400_BAD_REQUEST,
-                    validate_errors=1
-                )
-        else:
+        except KeyError:
+            logger.error(
+                "Caught KeyError exception, in {}.".
+                format(__file__),
+                exc_info=True
+            )
             return CustomeResponse(
                 {
-                    'msg': "Please provide contact_id,gallary_image_id"
+                    'msg': "Please provide contact_id,gallary_image_id."
                 },
                 status=status.HTTP_400_BAD_REQUEST,
                 validate_errors=1
             )
+
+        try:
+            get_image = ContactMedia.objects.get(
+                id=gallary_image_id,
+                contact_id=contact_id,
+                user_id=user_id
+            )
+            get_image.status = 1
+            get_image.front_back = image_type
+            get_image.save()
+            ContactMedia.objects.filter(
+                contact_id=contact_id,
+                front_back=image_type).exclude(
+                id=gallary_image_id).update(
+                status=0)
+            return CustomeResponse(
+                {
+                    "msg": "Business card image changed successfully."
+                },
+                status=status.HTTP_200_OK
+            )
+        except:
+            logger.critical(
+                "Caught exception in {}".format(__file__),
+                exc_info=True
+            )
+            ravenclient.captureException()
+        return CustomeResponse(
+            {
+                "msg": "Can not process request. Please try later."
+            },
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            validate_errors=1
+        )
+
     # End
 
     def update(self, request, pk=None):
+        """Update not allowed."""
         return CustomeResponse(
             {
-                'msg': "Update method does not allow"
+                'msg': "Update method does not allow."
             },
             status=status.HTTP_400_BAD_REQUEST,
             validate_errors=1
@@ -1355,7 +1575,7 @@ class ContactMediaViewSet(viewsets.ModelViewSet):
 
     @list_route(methods=['post'],)
     def delete(self, request):
-
+        """Delete Contact media."""
         try:
             user_id = request.user.id
             contact_id = request.data["contact_id"]
@@ -1365,15 +1585,36 @@ class ContactMediaViewSet(viewsets.ModelViewSet):
             get_image.delete()
             return CustomeResponse(
                 {
-                    'msg': "Media deleted successfully"
+                    'msg': "Media deleted successfully."
                 },
                 status=status.HTTP_200_OK
             )
-        except:
+        except KeyError:
             return CustomeResponse(
                 {
-                    'msg': "Please provide correct contact_id,media id"
+                    'msg': "Please provide correct contact_id,media id."
                 },
                 status=status.HTTP_400_BAD_REQUEST,
                 validate_errors=1
             )
+        except ContactMedia.DoesNotExist:
+            return CustomeResponse(
+                {
+                    'msg': 'ContactMedia not found.'
+                },
+                status=status.HTTP_404_NOT_FOUND,
+                validate_errors=1
+            )
+        except:
+            logger.critical(
+                "Caught exception in {}.".format(__file__),
+                exc_info=True
+            )
+            ravenclient.captureException()
+        return CustomeResponse(
+            {
+                "msg": "Can not process request. Please try later."
+            },
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            validate_errors=1
+        )

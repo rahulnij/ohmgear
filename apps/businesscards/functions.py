@@ -160,54 +160,78 @@ class DiffJson(object):
             self.difference.append(message)
 
 
-def searchjson(name, value, user_id=None):
+def searchjson(name, value, user_id=None, bcard_id=None):
     """
     search using email and firstname_lastname
-    search will retirn BusinessCard.
+    search will return BusinessCard.
     """
-    bcard_id = []
-    bcard = ''
+
+    bcards_id = []
+    bcards = ''
+    contact = ''
+
+    if bcard_id is None:
+        bcard_id = []
+    else:
+        bcard_id = [bcard_id]
 
     # Search by name.#
     if name == 'firstname_lastname':
-        new = value.split(" ")
+        firstName, lastName = value.partition(" ")[0:3:2]
         bcard = BusinessCard.objects.filter(
-            status=1, contact_detail__bcard_json_data__contains={
+            status=1,
+            contact_detail__bcard_json_data__contains={
                 'side_first': {
                     'basic_info': [
                         {
-                            'keyName': "FirstName", "value": new[0]}, {
-                            'keyName': "LastName", "value": new[1]}]}} or {
+                            'keyName': "FirstName",
+                            "value": firstName}]}} or {
                 'side_second': {
                     'basic_info': [
                         {
-                            'keyName': "FirstName", "value": new[0]}, {
-                            'keyName': "LastName", "value": new[1]}]}})
+                            'keyName': "FirstName",
+                            "value": firstName}]}}).exclude(
+            id__in=bcard_id)
+        if lastName:
+
+            bcard = bcard.filter(
+                contact_detail__bcard_json_data__contains={
+                    'side_first': {
+                        'basic_info': [
+                            {
+                                'keyName': "FirstName", "value": firstName}, {
+                                'keyName': "LastName", "value": lastName}]}} or {
+                    'side_second': {
+                        'basic_info': [
+                            {
+                                'keyName': "FirstName", "value": firstName}, {
+                                'keyName': "LastName", "value": lastName}]}})
         return bcard
 
     # Search by email.#
     if user_id and name == "email":
-        bcard = BusinessCard.objects.filter(
+        bcards = BusinessCard.objects.filter(
             user_id=user_id, status=1, contact_detail__bcard_json_data__contains={
                 'side_first': {
                     'contact_info': {'email': [{'data': value}]}}} or {
                 'side_second': {
                     'contact_info': {'email': [{'data': value}]}}})
-        for data in bcard:
-            bcard_id.append(data.id)
+        for data in bcards:
+            bcards_id.append(data.id)
         contact = BusinessCard.objects.filter(
             status=1, contact_detail__bcard_json_data__contains={
                 'side_first': {'contact_info': {'email': [{'data': value}]}}} or {
                 'side_second': {'contact_info': {'email': [{'data': value}]}}}).exclude(
-            id__in=bcard_id)
+            id__in=bcards_id)
         # contact = BusinessCard.objects.raw(
         #     'SELECT * FROM  \
-        #     where  ohmgear_contacts_contact.bcard_json_data @> \'{"yrdy":"fff"}\'')
+        # where  ohmgear_contacts_contact.bcard_json_data @>
+        # \'{"yrdy":"fff"}\'')
 
-    if bcard or contact:
+    if bcards or contact:
         result_list = []
         from itertools import chain
-        result_list = list(chain(bcard, contact))
+        result_list = list(chain(bcards, contact))
         return result_list
     else:
         return False

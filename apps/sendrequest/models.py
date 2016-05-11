@@ -47,6 +47,7 @@ class SendRequest(models.Model):
         related_name='srequest_receiver_user_id',
         null=True,
         blank=True)
+    # in future we will relate to only contact id 
     receiver_bcard_or_contact_id = models.PositiveIntegerField(
         default=0, blank=True)
 
