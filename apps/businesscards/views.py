@@ -34,7 +34,7 @@ from serializer import (
 )
 from apps.contacts.serializer import ContactsSerializer
 from apps.contacts.models import Contacts, ContactMedia
-from apps.identifiers.serializer import BusinessIdentifierSerializer, SearchBusinessIdentifierSerializer
+from apps.identifiers.serializer import BusinessIdentifierSerializer
 from ohmgear.token_authentication import ExpiringTokenAuthentication
 from ohmgear.functions import CustomeResponse, rawResponse
 from ohmgear.json_default_data import BUSINESS_CARD_DATA_VALIDATION
@@ -228,7 +228,7 @@ class BusinessCardIdentifierViewSet(viewsets.ModelViewSet):
             if not re.match("[^@]+@[^@]+\.[^@]+", value):
 
                 identifier_data = BusinessCard.objects.filter(
-                    status=1, identifiers_data__identifier_id__identifier__contains=value)
+                    status=1, identifiers_data__identifier_id__identifier__icontains=value)
                 bcard_id = None
 
                 if identifier_data:
@@ -245,16 +245,13 @@ class BusinessCardIdentifierViewSet(viewsets.ModelViewSet):
                         identifier_data, many=True, context={'search': "identifier"})
                     return CustomeResponse(
                         {
-                            'business_cards_by_name': name_serializer.data,
-                            'business_cars_by_identifier': businesscard_by_identifier_serializer.data},
+                            'search_business_cards': businesscard_by_identifier_serializer.data + name_serializer.data,
+                        },
                         status=status.HTTP_200_OK)
 
                 else:
                     return CustomeResponse(
                         {'msg': "Businesscard not found"}, status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
-
-                serializer = SearchBusinessIdentifierSerializer(
-                    identifier_data, many=True)
 
             # Search by email #
             else:
