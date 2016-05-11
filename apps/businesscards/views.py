@@ -1128,7 +1128,7 @@ class WhiteCardViewSet(viewsets.ModelViewSet):
 
                     # send push notification
                     contact_share.send_push_notification(
-                        "your business card accepted", "b2g_accepted", sender_user_id)
+                        "your business card accepted", "b2g_accepted", sender_user_id, cid)
 
         #  ------------------- End ---------------- #
 
