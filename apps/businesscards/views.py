@@ -277,8 +277,8 @@ class BusinessCardIdentifierViewSet(viewsets.ModelViewSet):
                     if data:
                         serializer = SearchBusinessCardWithIdentifierSerializer(
                             data, many=True, context={'search': "email"})
-                        return CustomeResponse(
-                            serializer.data, status=status.HTTP_200_OK)
+                        return CustomeResponse({'search_business_cards_by_email': serializer.data},
+                             status=status.HTTP_200_OK)
                     else:
                         return CustomeResponse(
                             {'msg': "email not found"}, status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
