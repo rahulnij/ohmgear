@@ -14,6 +14,7 @@ class BusinessCardAddSkillSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = BusinessCardAddSkill
+        fields = ('skill_name',)
 
 
 class BusinessCardAddSkillSerializerReference(serializers.ModelSerializer):

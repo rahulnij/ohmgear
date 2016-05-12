@@ -408,10 +408,16 @@ class BusinessCardAddSkillViewSet(viewsets.ModelViewSet):
     # --------------Method: GET----------------------------- #
 
     def list(self, request):
-        """Get method not allowed."""
-        return CustomeResponse({'msg': 'GET method not allowed'},
-                               status=status.HTTP_405_METHOD_NOT_ALLOWED,
-                               validate_errors=1)
+        """List  skills in businesscard."""
+        bcard_id = self.request.query_params.get('bcard_id', None)
+        if bcard_id:
+            self.queryset = self.queryset.filter(businesscard_id=bcard_id).order_by('skill_name').values('skill_name')
+        serializer = self.serializer_class(self.queryset, many=True)
+        if serializer and self.queryset:
+            return CustomeResponse(serializer.data, status=status.HTTP_200_OK)
+        else:
+            return CustomeResponse(
+                {'msg': 'no data found'}, status=status.HTTP_200_OK, validate_errors=1)
 
     def retrieve(self, request, pk=None):
         """Retrieve method not allowed."""
