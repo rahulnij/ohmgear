@@ -1,10 +1,7 @@
-from django.conf import settings
 # Return token if does not exit then create
-from models import BusinessCard, BusinessCardAddSkill
+from models import BusinessCard
 from apps.contacts.models import Contacts, ContactMedia
 from apps.notes.models import Notes
-from ohmgear.functions import CustomeResponse
-import rest_framework.status as status
 
 
 def createDuplicateBusinessCard(bcard_id=None, user_id=None):
@@ -200,7 +197,8 @@ def searchjson(name, value, user_id=None, bcard_id=None):
                         'basic_info': [
                             {
                                 'keyName': "FirstName", "value": firstName}, {
-                                'keyName': "LastName", "value": lastName}]}} or {
+                                'keyName': "LastName", "value": lastName}]}} or
+                            {
                     'side_second': {
                         'basic_info': [
                             {
