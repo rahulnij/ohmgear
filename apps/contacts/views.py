@@ -164,7 +164,6 @@ class storeContactsViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_201_CREATED)
 
     def update(self, request, pk=None):
-
         data = request.data.copy()
         try:
             folder_contact_data = FolderContact.objects.select_related(
