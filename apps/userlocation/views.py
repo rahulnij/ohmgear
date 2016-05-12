@@ -59,7 +59,7 @@ class UserLocationViewSet(viewsets.ModelViewSet):
                 )
                 return CustomeResponse(
                     {
-                        'msg': 'lat or lon is missing.'
+                        'msg': 'lat or lon is required.'
                     },
                     status=status.HTTP_400_BAD_REQUEST,
                     validate_errors=1
@@ -156,7 +156,7 @@ class UserLocationViewSet(viewsets.ModelViewSet):
             )
             return CustomeResponse(
                 {
-                    "msg": "Current user location unknow."
+                    "msg": "User location unknow."
                 },
                 status=status.HTTP_404_NOT_FOUND
             )
