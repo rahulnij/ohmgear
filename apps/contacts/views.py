@@ -108,46 +108,43 @@ class storeContactsViewSet(viewsets.ModelViewSet):
             contact_new = []
             for contact_temp in contact:
                 # Validate the json data
-                try:
-                    validictory.validate(
-                        contact_temp["bcard_json_data"],
-                        BUSINESS_CARD_DATA_VALIDATION)
-                except validictory.ValidationError as error:
-                    return CustomeResponse(
-                        {'msg': error.message}, status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
-                except validictory.SchemaError as error:
-                    return CustomeResponse(
-                        {'msg': error.message}, status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
+                # try:
+                #     validictory.validate(
+                #         contact_temp["bcard_json_data"],
+                #         BUSINESS_CARD_DATA_VALIDATION)
+                # except validictory.ValidationError as error:
+                #     return CustomeResponse(
+                #         {'msg': error.message}, status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
+                # except validictory.SchemaError as error:
+                #     return CustomeResponse(
+                #         {'msg': error.message}, status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
 
-            if 'user_id' not in contact_temp:
-                contact_temp['user_id'] = user_id.id
-                contact_new.append(contact_temp)
-            else:
-                contact_new.append(contact_temp)
-            counter = counter + 1
+                if 'user_id' not in contact_temp:
+                    contact_temp['user_id'] = user_id.id
+                    contact_new.append(contact_temp)
+                else:
+                    contact_new.append(contact_temp)
+                counter = counter + 1
 
-        if counter > NUMBER_OF_CONTACT:
-            return CustomeResponse(
-                {
-                    'msg': "Max " + str(NUMBER_OF_CONTACT) + " allowed to upload"},
-                status=status.HTTP_400_BAD_REQUEST,
-                validate_errors=1)
+                if counter > NUMBER_OF_CONTACT:
+                    return CustomeResponse(
+                        {
+                            'msg': "Max " + str(NUMBER_OF_CONTACT) + " allowed to upload"},
+                        status=status.HTTP_400_BAD_REQUEST,
+                        validate_errors=1)
 
         serializer = ContactsSerializer(data=contact_new, many=True)
         if serializer.is_valid():
             contact_data = serializer.save()
-            contact_id = contact_data[0].id
-            queryset = self.queryset.filter(
-                user_id=request.user.id,
-                businesscard_id__isnull=True,
-                id=contact_id)
+            #contact_id = contact_data[0].id
 
             # Assign all contacts to folder
             folder_contact_array = []
-
+            contact_ids = []
             for items in serializer.data:
                 folder_contact_array.append(
                     {'user_id': user_id.id, 'folder_id': folder_id, 'contact_id': items['id']})
+                contact_ids.append(items['id'])
 
             if folder_contact_array:
                 folder_contact_serializer = FolderContactSerializer(
@@ -155,6 +152,10 @@ class storeContactsViewSet(viewsets.ModelViewSet):
                 if folder_contact_serializer.is_valid():
                     folder_contact_serializer.save()
             # End
+            queryset = self.queryset.filter(
+                user_id=request.user.id,
+                businesscard_id__isnull=True,
+                id__in=contact_ids)
             serializer = ContactsSerializerWithJson(queryset, many=True)
             return CustomeResponse(
                 serializer.data,
