@@ -35,6 +35,7 @@ logger = logging.getLogger(__name__)
 
 
 # Storing Contacts as a Bulk
+# Note: we have to create same response format in this api in Second Phase
 class storeContactsViewSet(viewsets.ModelViewSet):
 
     queryset = Contacts.objects.all()

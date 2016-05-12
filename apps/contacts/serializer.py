@@ -39,6 +39,8 @@ class ContactsSerializer(serializers.ModelSerializer):
             'user_id',
             'folder_contact_data',
             'businesscard_media',
+            'created_date',
+            'updated_date'            
         )
 
 #   Used in fetch contact data
