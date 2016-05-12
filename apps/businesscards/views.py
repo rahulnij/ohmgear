@@ -228,7 +228,7 @@ class BusinessCardIdentifierViewSet(viewsets.ModelViewSet):
             if not re.match("[^@]+@[^@]+\.[^@]+", value):
 
                 identifier_data = BusinessCard.objects.filter(
-                    status=1, identifiers_data__identifier_id__identifier__contains=value)
+                    status=1, identifiers_data__identifier_id__identifier=value)
                 bcard_id = None
 
                 if identifier_data:
@@ -264,8 +264,8 @@ class BusinessCardIdentifierViewSet(viewsets.ModelViewSet):
                     if data:
                         serializer = SearchBusinessCardWithIdentifierSerializer(
                             data, many=True, context={'search': "email"})
-                        return CustomeResponse(
-                            serializer.data, status=status.HTTP_200_OK)
+                        return CustomeResponse({'search_business_cards_by_email': serializer.data},
+                                               status=status.HTTP_200_OK)
                     else:
                         return CustomeResponse(
                             {'msg': "email not found"}, status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
@@ -277,8 +277,8 @@ class BusinessCardIdentifierViewSet(viewsets.ModelViewSet):
                     if data:
                         serializer = SearchBusinessCardWithIdentifierSerializer(
                             data, many=True, context={'search': "email"})
-                        return CustomeResponse(
-                            serializer.data, status=status.HTTP_200_OK)
+                        return CustomeResponse({'search_business_cards_by_email': serializer.data},
+                             status=status.HTTP_200_OK)
                     else:
                         return CustomeResponse(
                             {'msg': "email not found"}, status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
@@ -1128,7 +1128,7 @@ class WhiteCardViewSet(viewsets.ModelViewSet):
 
                     # send push notification
                     contact_share.send_push_notification(
-                        "your business card accepted", "b2g_accepted", sender_user_id)
+                        "your business card accepted", "b2g_accepted", sender_user_id, cid)
 
         #  ------------------- End ---------------- #
 
