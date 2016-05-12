@@ -210,24 +210,63 @@ def searchjson(name, value, user_id=None, bcard_id=None):
 
     # Search by email.#
     if user_id and name == "email":
-        bcards = BusinessCard.objects.filter(
-            user_id=user_id, status=1, contact_detail__bcard_json_data__contains={
-                'side_first': {
-                    'contact_info': {'email': [{'data': value}]}}} or {
-                'side_second': {
-                    'contact_info': {'email': [{'data': value}]}}})
+
+        # bcards = BusinessCard.objects.filter(
+        #     user_id=user_id, status=1, contact_detail__bcard_json_data__contains={
+        #         'side_first': {
+        #             'contact_info': {'email': [{'data': value}]}}} or {
+        #         'side_second': {
+        #             'contact_info': {'email': [{'data': value}]}}})
+
+        bcard_sql = 'SELECT * FROM ohmgear_businesscards_businesscard  \
+            INNER JOIN ohmgear_contacts_contact ON \
+            (ohmgear_businesscards_businesscard.id = ohmgear_contacts_contact.businesscard_id)\
+            where ohmgear_businesscards_businesscard.status = 1 AND ohmgear_businesscards_businesscard.user_id=%s\
+             AND ohmgear_contacts_contact.bcard_json_data @>\
+            \'{"side_first": {"contact_info": {"email": [{"data": "%s"}]}}}\'\
+            order by ((ohmgear_contacts_contact.bcard_json_data  #>> \
+            \'{side_first,basic_info}\')::jsonb->>1) ASC, \
+            ((ohmgear_contacts_contact.bcard_json_data  #>> \
+            \'{side_first,basic_info}\')::jsonb->>2) ASC ,\
+            ((ohmgear_contacts_contact.bcard_json_data  #>> \
+            \'{side_second,basic_info}\')::jsonb->>1) ASC ,\
+            ((ohmgear_contacts_contact.bcard_json_data  #>> \
+            \'{side_second,basic_info}\')::jsonb->>2) ASC ' % (user_id,value)
+
+        bcards = BusinessCard.objects.raw(bcard_sql)
+
         for data in bcards:
             bcards_id.append(data.id)
-    contact = BusinessCard.objects.filter(
-        status=1, contact_detail__bcard_json_data__contains={
-            'side_first': {'contact_info': {'email': [{'data': value}]}}} or {
-            'side_second': {'contact_info': {'email': [{'data': value}]}}}).exclude(
-        id__in=bcards_id)
-    # contact = BusinessCard.objects.raw(
-    #     'SELECT * FROM  \
-    # where  ohmgear_contacts_contact.bcard_json_data @>
-    # \'{"yrdy":"fff"}\'')
 
+    # contact = BusinessCard.objects.filter(
+    #     status=1, contact_detail__bcard_json_data__contains={
+    #         'side_first': {'contact_info': {'email': [{'data': value}]}}} or {
+    #         'side_second': {'contact_info': {'email': [{'data': value}]}}}).exclude(
+    #     id__in=bcards_id)
+
+    if bcards:
+        bcards_id = ', '.join(map(str, bcards_id))
+    else:
+        bcards_id = '0'
+
+    contact_sql = 'SELECT * FROM ohmgear_businesscards_businesscard  \
+        INNER JOIN ohmgear_contacts_contact ON \
+        (ohmgear_businesscards_businesscard.id = ohmgear_contacts_contact.businesscard_id)\
+        where ohmgear_businesscards_businesscard.status = 1 AND NOT \
+        ohmgear_businesscards_businesscard.id IN (%s) \
+        AND ohmgear_contacts_contact.bcard_json_data @>\
+        \'{"side_first": {"contact_info": {"email": [{"data": "%s"}]}}}\'\
+        order by ((ohmgear_contacts_contact.bcard_json_data  #>> \
+        \'{side_first,basic_info}\')::jsonb->>1) ASC, \
+        ((ohmgear_contacts_contact.bcard_json_data  #>> \
+        \'{side_first,basic_info}\')::jsonb->>2) ASC ,\
+        ((ohmgear_contacts_contact.bcard_json_data  #>> \
+        \'{side_second,basic_info}\')::jsonb->>1) ASC ,\
+        ((ohmgear_contacts_contact.bcard_json_data  #>> \
+        \'{side_second,basic_info}\')::jsonb->>2) ASC ' % (bcards_id, value)
+
+    contact = BusinessCard.objects.raw(contact_sql)
+    
     if bcards or contact:
         result_list = []
         from itertools import chain
