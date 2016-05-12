@@ -165,6 +165,7 @@ class storeContactsViewSet(viewsets.ModelViewSet):
 
     def update(self, request, pk=None):
         data = request.data.copy()
+        data['user_id'] = request.user.id
         try:
             folder_contact_data = FolderContact.objects.select_related(
                 'contact_id').get(contact_id=pk, user_id=request.user.id)
