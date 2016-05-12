@@ -173,10 +173,14 @@ class storeContactsViewSet(viewsets.ModelViewSet):
             link_status = folder_contact_data.link_status
 
         except FolderContact.DoesNotExist as e:
-            logger.errors(
+            logger.error(
                 "Object Does Not Exist: FolderContact-contact_update: {}, {}".format(
                     pk, e))
-
+            return CustomeResponse(
+                {
+                    'msg': "FolderContact does not exist"},
+                status=status.HTTP_400_BAD_REQUEST,
+                validate_errors=1)
         link_status_cons = constant.LINK_STATUS
 
         if link_status == link_status_cons.get(
