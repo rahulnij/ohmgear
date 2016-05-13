@@ -1,6 +1,7 @@
 # Import Python Modules
 import datetime
 import json
+import logging
 
 # Third Party Imports
 from django.shortcuts import render
@@ -17,6 +18,8 @@ from apps.contacts.serializer import ContactsSerializer
 from apps.contacts.views import storeContactsViewSet
 from apps.folders.models import FolderContact, MatchContact
 from apps.folders.serializer import MatchContactSerializer
+
+logger = logging.getLogger(__name__)
 
 
 @api_view(['GET', 'POST'])
@@ -103,6 +106,16 @@ def updateidentifierstatus(request, **kwargs):
         return CustomeResponse(
             {'msg': "Cron runnig successfully"}, status=status.HTTP_200_OK)
 
+# This class run as a cron for updating folder contact link status 0 --> 1
+# means grey -> orange
+
+# orange: means user have a contact, if this contact used by some other user as a business card then user
+#         contact will change grey to orange
+# grey: not connected
+# orange: not connected but contact matched to other user business card
+# green: connected and this contact matched to other user business card
+# blue: connected but one way
+
 
 class UpdateContactLinkStatusCron(viewsets.ModelViewSet):
 
@@ -135,10 +148,14 @@ class UpdateContactLinkStatusCron(viewsets.ModelViewSet):
                             if value.bcard_json_data and value_copy[
                                     "bcard_json_data"]:
                                 # print value.user_id.id,value_copy["user_id"]
-                                result = store_object.find_duplicate(
-                                    value.bcard_json_data, json.loads(
-                                        value_copy["bcard_json_data"]))
-                                # print result
+                                try:
+                                    result = store_object.find_duplicate(
+                                        value.bcard_json_data, value_copy["bcard_json_data"])
+                                except ValueError as e:
+                                    logger.error(
+                                        "UpdateContactLinkStatusCron: contacts have bad json : {},{}, {}".format(
+                                            value.id, value_copy["id"], e))
+                                    # print result
                             else:
                                 result = ''
                             # print result
@@ -165,12 +182,6 @@ class UpdateContactLinkStatusCron(viewsets.ModelViewSet):
                     pass
 
             if match_contact_insert:
-                #                      match_contact_insert = MatchContactSerializer(data=match_contact_insert,many=True)
-                #                      if match_contact_insert.is_valid():
-                #                         match_contact_insert.save()
-                #                      else:
-                # return
-                # CustomeResponse(match_contact_insert.errors,status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
                 for items in match_contact_insert:
                     match_contact_serializer = MatchContactSerializer(
                         data=items)
