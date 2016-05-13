@@ -163,7 +163,6 @@ def searchjson(name, value, user_id=None, bcard_id=None):
     search will return BusinessCard.
     """
 
-    bcards_id = []
     bcards = ''
     contact = ''
 
@@ -228,11 +227,16 @@ def searchjson(name, value, user_id=None, bcard_id=None):
 
         bcards = BusinessCard.objects.raw(bcard_sql)
 
+    if bcards:
+        bcards_id = []
+
         for data in bcards:
             bcards_id.append(data.id)
-
-    if bcards:
         bcards_id = ', '.join(map(str, bcards_id))
+
+        if bcards_id == '':
+            bcards_id = '0'
+
     else:
         bcards_id = '0'
 
