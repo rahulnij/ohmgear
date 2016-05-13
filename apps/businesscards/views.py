@@ -411,10 +411,39 @@ class BusinessCardAddSkillViewSet(viewsets.ModelViewSet):
         """List  skills in businesscard."""
         bcard_id = self.request.query_params.get('bcard_id', None)
         if bcard_id:
-            self.queryset = self.queryset.filter(businesscard_id=bcard_id).order_by('skill_name').values('skill_name')
+            self.queryset = self.queryset.filter(businesscard_id=bcard_id).order_by('skill_name')
         serializer = self.serializer_class(self.queryset, many=True)
         if serializer and self.queryset:
             return CustomeResponse(serializer.data, status=status.HTTP_200_OK)
+        else:
+            return CustomeResponse(
+                {'msg': 'no data found'}, status=status.HTTP_200_OK, validate_errors=1)
+
+    @list_route(methods=['get'],)
+    def bcard_with_skills(self, request):
+        """businesscards with added skills."""
+        user_id = request.user.id
+        bcard_ids = []
+        skill_name = []
+        final_list = []
+        counter = 0
+        if user_id:
+            self.queryset = BusinessCardAddSkill.objects.filter(
+                user_id=user_id)
+            for items in self.queryset:
+                if items.businesscard_id.id not in bcard_ids:
+                    final_list.append(
+                        {'bcard_id': items.businesscard_id.id, 'skill_name': items.skill_name})
+                else:
+                    list_val = [i for i, x in enumerate(final_list) if x[
+                        'bcard_id'] == items.businesscard_id.id]
+                    final_list[list_val[0]]['skill_name'] = str(
+                        final_list[list_val[0]]['skill_name']) + ', ' + str(items.skill_name)
+                bcard_ids.append(items.businesscard_id.id)
+
+        serializer = self.serializer_class(self.queryset, many=True)
+        if serializer and self.queryset:
+            return CustomeResponse(final_list, status=status.HTTP_200_OK)
         else:
             return CustomeResponse(
                 {'msg': 'no data found'}, status=status.HTTP_200_OK, validate_errors=1)
