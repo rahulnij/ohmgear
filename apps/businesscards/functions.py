@@ -234,9 +234,6 @@ def searchjson(name, value, user_id=None, bcard_id=None):
             bcards_id.append(data.id)
         bcards_id = ', '.join(map(str, bcards_id))
 
-        if bcards_id == '':
-            bcards_id = '0'
-
     else:
         bcards_id = '0'
 
