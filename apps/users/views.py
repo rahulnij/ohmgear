@@ -796,7 +796,7 @@ class SocialLoginViewSet(viewsets.ModelViewSet):
                     data = user_view_obj.create(request, 1)
                     # End
                     social_id = request.POST.get('social_id', '')
-                    # social_type_id for fb its 2
+                    # social_type_id for fb its 1
 
                     social_type = constant.SOCIAL_TYPE
                     social_type_exist = request.data[
