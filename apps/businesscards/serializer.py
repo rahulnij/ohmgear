@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from django.conf import settings
 
-from models import BusinessCard, BusinessCardIdentifier, BusinessCardSkillAvailable, BusinessCardAddSkill, BusinessCardHistory
+from models import BusinessCard, BusinessCardIdentifier, BusinessCardSkillAvailable, BusinessCardAddSkill
 from apps.contacts.serializer import ContactsSerializerWithJson
 from apps.folders.models import FolderContact
 from apps.contacts.models import ContactMedia
@@ -37,11 +37,6 @@ class BusinessCardSkillAvailableSerializer(serializers.ModelSerializer):
         model = BusinessCardSkillAvailable
         fields = ('skill_name',)
 
-
-class BusinessCardHistorySerializer(serializers.ModelSerializer):
-
-    class Meta:
-        model = BusinessCardHistory
 
 # ----------------- Main Business Card ----------------------------#
 
