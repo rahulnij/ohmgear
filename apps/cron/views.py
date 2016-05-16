@@ -1,6 +1,7 @@
 # Standard library Imports
 import datetime
 import json
+
 import rest_framework.status as status
 from rest_framework.decorators import api_view
 from rest_framework import viewsets
@@ -54,7 +55,7 @@ def updateidentifierstatus(request, **kwargs):
 
             """
             After 3 months of premium identifier system identifier will be
-            given for  3 months  and after that it will get expire and 
+            given for  3 months  and after that it will get expire and
             identifier status will be 0.
             """
 
@@ -123,6 +124,16 @@ def updateidentifierstatus(request, **kwargs):
             validate_errors=1
         )
 
+# This class run as a cron for updating folder contact link status 0 --> 1
+# means grey -> orange
+
+# orange: means user have a contact, if this contact used by some other user as a business card then user
+#         contact will change grey to orange
+# grey: not connected
+# orange: not connected but contact matched to other user business card
+# green: connected and this contact matched to other user business card
+# blue: connected but one way
+
 
 class UpdateContactLinkStatusCron(viewsets.ModelViewSet):
     """Update contact link status."""
@@ -133,8 +144,8 @@ class UpdateContactLinkStatusCron(viewsets.ModelViewSet):
     http_method_names = ['get']
 
     def list(self, request):
-
         try:
+
             # Fetch the all users contact
             queryset_contact_without_bcard = self.queryset.filter(
                 businesscard_id__isnull=True).order_by("user_id")
@@ -157,12 +168,19 @@ class UpdateContactLinkStatusCron(viewsets.ModelViewSet):
 
                                 if value.bcard_json_data and value_copy[
                                         "bcard_json_data"]:
-                                    result = store_object.find_duplicate(
-                                        value.bcard_json_data, json.loads(
-                                            value_copy["bcard_json_data"]))
+                                    # print
+                                    # value.user_id.id,value_copy["user_id"]
+                                    try:
+                                        result = store_object.find_duplicate(
+                                            value.bcard_json_data, value_copy["bcard_json_data"])
+                                    except ValueError as e:
+                                        logger.error(
+                                            "UpdateContactLinkStatusCron: contacts have bad json : {},{}, {}".format(
+                                                value.id, value_copy["id"], e))
+                                        # print result
                                 else:
                                     result = ''
-
+                                # print result
                                 if result:
                                     # Change the link status then insert into MatchContact Model
                                     # related field is not working
@@ -178,33 +196,41 @@ class UpdateContactLinkStatusCron(viewsets.ModelViewSet):
                                                     "user_id": value.user_id.id,
                                                     "folder_contact_id": folder_contact.id,
                                                     "businesscard_id": value_copy['businesscard_id']})
-                                    except FolderContact.DoesNotExist:
-                                        # no need to log this error.
+                                    except:
                                         pass
-                                    # match_contact_insert =
-                                    # MatchContactSerializer({''})
-
+                                    # match_contact_insert = MatchContactSerializer({''})
+                                # pass
                     except StopIteration:
                         pass
 
                 if match_contact_insert:
-                    #                      match_contact_insert = MatchContactSerializer(data=match_contact_insert,many=True)
-                    #                      if match_contact_insert.is_valid():
-                    #                         match_contact_insert.save()
-                    #                      else:
-                    # return
-                    # CustomeResponse(match_contact_insert.errors,status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
                     for items in match_contact_insert:
                         match_contact_serializer = MatchContactSerializer(
                             data=items)
                         if match_contact_serializer.is_valid():
                             match_contact_serializer.save()
                         else:
+
                             pass
-            # Note : TODO we will change the order of execution  of
-            # find_duplicate
-            return CustomeResponse(
-                {"msg": "run successfully"}, status=status.HTTP_200_OK)
+
+                    if match_contact_insert:
+                        #                      match_contact_insert = MatchContactSerializer(data=match_contact_insert,many=True)
+                        #                      if match_contact_insert.is_valid():
+                        #                         match_contact_insert.save()
+                        #                      else:
+                        # return
+                        # CustomeResponse(match_contact_insert.errors,status=status.HTTP_400_BAD_REQUEST,validate_errors=1)
+                        for items in match_contact_insert:
+                            match_contact_serializer = MatchContactSerializer(
+                                data=items)
+                            if match_contact_serializer.is_valid():
+                                match_contact_serializer.save()
+                            else:
+                                pass
+                # Note : TODO we will change the order of execution  of
+                # find_duplicate
+                return CustomeResponse(
+                    {"msg": "run successfully"}, status=status.HTTP_200_OK)
 
         except Exception:
             logger.critical(

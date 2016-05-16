@@ -102,7 +102,7 @@ class SendAcceptRequest(viewsets.ModelViewSet):
             try:
                 receiver_contact_id = karg['receiver_contact_id']
             except KeyError as e:
-                logger.critical(
+                logger.error(
                     "KeyError in {}, {}".format(
                         __name__, e))
                 return False
@@ -114,7 +114,7 @@ class SendAcceptRequest(viewsets.ModelViewSet):
             try:
                 sender_contact_id = karg['sender_contact_id']
             except KeyError as e:
-                logger.critical(
+                logger.error(
                     "KeyError in {}, {}".format(
                         __name__, e))
                 return False
@@ -166,7 +166,7 @@ class SendAcceptRequest(viewsets.ModelViewSet):
             aws_token_data = AwsDeviceToken.objects.filter(
                 user_id=user_id).latest("id")
         except AwsDeviceToken.DoesNotExist as e:
-            logger.errors(
+            logger.error(
                 "Object Does Not Exist: AwsDeviceToken: {}, {}".format(
                     user_id, e))
             return False

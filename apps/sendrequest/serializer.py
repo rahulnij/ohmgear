@@ -49,7 +49,7 @@ class SendRequestSerializer(serializers.ModelSerializer):
                     except BusinessCard.DoesNotExist as e:
                         logger.error(
                             "Object DoesNotExist: Contacts: {}, {}".format(
-                                business_card.id, e))
+                                obj.receiver_bcard_or_contact_id, e))
                         return data
                     contact_id = business_card.contact_detail.id
                 else:
