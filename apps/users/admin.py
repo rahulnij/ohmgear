@@ -9,7 +9,11 @@ from rest_framework.authtoken.models import Token
 from django.contrib import admin
 admin.autodiscover()
 
+<<<<<<< HEAD
 # Third Party models
+=======
+#Third Party models
+>>>>>>> unregistered models
 import csv
 
 from .models import (
