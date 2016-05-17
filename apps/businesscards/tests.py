@@ -81,6 +81,9 @@ class BusinessCardTestCase(APITestCase):
             data,
             format='json',
             **auth_headers)
-        self.business_card_id = response.data["data"]["id"]
+        try:
+            self.business_card_id = response.data["data"]["id"]
+        except:
+            response.status_code = 400
 
         self.assertEqual(response.status_code, 201)
