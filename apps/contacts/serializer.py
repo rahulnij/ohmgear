@@ -3,7 +3,7 @@ from rest_framework import serializers
 from apps.folders.serializer import FolderContactSerializer
 from models import Contacts, FavoriteContact, AssociateContact, ContactMedia, PrivateContact
 from apps.contacts.models import FolderContact
-from apps.businesscards.models import BusinessCardAddSkill, BusinessCardHistory
+from apps.businesscards.models import BusinessCardAddSkill
 from apps.groups.models import GroupContacts
 from apps.notes.models import Notes
 
@@ -40,7 +40,7 @@ class ContactsSerializer(serializers.ModelSerializer):
             'folder_contact_data',
             'businesscard_media',
             'created_date',
-            'updated_date'            
+            'updated_date'
         )
 
 #   Used in fetch contact data
@@ -220,8 +220,9 @@ class FolderContactWithRelatedDataSerializer(serializers.ModelSerializer):
             data['skills'] = []
 
         # history
+
         data_history = []
-        history = BusinessCardHistory.objects.filter(
+        history = obj.contact_id.history.filter(
             businesscard_id=obj.contact_id.businesscard_id).order_by('-id')[:5].values()
         for item in history:
             data_history.append(item)

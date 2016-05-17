@@ -11,7 +11,6 @@ from rest_framework.decorators import list_route
 from rest_framework.permissions import IsAuthenticated
 import rest_framework.status as status
 from django.conf import settings
-from django.core.exceptions import ObjectDoesNotExist
 
 # ----------------- Local app imports ------ #
 from apps.email.views import BaseSendMail
@@ -28,7 +27,6 @@ from ohmgear.token_authentication import ExpiringTokenAuthentication
 import logging
 # ---------------------------End------------- #
 logger = logging.getLogger(__name__)
-ravenclient = getattr(settings, "RAVEN_CLIENT", None)
 
 
 class SendAcceptRequest(viewsets.ModelViewSet):
@@ -59,7 +57,6 @@ class SendAcceptRequest(viewsets.ModelViewSet):
         # receiver_bcard_or_contact_id
         # message
         # request_type
-        # search_by
         try:
             notification = SendRequest()
 
@@ -73,7 +70,7 @@ class SendAcceptRequest(viewsets.ModelViewSet):
                 'receiver_bcard_or_contact_id']
 
             notification.message = karg['message']
-            notification.search_by = karg['search_by']
+
             try:
                 notification.save()
                 return True
@@ -214,7 +211,6 @@ class SendAcceptRequest(viewsets.ModelViewSet):
             receiver_business_card_id = request.data[
                 'receiver_business_card_id']
             sender_business_card_id = request.data['sender_business_card_id']
-            search_by = request.data['search_by']
             get_profile = Profile.objects.filter(user_id=user_id).values(
                 "first_name", "last_name").latest("id")
             user_name = str(get_profile["first_name"]) + \
@@ -222,7 +218,7 @@ class SendAcceptRequest(viewsets.ModelViewSet):
         except:
             return CustomeResponse(
                 {
-                    'msg': "Please provide receiver_business_card_id, sender_business_card_id and search_by"},
+                    'msg': "Please provide receiver_business_card_id and sender_business_card_id"},
                 status=status.HTTP_400_BAD_REQUEST,
                 validate_errors=1)
 
@@ -266,7 +262,7 @@ class SendAcceptRequest(viewsets.ModelViewSet):
                 sender_business_card_id=sender_business_card,
                 receiver_user_id=receiver_business_card.user_id,
                 receiver_bcard_or_contact_id=receiver_obj_id,
-                message=message, search_by=search_by)
+                message=message)
             if insert_notification is not True:
                 return CustomeResponse(
                     {
@@ -302,12 +298,9 @@ class SendAcceptRequest(viewsets.ModelViewSet):
 
         try:
             sender_business_card = BusinessCard.objects.select_related(
-                "contact_detail").get(
-                user_id=user_id.id, id=sender_business_card_id)
+                "contact_detail").get(user_id=user_id.id, id=sender_business_card_id)
             receiver_business_card = BusinessCard.objects.select_related(
-                "contact_detail").exclude(
-                user_id=user_id.id).get(
-                id=receiver_business_card_id)
+                "contact_detail").exclude(user_id=user_id.id).get(id=receiver_business_card_id)
         except:
             return CustomeResponse(
                 {
@@ -353,6 +346,7 @@ class SendAcceptRequest(viewsets.ModelViewSet):
                 "Have some problem in exchangin businesscard sender_business_card_id {},  receiver_business_card_id {} ".format(
                     sender_business_card_id, receiver_business_card_id))
         #  End
+
         else:
             #  Update the SendRequest status
             try:
@@ -377,6 +371,7 @@ class SendAcceptRequest(viewsets.ModelViewSet):
             #  End
             return CustomeResponse(
                 {"msg": "success"}, status=status.HTTP_200_OK)
+
 
     # cancel the invitation request
     @list_route(methods=['post'],)

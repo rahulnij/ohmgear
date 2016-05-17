@@ -8,7 +8,7 @@ from django.utils.translation import ugettext_lazy as _
 
 
 from apps.identifiers.models import Identifier
-# from simple_history.models import HistoricalRecords
+from simple_history.models import HistoricalRecords
 from apps.vacationcard.models import VacationCard
 
 User = settings.AUTH_USER_MODEL
@@ -57,6 +57,7 @@ class BusinessCard(models.Model):
         VacationCard,
         through='BusinessCardVacation',
         related_name='business_vacation')
+    history = HistoricalRecords()
 
     def __unicode__(self):
         return'{"id":"%s","name":"%s","user_id":"%s"}' % (self.id, self.name, self.user_id.id)
@@ -107,28 +108,9 @@ class BusinessCardSkillAvailable(models.Model):
         return'{"id":"%s","skillset":"%s"}' % (self.id, self.skill_name)
 
 
+
 class BusinessCardHistory(models.Model):
     pass
-#     class Meta:
-#         db_table = 'contacts_historicalcontacts'
-#     user_id = models.ForeignKey(User, db_column="user_id")
-#     bcard_json_data = JSONField(null=True)
-#     businesscard = models.ForeignKey(BusinessCard, db_column='businesscard_id')
-#     created_date = models.DateTimeField(
-#         _("Created Date"), auto_now_add=True, auto_now=False)
-#     updated_date = models.DateField(
-#         _("Updated Date"), auto_now_add=False, auto_now=True)
-# #    template_id = models.IntegerField(_("Template Id"),null=True)
-#     history_id = models.IntegerField(_("History Id"), null=True)
-#     history_date = models.DateTimeField(
-#         _("History Date"), auto_now_add=False, auto_now=True)
-#     history_user_id = models.IntegerField(_("History User Id"), null=True)
-#     history_type = models.IntegerField(_("History Type"), null=True)
-
-#     def __unicode__(self):
-# return'{"id":"%s","user_id":"%s","bcard_json_data":"%s"}' % (self.id,
-# self.user_id, self.bcard_json_data)
-
 
 class BusinessCardAddSkill(models.Model):
 

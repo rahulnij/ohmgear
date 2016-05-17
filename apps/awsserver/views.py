@@ -61,39 +61,49 @@ class AwsActivity(viewsets.ModelViewSet):
         elif device_type == 'gcm':
             platform_application_arn = aws.AWS_PLATEFORM_APPLICATION_ARN["GCM"]
         else:
-            return CustomeResponse({'msg': "device_type must be apns or gcm"},
-                                   status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
+            return CustomeResponse(
+                {'msg': "device_type must be apns or gcm"},
+                status=status.HTTP_400_BAD_REQUEST,
+                validate_errors=1
+            )
 
         if device_token and user_id and device_type:
             try:
+
                 client = boto3.client('sns', **aws.AWS_CREDENTIAL)
+
+                # TODO Need to check device token already exist or not
+                # End
+                # try:
+                response = client.create_platform_endpoint(
+                    PlatformApplicationArn=platform_application_arn,
+                    Token=device_token,
+                    CustomUserData='',
+                    Attributes={}
+                )
+
+                if "EndpointArn" in response:
+                    AwsDeviceToken.objects.update_or_create(
+                        device_token=device_token,
+                        aws_plateform_endpoint_arn=response["EndpointArn"],
+                        user_id=user_id,
+                        device_type=device_type
+                    )
+
+                return CustomeResponse(response, status=status.HTTP_200_OK)
+
             except Exception as e:
                 logger.critical(
                     "Caught Exception in {}, {}".format(
                         __file__, e))
                 ravenclient.captureException()
-            # TODO Need to check device token already exist or not
-            # End
-            # try:
-            response = client.create_platform_endpoint(
-                PlatformApplicationArn=platform_application_arn,
-                Token=device_token,
-                CustomUserData='',
-                Attributes={}
-            )
 
-            if "EndpointArn" in response:
-                AwsDeviceToken.objects.update_or_create(
-                    device_token=device_token,
-                    aws_plateform_endpoint_arn=response["EndpointArn"],
-                    user_id=user_id,
-                    device_type=device_type
-                )
-
-            return CustomeResponse(response, status=status.HTTP_200_OK)
         else:
             return CustomeResponse(
-                {'msg': "Please provide device_token,device_type and user token"},
+                {
+                    'msg': "Please provide device_token,device_type \
+                    and user token"
+                },
                 status=status.HTTP_400_BAD_REQUEST,
                 validate_errors=1
             )

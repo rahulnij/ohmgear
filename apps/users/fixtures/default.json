@@ -35,7 +35,14 @@
     "model": "users.socialtype",
     "pk": 2,
     "fields": {
-      "social_type": "QQ"
+      "social_type": "GOOGLE"
+    }
+  },
+  {
+    "model": "users.socialtype",
+    "pk": 3,
+    "fields": {
+      "social_type": "LINKED_IN"
     }
   },
   

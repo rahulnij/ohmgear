@@ -9,6 +9,7 @@ from rest_framework import viewsets
 from rest_framework.decorators import list_route
 from rest_framework.permissions import IsAuthenticated
 import rest_framework.status as status
+from django.conf import settings
 import logging
 
 # Local app imports
@@ -22,6 +23,7 @@ from ohmgear.functions import CustomeResponse
 from ohmgear.settings.constant import RADAR_RADIUS
 
 logger = logging.getLogger(__name__)
+ravenclient = getattr(settings, "RAVEN_CLIENT", None)
 
 
 class UserLocationViewSet(viewsets.ModelViewSet):
@@ -42,12 +44,25 @@ class UserLocationViewSet(viewsets.ModelViewSet):
                     request.data['lon'],
                     request.data['lat']
                 )
-                logger.debug(repr(data['geom']))
+
                 ul = self.queryset.get(user_id=user_id, region=REGION)
                 ulserializer = UserLocationSerializer(
                     ul,
                     data=data,
                     partial=True
+                )
+            except KeyError:
+                logger.error(
+                    "Caught KeyError exception, lon or lat not given in {} \
+                    by primary key {}".
+                    format(__file__, user_id)
+                )
+                return CustomeResponse(
+                    {
+                        'msg': 'lat or lon is required.'
+                    },
+                    status=status.HTTP_400_BAD_REQUEST,
+                    validate_errors=1
                 )
             except UserLocation.MultipleObjectsReturned:
                 logger.error(
@@ -56,6 +71,7 @@ class UserLocationViewSet(viewsets.ModelViewSet):
                         UserLocation.__name__, user_id, __file__
                     )
                 )
+                ravenclient.captureException()
             except UserLocation.DoesNotExist:
                 data['user_id'] = user_id
                 data['region'] = REGION
@@ -65,16 +81,21 @@ class UserLocationViewSet(viewsets.ModelViewSet):
                 ulserializer.save()
                 return CustomeResponse({}, status=status.HTTP_204_NO_CONTENT)
 
-            return CustomeResponse([], status=status.HTTP_400_BAD_REQUEST)
+            return CustomeResponse(
+                ulserializer.errors,
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
         except Exception:
             logger.critical(
                 "Caught exception in {}".format(__file__),
                 exc_info=True
             )
+            ravenclient.captureException()
 
         return CustomeResponse(
             {
-                "msg": "Can not process request."
+                "msg": "Can not process request. Please try later."
             },
             status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             validate_errors=1
@@ -122,6 +143,7 @@ class UserLocationViewSet(viewsets.ModelViewSet):
                     'defaultbusinesscard_id',
                     'is_connected'
                 ), context={"connected_user_id": user_id}
+
             )
 
             return CustomeResponse(pserializer.data, status=status.HTTP_200_OK)
@@ -134,7 +156,7 @@ class UserLocationViewSet(viewsets.ModelViewSet):
             )
             return CustomeResponse(
                 {
-                    "msg": "Current user location unknow."
+                    "msg": "User location unknow."
                 },
                 status=status.HTTP_404_NOT_FOUND
             )
@@ -143,10 +165,10 @@ class UserLocationViewSet(viewsets.ModelViewSet):
                 "Caught exception in {}".format(__file__),
                 exc_info=True
             )
-
+            ravenclient.captureException()
         return CustomeResponse(
             {
-                "msg": "Can not process request."
+                "msg": "Can not process request. Please try later."
             },
             status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             validate_errors=1

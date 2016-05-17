@@ -21,8 +21,23 @@ class GroupSerializer(serializers.ModelSerializer):
         'group_image')
 
     def group_image(self, obj):
-        media = GroupMedia.objects.filter(
-            group_id=obj.id, status=1)
+        try:
+            media = GroupMedia.objects.filter(
+                group_id=obj.id, status=1)
+        except DoesNotExist:
+            logger.error(
+                "Caught DoesNotExist exception for {}, group_id {},\
+                in {}".format(
+                    self.__class__, user_id, __file__
+                )
+            )
+            return CustomeResponse(
+                {
+                    "msg": "Group does not exist."
+                },
+                status=status.HTTP_404_NOT_FOUND,
+                validate_errors=1
+            )
         data = []
 
         for item in media:
