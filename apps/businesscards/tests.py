@@ -7,7 +7,7 @@ class BusinessCardTestCase(APITestCase):
     client = APIClient()
 
     fixtures = ['default']
-    
+
     user_token = ''
 
     business_card_id = ''
@@ -33,13 +33,16 @@ class BusinessCardTestCase(APITestCase):
             'HTTP_AUTHORIZATION': 'Token ' + str(self.user_token)
         }
         response = self.client.post(
-            '/api/businesscard/', self.business_card_data, format='json', **auth_headers)
+            '/api/businesscard/',
+            self.business_card_data,
+            format='json',
+            **auth_headers)
         self.business_card_id = response.data["data"]["id"]
-        
+
         """ End """
 
     def test_list_business_card(self):
-        
+
         auth_headers = {
             'HTTP_AUTHORIZATION': 'Token ' + str(self.user_token),
         }
@@ -48,24 +51,36 @@ class BusinessCardTestCase(APITestCase):
             '/api/businesscard/', '', format='json', **auth_headers)
         self.assertEqual(response.status_code, 200)
 
-    def test_update_business_card(self):        
+    def test_update_business_card(self):
         auth_headers = {
             'HTTP_AUTHORIZATION': 'Token ' + str(self.user_token),
         }
         response = self.client.put(
-                '/api/businesscard/%s/' %(self.business_card_id), self.business_card_data, format='json',**auth_headers)
-         
+            '/api/businesscard/%s/' %
+            (self.business_card_id),
+            self.business_card_data,
+            format='json',
+            **auth_headers)
+
         self.assertEqual(response.status_code, 200)
 
+    def test_create_quick_business_card(self):
+        # in case of quick_business_card random json data will accept means no
+        # validation on business_card_data
+        business_card_data = {"test": "ddd"}
+        auth_headers = {
+            'HTTP_AUTHORIZATION': 'Token ' + str(self.user_token),
+        }
+        data = {
+            "business_card_data": business_card_data,
+            "quick_business_card": True
 
+        }
+        response = self.client.post(
+            '/api/businesscard/',
+            data,
+            format='json',
+            **auth_headers)
+        self.business_card_id = response.data["data"]["id"]
 
-    def test_merge_business_cards(self):    
-         pass
-
-
-
-
-        
-       
-        
-        
+        self.assertEqual(response.status_code, 201)

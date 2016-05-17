@@ -937,54 +937,55 @@ class BusinessViewSet(viewsets.ModelViewSet):
         try:
             user_id = request.user.id
 
-            try:
-                validictory.validate(
-                    request.data["bcard_json_data"],
-                    BUSINESS_CARD_DATA_VALIDATION
-                )
-            except validictory.ValidationError as e:
-                logger.error(
-                    "Caught validictory.ValidationError in {}, {}".format(
-                        __file__, e)
-                )
-                ravenclient.captureException()
-
-                return CustomeResponse(
-                    {
-                        'msg': e.message
-                    },
-                    status=status.HTTP_400_BAD_REQUEST,
-                    validate_errors=1
-                )
-            except validictory.SchemaError as e:
-                logger.error(
-                    "Caught validictory.ValidationError in {}, {}".format(
-                        __file__, e
+            if "quick_business_card" not in request.data:
+                try:
+                    validictory.validate(
+                        request.data["bcard_json_data"],
+                        BUSINESS_CARD_DATA_VALIDATION
                     )
-                )
-                ravenclient.captureException()
+                except validictory.ValidationError as e:
+                    logger.error(
+                        "Caught validictory.ValidationError in {}, {}".format(
+                            __file__, e)
+                    )
+                    ravenclient.captureException()
 
-                return CustomeResponse(
-                    {
-                        'msg': e.message
-                    },
-                    status=status.HTTP_400_BAD_REQUEST,
-                    validate_errors=1
-                )
-            except KeyError:
-                logger.error(
-                    "Caught KeyError in {}".format(
-                        __file__
-                    ),
-                    exc_info=True
-                )
-                return CustomeResponse(
-                    {
-                        'msg': "Please provide bcard_json_data in json format"
-                    },
-                    status=status.HTTP_400_BAD_REQUEST,
-                    validate_errors=1
-                )
+                    return CustomeResponse(
+                        {
+                            'msg': e.message
+                        },
+                        status=status.HTTP_400_BAD_REQUEST,
+                        validate_errors=1
+                    )
+                except validictory.SchemaError as e:
+                    logger.error(
+                        "Caught validictory.ValidationError in {}, {}".format(
+                            __file__, e
+                        )
+                    )
+                    ravenclient.captureException()
+
+                    return CustomeResponse(
+                        {
+                            'msg': e.message
+                        },
+                        status=status.HTTP_400_BAD_REQUEST,
+                        validate_errors=1
+                    )
+                except KeyError:
+                    logger.error(
+                        "Caught KeyError in {}".format(
+                            __file__
+                        ),
+                        exc_info=True
+                    )
+                    return CustomeResponse(
+                        {
+                            'msg': "Please provide bcard_json_data in json format"
+                        },
+                        status=status.HTTP_400_BAD_REQUEST,
+                        validate_errors=1
+                    )
 
             if call_from_func:
                 # Call from offline app
