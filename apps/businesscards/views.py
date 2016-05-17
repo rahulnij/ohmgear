@@ -21,16 +21,14 @@ from models import (
     BusinessCardIdentifier,
     Identifier,
     BusinessCardSkillAvailable,
-    BusinessCardAddSkill,
-    BusinessCardHistory
+    BusinessCardAddSkill
 )
 from serializer import (
     BusinessCardSerializer,
     BusinessCardIdentifierSerializer,
     BusinessCardSkillAvailableSerializer,
     BusinessCardAddSkillSerializer,
-    BusinessCardSummarySerializer,
-    BusinessCardHistorySerializer
+    BusinessCardSummarySerializer
 )
 from apps.contacts.serializer import ContactsSerializer
 from apps.contacts.models import Contacts, ContactMedia
@@ -448,8 +446,8 @@ class BusinessCardIdentifierViewSet(viewsets.ModelViewSet):
 class BusinessCardHistoryViewSet(viewsets.ModelViewSet):
     """BusinessCardHistory viewsets."""
 
-    queryset = BusinessCardHistory.objects.all()
-    serializer_class = BusinessCardHistorySerializer
+    #queryset = BusinessCardHistory.objects.all()
+    #serializer_class = BusinessCardHistorySerializer
 
     def list(self, request):
         """Get businesscard data."""
@@ -499,37 +497,11 @@ class BusinessCardHistoryViewSet(viewsets.ModelViewSet):
 
     def create(self, request):
         """Create businesscard history."""
-        try:
-            serializer = BusinessCardHistorySerializer(
-                data=request.data,
-                context={
-                    'request': request
-                }
-            )
-            if serializer.is_valid():
-                serializer.save()
-                return CustomeResponse(
-                    serializer.data,
-                    status=status.HTTP_201_CREATED
-                )
-            else:
-                return CustomeResponse(
-                    serializer.errors,
-                    status=status.HTTP_400_BAD_REQUEST,
-                    validate_errors=1
-                )
-        except:
-            logger.critical(
-                "Caught exception in {}".format(__file__),
-                exc_info=True
-            )
-            ravenclient.captureException()
-
         return CustomeResponse(
             {
-                "msg": "Can not process request. Please try later."
+                'msg': "Update method does not allow"
             },
-            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            status=status.HTTP_400_BAD_REQUEST,
             validate_errors=1
         )
 
