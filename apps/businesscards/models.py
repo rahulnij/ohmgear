@@ -108,6 +108,10 @@ class BusinessCardSkillAvailable(models.Model):
         return'{"id":"%s","skillset":"%s"}' % (self.id, self.skill_name)
 
 
+
+class BusinessCardHistory(models.Model):
+    pass
+
 class BusinessCardAddSkill(models.Model):
 
     class Meta:

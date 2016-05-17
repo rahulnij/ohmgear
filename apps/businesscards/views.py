@@ -652,7 +652,8 @@ class BusinessCardAddSkillViewSet(viewsets.ModelViewSet):
         """List  skills in businesscard."""
         bcard_id = self.request.query_params.get('bcard_id', None)
         if bcard_id:
-            self.queryset = self.queryset.filter(businesscard_id=bcard_id).order_by('skill_name')
+            self.queryset = self.queryset.filter(
+                businesscard_id=bcard_id).order_by('skill_name')
         serializer = self.serializer_class(self.queryset, many=True)
         if serializer and self.queryset:
             return CustomeResponse(serializer.data, status=status.HTTP_200_OK)
@@ -665,21 +666,21 @@ class BusinessCardAddSkillViewSet(viewsets.ModelViewSet):
         """businesscards with added skills."""
         user_id = request.user.id
         bcard_ids = []
-        skill_name = []
         final_list = []
-        counter = 0
         if user_id:
             self.queryset = BusinessCardAddSkill.objects.filter(
                 user_id=user_id)
             for items in self.queryset:
                 if items.businesscard_id.id not in bcard_ids:
                     final_list.append(
-                        {'bcard_id': items.businesscard_id.id, 'skill_name': items.skill_name})
+                        {'bcard_id': items.businesscard_id.id,
+                         'skill_name': items.skill_name})
                 else:
                     list_val = [i for i, x in enumerate(final_list) if x[
                         'bcard_id'] == items.businesscard_id.id]
                     final_list[list_val[0]]['skill_name'] = str(
-                        final_list[list_val[0]]['skill_name']) + ', ' + str(items.skill_name)
+                        final_list[list_val[0]]['skill_name']) + ', ' + \
+                        str(items.skill_name)
                 bcard_ids.append(items.businesscard_id.id)
 
         serializer = self.serializer_class(self.queryset, many=True)
@@ -687,7 +688,8 @@ class BusinessCardAddSkillViewSet(viewsets.ModelViewSet):
             return CustomeResponse(final_list, status=status.HTTP_200_OK)
         else:
             return CustomeResponse(
-                {'msg': 'no data found'}, status=status.HTTP_200_OK, validate_errors=1)
+                {'msg': 'no data found'}, status=status.HTTP_200_OK,
+                validate_errors=1)
 
     def retrieve(self, request, pk=None):
         """Retrieve method not allowed."""
@@ -935,54 +937,55 @@ class BusinessViewSet(viewsets.ModelViewSet):
         try:
             user_id = request.user.id
 
-            try:
-                validictory.validate(
-                    request.data["bcard_json_data"],
-                    BUSINESS_CARD_DATA_VALIDATION
-                )
-            except validictory.ValidationError as e:
-                logger.error(
-                    "Caught validictory.ValidationError in {}, {}".format(
-                        __file__, e)
-                )
-                ravenclient.captureException()
-
-                return CustomeResponse(
-                    {
-                        'msg': e.message
-                    },
-                    status=status.HTTP_400_BAD_REQUEST,
-                    validate_errors=1
-                )
-            except validictory.SchemaError as e:
-                logger.error(
-                    "Caught validictory.ValidationError in {}, {}".format(
-                        __file__, e
+            if "quick_business_card" not in request.data:
+                try:
+                    validictory.validate(
+                        request.data["bcard_json_data"],
+                        BUSINESS_CARD_DATA_VALIDATION
                     )
-                )
-                ravenclient.captureException()
+                except validictory.ValidationError as e:
+                    logger.error(
+                        "Caught validictory.ValidationError in {}, {}".format(
+                            __file__, e)
+                    )
+                    ravenclient.captureException()
 
-                return CustomeResponse(
-                    {
-                        'msg': e.message
-                    },
-                    status=status.HTTP_400_BAD_REQUEST,
-                    validate_errors=1
-                )
-            except KeyError:
-                logger.error(
-                    "Caught KeyError in {}".format(
-                        __file__
-                    ),
-                    exc_info=True
-                )
-                return CustomeResponse(
-                    {
-                        'msg': "Please provide bcard_json_data in json format"
-                    },
-                    status=status.HTTP_400_BAD_REQUEST,
-                    validate_errors=1
-                )
+                    return CustomeResponse(
+                        {
+                            'msg': e.message
+                        },
+                        status=status.HTTP_400_BAD_REQUEST,
+                        validate_errors=1
+                    )
+                except validictory.SchemaError as e:
+                    logger.error(
+                        "Caught validictory.ValidationError in {}, {}".format(
+                            __file__, e
+                        )
+                    )
+                    ravenclient.captureException()
+
+                    return CustomeResponse(
+                        {
+                            'msg': e.message
+                        },
+                        status=status.HTTP_400_BAD_REQUEST,
+                        validate_errors=1
+                    )
+                except KeyError:
+                    logger.error(
+                        "Caught KeyError in {}".format(
+                            __file__
+                        ),
+                        exc_info=True
+                    )
+                    return CustomeResponse(
+                        {
+                            'msg': "Please provide bcard_json_data in json format"
+                        },
+                        status=status.HTTP_400_BAD_REQUEST,
+                        validate_errors=1
+                    )
 
             if call_from_func:
                 # Call from offline app
