@@ -3,7 +3,7 @@ from rest_framework import serializers
 from apps.folders.serializer import FolderContactSerializer
 from models import Contacts, FavoriteContact, AssociateContact, ContactMedia, PrivateContact
 from apps.contacts.models import FolderContact
-from apps.businesscards.models import BusinessCardAddSkill, BusinessCardHistory
+from apps.businesscards.models import BusinessCardAddSkill
 from apps.groups.models import GroupContacts
 from apps.notes.models import Notes
 
