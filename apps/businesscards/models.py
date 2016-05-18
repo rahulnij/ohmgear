@@ -61,7 +61,7 @@ class BusinessCard(models.Model):
     history = HistoricalRecords()
 
     def __unicode__(self):
-        return'{"id":"%s","name":"%s","user_id":"%s"}' % (self.id, self.name, self.user_id.id)
+        return'{"id":"%s","name":"%s","user_id":"%s","is_active":"%s"}' % (self.id, self.name, self.user_id.id, self.is_active)
 
 
 class BusinessCardIdentifier(models.Model):
@@ -70,7 +70,9 @@ class BusinessCardIdentifier(models.Model):
         db_table = 'ohmgear_businesscards_identifier'
 
     businesscard_id = models.ForeignKey(
-        BusinessCard, db_column="businesscard_id", related_name='identifiers_data')
+        BusinessCard,
+        db_column="businesscard_id",
+        related_name='identifiers_data')
     identifier_id = models.OneToOneField(
         Identifier,
         db_column="identifier_id",
@@ -106,6 +108,10 @@ class BusinessCardSkillAvailable(models.Model):
     def __unicode__(self):
         return'{"id":"%s","skillset":"%s"}' % (self.id, self.skill_name)
 
+
+
+class BusinessCardHistory(models.Model):
+    pass
 
 class BusinessCardAddSkill(models.Model):
 

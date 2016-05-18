@@ -243,3 +243,87 @@ BUSINESS_CARD = {
         }
     }
 }
+# quick business card validation
+QUICK_BUSINESS_CARD_DATA_VALIDATION = {
+    "name": "BUSINESS CARD",
+    "properties": {
+            "side_first": {
+
+                "type": "object",
+                "properties": {
+                        "basic_info":
+                        {
+                            "type": "array",
+                            "items": []
+                        },
+                            "contact_info":
+                    {
+                            "type": "object",
+                            "properties": {
+                                "phone": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "object",
+                                        "properties": {
+                                            "type": {"type": "string"},
+                                            "data": {"type": "string"}
+
+                                        }
+                                    },
+                                    "minItems": 0, "maxItems": 10,
+                                    "additionalItems": True
+                                },
+                                "email": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "object",
+                                        "properties": {
+                                            "type": {"type": "string"},
+                                            "data": {"type": "string"}
+
+                                        }
+                                    },
+                                    "minItems": 0,
+                                    "maxItems": 10,
+                                    "additionalItems": True
+                                }
+
+                            }
+                            },
+                    "basic_info":
+                        {
+                            "type": "array",
+                            "items": {
+                                "type": "object",
+                                    "properties": {
+                                        "placeHolder": {"type": "string"},
+                                        "keyName": {"type": "string", "enum": ["FirstName", "LastName", "CompName", "CardName", "DEPTName", "NickName"]},
+                                        "value": {"type": "string", "required": False, "blank": True}
+                                    }
+                            },
+                            "minItems": 1,
+                            "maxItems": 10
+                            },
+                }
+            },
+        "side_second": {
+
+                "type": "object",
+                "properties": {
+                        "contact_info":
+                        {
+                            "type": "object",
+                            "properties": {
+                                "phone": {"type": "array", "items": [], "minItems": 0, "maxItems": 10, "additionalItems": True},
+                                "email": {"type": "array", "items": [], "minItems": 0, "maxItems": 10, "additionalItems": True}
+
+
+                            },
+                            "required": False
+                        }
+                }
+                }
+
+
+    }
+}

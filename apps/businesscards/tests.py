@@ -92,3 +92,27 @@ class BusinessCardTestCase(APITestCase):
 
     def test_merge_business_cards(self):
         pass
+
+    def test_create_quick_business_card(self):
+        # in case of quick_business_card random json data will accept means no
+        # validation on business_card_data
+        business_card_data = {"test": "ddd"}
+        auth_headers = {
+            'HTTP_AUTHORIZATION': 'Token ' + str(self.user_token),
+        }
+        data = {
+            "business_card_data": business_card_data,
+            "quick_business_card": True
+
+        }
+        response = self.client.post(
+            '/api/businesscard/',
+            data,
+            format='json',
+            **auth_headers)
+        try:
+            self.business_card_id = response.data["data"]["id"]
+        except:
+            response.status_code = 400
+
+        self.assertEqual(response.status_code, 201)
