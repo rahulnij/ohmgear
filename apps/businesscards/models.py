@@ -42,6 +42,7 @@ class BusinessCard(models.Model):
     status = models.IntegerField(_("Status"), default=0)
     # is_active denotes whether business card is active or not
     is_active = models.IntegerField(_("Is Active"), default=1)
+    is_default = models.IntegerField(_("Is Default"), default=0)
     created_date = models.DateTimeField(
         _("Created Date"), auto_now_add=True, auto_now=False)
     updated_date = models.DateTimeField(
