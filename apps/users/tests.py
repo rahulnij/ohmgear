@@ -42,8 +42,6 @@ class UserTestCase(APITestCase):
         response = self.client.post(url, data, format='json')
         self.assertEqual(response.status_code, 201)
 
-
-
     def test_invalid_social_type(self):
 
         url = '/api/sociallogin/'
@@ -55,3 +53,28 @@ class UserTestCase(APITestCase):
             "social_type": "FACEBOOK"}
         response = self.client.post(url, data, format='json')
         self.assertEqual(response.status_code, 400, "Invalid Social Type")
+
+    # check user registration and get token
+    def test_get_valid_token_after_user_registration(self):
+        url = '/api/users/'
+        data = {
+            "first_name": "sazid",
+            "email": "test2@kinbow.com",
+            "password": "1111",
+            "user_type": 2}
+        response = self.client.post(url, data, format='json')
+        if "token" in response.data["data"]:
+            auth_headers = {'HTTP_AUTHORIZATION': 'Token ' +
+                            str(response.data["data"]["token"]), }
+            data = {"first_name": "test"}
+            url = url + str(response.data["data"]["id"]) + "/"
+            response = self.client.put(
+                url, data, format='json', **auth_headers)
+            self.assertEqual(
+                "test2@kinbow.com",
+                response.data["data"]["email"])
+        else:
+            self.assertEqual(
+                201,
+                400,
+                "token functionality is not working fine.")

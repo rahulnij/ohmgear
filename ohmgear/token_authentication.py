@@ -2,21 +2,15 @@ from datetime import timedelta
 from django.conf import settings
 from django.utils import timezone
 from rest_framework.authentication import TokenAuthentication
-from rest_framework.authtoken.serializers import AuthTokenSerializer
+# from rest_framework.authtoken.serializers import AuthTokenSerializer
 from rest_framework import exceptions
 
-from rest_framework import status
-from rest_framework.response import Response
-from rest_framework.authtoken.models import Token
+# from rest_framework.authtoken.models import Token
 
-from rest_framework import exceptions, serializers
-from django.contrib.auth import authenticate
 from django.utils.translation import ugettext_lazy as _
-import datetime
-from django.utils.timezone import utc
 
-
-EXPIRE_HOURS = getattr(settings, 'REST_FRAMEWORK_TOKEN_EXPIRE_HOURS', 2)
+#
+EXPIRE_HOURS = getattr(settings, 'REST_FRAMEWORK_TOKEN_EXPIRE_HOURS', 72)
 
 
 class ExpiringTokenAuthentication(TokenAuthentication):
@@ -26,12 +20,10 @@ class ExpiringTokenAuthentication(TokenAuthentication):
             token = self.get_model().objects.get(key=key)
         except self.get_model().DoesNotExist:
             raise exceptions.AuthenticationFailed('Invalid token')
-
-        if not token.user.is_active:
-            raise exceptions.AuthenticationFailed('User inactive or deleted')
-
-#        if token.created < timezone.now() - timedelta(hours=EXPIRE_HOURS):
-#            raise exceptions.AuthenticationFailed('Token has expired')
+        # check user status
+        if token.user.status == 0:
+            if token.created < timezone.now() - timedelta(hours=EXPIRE_HOURS):
+                raise exceptions.AuthenticationFailed('not verified user')
         return (token.user, token)
 
 
