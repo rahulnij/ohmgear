@@ -160,7 +160,7 @@ class UserViewSet(viewsets.ModelViewSet):
 
             if serializer.is_valid():
 
-                # enable/desable signal
+                # enable/desaible signal
                 if fromsocial:
                     self._disable_signals = True
                 # ------------ End ----------------------------------- #
@@ -203,8 +203,13 @@ class UserViewSet(viewsets.ModelViewSet):
                 # ---------------- End ------------------------ #
 
                 if not fromsocial:
+                    # provide the token to api after user registration : KIN-129                    
+                    token = getToken(serializer.data['id'])
+                    temp = serializer.data.copy() 
+                    temp["token"] = token  
+
                     return CustomeResponse(
-                        serializer.data, status=status.HTTP_201_CREATED)
+                        temp, status=status.HTTP_201_CREATED)
                 else:
                     return serializer.data
             else:
