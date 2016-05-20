@@ -1,38 +1,48 @@
 import datetime
-from datetime import timedelta
+import random
+import logging
+
 from django.utils.timezone import utc
 from django.contrib.auth import get_user_model
 from rest_framework.authtoken.models import Token
-from serializer import ConnectedAccountsSerializer
 from models import ConnectedAccount, SocialType, User
-import random
+from django.conf import settings
 
-#------------------ Return token if does not exit then create -------------------#
+logger = logging.getLogger(__name__)
+ravenclient = getattr(settings, "RAVEN_CLIENT", None)
+
+# Return token if does not exit then create
 
 
 def getToken(user_id):
 
     if user_id:
-        #----------- first check previous token if exist then delete -----------#
+        # first check previous token if exist then delete
+        # we will look option update_or_create
         try:
             token = Token.objects.get(user_id=user_id)
             token.delete()
-        except:
+        except Token.DoesNotExist:
+            # No need to log exception here :
             pass
+        token = Token()
+        token.user_id = user_id
+        token.created = datetime.datetime.utcnow().replace(tzinfo=utc)
         try:
-            token = Token()
-            token.user_id = user_id
-            token.created = datetime.datetime.utcnow().replace(tzinfo=utc)
             token.save()
             return token.key
-        except:
+        except Exception as e:
+            logger.critical(
+                "Unhandled exception in {}, {}".format(
+                    __name__, e))
+            ravenclient.captureException()
             return None
-        #------------------ End -----------------------------------#
+        # End
     else:
         return None
 
 
-#------------------ Return token if does not exit then create -------------------#
+# Return token if does not exit then create
 def checkEmail(email_id):
 
     if email_id:

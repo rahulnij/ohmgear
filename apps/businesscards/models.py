@@ -6,7 +6,6 @@ from django.utils.translation import ugettext_lazy as _
 
 # ----------------- Local app imports ------ #
 
-
 from apps.identifiers.models import Identifier
 from simple_history.models import HistoricalRecords
 from apps.vacationcard.models import VacationCard
