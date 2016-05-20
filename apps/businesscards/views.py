@@ -1678,6 +1678,56 @@ class BusinessViewSet(viewsets.ModelViewSet):
             validate_errors=1
         )
 
+    @list_route(methods=['get'],)
+    def setdefault(self, request):
+        """Set default Business Card."""
+        try:
+            businesscard_id = request.query_params.get('bcard_id')
+            user_id = request.user.id
+        except KeyError:
+            logger.error(
+                "Caught KeyError exception: businesscard_id \
+            is required  , in {}".format(
+                    __file__
+                )
+            )
+            return CustomeResponse(
+                {
+                    'msg': 'key not found'
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+                validate_errors=1
+            )
+        try:
+            businesscard = self.queryset.filter(id=businesscard_id, user_id=user_id)
+            if businesscard:
+                businesscard.update(is_default=1)
+                bcards = self.queryset.filter(user_id=user_id).exclude(id=businesscard_id)
+                if bcards:
+                    bcards.update(is_default=0)
+                return CustomeResponse(
+                    {"msg": "Businesscard is set to default"}, status=status.HTTP_200_OK
+
+                )
+            else:
+                return CustomeResponse(
+                    {"msg": "Businesscard not found"}, status=status.HTTP_400_BAD_REQUEST,
+                    validate_errors=True
+                )
+        except Exception:
+            logger.critical(
+                "Caught exception in {}".format(__file__),
+                exc_info=True
+            )
+            ravenclient.captureException()
+        return CustomeResponse(
+            {
+                "msg": "Can not process request. Please try later."
+            },
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            validate_errors=1
+        )
+
     def destroy(self, request, pk=None):
         """Delete not allow."""
         return CustomeResponse(

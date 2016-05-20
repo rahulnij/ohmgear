@@ -233,19 +233,7 @@
       "created_date":"2015-09-03 00:00:00",
       "updated_date":"2015-09-03 00:00:00"
     }
-  },
-  {
-    "model": "usersetting.setting",
-    "pk": 9,
-    "fields": {
-      "key":"DEFAULT_BUSINESS_CARD", 
-      "default_value": "INT",
-      "value_type":"0",
-      "created_date":"2015-09-03 00:00:00",
-      "updated_date":"2015-09-03 00:00:00"
-    }
-  }
-  
+  }  
   
 ]
 

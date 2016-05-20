@@ -800,7 +800,7 @@ class SocialLoginViewSet(viewsets.ModelViewSet):
                     user_view_obj = UserViewSet()
                     data = user_view_obj.create(request, 1)
                     # End
-                    social_id = request.POST.get('social_id', '')
+                    social_login_id = request.POST.get('social_id', '')
                     # social_type_id for fb its 1
 
                     social_type = constant.SOCIAL_TYPE
@@ -815,7 +815,7 @@ class SocialLoginViewSet(viewsets.ModelViewSet):
                             social_type_id = social_id
                     sociallogin = SocialLogin(
                         user_id=data['id'],
-                        social_media_login_id=social_id,
+                        social_media_login_id=social_login_id,
                         social_type_id=social_type_id)
                     createConnectedAccount(data['id'], social_type_id)
                     sociallogin.save()

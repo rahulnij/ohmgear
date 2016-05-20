@@ -1,5 +1,9 @@
 from rest_framework.test import APITestCase, APIClient
+from django.http import HttpRequest
+
+from apps.businesscards.views import BusinessViewSet
 from apps.users.functions import getToken
+from apps.users.models import User
 # Test api : create business card
 
 
@@ -17,14 +21,16 @@ class BusinessCardTestCase(APITestCase):
     def setUp(self):
         """ create the user and get the token """
         url = '/api/users/'
-        data = {
-            "first_name": "sazid",
-            "email": "test@kinbow.com",
-            "password": "1111",
-            "user_type": 2,
-            "status": 1}
-        response = self.client.post(url, data, format='json')
-        self.user_token = getToken(response.data["data"]["id"])
+        user_info = {
+            "email": "test1@kinbow.com",
+            "password": "111111",
+            "status": 1
+        }
+        self.user = User(**user_info)
+        self.user.save()
+        # response = self.client.post(url, data, format='json')
+        self.user_token = getToken(self.user.id)
+
         """ End """
 
         """ create the business card """
@@ -63,6 +69,29 @@ class BusinessCardTestCase(APITestCase):
             **auth_headers)
 
         self.assertEqual(response.status_code, 200)
+
+    def test_set_default_businesscard(self):
+
+        request = HttpRequest()
+        request.user = self.user
+        business_view_set = BusinessViewSet()
+        request.query_params = {}
+        request.query_params['bcard_id'] = self.business_card_id
+        response = business_view_set.setdefault(request)
+        self.assertEqual(response.status_code, 200)
+
+    def test_set_default_invalid_businesscard_id(self):
+
+        request = HttpRequest()
+        request.user = self.user
+        business_view_set = BusinessViewSet()
+        request.query_params = {}
+        request.query_params['bcard_id'] = 1000000
+        response = business_view_set.setdefault(request)
+        self.assertEqual(response.status_code, 400)
+
+    def test_merge_business_cards(self):
+        pass
 
     def test_create_quick_business_card(self):
         # in case of quick_business_card random json data will accept means no
