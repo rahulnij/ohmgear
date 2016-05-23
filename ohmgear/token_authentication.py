@@ -20,7 +20,8 @@ class ExpiringTokenAuthentication(TokenAuthentication):
             token = self.get_model().objects.get(key=key)
         except self.get_model().DoesNotExist:
             raise exceptions.AuthenticationFailed('Invalid token')
-        # check user status
+        # check user status if user status 0 that means user still did not
+        # verified his account
         if token.user.status == 0:
             if token.created < timezone.now() - timedelta(hours=EXPIRE_HOURS):
                 raise exceptions.AuthenticationFailed('not verified user')
