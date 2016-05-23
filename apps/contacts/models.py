@@ -24,6 +24,8 @@ class Contacts(models.Model):
     bcard_json_data = JSONField(null=True)
 #    template_id = models.ForeignKey(BusinessCardTemplate,db_column="template_id")
     user_id = models.ForeignKey(User, db_column="user_id")
+    contact_profile_image = models.ImageField(
+        _("Contact Profile Url"), upload_to='uploads/contact_profile_image/', max_length=254,null=True)
     created_date = models.DateTimeField(
         _("Created Date"), auto_now_add=True, auto_now=False)
     updated_date = models.DateTimeField(

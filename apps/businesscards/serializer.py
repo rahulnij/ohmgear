@@ -43,6 +43,9 @@ class BusinessCardSkillAvailableSerializer(serializers.ModelSerializer):
 
 class BusinessCardSerializer(serializers.ModelSerializer):
 
+    card_logo = serializers.ImageField(
+        max_length=None, use_url=True, required=True)
+
     contact_detail = ContactsSerializerWithJson(read_only=True)
 
     media_detail = serializers.SerializerMethodField('bcard_image_frontend')
@@ -79,7 +82,9 @@ class BusinessCardSerializer(serializers.ModelSerializer):
             'user_id',
             'contact_detail',
             'media_detail',
-            'business_notes'
+            'business_notes',
+            'is_default',
+            'card_logo'
         )
 
 # --------------- Business card serializer wit Identifier : reason : circular error in identifier error --#
@@ -88,6 +93,8 @@ from apps.identifiers.serializer import IdentifierSerializer
 
 class BusinessCardWithIdentifierSerializer(serializers.ModelSerializer):
 
+    card_logo = serializers.ImageField(
+        max_length=None, use_url=True, required=True)
     contact_detail = ContactsSerializerWithJson(read_only=True)
     media_detail = serializers.SerializerMethodField('bcard_image_frontend')
     # business_identifier should be businesscard_identifier
@@ -127,6 +134,7 @@ class BusinessCardWithIdentifierSerializer(serializers.ModelSerializer):
             'media_detail',
             'business_identifier',
             'business_notes',
+            'card_logo'
         )
 
 

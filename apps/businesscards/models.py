@@ -49,7 +49,8 @@ class BusinessCard(models.Model):
         _("Updated Date"), auto_now_add=False, auto_now=True)
     user_id = models.ForeignKey(
         User, related_name='buser', db_column="user_id")
-
+    card_logo = models.ImageField(
+        _("Card Logo"), upload_to='uploads/card_logo/', max_length=254,null=True)
     business_identifier = models.ManyToManyField(
         Identifier,
         through='BusinessCardIdentifier',

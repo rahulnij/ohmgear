@@ -1268,6 +1268,75 @@ class storeContactsViewSet(viewsets.ModelViewSet):
             validate_errors=1
         )
 
+    @list_route(methods=['post'],)
+    def upload_contact_profile(self, request):
+        """Upload profile image for a contact."""
+
+        try:
+            contact_profile_image = request.data['contact_profile_image']
+            user_id = request.user.id
+            contact_id = request.data['contact_id']
+            contact_data = self.queryset.get(
+                user_id=user_id,
+                id=contact_id
+            )
+            data = {}
+            data_new = {}
+            data['contact_profile_image'] = contact_profile_image
+            data['user_id'] = user_id
+            data['contact_id'] = contact_id
+
+            if contact_data:
+                contact_profile_image = request.data['contact_profile_image']
+                data_new['contact_profile_image'] = str(
+                    settings.DOMAIN_NAME) + str(settings.MEDIA_URL) + str(contact_profile_image)
+                serializer = self.serializer_class(contact_data, data=data)
+                if serializer.is_valid():
+                    contact_data.contact_profile_image.delete(False)
+                    serializer.save()
+                    return CustomeResponse({
+                        "contact_id": contact_id,
+                        "contact_profile_image": data_new['contact_profile_image']
+                    }, status=status.HTTP_200_OK)
+                else:
+                    return CustomeResponse(
+                        serializer.errors, status=status.HTTP_200_OK)
+            else:
+                return CustomeResponse(
+                    {
+                        'msg': 'Contact Profile Image cannot be uploaded'
+                    },
+                    status=status.HTTP_400_BAD_REQUEST,
+                    validate_errors=1
+                )
+        except Contacts.DoesNotExist:
+            logger.error(
+                "Caught DoesNotExist exception for {}, primary key {},\
+                in {}".format(
+                    Contacts.__name__, user_id, __file__
+                )
+            )
+            return CustomeResponse(
+                {
+                    'msg': 'Contact not found'
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+                validate_errors=1
+            )
+        except Exception:
+            logger.critical(
+                "Caught exception in {}".format(__file__),
+                exc_info=True
+            )
+            ravenclient.captureException()
+        return CustomeResponse(
+            {
+                "msg": "Can not process request. Please try later."
+            },
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            validate_errors=1
+        )
+
 
 class ContactMediaViewSet(viewsets.ModelViewSet):
     """Contact Images Upload."""
