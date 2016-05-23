@@ -114,6 +114,7 @@ BUSINESS_CARD_DATA_VALIDATION = {
 
                                         }
                                     },
+                                    "required": False,
                                     "minItems": 0, "maxItems": 10,
                                     "additionalItems": True
                                 },
@@ -127,6 +128,7 @@ BUSINESS_CARD_DATA_VALIDATION = {
 
                                         }
                                     },
+                                    "required": False,
                                     "minItems": 0,
                                     "maxItems": 10,
                                     "additionalItems": True
