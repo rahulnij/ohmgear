@@ -11,6 +11,7 @@ from rest_framework.permissions import IsAuthenticated
 from django.conf import settings
 import logging
 from django.db import IntegrityError
+from rest_framework.pagination import PageNumberPagination
 
 
 # Application imports
@@ -50,6 +51,11 @@ logger = logging.getLogger(__name__)
 ravenclient = getattr(settings, "RAVEN_CLIENT", None)
 # End
 
+# declaire the pagination class
+class SetPagination(PageNumberPagination):
+    page_size = 1000
+    page_size_query_param = 'page_size'
+    max_page_size = 10000
 
 # Storing Contacts as a Bulk
 # Note: we have to create same response format in this api in Second Phase
@@ -63,6 +69,10 @@ class storeContactsViewSet(viewsets.ModelViewSet):
         IsAuthenticated,
         IsUserContactData,
     )
+
+    page_size = 1
+    page_size_query_param = 'page_size'
+    max_page_size = 10000
 
     def list(self, request):
         """List store user's contacts."""
@@ -150,8 +160,8 @@ class storeContactsViewSet(viewsets.ModelViewSet):
 
     @list_route(methods=['post'],)
     def uploads(self, request):
-        """Upload bulk contacts."""
-        try:
+            """Upload bulk contacts."""
+        # try:
             user_id = request.user
             NUMBER_OF_CONTACT = 100
 
@@ -281,20 +291,20 @@ class storeContactsViewSet(viewsets.ModelViewSet):
                 return CustomeResponse(
                     serializer.errors,
                     status=status.HTTP_201_CREATED)
-        except:
-            logger.critical(
-                "Caught exception in {}".format(__file__),
-                exc_info=True
-            )
-            ravenclient.captureException()
+        # except:
+        #     logger.critical(
+        #         "Caught exception in {}".format(__file__),
+        #         exc_info=True
+        #     )
+        #     ravenclient.captureException()
 
-        return CustomeResponse(
-            {
-                "msg": "Can not process request. Please try later."
-            },
-            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            validate_errors=1
-        )
+        # return CustomeResponse(
+        #     {
+        #         "msg": "Can not process request. Please try later."
+        #     },
+        #     status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        #     validate_errors=1
+        # )
 
     def update(self, request, pk=None):
         data = request.data.copy()
