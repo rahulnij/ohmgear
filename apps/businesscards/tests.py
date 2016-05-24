@@ -1,3 +1,6 @@
+from StringIO import StringIO
+from PIL import Image
+from django.core.files.base import File
 from rest_framework.test import APITestCase, APIClient
 from django.http import HttpRequest
 
@@ -5,6 +8,17 @@ from apps.businesscards.views import BusinessViewSet
 from apps.users.functions import getToken
 from apps.users.models import User
 # Test api : create business card
+
+
+def create_image_file(
+    name='test.png', ext='png', size=(
+        5000, 5000), color=(
+            5, 150, 100)):
+    file_obj = StringIO()
+    image = Image.new("RGBA", size=size, color=color)
+    image.save(file_obj, ext)
+    file_obj.seek(0)
+    return File(file_obj, name=name)
 
 
 class BusinessCardTestCase(APITestCase):
@@ -116,3 +130,29 @@ class BusinessCardTestCase(APITestCase):
             response.status_code = 400
 
         self.assertEqual(response.status_code, 201)
+
+
+    def test_bcard_logo(self):
+        request = HttpRequest()
+        request.user = self.user
+        business_view_set = BusinessViewSet()
+        request.data = {}
+        request.data['card_logo'] = create_image_file()
+        request.data['businesscard_id'] = self.business_card_id
+        response = business_view_set.upload_card_logo(request)
+        self.assertEqual(response.status_code, 200)
+
+
+
+    def test_invalidbcard_logo(self):
+        request = HttpRequest()
+        request.user = self.user
+        business_view_set = BusinessViewSet()
+        request.data = {}
+        request.data['card_logo'] = create_image_file()
+        request.data['businesscard_id'] = 50
+        response = business_view_set.upload_card_logo(request)
+        self.assertEqual(response.status_code, 400,"Business card not found")
+
+
+

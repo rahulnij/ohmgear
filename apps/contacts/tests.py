@@ -4,6 +4,7 @@ from PIL import Image
 from django.core.files.base import File
 import re
 from rest_framework.test import APITestCase, APIClient
+from django.http import HttpRequest
 from django.test import TestCase
 from .models import(
     Contacts,
@@ -11,6 +12,7 @@ from .models import(
     # FavoriteContact,
     # AssociateContact
 )
+from apps.contacts.views import storeContactsViewSet
 from apps.businesscards.models import BusinessCard
 from apps.users.models import User  # UserType
 from apps.users.functions import getToken
@@ -18,7 +20,10 @@ from apps.users.functions import getToken
 # Test api : create business card
 
 
-def create_image_file(name='test.png', ext='png', size=(5000, 5000), color=(5, 150, 100)):
+def create_image_file(
+    name='test.png', ext='png', size=(
+        5000, 5000), color=(
+            5, 150, 100)):
     file_obj = StringIO()
     image = Image.new("RGBA", size=size, color=color)
     image.save(file_obj, ext)
@@ -30,7 +35,6 @@ class ContactTestCase(APITestCase):
     client = APIClient()
 
     fixtures = ['default']
-    
     user_token = ''
 
     contact_data = {}
@@ -46,7 +50,7 @@ class ContactTestCase(APITestCase):
             "status": 1}
         response = self.client.post(url, data, format='json')
         self.user_token = getToken(response.data["data"]["id"])
-        
+
         """ create contact """
         self.contact_data = {
             "contact": [{
@@ -151,21 +155,24 @@ class ContactTestCase(APITestCase):
         """ End """
 
     def test_contact_list(self):
-        
+
         auth_headers = {
             'HTTP_AUTHORIZATION': 'Token ' + str(self.user_token),
         }
-        
+
         response = self.client.get(
             '/api/contacts/', '', format='json', **auth_headers)
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.data['data'][0]['contact_data'].keys(), [u'side_second', u'side_first'])
+        self.assertEqual(
+            response.data['data'][0]['contact_data'].keys(), [
+                u'side_second', u'side_first'])
 
     def test_contact_delete(self):
-        pass    
+        pass
 
 
 class TestContactModel(TestCase):
+
     def setUp(self):
         self.user = User(
             email="joe@test.com",
@@ -175,7 +182,7 @@ class TestContactModel(TestCase):
         self.biz_card = BusinessCard(user_id=self.user)
         self.biz_card.save()
         self.contact = Contacts(businesscard_id=self.biz_card,
-            user_id=self.user)
+                                user_id=self.user)
         self.contact.save()
 
     def test_user_create(self):
@@ -189,21 +196,44 @@ class TestContactModel(TestCase):
 
     def test_contact_media_create(self):
         contact_media = ContactMedia(user_id=self.user,
-            contact_id=self.contact, 
-            img_url=create_image_file()
-        )
+                                     contact_id=self.contact,
+                                     img_url=create_image_file()
+                                     )
         contact_media.save()
         self.assertIsInstance(contact_media, ContactMedia)
-        self.assertRegexpMatches(contact_media.img_url.url, re.compile(r'.*bcards_gallery/*test.*\.png'))
+        self.assertRegexpMatches(
+            contact_media.img_url.url,
+            re.compile(r'.*bcards_gallery/*test.*\.png'))
+
+    def test_contact_profile_create(self):
+        request = HttpRequest()
+        request.user = self.user
+        contact_view_set = storeContactsViewSet()
+        request.data = {}
+        request.data['contact_profile_image'] = create_image_file()
+        request.data['contact_id'] = self.contact.id
+        request.data['user_id'] = self.contact.id
+        response = contact_view_set.upload_contact_profile(request)
+        self.assertEqual(response.status_code, 200)
+
+    def test_invalidcontact_profile_create(self):
+        request = HttpRequest()
+        request.user = self.user
+        contact_view_set = storeContactsViewSet()
+        request.data = {}
+        request.data['contact_profile_image'] = create_image_file()
+        request.data['contact_id'] = 5000
+        response = contact_view_set.upload_contact_profile(request)
+        self.assertEqual(response.status_code, 400, "Invalid Contact id")
 
     def test_create_error(self):
-        new_user = User(email='joe2@test.com', password='123werty')    
+        new_user = User(email='joe2@test.com', password='123werty')
         new_user.save()
         biz_card = BusinessCard(user_id=new_user)
         biz_card.save()
         with self.assertRaises(ValueError):
             new_contact = Contacts(businesscard_id=biz_card,
-                user_id=new_user.id)
+                                   user_id=new_user.id)
             new_contact.save()
 
     def tearDown(self):
@@ -213,6 +243,7 @@ class TestContactModel(TestCase):
 
 
 class TestContactMedia(TestCase):
+
     def setUp(self):
         self.user = User(
             email="joe@test.com",
@@ -222,5 +253,5 @@ class TestContactMedia(TestCase):
         self.biz_card = BusinessCard(user_id=self.user)
         self.biz_card.save()
         self.contact = Contacts(businesscard_id=self.biz_card,
-            user_id=self.user)
+                                user_id=self.user)
         self.contact.save()
