@@ -4,6 +4,68 @@ DOMAIN_NAME = 'http://sgtest.kinbow.com'
 
 DEBUG = False
 ALLOWED_HOSTS = ['*']
+
+LOG_PATH = '/home/kinbow/ohmgear/logs'
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': "[%(levelname)s, %(asctime)s]  [%(name)s:%(lineno)s] %(message)s",
+            'datefmt': "%d/%b/%Y %H:%M:%S"},
+        'simple': {
+            'format': '%(levelname)s %(message)s'},
+    },
+    'handlers': {
+        'criticalfile': {
+            'level': 'CRITICAL',
+            'class': 'logging.FileHandler',
+            'filename': '%s/critical.log' % (LOG_PATH),
+            'formatter': 'verbose'
+        },
+        'errorfile': {
+            'level': 'ERROR',
+            'class': 'logging.FileHandler',
+            'filename': '%s/error.log' % (LOG_PATH),
+            'formatter': 'verbose'
+        },
+        'warningfile': {
+            'level': 'WARNING',
+            'class': 'logging.FileHandler',
+            'filename': '%s/warning.log' % (LOG_PATH),
+            'formatter': 'verbose'
+        },
+        'kinbowfile': {
+            'level': 'CRITICAL',
+            'class': 'logging.FileHandler',
+            'filename': '%s/kinbow.log' % (LOG_PATH),
+            'formatter': 'verbose'
+        },
+        'debugfile': {
+            'level': 'DEBUG',
+            'class': 'logging.FileHandler',
+            'filename': '%s/debug.log' % (LOG_PATH),
+            'formatter': 'simple'
+        },
+    },
+    'loggers': {
+        # 'django': {
+        #     'handlers': ['debugfile'],
+        #     'propagate': True,
+        #     'level': 'DEBUG',
+        # },
+        'apps': {
+            'handlers': [
+                'debugfile',
+                'errorfile',
+                'criticalfile'
+            ],
+            'level': 'DEBUG',
+        },
+    }
+}
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
