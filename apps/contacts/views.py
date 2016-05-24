@@ -52,13 +52,17 @@ ravenclient = getattr(settings, "RAVEN_CLIENT", None)
 # End
 
 # declaire the pagination class
+
+
 class SetPagination(PageNumberPagination):
-    page_size = 1000
+    page_size = 1
     page_size_query_param = 'page_size'
     max_page_size = 10000
 
 # Storing Contacts as a Bulk
 # Note: we have to create same response format in this api in Second Phase
+
+
 class storeContactsViewSet(viewsets.ModelViewSet):
     """Store contacts."""
 
@@ -70,13 +74,11 @@ class storeContactsViewSet(viewsets.ModelViewSet):
         IsUserContactData,
     )
 
-    page_size = 1
-    page_size_query_param = 'page_size'
-    max_page_size = 10000
+    pagination_class = SetPagination
 
     def list(self, request):
-        """List store user's contacts."""
-        try:
+            """List store user's contacts."""
+        #try:
             queryset = FolderContact.objects.filter(
                 user_id=request.user.id
             ).select_related()
@@ -99,20 +101,20 @@ class storeContactsViewSet(viewsets.ModelViewSet):
                     status=status.HTTP_400_BAD_REQUEST,
                     validate_errors=True
                 )
-        except:
-            logger.critical(
-                "Caught exception in {}".format(__file__),
-                exc_info=True
-            )
-            ravenclient.captureException()
+        # except:
+        #     logger.critical(
+        #         "Caught exception in {}".format(__file__),
+        #         exc_info=True
+        #     )
+        #     ravenclient.captureException()
 
-        return CustomeResponse(
-            {
-                "msg": "Can not process request. Please try later."
-            },
-            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            validate_errors=1
-        )
+        # return CustomeResponse(
+        #     {
+        #         "msg": "Can not process request. Please try later."
+        #     },
+        #     status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        #     validate_errors=1
+        # )
 
     def retrieve(self, request, pk=None):
         """Get contact by folder contact id."""
@@ -160,137 +162,137 @@ class storeContactsViewSet(viewsets.ModelViewSet):
 
     @list_route(methods=['post'],)
     def uploads(self, request):
-            """Upload bulk contacts."""
+        """Upload bulk contacts."""
         # try:
-            user_id = request.user
-            NUMBER_OF_CONTACT = 100
+        user_id = request.user
+        NUMBER_OF_CONTACT = 100
 
-            try:
-                contact = request.data['contact']
-            except KeyError:
-                logger.error(
-                    "Caught KeyError exception, contact not given in {}".
-                    format(__file__)
-                )
-                return CustomeResponse(
-                    {
-                        'msg': 'Please provide correct Json Format'
-                    },
-                    status=status.HTTP_400_BAD_REQUEST,
-                    validate_errors=1
-                )
-            counter = 0
-            if contact:
+        try:
+            contact = request.data['contact']
+        except KeyError:
+            logger.error(
+                "Caught KeyError exception, contact not given in {}".
+                format(__file__)
+            )
+            return CustomeResponse(
+                {
+                    'msg': 'Please provide correct Json Format'
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+                validate_errors=1
+            )
+        counter = 0
+        if contact:
 
-                # Assign  first created business card to created default folder
-                queryset_folder = Folder.objects.filter(
-                    user_id=user_id, foldertype='PR').values()
-                if not queryset_folder:
-                    folder_view = FolderViewSet.as_view({'post': 'create'})
-                    offline_data = {}
-                    offline_data['businesscard_id'] = ''
-                    offline_data['foldername'] = 'PR'
-                    folder_view = folder_view(request, offline_data)
-                    folder_id = folder_view.data['data']['id']
-                else:
-                    folder_id = queryset_folder[0]['id']
+            # Assign  first created business card to created default folder
+            queryset_folder = Folder.objects.filter(
+                user_id=user_id, foldertype='PR').values()
+            if not queryset_folder:
+                folder_view = FolderViewSet.as_view({'post': 'create'})
+                offline_data = {}
+                offline_data['businesscard_id'] = ''
+                offline_data['foldername'] = 'PR'
+                folder_view = folder_view(request, offline_data)
+                folder_id = folder_view.data['data']['id']
+            else:
+                folder_id = queryset_folder[0]['id']
 
-                contact_new = []
-                for contact_temp in contact:
-                    # Validate the json data
-                    try:
-                        validictory.validate(
-                            contact_temp["bcard_json_data"],
-                            BUSINESS_CARD_DATA_VALIDATION)
-                    except validictory.ValidationError as error:
-                        logger.error(
-                            "Caught validictory.ValidationError\
+            contact_new = []
+            for contact_temp in contact:
+                # Validate the json data
+                try:
+                    validictory.validate(
+                        contact_temp["bcard_json_data"],
+                        BUSINESS_CARD_DATA_VALIDATION)
+                except validictory.ValidationError as error:
+                    logger.error(
+                        "Caught validictory.ValidationError\
                              exception, {} in {}".
-                            format(error.message, __file__)
-                        )
-                        return CustomeResponse(
-                            {
-                                'msg': error.message
-                            },
-                            status=status.HTTP_400_BAD_REQUEST,
-                            validate_errors=1
-                        )
-                    except validictory.SchemaError as error:
-                        logger.error(
-                            "Caught validictory.SchemaError exception,\
+                        format(error.message, __file__)
+                    )
+                    return CustomeResponse(
+                        {
+                            'msg': error.message
+                        },
+                        status=status.HTTP_400_BAD_REQUEST,
+                        validate_errors=1
+                    )
+                except validictory.SchemaError as error:
+                    logger.error(
+                        "Caught validictory.SchemaError exception,\
                              {} in {}".
-                            format(error.message, __file__)
-                        )
-                        return CustomeResponse(
-                            {
-                                'msg': error.message
-                            },
-                            status=status.HTTP_400_BAD_REQUEST,
-                            validate_errors=1
-                        )
+                        format(error.message, __file__)
+                    )
+                    return CustomeResponse(
+                        {
+                            'msg': error.message
+                        },
+                        status=status.HTTP_400_BAD_REQUEST,
+                        validate_errors=1
+                    )
 
-                if 'user_id' not in contact_temp:
-                    contact_temp['user_id'] = user_id.id
-                    contact_new.append(contact_temp)
-                else:
-                    contact_new.append(contact_temp)
-                counter = counter + 1
+            if 'user_id' not in contact_temp:
+                contact_temp['user_id'] = user_id.id
+                contact_new.append(contact_temp)
+            else:
+                contact_new.append(contact_temp)
+            counter = counter + 1
+
+        if counter > NUMBER_OF_CONTACT:
+            return CustomeResponse(
+                {
+                    'msg': "Max " + str(NUMBER_OF_CONTACT) +
+                    " allowed to upload"
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+                validate_errors=1
+            )
+
+            if 'user_id' not in contact_temp:
+                contact_temp['user_id'] = user_id.id
+                contact_new.append(contact_temp)
+            else:
+                contact_new.append(contact_temp)
+            counter = counter + 1
 
             if counter > NUMBER_OF_CONTACT:
                 return CustomeResponse(
                     {
-                        'msg': "Max " + str(NUMBER_OF_CONTACT) +
-                        " allowed to upload"
-                    },
+                        'msg': "Max " + str(NUMBER_OF_CONTACT) + " allowed to upload"},
                     status=status.HTTP_400_BAD_REQUEST,
-                    validate_errors=1
-                )
+                    validate_errors=1)
 
-                if 'user_id' not in contact_temp:
-                    contact_temp['user_id'] = user_id.id
-                    contact_new.append(contact_temp)
-                else:
-                    contact_new.append(contact_temp)
-                counter = counter + 1
+        serializer = ContactsSerializer(data=contact_new, many=True)
+        if serializer.is_valid():
+            contact_data = serializer.save()
+            #contact_id = contact_data[0].id
 
-                if counter > NUMBER_OF_CONTACT:
-                    return CustomeResponse(
-                        {
-                            'msg': "Max " + str(NUMBER_OF_CONTACT) + " allowed to upload"},
-                        status=status.HTTP_400_BAD_REQUEST,
-                        validate_errors=1)
+            # Assign all contacts to folder
+            folder_contact_array = []
+            contact_ids = []
+            for items in serializer.data:
+                folder_contact_array.append(
+                    {'user_id': user_id.id, 'folder_id': folder_id, 'contact_id': items['id']})
+                contact_ids.append(items['id'])
 
-            serializer = ContactsSerializer(data=contact_new, many=True)
-            if serializer.is_valid():
-                contact_data = serializer.save()
-                #contact_id = contact_data[0].id
-
-                # Assign all contacts to folder
-                folder_contact_array = []
-                contact_ids = []
-                for items in serializer.data:
-                    folder_contact_array.append(
-                        {'user_id': user_id.id, 'folder_id': folder_id, 'contact_id': items['id']})
-                    contact_ids.append(items['id'])
-
-                if folder_contact_array:
-                    folder_contact_serializer = FolderContactSerializer(
-                        data=folder_contact_array, many=True)
-                    if folder_contact_serializer.is_valid():
-                        folder_contact_serializer.save()
-                # End
-                queryset = self.queryset.filter(
-                    user_id=request.user.id,
-                    businesscard_id__isnull=True,
-                    id__in=contact_ids)
-                serializer = ContactsSerializerWithJson(queryset, many=True)
-                return CustomeResponse(
-                    serializer.data,
-                    status=status.HTTP_201_CREATED)
-            else:
-                return CustomeResponse(
-                    serializer.errors,
-                    status=status.HTTP_201_CREATED)
+            if folder_contact_array:
+                folder_contact_serializer = FolderContactSerializer(
+                    data=folder_contact_array, many=True)
+                if folder_contact_serializer.is_valid():
+                    folder_contact_serializer.save()
+            # End
+            queryset = self.queryset.filter(
+                user_id=request.user.id,
+                businesscard_id__isnull=True,
+                id__in=contact_ids)
+            serializer = ContactsSerializerWithJson(queryset, many=True)
+            return CustomeResponse(
+                serializer.data,
+                status=status.HTTP_201_CREATED)
+        else:
+            return CustomeResponse(
+                serializer.errors,
+                status=status.HTTP_400_BAD_REQUEST, validate_errors=1)
         # except:
         #     logger.critical(
         #         "Caught exception in {}".format(__file__),

@@ -95,11 +95,6 @@ BUSINESS_CARD_DATA_VALIDATION = {
 
                 "type": "object",
                 "properties": {
-                        "basic_info":
-                        {
-                            "type": "array",
-                            "items": []
-                        },
                             "contact_info":
                     {
                             "type": "object",

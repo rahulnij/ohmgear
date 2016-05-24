@@ -6,6 +6,8 @@ from apps.contacts.models import FolderContact
 from apps.businesscards.models import BusinessCardAddSkill
 from apps.groups.models import GroupContacts
 from apps.notes.models import Notes
+from apps.businesscards.models import BusinessCardVacation
+#from apps.vacationcard.serializer import VacationCardSerializer
 
 from django.conf import settings
 import rest_framework.status as status
@@ -153,6 +155,9 @@ class FolderContactWithDetailsSerializer(serializers.ModelSerializer):
     contact_media = serializers.SerializerMethodField(
         'contact_media_funct')
 
+    vacational_card = serializers.SerializerMethodField(
+        'vacational_card_funct')
+
     def contact_media_funct(self, obj):
         media = ContactMedia.objects.filter(
             contact_id=obj.contact_id, status=1).order_by('front_back')
@@ -163,6 +168,21 @@ class FolderContactWithDetailsSerializer(serializers.ModelSerializer):
                          str(settings.MEDIA_URL) +
                          str(item.img_url), "front_back": item.front_back})
         return data
+
+    # add vacational card data in contact list
+    def vacational_card_funct(self, obj):
+        data = []
+        if obj.link_status == 2:
+            from apps.vacationcard.serializer import VacationCardSerializer
+            queryset_data = BusinessCardVacation.objects.select_related().all().filter(
+                businesscard_id=obj.contact_id.businesscard_id)
+            if queryset_data:
+                for obj in queryset_data:
+                    data.append(VacationCardSerializer(obj.id))
+
+        return data
+    # end
+
     private_contact_data = PrivateContactSerializer(read_only=True)
 
     class Meta:
@@ -179,6 +199,7 @@ class FolderContactWithDetailsSerializer(serializers.ModelSerializer):
             'private_contact_data',
             'created_date',
             'updated_date',
+            'vacational_card',
         )
 
 
