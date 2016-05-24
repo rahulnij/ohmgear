@@ -1757,7 +1757,7 @@ class BusinessViewSet(viewsets.ModelViewSet):
                         'card_logo'], "bcard_id": businesscard_id}, status=status.HTTP_200_OK)
                 else:
                     return CustomeResponse(
-                        serializer.errors, status=status.HTTP_200_OK)
+                        serializer.errors, status=status.HTTP_400_BAD_REQUEST,ValidationError=True)
             else:
                 return CustomeResponse(
                     {

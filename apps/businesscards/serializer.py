@@ -43,9 +43,6 @@ class BusinessCardSkillAvailableSerializer(serializers.ModelSerializer):
 
 class BusinessCardSerializer(serializers.ModelSerializer):
 
-    card_logo = serializers.ImageField(
-        max_length=None, use_url=True, required=True)
-
     contact_detail = ContactsSerializerWithJson(read_only=True)
 
     media_detail = serializers.SerializerMethodField('bcard_image_frontend')
@@ -134,7 +131,8 @@ class BusinessCardWithIdentifierSerializer(serializers.ModelSerializer):
             'media_detail',
             'business_identifier',
             'business_notes',
-            'card_logo'
+            'card_logo',
+            'is_default',
         )
 
 

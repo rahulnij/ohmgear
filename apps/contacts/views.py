@@ -1300,7 +1300,7 @@ class storeContactsViewSet(viewsets.ModelViewSet):
                     }, status=status.HTTP_200_OK)
                 else:
                     return CustomeResponse(
-                        serializer.errors, status=status.HTTP_200_OK)
+                        serializer.errors, status=status.HTTP_400_BAD_REQUEST,ValidationError=True)
             else:
                 return CustomeResponse(
                     {

@@ -29,8 +29,6 @@ class ContactsSerializer(serializers.ModelSerializer):
 
     folder_contact_data = FolderContactSerializer(many=True, read_only=True)
     businesscard_media = ContactMediaSerializer(many=True, read_only=True)
-    contact_profile_image = serializers.ImageField(
-        max_length=None, use_url=True, required=True)
 
     class Meta:
         model = Contacts
@@ -90,7 +88,8 @@ class ContactsSerializerWithJson(serializers.ModelSerializer):
             'folder_contact_data',
             'businesscard_media',
             'created_date',
-            'updated_date'
+            'updated_date',
+            'contact_profile_image',
         )
 
 
