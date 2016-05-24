@@ -85,13 +85,14 @@ DATABASES = {
     }
 }
 
+# email settings
 DEFAULT_FROM_EMAIL = 'welcome@kinbow.com'
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_USE_TLS = True
-EMAIL_HOST = 'email-smtp.us-west-2.amazonaws.com'  # 'smtp.gmail.com'
+EMAIL_HOST = 'email-smtp.us-west-2.amazonaws.com'
 EMAIL_PORT = 587
-EMAIL_HOST_USER = 'AKIAJUDMRYODLOT4FMJQ'  # 'bhoopendra.ohmgear@gmail.com'
-EMAIL_HOST_PASSWORD = 'Atf+OJN+84eKW0jqqhp0MAzYsnB7Ra78ilfj8SHsb821'  # 'q@123456'
+EMAIL_HOST_USER = 'AKIAI3I37YRQ6STIPN6A'
+EMAIL_HOST_PASSWORD = 'Am37x7uVJFkUu3vmAE0oAg2u0nZ35NUTrZjAZRioh2w3'
 
 # CELERY STUFF
 INSTALLED_APPS += ("djcelery", )
