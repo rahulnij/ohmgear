@@ -64,6 +64,8 @@ class ContactsSerializerWithJson(serializers.ModelSerializer):
     businesscard_media = serializers.SerializerMethodField(
         'bcard_image_frontend')
 
+    contact_profile_url = serializers.SerializerMethodField('get_thumbnail_url')
+
     def bcard_image_frontend(self, obj):
         media = ContactMedia.objects.filter(
             contact_id=obj.id, status=1).order_by('front_back')
@@ -78,6 +80,13 @@ class ContactsSerializerWithJson(serializers.ModelSerializer):
     def clean_bcard_json_data(self, obj):
         return obj.bcard_json_data
 
+
+    def get_thumbnail_url(self, obj):
+        if obj.contact_profile_image:
+            return '%s' % (str(settings.DOMAIN_NAME) +
+                           str(settings.MEDIA_URL) +
+                           str(obj.contact_profile_image))
+
     class Meta:
         model = Contacts
         fields = (
@@ -89,7 +98,7 @@ class ContactsSerializerWithJson(serializers.ModelSerializer):
             'businesscard_media',
             'created_date',
             'updated_date',
-            'contact_profile_image',
+            'contact_profile_url'
         )
 
 
