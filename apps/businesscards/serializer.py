@@ -294,3 +294,17 @@ class CountContactInBusinesscardSerializer(serializers.ModelSerializer):
             'user_id',
             'folder_contact_detail',
         )
+
+
+from apps.vacationcard.serializer import VacationTripSerializer
+from apps.vacationcard.models import VacationCard
+
+class SingleVacationCardSerializer(serializers.ModelSerializer):
+
+    business_vacation = BusinessCardSerializer(many=True, read_only=True)
+    vacation_trips = VacationTripSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = VacationCard
+        fields = ('id', 'user_id', 'vacation_name',
+                  'vacation_trips', 'business_vacation')

@@ -6,6 +6,9 @@ from apps.contacts.models import FolderContact
 from apps.businesscards.models import BusinessCardAddSkill
 from apps.groups.models import GroupContacts
 from apps.notes.models import Notes
+from apps.businesscards.models import BusinessCardVacation
+from apps.vacationcard.serializer import VacationCardSerializer
+from apps.vacationcard.models import VacationCard
 
 from django.conf import settings
 import rest_framework.status as status
@@ -41,7 +44,6 @@ class ContactsSerializer(serializers.ModelSerializer):
             'businesscard_media',
             'created_date',
             'updated_date',
-            'contact_profile_image'
         )
 
 #   Used in fetch contact data
@@ -152,7 +154,6 @@ class AssociateContactSerializer(serializers.ModelSerializer):
 
 
 # it is used in user contact list
-
 class FolderContactWithDetailsSerializer(serializers.ModelSerializer):
 
     contact_data = serializers.ReadOnlyField(
@@ -161,18 +162,17 @@ class FolderContactWithDetailsSerializer(serializers.ModelSerializer):
     contact_media = serializers.SerializerMethodField(
         'contact_media_funct')
 
+    vacational_card = serializers.SerializerMethodField(
+        'vacational_card_funct')
+
     contact_profile_image = serializers.SerializerMethodField(
         'contact_profile')
 
     def contact_profile(self, obj):
-        media = Contacts.objects.filter(
-            id=obj.contact_id.id)
-
-        for item in media:
-            if item.contact_profile_image:
-                return '%s' % (str(settings.DOMAIN_NAME) +
-                               str(settings.MEDIA_URL) +
-                               str(item.contact_profile_image))
+        if obj.contact_id.contact_profile_image:
+            return '%s' % (str(settings.DOMAIN_NAME) +
+                           str(settings.MEDIA_URL) +
+                           str(obj.contact_id.contact_profile_image))
 
     def contact_media_funct(self, obj):
         media = ContactMedia.objects.filter(
@@ -184,6 +184,22 @@ class FolderContactWithDetailsSerializer(serializers.ModelSerializer):
                          str(settings.MEDIA_URL) +
                          str(item.img_url), "front_back": item.front_back})
         return data
+
+    # add vacational card data in contact list
+    def vacational_card_funct(self, obj):
+        data = []
+        if obj.link_status == 2:
+            queryset_data = BusinessCardVacation.objects.select_related().filter(
+                businesscard_id=obj.contact_id.businesscard_id)
+            if queryset_data:
+                for obj in queryset_data:
+                    # vacation_trips = VacationCard.objects.all().filter(id=obj.vacationcard_id.id)
+                    # vacation_trips_serializer = VacationCardSerializer(vacation_trips,many=True)
+                    data.append({"vacationcard_id": obj.vacationcard_id.id})
+
+        return data
+    # end
+
     private_contact_data = PrivateContactSerializer(read_only=True)
 
     class Meta:
@@ -201,6 +217,7 @@ class FolderContactWithDetailsSerializer(serializers.ModelSerializer):
             'private_contact_data',
             'created_date',
             'updated_date',
+            'vacational_card',
         )
 
 

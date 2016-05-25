@@ -95,11 +95,6 @@ BUSINESS_CARD_DATA_VALIDATION = {
 
                 "type": "object",
                 "properties": {
-                        "basic_info":
-                        {
-                            "type": "array",
-                            "items": []
-                        },
                             "contact_info":
                     {
                             "type": "object",
@@ -135,21 +130,21 @@ BUSINESS_CARD_DATA_VALIDATION = {
                                 }
 
                             }
-                            },
-                    "basic_info":
-                        {
-                            "type": "array",
-                            "items": {
-                                "type": "object",
-                                    "properties": {
-                                        "placeHolder": {"type": "string"},
-                                        "keyName": {"type": "string", "enum": ["FirstName", "LastName", "CompName", "CardName", "DEPTName", "NickName"]},
-                                        "value": {"type": "string", "required": False, "blank": True}
-                                    }
-                            },
-                            "minItems": 1,
-                            "maxItems": 10
-                            },
+                            }
+                    # "basic_info":
+                    #     {
+                    #         "type": "array",
+                    #         "items": {
+                    #             "type": "object",
+                    #                 "properties": {
+                    #                     "placeHolder": {"type": "string"},
+                    #                     "keyName": {"type": "string", "enum": ["FirstName", "LastName", "CompName", "CardName", "DEPTName", "NickName"]},
+                    #                     "value": {"type": "string", "required": False, "blank": True}
+                    #                 }
+                    #         },
+                    #         "minItems": 1,
+                    #         "maxItems": 10
+                    #         },
                 }
             },
         "side_second": {
