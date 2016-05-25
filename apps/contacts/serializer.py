@@ -66,6 +66,9 @@ class ContactsSerializerWithJson(serializers.ModelSerializer):
     businesscard_media = serializers.SerializerMethodField(
         'bcard_image_frontend')
 
+    contact_profile_url = serializers.SerializerMethodField(
+        'get_thumbnail_url')
+
     def bcard_image_frontend(self, obj):
         media = ContactMedia.objects.filter(
             contact_id=obj.id, status=1).order_by('front_back')
@@ -80,6 +83,12 @@ class ContactsSerializerWithJson(serializers.ModelSerializer):
     def clean_bcard_json_data(self, obj):
         return obj.bcard_json_data
 
+    def get_thumbnail_url(self, obj):
+        if obj.contact_profile_image:
+            return '%s' % (str(settings.DOMAIN_NAME) +
+                           str(settings.MEDIA_URL) +
+                           str(obj.contact_profile_image))
+
     class Meta:
         model = Contacts
         fields = (
@@ -91,7 +100,7 @@ class ContactsSerializerWithJson(serializers.ModelSerializer):
             'businesscard_media',
             'created_date',
             'updated_date',
-            'contact_profile_image',
+            'contact_profile_url'
         )
 
 
@@ -156,6 +165,15 @@ class FolderContactWithDetailsSerializer(serializers.ModelSerializer):
     vacational_card = serializers.SerializerMethodField(
         'vacational_card_funct')
 
+    contact_profile_image = serializers.SerializerMethodField(
+        'contact_profile')
+
+    def contact_profile(self, obj):
+        if obj.contact_id.contact_profile_image:
+            return '%s' % (str(settings.DOMAIN_NAME) +
+                           str(settings.MEDIA_URL) +
+                           str(obj.contact_id.contact_profile_image))
+
     def contact_media_funct(self, obj):
         media = ContactMedia.objects.filter(
             contact_id=obj.contact_id, status=1).order_by('front_back')
@@ -171,14 +189,13 @@ class FolderContactWithDetailsSerializer(serializers.ModelSerializer):
     def vacational_card_funct(self, obj):
         data = []
         if obj.link_status == 2:
-            # we will solve the circular dependency here
             queryset_data = BusinessCardVacation.objects.select_related().filter(
                 businesscard_id=obj.contact_id.businesscard_id)
             if queryset_data:
                 for obj in queryset_data:
-                    vacation_trips = VacationCard.objects.all().filter(id=obj.vacationcard_id.id)
-                    vacation_trips_serializer = VacationCardSerializer(vacation_trips,many=True)
-                    data.append(vacation_trips_serializer.data)
+                    # vacation_trips = VacationCard.objects.all().filter(id=obj.vacationcard_id.id)
+                    # vacation_trips_serializer = VacationCardSerializer(vacation_trips,many=True)
+                    data.append({"vacationcard_id": obj.vacationcard_id.id})
 
         return data
     # end
@@ -195,6 +212,7 @@ class FolderContactWithDetailsSerializer(serializers.ModelSerializer):
             'link_status',
             'is_linked',
             'contact_data',
+            'contact_profile_image',
             'contact_media',
             'private_contact_data',
             'created_date',

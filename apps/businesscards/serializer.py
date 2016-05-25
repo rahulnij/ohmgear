@@ -97,6 +97,7 @@ class BusinessCardWithIdentifierSerializer(serializers.ModelSerializer):
     # business_identifier should be businesscard_identifier
     business_identifier = IdentifierSerializer(many=True, read_only=True)
     business_notes = serializers.SerializerMethodField('fetch_notes')
+    card_logo_url = serializers.SerializerMethodField('get_thumbnail_url')
 
     def bcard_image_frontend(self, obj):
         media = ContactMedia.objects.filter(
@@ -118,6 +119,12 @@ class BusinessCardWithIdentifierSerializer(serializers.ModelSerializer):
                 data['note_backend'] = str(item.note)
         return data
 
+    def get_thumbnail_url(self, obj):
+        if obj.card_logo:
+            return '%s' % (str(settings.DOMAIN_NAME) +
+                           str(settings.MEDIA_URL) +
+                           str(obj.card_logo))
+
     class Meta:
         model = BusinessCard
         fields = (
@@ -132,6 +139,7 @@ class BusinessCardWithIdentifierSerializer(serializers.ModelSerializer):
             'business_identifier',
             'business_notes',
             'card_logo',
+            'card_logo_url',
             'is_default',
         )
 
