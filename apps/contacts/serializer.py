@@ -29,8 +29,6 @@ class ContactsSerializer(serializers.ModelSerializer):
 
     folder_contact_data = FolderContactSerializer(many=True, read_only=True)
     businesscard_media = ContactMediaSerializer(many=True, read_only=True)
-    contact_profile_image = serializers.ImageField(
-        max_length=None, use_url=True, required=True)
 
     class Meta:
         model = Contacts
@@ -66,6 +64,9 @@ class ContactsSerializerWithJson(serializers.ModelSerializer):
     businesscard_media = serializers.SerializerMethodField(
         'bcard_image_frontend')
 
+    contact_profile_url = serializers.SerializerMethodField(
+        'get_thumbnail_url')
+
     def bcard_image_frontend(self, obj):
         media = ContactMedia.objects.filter(
             contact_id=obj.id, status=1).order_by('front_back')
@@ -80,6 +81,12 @@ class ContactsSerializerWithJson(serializers.ModelSerializer):
     def clean_bcard_json_data(self, obj):
         return obj.bcard_json_data
 
+    def get_thumbnail_url(self, obj):
+        if obj.contact_profile_image:
+            return '%s' % (str(settings.DOMAIN_NAME) +
+                           str(settings.MEDIA_URL) +
+                           str(obj.contact_profile_image))
+
     class Meta:
         model = Contacts
         fields = (
@@ -90,7 +97,8 @@ class ContactsSerializerWithJson(serializers.ModelSerializer):
             'folder_contact_data',
             'businesscard_media',
             'created_date',
-            'updated_date'
+            'updated_date',
+            'contact_profile_url'
         )
 
 
@@ -153,6 +161,19 @@ class FolderContactWithDetailsSerializer(serializers.ModelSerializer):
     contact_media = serializers.SerializerMethodField(
         'contact_media_funct')
 
+    contact_profile_image = serializers.SerializerMethodField(
+        'contact_profile')
+
+    def contact_profile(self, obj):
+        media = Contacts.objects.filter(
+            id=obj.contact_id.id)
+
+        for item in media:
+            if item.contact_profile_image:
+                return '%s' % (str(settings.DOMAIN_NAME) +
+                               str(settings.MEDIA_URL) +
+                               str(item.contact_profile_image))
+
     def contact_media_funct(self, obj):
         media = ContactMedia.objects.filter(
             contact_id=obj.contact_id, status=1).order_by('front_back')
@@ -175,6 +196,7 @@ class FolderContactWithDetailsSerializer(serializers.ModelSerializer):
             'link_status',
             'is_linked',
             'contact_data',
+            'contact_profile_image',
             'contact_media',
             'private_contact_data',
             'created_date',
