@@ -43,9 +43,6 @@ class BusinessCardSkillAvailableSerializer(serializers.ModelSerializer):
 
 class BusinessCardSerializer(serializers.ModelSerializer):
 
-    card_logo = serializers.ImageField(
-        max_length=None, use_url=True, required=True)
-
     contact_detail = ContactsSerializerWithJson(read_only=True)
 
     media_detail = serializers.SerializerMethodField('bcard_image_frontend')
@@ -134,7 +131,8 @@ class BusinessCardWithIdentifierSerializer(serializers.ModelSerializer):
             'media_detail',
             'business_identifier',
             'business_notes',
-            'card_logo'
+            'card_logo',
+            'is_default',
         )
 
 
@@ -288,3 +286,17 @@ class CountContactInBusinesscardSerializer(serializers.ModelSerializer):
             'user_id',
             'folder_contact_detail',
         )
+
+
+from apps.vacationcard.serializer import VacationTripSerializer
+from apps.vacationcard.models import VacationCard
+
+class SingleVacationCardSerializer(serializers.ModelSerializer):
+
+    business_vacation = BusinessCardSerializer(many=True, read_only=True)
+    vacation_trips = VacationTripSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = VacationCard
+        fields = ('id', 'user_id', 'vacation_name',
+                  'vacation_trips', 'business_vacation')

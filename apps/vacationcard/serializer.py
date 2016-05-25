@@ -159,15 +159,15 @@ class BusinessCardVacationSerializer(serializers.ModelSerializer):
             'user_id'
         )
 
-from apps.businesscards.serializer import BusinessCardSerializer
+# from apps.businesscards.serializer import BusinessCardSerializer
 
 
-class SingleVacationCardSerializer(serializers.ModelSerializer):
+# class SingleVacationCardSerializer(serializers.ModelSerializer):
 
-    business_vacation = BusinessCardSerializer(many=True, read_only=True)
-    vacation_trips = VacationTripSerializer(many=True, read_only=True)
+#     business_vacation = BusinessCardSerializer(many=True, read_only=True)
+#     vacation_trips = VacationTripSerializer(many=True, read_only=True)
 
-    class Meta:
-        model = VacationCard
-        fields = ('id', 'user_id', 'vacation_name',
-                  'vacation_trips', 'business_vacation')
+#     class Meta:
+#         model = VacationCard
+#         fields = ('id', 'user_id', 'vacation_name',
+#                   'vacation_trips', 'business_vacation')

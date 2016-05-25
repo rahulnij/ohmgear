@@ -49,7 +49,10 @@ class BusinessCard(models.Model):
     user_id = models.ForeignKey(
         User, related_name='buser', db_column="user_id")
     card_logo = models.ImageField(
-        _("Card Logo"), upload_to='uploads/card_logo/', max_length=254,null=True)
+        _("Card Logo"),
+        null=True,
+        upload_to='uploads/card_logo/',
+        max_length=254)
     business_identifier = models.ManyToManyField(
         Identifier,
         through='BusinessCardIdentifier',
@@ -109,9 +112,9 @@ class BusinessCardSkillAvailable(models.Model):
         return'{"id":"%s","skillset":"%s"}' % (self.id, self.skill_name)
 
 
-
 class BusinessCardHistory(models.Model):
     pass
+
 
 class BusinessCardAddSkill(models.Model):
 

@@ -19,8 +19,9 @@ from serializer import (
     VacationEditTripSerializer,
     VacationCardSerializer,
     BusinessCardVacationSerializer,
-    SingleVacationCardSerializer
+    #SingleVacationCardSerializer
 )
+from apps.businesscards.serializer import SingleVacationCardSerializer
 from serializer import (
     VacationCardMergeSerializer,
     VacationDuplicateSerializer

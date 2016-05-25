@@ -981,11 +981,9 @@ class BusinessViewSet(viewsets.ModelViewSet):
                     )
                     return CustomeResponse(
                         {
-                            'msg': "Please provide bcard_json_data in json format"
-                        },
+                            'msg': "Please provide bcard_json_data in json format"},
                         status=status.HTTP_400_BAD_REQUEST,
-                        validate_errors=1
-                    )
+                        validate_errors=1)
 
             if call_from_func:
                 # Call from offline app
@@ -1699,10 +1697,13 @@ class BusinessViewSet(viewsets.ModelViewSet):
                 validate_errors=1
             )
         try:
-            businesscard = self.queryset.filter(id=businesscard_id, user_id=user_id)
+            businesscard = self.queryset.filter(
+                id=businesscard_id, user_id=user_id)
             if businesscard:
                 businesscard.update(is_default=1)
-                bcards = self.queryset.filter(user_id=user_id).exclude(id=businesscard_id)
+                bcards = self.queryset.filter(
+                    user_id=user_id).exclude(
+                    id=businesscard_id)
                 if bcards:
                     bcards.update(is_default=0)
                 return CustomeResponse(
@@ -1714,6 +1715,73 @@ class BusinessViewSet(viewsets.ModelViewSet):
                     {"msg": "Businesscard not found"}, status=status.HTTP_400_BAD_REQUEST,
                     validate_errors=True
                 )
+        except Exception:
+            logger.critical(
+                "Caught exception in {}".format(__file__),
+                exc_info=True
+            )
+            ravenclient.captureException()
+        return CustomeResponse(
+            {
+                "msg": "Can not process request. Please try later."
+            },
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            validate_errors=1
+        )
+
+    @list_route(methods=['post'],)
+    def upload_card_logo(self, request):
+        """Upload businesscard logo."""
+        try:
+            user_id = request.user.id
+            businesscard_id = request.data['businesscard_id']
+            businesscard = self.queryset.get(
+                user_id=user_id,
+                id=businesscard_id
+            )
+            data = {}
+            data_new = {}
+            data['card_logo'] = request.data['card_logo']
+            data['user_id'] = user_id
+            data['id'] = businesscard_id
+
+            if businesscard:
+                bcard_logo = request.data['card_logo']
+                data_new['card_logo'] = str(
+                    settings.DOMAIN_NAME) + str(settings.MEDIA_URL) + str(bcard_logo)
+                serializer = self.serializer_class(businesscard, data=data)
+                if serializer.is_valid():
+                    businesscard.card_logo.delete(False)
+                    serializer.save()
+                    return CustomeResponse({"bcard_logo": data_new[
+                        'card_logo'], "bcard_id": businesscard_id}, status=status.HTTP_200_OK)
+                else:
+                    return CustomeResponse(
+                        serializer.errors,
+                        status=status.HTTP_400_BAD_REQUEST,
+                        ValidationError=True)
+            else:
+                return CustomeResponse(
+                    {
+                        'msg': 'Businesscard logo cannot be uploaded'
+                    },
+                    status=status.HTTP_400_BAD_REQUEST,
+                    validate_errors=1
+                )
+        except BusinessCard.DoesNotExist:
+            logger.error(
+                "Caught DoesNotExist exception for {}, primary key {},\
+                in {}".format(
+                    Contacts.__name__, user_id, __file__
+                )
+            )
+            return CustomeResponse(
+                {
+                    'msg': 'Businesscard not found'
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+                validate_errors=1
+            )
         except Exception:
             logger.critical(
                 "Caught exception in {}".format(__file__),

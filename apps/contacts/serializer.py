@@ -7,7 +7,8 @@ from apps.businesscards.models import BusinessCardAddSkill
 from apps.groups.models import GroupContacts
 from apps.notes.models import Notes
 from apps.businesscards.models import BusinessCardVacation
-#from apps.vacationcard.serializer import VacationCardSerializer
+from apps.vacationcard.serializer import VacationCardSerializer
+from apps.vacationcard.models import VacationCard
 
 from django.conf import settings
 import rest_framework.status as status
@@ -31,8 +32,6 @@ class ContactsSerializer(serializers.ModelSerializer):
 
     folder_contact_data = FolderContactSerializer(many=True, read_only=True)
     businesscard_media = ContactMediaSerializer(many=True, read_only=True)
-    contact_profile_image = serializers.ImageField(
-        max_length=None, use_url=True, required=True)
 
     class Meta:
         model = Contacts
@@ -45,7 +44,6 @@ class ContactsSerializer(serializers.ModelSerializer):
             'businesscard_media',
             'created_date',
             'updated_date',
-            'contact_profile_image'
         )
 
 #   Used in fetch contact data
@@ -92,7 +90,8 @@ class ContactsSerializerWithJson(serializers.ModelSerializer):
             'folder_contact_data',
             'businesscard_media',
             'created_date',
-            'updated_date'
+            'updated_date',
+            'contact_profile_image',
         )
 
 
@@ -146,7 +145,6 @@ class AssociateContactSerializer(serializers.ModelSerializer):
 
 
 # it is used in user contact list
-
 class FolderContactWithDetailsSerializer(serializers.ModelSerializer):
 
     contact_data = serializers.ReadOnlyField(
@@ -173,12 +171,14 @@ class FolderContactWithDetailsSerializer(serializers.ModelSerializer):
     def vacational_card_funct(self, obj):
         data = []
         if obj.link_status == 2:
-            from apps.vacationcard.serializer import VacationCardSerializer
-            queryset_data = BusinessCardVacation.objects.select_related().all().filter(
+            # we will solve the circular dependency here
+            queryset_data = BusinessCardVacation.objects.select_related().filter(
                 businesscard_id=obj.contact_id.businesscard_id)
             if queryset_data:
                 for obj in queryset_data:
-                    data.append(VacationCardSerializer(obj.id))
+                    vacation_trips = VacationCard.objects.all().filter(id=obj.vacationcard_id.id)
+                    vacation_trips_serializer = VacationCardSerializer(vacation_trips,many=True)
+                    data.append(vacation_trips_serializer.data)
 
         return data
     # end
