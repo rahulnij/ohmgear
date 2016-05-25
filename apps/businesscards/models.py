@@ -64,7 +64,7 @@ class BusinessCard(models.Model):
     history = HistoricalRecords()
 
     def __unicode__(self):
-        return'{"id":"%s","name":"%s","user_id":"%s","is_active":"%s"}' % (self.id, self.name, self.user_id.id, self.is_active)
+        return'{"id":"%s","name":"%s","user_id":"%s","is_active":"%s","card_logo":"%s"}' % (self.id, self.name, self.user_id.id, self.is_active,self.card_logo)
 
 
 class BusinessCardIdentifier(models.Model):

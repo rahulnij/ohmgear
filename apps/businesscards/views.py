@@ -1752,7 +1752,7 @@ class BusinessViewSet(viewsets.ModelViewSet):
                     businesscard.card_logo.delete(False)
                     img = serializer.save()
                     data_new['card_logo'] = str(
-                        settings.DOMAIN_NAME) + str(settings.MEDIA_URL) + str(img.bcard_logo)
+                        settings.DOMAIN_NAME) + str(settings.MEDIA_URL) + str(img.card_logo)
                     return CustomeResponse({"bcard_logo": data_new[
                         'card_logo'], "bcard_id": businesscard_id}, status=status.HTTP_200_OK)
                 else:
