@@ -33,8 +33,8 @@ class Contacts(models.Model):
     history = HistoricalRecords()
 
     def __unicode__(self):
-        return '{"id":"%s","bcard_json_data":"%s","businesscard_id":"%s"}' % (
-            self.id, self.bcard_json_data, self.businesscard_id)
+        return '{"id":"%s","bcard_json_data":"%s","businesscard_id":"%s","contact_profile_image":"%s"}' % (
+            self.id, self.bcard_json_data, self.businesscard_id, self.contact_profile_image)
 
 from apps.folders.models import FolderContact
 

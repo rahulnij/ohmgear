@@ -1288,19 +1288,21 @@ class storeContactsViewSet(viewsets.ModelViewSet):
 
             if contact_data:
                 contact_profile_image = request.data['contact_profile_image']
-                data_new['contact_profile_image'] = str(
-                    settings.DOMAIN_NAME) + str(settings.MEDIA_URL) + str(contact_profile_image)
                 serializer = self.serializer_class(contact_data, data=data)
                 if serializer.is_valid():
                     contact_data.contact_profile_image.delete(False)
-                    serializer.save()
+                    img = serializer.save()
+                    data_new['contact_profile_image'] = str(
+                        settings.DOMAIN_NAME) + str(settings.MEDIA_URL) + str(img.contact_profile_image)
                     return CustomeResponse({
                         "contact_id": contact_id,
                         "contact_profile_image": data_new['contact_profile_image']
                     }, status=status.HTTP_200_OK)
                 else:
                     return CustomeResponse(
-                        serializer.errors, status=status.HTTP_400_BAD_REQUEST,ValidationError=True)
+                        serializer.errors,
+                        status=status.HTTP_400_BAD_REQUEST,
+                        ValidationError=True)
             else:
                 return CustomeResponse(
                     {
