@@ -81,7 +81,8 @@ class BusinessCardSerializer(serializers.ModelSerializer):
             'media_detail',
             'business_notes',
             'is_default',
-            'card_logo'
+            'card_logo',
+            'card_logo_backside'
         )
 
 # --------------- Business card serializer wit Identifier : reason : circular error in identifier error --#
@@ -90,14 +91,12 @@ from apps.identifiers.serializer import IdentifierSerializer
 
 class BusinessCardWithIdentifierSerializer(serializers.ModelSerializer):
 
-    card_logo = serializers.ImageField(
-        max_length=None, use_url=True, required=True)
     contact_detail = ContactsSerializerWithJson(read_only=True)
     media_detail = serializers.SerializerMethodField('bcard_image_frontend')
-    # business_identifier should be businesscard_identifier
     business_identifier = IdentifierSerializer(many=True, read_only=True)
     business_notes = serializers.SerializerMethodField('fetch_notes')
-    card_logo_url = serializers.SerializerMethodField('get_thumbnail_url')
+    card_logo = serializers.SerializerMethodField('get_bcard_logo_url')
+    card_logo_backside = serializers.SerializerMethodField('get_bcard_logo_backend_url')
 
     def bcard_image_frontend(self, obj):
         media = ContactMedia.objects.filter(
@@ -119,11 +118,18 @@ class BusinessCardWithIdentifierSerializer(serializers.ModelSerializer):
                 data['note_backend'] = str(item.note)
         return data
 
-    def get_thumbnail_url(self, obj):
+    def get_bcard_logo_url(self, obj):
         if obj.card_logo:
             return '%s' % (str(settings.DOMAIN_NAME) +
                            str(settings.MEDIA_URL) +
                            str(obj.card_logo))
+
+    def get_bcard_logo_backend_url(self, obj):
+        if obj.card_logo_backside:
+            return '%s' % (str(settings.DOMAIN_NAME) +
+                           str(settings.MEDIA_URL) +
+                           str(obj.card_logo_backside))
+
 
     class Meta:
         model = BusinessCard
@@ -139,7 +145,7 @@ class BusinessCardWithIdentifierSerializer(serializers.ModelSerializer):
             'business_identifier',
             'business_notes',
             'card_logo',
-            'card_logo_url',
+            'card_logo_backside',
             'is_default',
         )
 

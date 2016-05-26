@@ -1733,28 +1733,43 @@ class BusinessViewSet(viewsets.ModelViewSet):
     def upload_card_logo(self, request):
         """Upload businesscard logo."""
         try:
+            request_data = request.data
             user_id = request.user.id
             businesscard_id = request.data['businesscard_id']
             businesscard = self.queryset.get(
                 user_id=user_id,
                 id=businesscard_id
             )
+            card_logo = businesscard.card_logo
+            card_logo_backside = businesscard.card_logo_backside
+            if request_data.has_key('card_logo'):
+                card_logo = request.data['card_logo']
+
+            if request_data.has_key('card_logo_backside'):
+                card_logo_backside = request.data['card_logo_backside']
+
             data = {}
             data_new = {}
-            data['card_logo'] = request.data['card_logo']
+            data['card_logo'] = card_logo
+            data['card_logo_backside'] = card_logo_backside
             data['user_id'] = user_id
             data['id'] = businesscard_id
-
             if businesscard:
-                bcard_logo = request.data['card_logo']
-                serializer = self.serializer_class(businesscard, data=data)
+                card_logo = request.data['card_logo']
+                card_logo_backside = request.data['card_logo_backside']
+                serializer = BusinessCardSerializer(businesscard, data=data)
                 if serializer.is_valid():
-                    businesscard.card_logo.delete(False)
+                    if request_data.has_key('card_logo'):
+                        businesscard.card_logo.delete(False)
+                    if request_data.has_key('card_logo_backside'):
+                        businesscard.card_logo_backside.delete(False)
                     img = serializer.save()
-                    data_new['card_logo'] = str(
+                    data_new['bcard_logo'] = str(
                         settings.DOMAIN_NAME) + str(settings.MEDIA_URL) + str(img.card_logo)
+                    data_new['bcard_logo_backside'] = str(
+                        settings.DOMAIN_NAME) + str(settings.MEDIA_URL) + str(img.card_logo_backside)
                     return CustomeResponse({"bcard_logo": data_new[
-                        'card_logo'], "bcard_id": businesscard_id}, status=status.HTTP_200_OK)
+                        'bcard_logo'], "bcard_logo_backside": data_new['bcard_logo_backside'], "bcard_id": businesscard_id}, status=status.HTTP_200_OK)
                 else:
                     return CustomeResponse(
                         serializer.errors,
