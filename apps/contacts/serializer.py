@@ -193,9 +193,10 @@ class FolderContactWithDetailsSerializer(serializers.ModelSerializer):
                 businesscard_id=obj.contact_id.businesscard_id)
             if queryset_data:
                 for obj in queryset_data:
-                    # vacation_trips = VacationCard.objects.all().filter(id=obj.vacationcard_id.id)
-                    # vacation_trips_serializer = VacationCardSerializer(vacation_trips,many=True)
-                    data.append({"vacationcard_id": obj.vacationcard_id.id})
+                    vacation_trips = VacationCard.objects.all().filter(id=obj.vacationcard_id.id)
+                    vacation_trips_serializer = VacationCardSerializer(
+                        vacation_trips, many=True)
+                    data.append(vacation_trips_serializer.data)
 
         return data
     # end
