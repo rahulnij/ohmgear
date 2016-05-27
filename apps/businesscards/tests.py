@@ -138,6 +138,7 @@ class BusinessCardTestCase(APITestCase):
         business_view_set = BusinessViewSet()
         request.data = {}
         request.data['card_logo'] = create_image_file()
+        request.data['card_logo_backside'] = create_image_file()
         request.data['businesscard_id'] = self.business_card_id
         response = business_view_set.upload_card_logo(request)
         self.assertEqual(response.status_code, 200)

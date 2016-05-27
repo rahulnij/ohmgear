@@ -53,6 +53,11 @@ class BusinessCard(models.Model):
         null=True,
         upload_to='uploads/card_logo/',
         max_length=254)
+    card_logo_backside = models.ImageField(
+        _("Card Logo Backside"),
+        null=True,
+        upload_to='uploads/card_logo/',
+        max_length=254)
     business_identifier = models.ManyToManyField(
         Identifier,
         through='BusinessCardIdentifier',
@@ -64,7 +69,7 @@ class BusinessCard(models.Model):
     history = HistoricalRecords()
 
     def __unicode__(self):
-        return'{"id":"%s","name":"%s","user_id":"%s","is_active":"%s","card_logo":"%s"}' % (self.id, self.name, self.user_id.id, self.is_active,self.card_logo)
+        return'{"id":"%s","name":"%s","user_id":"%s","is_active":"%s","card_logo":"%s","card_logo_backside":"%s"}' % (self.id, self.name, self.user_id.id, self.is_active, self.card_logo, self.card_logo_backside)
 
 
 class BusinessCardIdentifier(models.Model):
