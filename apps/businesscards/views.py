@@ -1102,50 +1102,54 @@ class BusinessViewSet(viewsets.ModelViewSet):
 
     def update(self, request, pk=None, call_from_func=None, offline_data=None):
         """Update Businesscard."""
-        # -------------- First Validate the json contact data ------ #
-        try:
-            validictory.validate(
-                request.data["bcard_json_data"], BUSINESS_CARD_DATA_VALIDATION)
-        except validictory.ValidationError as error:
-            logger.error(
-                "Caught validictory.ValidationError in {}, {}".format(
-                    __file__, error
+        # -------------- First Validate the json contact data ------ #        
+        if "name" in request.data and not "bcard_json_data" in request.data:
+            # then no validation 
+            pass
+        else:    
+            try:
+                validictory.validate(
+                    request.data["bcard_json_data"], BUSINESS_CARD_DATA_VALIDATION)
+            except validictory.ValidationError as error:
+                logger.error(
+                    "Caught validictory.ValidationError in {}, {}".format(
+                        __file__, error
+                    )
                 )
-            )
-            return CustomeResponse(
-                {
-                    'msg': error.message
-                },
-                status=status.HTTP_400_BAD_REQUEST,
-                validate_errors=1
-            )
-        except validictory.SchemaError as error:
-            logger.error(
-                "Caught validictory.ValidationError in {}, {}".format(
-                    __file__, error
+                return CustomeResponse(
+                    {
+                        'msg': error.message
+                    },
+                    status=status.HTTP_400_BAD_REQUEST,
+                    validate_errors=1
                 )
-            )
-            return CustomeResponse(
-                {
-                    'msg': error.message
-                },
-                status=status.HTTP_400_BAD_REQUEST,
-                validate_errors=1
-            )
-        except KeyError:
-            logger.error(
-                "Caught KeyError in {}, {}".format(
-                    __file__
-                ),
-                exc_info=True
-            )
-            return CustomeResponse(
-                {
-                    'msg': "Please provide bcard_json_data in json format"
-                },
-                status=status.HTTP_400_BAD_REQUEST,
-                validate_errors=1
-            )
+            except validictory.SchemaError as error:
+                logger.error(
+                    "Caught validictory.ValidationError in {}, {}".format(
+                        __file__, error
+                    )
+                )
+                return CustomeResponse(
+                    {
+                        'msg': error.message
+                    },
+                    status=status.HTTP_400_BAD_REQUEST,
+                    validate_errors=1
+                )
+            except KeyError:
+                logger.error(
+                    "Caught KeyError in {}, {}".format(
+                        __file__
+                    ),
+                    exc_info=True
+                )
+                return CustomeResponse(
+                    {
+                        'msg': "Please provide bcard_json_data in json format"
+                    },
+                    status=status.HTTP_400_BAD_REQUEST,
+                    validate_errors=1
+                )
         # End
         try:
             if call_from_func:
