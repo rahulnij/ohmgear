@@ -52,8 +52,15 @@ class VacationTripSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(
                 "End date must be greater then start date")
 
-        format = {'trip_start_date': datetime.strptime(str(
-            data['trip_start_date']), '%Y-%m-%d'), 'trip_end_date': datetime.strptime(str(data['trip_end_date']), '%Y-%m-%d')}
+        format = {
+            'trip_start_date': datetime.strptime(
+                str(
+                    data['trip_start_date']),
+                '%Y-%m-%d'),
+            'trip_end_date': datetime.strptime(
+                str(
+                    data['trip_end_date']),
+                '%Y-%m-%d')}
         self.local_date.append(format)
 
         return data
@@ -104,8 +111,15 @@ class VacationEditTripSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(
                 "End date must be greater then start date")
 
-        format = {'trip_start_date': datetime.strptime(str(
-            data['trip_start_date']), '%Y-%m-%d'), 'trip_end_date': datetime.strptime(str(data['trip_end_date']), '%Y-%m-%d')}
+        format = {
+            'trip_start_date': datetime.strptime(
+                str(
+                    data['trip_start_date']),
+                '%Y-%m-%d'),
+            'trip_end_date': datetime.strptime(
+                str(
+                    data['trip_end_date']),
+                '%Y-%m-%d')}
         self.local_date.append(format)
 
         return data
@@ -135,6 +149,24 @@ class VacationCardSerializer(serializers.ModelSerializer):
         source='businesscardvacation.count', read_only=True)
 
     vacation_trips = VacationTripSerializer(many=True, read_only=True)
+
+    business_vacation = serializers.SerializerMethodField(
+        'business_vacation_func')
+
+    def business_vacation_func(self, obj):
+        # we are not getting businesscardvacation relation data so we fetch it
+        # from query
+        data = {}
+        try:
+            objBusVacation = BusinessCardVacation.objects.select_related().get(
+                vacationcard_id=obj.id)
+        except BusinessCardVacation.DoesNotExist:
+            # need to log error
+            return data
+        if objBusVacation:
+            data["business_id"] = objBusVacation.businesscard_id.id
+            data["name"] = objBusVacation.businesscard_id.name
+        return data
 
     class Meta:
         model = VacationCard

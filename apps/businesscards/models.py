@@ -157,5 +157,5 @@ class BusinessCardVacation(models.Model):
     status = models.IntegerField(_('Status'), default=1)
 
     def __unicode__(self):
-        return '{"id":"%s","vacationcard_id","businesscard_id":"%s"}' % (
+        return '{"id":"%s","vacationcard_id":"%s","businesscard_id":"%s"}' % (
             self.id, self.vacationcard_id, self.businesscard_id)
