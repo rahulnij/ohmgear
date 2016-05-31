@@ -45,8 +45,8 @@ class VacationCardViewSet(viewsets.ModelViewSet):
     permission_classes = (IsAuthenticated,)
 
     def list(self, request):
-        """List user vaction cards."""
-        try:
+        #"""List user vaction cards."""
+        #try:
 
             user_id = request.user.id
             queryset = VacationCard.objects.select_related().all().filter(
@@ -85,20 +85,20 @@ class VacationCardViewSet(viewsets.ModelViewSet):
                     status=status.HTTP_400_BAD_REQUEST,
                     validate_errors=1
                 )
-        except Exception:
-            logger.critical(
-                "Caught exception in {}".format(__file__),
-                exc_info=True
-            )
-            ravenclient.captureException()
+        # except Exception:
+        #     logger.critical(
+        #         "Caught exception in {}".format(__file__),
+        #         exc_info=True
+        #     )
+        #     ravenclient.captureException()
 
-        return CustomeResponse(
-            {
-                "msg": "Can not process request. Please try later."
-            },
-            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            validate_errors=1
-        )
+        # return CustomeResponse(
+        #     {
+        #         "msg": "Can not process request. Please try later."
+        #     },
+        #     status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        #     validate_errors=1
+        # )
 
     def retrieve(self, request, vacationcard_id=None, call_from_function=None):
         """Retrive vacation card and its trips."""

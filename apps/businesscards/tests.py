@@ -131,7 +131,6 @@ class BusinessCardTestCase(APITestCase):
 
         self.assertEqual(response.status_code, 201)
 
-
     def test_bcard_logo(self):
         request = HttpRequest()
         request.user = self.user
@@ -143,8 +142,6 @@ class BusinessCardTestCase(APITestCase):
         response = business_view_set.upload_card_logo(request)
         self.assertEqual(response.status_code, 200)
 
-
-
     def test_invalidbcard_logo(self):
         request = HttpRequest()
         request.user = self.user
@@ -153,7 +150,51 @@ class BusinessCardTestCase(APITestCase):
         request.data['card_logo'] = create_image_file()
         request.data['businesscard_id'] = 50
         response = business_view_set.upload_card_logo(request)
-        self.assertEqual(response.status_code, 400,"Business card not found")
+        self.assertEqual(response.status_code, 400, "Business card not found")
 
+    # Create the test cases for exchanging business card
+    def test_exchange_business_card(self):
+        # Need one more active users
+        user_info = {
+            "email": "test2@kinbow.com",
+            "password": "111111",
+            "status": 1
+        }
+        self.user = User(**user_info)
+        self.user.save()
+        user_token_2 = getToken(self.user.id)
+        auth_headers = {
+            'HTTP_AUTHORIZATION': 'Token ' + str(user_token_2)
+        }
 
+        # by using this user token
+        response = self.client.post(
+            '/api/businesscard/',
+            self.business_card_data,
+            format='json',
+            **auth_headers)
+        business_card_id_receiver = response.data["data"]["id"]
 
+        # send the invitation to business card to business card
+        data = {
+            "receiver_business_card_id": business_card_id_receiver,
+            "sender_business_card_id": self.business_card_id}
+
+        response = self.client.post(
+            '/api/send_accept_request/invite_to_businesscard/', data,
+            format='json',
+            **auth_headers)
+        print response
+        # accept the business card
+        data = {
+            "receiver_business_card_id": self.business_card_id,
+            "sender_business_card_id": business_card_id_receiver}
+
+        response = self.client.post(
+            '/api/send_accept_request/accept_businesscard/', data,
+            format='json',
+            **auth_headers)
+
+        print response
+
+        self.assertEqual(response.status_code, 200)
