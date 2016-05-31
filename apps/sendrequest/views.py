@@ -221,7 +221,10 @@ class SendAcceptRequest(viewsets.ModelViewSet):
                     'msg': "Please provide receiver_business_card_id and sender_business_card_id"},
                 status=status.HTTP_400_BAD_REQUEST,
                 validate_errors=1)
-
+            logger.critical(
+                "Caught exception in {}".format(__file__),
+                exc_info=True
+            )
         # check from_business_card_id belongs to user_id
         try:
             sender_business_card = BusinessCard.objects.filter(
@@ -371,7 +374,6 @@ class SendAcceptRequest(viewsets.ModelViewSet):
             #  End
             return CustomeResponse(
                 {"msg": "success"}, status=status.HTTP_200_OK)
-
 
     # cancel the invitation request
     @list_route(methods=['post'],)

@@ -156,16 +156,17 @@ class VacationCardSerializer(serializers.ModelSerializer):
     def business_vacation_func(self, obj):
         # we are not getting businesscardvacation relation data so we fetch it
         # from query
-        data = {}
+        data = []
         try:
-            objBusVacation = BusinessCardVacation.objects.select_related().get(
+            objBusVacation = BusinessCardVacation.objects.select_related().filter(
                 vacationcard_id=obj.id)
         except BusinessCardVacation.DoesNotExist:
             # need to log error
             return data
         if objBusVacation:
-            data["business_id"] = objBusVacation.businesscard_id.id
-            data["name"] = objBusVacation.businesscard_id.name
+            for items in objBusVacation:
+                data.append({"business_id":items.businesscard_id.id, "name":items.businesscard_id.name})
+                
         return data
 
     class Meta:
