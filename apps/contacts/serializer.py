@@ -44,6 +44,7 @@ class ContactsSerializer(serializers.ModelSerializer):
             'businesscard_media',
             'created_date',
             'updated_date',
+            'contact_profile_image',
         )
 
 #   Used in fetch contact data

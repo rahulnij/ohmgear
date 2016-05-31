@@ -77,44 +77,44 @@ class storeContactsViewSet(viewsets.ModelViewSet):
     pagination_class = SetPagination
 
     def list(self, request):
-            """List store user's contacts."""
-        #try:
-            queryset = FolderContact.objects.filter(
-                user_id=request.user.id
-            ).select_related()
+        """List store user's contacts."""
+    # try:
+        queryset = FolderContact.objects.filter(
+            user_id=request.user.id
+        ).select_related()
 
-            serializer = FolderContactWithDetailsSerializer(
-                queryset,
-                many=True
+        serializer = FolderContactWithDetailsSerializer(
+            queryset,
+            many=True
+        )
+
+        if serializer.data:
+            return CustomeResponse(
+                serializer.data,
+                status=status.HTTP_200_OK
             )
+        else:
+            return CustomeResponse(
+                {
+                    "msg": "No Data found"
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+                validate_errors=True
+            )
+    # except:
+    #     logger.critical(
+    #         "Caught exception in {}".format(__file__),
+    #         exc_info=True
+    #     )
+    #     ravenclient.captureException()
 
-            if serializer.data:
-                return CustomeResponse(
-                    serializer.data,
-                    status=status.HTTP_200_OK
-                )
-            else:
-                return CustomeResponse(
-                    {
-                        "msg": "No Data found"
-                    },
-                    status=status.HTTP_400_BAD_REQUEST,
-                    validate_errors=True
-                )
-        # except:
-        #     logger.critical(
-        #         "Caught exception in {}".format(__file__),
-        #         exc_info=True
-        #     )
-        #     ravenclient.captureException()
-
-        # return CustomeResponse(
-        #     {
-        #         "msg": "Can not process request. Please try later."
-        #     },
-        #     status=status.HTTP_500_INTERNAL_SERVER_ERROR,
-        #     validate_errors=1
-        # )
+    # return CustomeResponse(
+    #     {
+    #         "msg": "Can not process request. Please try later."
+    #     },
+    #     status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+    #     validate_errors=1
+    # )
 
     def retrieve(self, request, pk=None):
         """Get contact by folder contact id."""
@@ -1299,7 +1299,6 @@ class storeContactsViewSet(viewsets.ModelViewSet):
             data['contact_id'] = contact_id
 
             if contact_data:
-                contact_profile_image = request.data['contact_profile_image']
                 serializer = self.serializer_class(contact_data, data=data)
                 if serializer.is_valid():
                     contact_data.contact_profile_image.delete(False)
@@ -1364,7 +1363,7 @@ class ContactMediaViewSet(viewsets.ModelViewSet):
     def list(self, request):
         user_id = self.request.user.id
         try:
-            contact_id = self.request.data['contact_id']
+            contact_id = self.request.query_params.get('contact_id')
         except KeyError:
             return CustomeResponse(
                 {
@@ -1374,22 +1373,35 @@ class ContactMediaViewSet(viewsets.ModelViewSet):
                 validate_errors=1
             )
         try:
-            self.queryset = self.queryset.filter(
-                contact_id=contact_id,
-                user_id=user_id
-            )
+            self.queryset = ContactMedia.objects.select_related(
+                'contact_id').filter(contact_id=contact_id, user_id=user_id)
             if self.queryset:
                 data = {}
+                data['gallery'] = []
                 data['all'] = []
                 data['top'] = []
+                data['profile_image'] = []
                 for items in self.queryset:
                     if items.status == 1:
                         data['top'].append({"image_id": items.id, "front_back": items.front_back, "img_url": str(
                             settings.DOMAIN_NAME) + str(settings.MEDIA_URL) + str(items.img_url)})
+
                     data['all'].append({"image_id": items.id, "front_back": items.front_back, "img_url": str(
                         settings.DOMAIN_NAME) + str(settings.MEDIA_URL) + str(items.img_url)})
+
+                # data['profile_image'].append({"contact_profile_image":str(settings.DOMAIN_NAME) + str(
+                #     settings.MEDIA_URL) + str(self.queryset[0].contact_id.contact_profile_image),"contact_id":self.queryset[0].contact_id})
+                contact_profile_image = str(settings.DOMAIN_NAME) + str(
+                    settings.MEDIA_URL) + str(self.queryset[0].contact_id.contact_profile_image)
+                contact_profile_images = {"key": "profile_image", "img_url": contact_profile_image,"contact_id":self.queryset[0].contact_id.id}
+                template_images = {"key": "template", "img_url": data['top']}
+                media_images = {"key": "media", "img_url": data['all']}
+                data['gallery'].append(contact_profile_images)
+                data['gallery'].append(template_images)
+                data['gallery'].append(media_images)
+
                 return CustomeResponse(
-                    data,
+                    data['gallery'],
                     status=status.HTTP_200_OK
                 )
             else:
