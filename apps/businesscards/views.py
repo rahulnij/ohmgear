@@ -1102,14 +1102,15 @@ class BusinessViewSet(viewsets.ModelViewSet):
 
     def update(self, request, pk=None, call_from_func=None, offline_data=None):
         """Update Businesscard."""
-        # -------------- First Validate the json contact data ------ #        
+        # -------------- First Validate the json contact data ------ #
         if "name" in request.data and not "bcard_json_data" in request.data:
-            # then no validation 
+            # then no validation
             pass
-        else:    
+        else:
             try:
                 validictory.validate(
-                    request.data["bcard_json_data"], BUSINESS_CARD_DATA_VALIDATION)
+                    request.data["bcard_json_data"],
+                    BUSINESS_CARD_DATA_VALIDATION)
             except validictory.ValidationError as error:
                 logger.error(
                     "Caught validictory.ValidationError in {}, {}".format(
@@ -1744,13 +1745,9 @@ class BusinessViewSet(viewsets.ModelViewSet):
                 user_id=user_id,
                 id=businesscard_id
             )
-            card_logo = businesscard.card_logo
-            card_logo_backside = businesscard.card_logo_backside
-            if request_data.has_key('card_logo'):
-                card_logo = request.data['card_logo']
-
-            if request_data.has_key('card_logo_backside'):
-                card_logo_backside = request.data['card_logo_backside']
+            card_logo = request.data.get('card_logo', businesscard.card_logo)
+            card_logo_backside = request.data.get(
+                'card_logo_backside', businesscard.card_logo_backside)
 
             data = {}
             data_new = {}
@@ -1758,22 +1755,29 @@ class BusinessViewSet(viewsets.ModelViewSet):
             data['card_logo_backside'] = card_logo_backside
             data['user_id'] = user_id
             data['id'] = businesscard_id
+
+            if not businesscard.card_logo_backside and not card_logo_backside:
+                data.pop("card_logo_backside")
+
+            if not businesscard.card_logo and not card_logo:
+                data.pop("card_logo")
+
             if businesscard:
-                card_logo = request.data['card_logo']
-                card_logo_backside = request.data['card_logo_backside']
+                card_logo = card_logo
+                card_logo_backside = card_logo_backside
                 serializer = BusinessCardSerializer(businesscard, data=data)
                 if serializer.is_valid():
-                    if request_data.has_key('card_logo'):
+                    if 'card_logo' in request_data:
                         businesscard.card_logo.delete(False)
-                    if request_data.has_key('card_logo_backside'):
+                    if 'card_logo_backside' in request_data:
                         businesscard.card_logo_backside.delete(False)
                     img = serializer.save()
                     data_new['bcard_logo'] = str(
                         settings.DOMAIN_NAME) + str(settings.MEDIA_URL) + str(img.card_logo)
                     data_new['bcard_logo_backside'] = str(
                         settings.DOMAIN_NAME) + str(settings.MEDIA_URL) + str(img.card_logo_backside)
-                    return CustomeResponse({"bcard_logo": data_new[
-                        'bcard_logo'], "bcard_logo_backside": data_new['bcard_logo_backside'], "bcard_id": businesscard_id}, status=status.HTTP_200_OK)
+                    return CustomeResponse({"bcard_logo": data_new['bcard_logo'], "bcard_logo_backside": data_new[
+                                           'bcard_logo_backside'], "bcard_id": businesscard_id}, status=status.HTTP_200_OK)
                 else:
                     return CustomeResponse(
                         serializer.errors,

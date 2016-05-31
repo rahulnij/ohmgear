@@ -50,11 +50,13 @@ class BusinessCard(models.Model):
         User, related_name='buser', db_column="user_id")
     card_logo = models.ImageField(
         _("Card Logo"),
+        blank=True,
         null=True,
         upload_to='uploads/card_logo/',
         max_length=254)
     card_logo_backside = models.ImageField(
         _("Card Logo Backside"),
+        blank=True,
         null=True,
         upload_to='uploads/card_logo/',
         max_length=254)
